@@ -696,7 +696,42 @@ MESSAGES:
 
 END_SCRIPT(Phantom)
 
+BEGIN_SCRIPT(ReactsNoisemakers, AI)
+METHODS:
 
+METHOD object GetNoisemakerID(string testsignal)
+{
+    cAnsiStr tempstr = (cAnsiStr)testsignal;
+    integer result;
+    
+    result = tempstr.Find("noisemaker");
+    if (result == -1)
+        return 0;
+    tempstr.Remove(result,strlen("noisemaker"));
+    return (atoi(tempstr));
+}
+
+MESSAGES:
+
+OnBeginScript()
+{
+    if (!IsDataSet("NoiseTrack"))
+        SetData("NoiseTrack",0);
+    DefaultOnBeginScript();
+}
+
+OnSignalAI()
+{
+    object noiseid = GetNoisemakerID(message.signal);
+    if (((integer)noiseid > 0) && ((integer)noiseid != (integer)GetData("NoiseTrack")))
+      {
+	SetData("NoiseTrack",(integer)noiseid);
+	GotoObjLoc(noiseid);
+      }
+    DefaultOnSignalAI();
+}
+
+END_SCRIPT(ReactsNoisemakers)
 
 
 // Script: NoticesPlayerBumps
