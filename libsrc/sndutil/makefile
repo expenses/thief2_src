@@ -18,19 +18,19 @@ sndutil_HDRS = sndutil.h
 splice_OBJS = splcmain utilmain
 splice_LIBS = lg mprintf range res \
                 cpptools comtools compapis appcore templgen sound dsound \
-                wail32 sndutil
+                sndutil
 splice_COMPILER_LIBS = uuid winmm
 
 stream_OBJS = strmmain utilmain
 stream_LIBS = lg mprintf range res \
                 cpptools comtools compapis appcore templgen sound dsound \
-                wail32 sndutil
+                sndutil
 stream_COMPILER_LIBS = uuid winmm
 
 oneshot_OBJS = onemain utilmain
 oneshot_LIBS = lg mprintf range res \
                 cpptools comtools compapis appcore templgen sound dsound \
-                wail32 sndutil
+                sndutil
 oneshot_COMPILER_LIBS = uuid winmm
 
 
