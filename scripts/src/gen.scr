@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.58 2000/02/11 17:43:28 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.59 2000/02/11 18:34:12 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -952,20 +952,9 @@ METHODS:
 END_SCRIPT(FlashMine)
 
 /* When active (armed) the mine detonates in response to collisions,
-   or when triggered by associated bounds trigger.  When slain, also
-   clean up bounds trigger.
+   or when triggered by associated AR ping.  
 */
 BEGIN_SCRIPT(ActiveMine,Physics)
-
-   METHOD void CleanUpBounds()
-   {
-      linkset triggers=Link.GetAll("~ControlDevice",self);
-      for(;triggers.AnyLinksLeft();triggers.NextLink())
-      {
-         Debug.MPrint("Slaying mine ",self,", deleting bounds ",triggers.Link().To());
-         Object.Destroy(triggers.Link().To());
-      }
-   }
 
    // What object type am I when I'm disarmed (@HACK!)
    METHOD object DisarmType()
@@ -985,8 +974,6 @@ BEGIN_SCRIPT(ActiveMine,Physics)
       // unlike Arm, we lose the culpability links here.  It's as if the
       // mine were just laying here.  It won't arm and the player isn't
       // treated anymore as the one who threw it.
-
-      CleanUpBounds();
       Object.Destroy(self);
    }
 
@@ -1020,17 +1007,8 @@ MESSAGES:
 	{
       Physics.SubscribeMsg(self, kCollisionMsg);   
       Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-      if(!Link.AnyExist("~ControlDevice",self))
-      {
-         //now we subscribe to collision and unsubscribe to sleep so that
-         //this doesn't trigger again.
-         vector z = vector(0,0,0);
-         vector pos = Object.Position(self);
-         object bounds=Object.Create("MineBounds");
-
-         Object.Teleport(bounds,pos,z);
-         Link.Create("ControlDevice",bounds,self);   
-      }
+      if(!Object.HasMetaProperty(self,"MineSensePing"))
+         Object.AddMetaProperty(self,"MineSensePing");
       DefaultOnPhysFellAsleep();
 	}
    OnPhysCollision()
@@ -1049,8 +1027,7 @@ MESSAGES:
          //make sure that I don't trigger myself, and make sure that
          //at least one of us is actually moving and this isn't some 
          //wierd spoof collision...
-         if ((Link.AnyExist("ControlDevice",self,WhatHitMe)) ||
-             ( (selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0))))
+         if ((selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0)))
             fakeout = TRUE;
       } 
       if (!fakeout)
@@ -1061,8 +1038,8 @@ MESSAGES:
    {
       if (message.currentstate == 7)
       {
-         PostMessage(self,"TurnOn");
          Debug.MPrint("You've set off the mine! ",self," is going to blow.");
+         Damage.Slay(self,self);
       }
       if (message.currentstate == 8)
       {
@@ -1070,17 +1047,6 @@ MESSAGES:
          Disarm();
       }
       DefaultOnPickStateChange();
-   }
-   OnMessage()
-   {
-      if(MessageIs("TurnOn"))
-         Damage.Slay(self,self);
-      DefaultOnMessage();
-   }
-   OnSlain()
-   {
-      CleanUpBounds();
-      DefaultOnSlain();
    }
 
 END_SCRIPT(ActiveMine);
