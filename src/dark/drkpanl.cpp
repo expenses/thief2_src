@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkpanl.cpp,v 1.15 1999/11/02 15:55:08 BODISAFA Exp $
 #include <appagg.h>
 #include <drkpanl.h>
