@@ -1,9 +1,9 @@
 
 
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 2.2 $
-# $Author: TOML $
-# $Date: 1996/04/08 16:51:34 $
+# $Revision: 2.3 $
+# $Author: KEVIN $
+# $Date: 1996/10/03 09:42:36 $
 
 MAKETOP = $(CWD)
 
@@ -17,7 +17,8 @@ LIBTARGS = fix
 
 # need to deal with making trigtab.c  with fmaketab !!
 
-fix_OBJS = fix fix_pow fixsprnt fix_asm atofix fix24 f_exp trigtab 
+fix_OBJS = fix fix_pow fixsprnt fix_asm atofix fix24 f_exp trigtab \
+        fixdiv
 
 irrupt_OBJS = fix
 
