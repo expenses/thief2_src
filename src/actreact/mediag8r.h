@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/mediag8r.h,v 1.1 1998/08/21 00:00:43 mahk Exp $
 #pragma once  
 #ifndef __MEDIAG8R_H
