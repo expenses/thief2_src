@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.52 2000/02/05 13:38:52 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.53 2000/02/06 00:53:39 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1439,6 +1439,20 @@ METHODS:
      return;
   }
 MESSAGES:
+  OnBeginScript()
+  {
+     if(Link.AnyExist("~Contains",self))
+     {
+        object container=Link.GetOne("~Contains",self).To();
+        Debug.MPrint(self," contained by ",container);
+        if(Property.Possessed(container,"AI"))
+        {
+           if(!Object.HasMetaProperty(container,"M-QuaffHeal"))
+              Object.AddMetaProperty(container,"M-QuaffHeal");
+        }
+     }
+     DefaultOnBeginScript();
+  }
   OnFrobInvEnd()
   {
      PostMessage(GetHandler(message.Frobber),"StartPotion");
