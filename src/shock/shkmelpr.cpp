@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/shock/shkmelpr.cpp,v 1.1 1998/08/17 16:50:25 JON Exp $
 
