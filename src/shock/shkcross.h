@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcross.h 1.1 1998/09/29 22:13:46 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcross.h,v 1.2 2000/01/31 09:55:24 adurant Exp $
+#pragma once
 
 #ifndef __SHKCROSS_H
 #define __SHKCROSS_H

@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkganpr.h 1.3 1999/11/19 14:51:22 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkganpr.h,v 1.4 2000/01/31 09:55:47 adurant Exp $
 // Shock gun animation properties
+#pragma once
 
 #ifndef __SHKGANPR_H
 #define __SHKGANPR_H

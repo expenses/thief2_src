@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/mschbase.h 1.7 1999/01/13 13:56:48 KATE Exp $
+// $Header: r:/t2repos/thief2/src/motion/mschbase.h,v 1.8 2000/01/31 09:51:07 adurant Exp $
+#pragma once
 
 #ifndef __MSCHBASE_H
 #define __MSCHBASE_H

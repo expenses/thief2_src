@@ -1,10 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phystyp2.h 1.19 1998/11/20 14:36:41 MROWLEY Exp $
+// $Header: r:/t2repos/thief2/src/physics/phystyp2.h,v 1.20 2000/01/31 09:52:17 adurant Exp $
 //
 // Physics types
 //
 // (Must be C friendly, so no classes)
 //
+#pragma once
 
 #ifndef __PHYSTYP2_H
 #define __PHYSTYP2_H

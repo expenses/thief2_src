@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgun.h 1.14 1998/06/22 11:24:27 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkgun.h,v 1.15 2000/01/31 09:55:50 adurant Exp $
+#pragma once
 
 #ifndef __SHKGUN_H
 #define __SHKGUN_H

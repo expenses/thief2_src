@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgnbas.h 1.16 1999/11/19 14:53:22 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkgnbas.h,v 1.17 2000/01/31 09:55:49 adurant Exp $
+#pragma once
 
 This file has been moved to gunbase.h AMSD
 

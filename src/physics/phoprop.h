@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phoprop.h 1.6 1999/06/18 16:39:07 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phoprop.h,v 1.7 2000/01/31 09:52:02 adurant Exp $
 //
 // Physics other properties/relations
 //
+#pragma once
 
 #ifndef __PHOPROP_H
 #define __PHOPROP_H

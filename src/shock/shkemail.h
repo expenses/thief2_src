@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkemail.h 1.5 1999/03/22 21:28:54 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkemail.h,v 1.6 2000/01/31 09:55:41 adurant Exp $
+#pragma once
 
 #ifndef __SHKEMAIL_H
 #define __SHKEMAIL_H

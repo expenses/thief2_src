@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkcs.h 1.1 1998/09/21 14:51:59 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcs.h,v 1.2 2000/01/31 09:55:28 adurant Exp $
 //
 // Commands associated with cut-scene recording/playback
 //
+#pragma once
 
 #include <objtype.h>
 

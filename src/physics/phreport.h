@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phreport.h 1.1 1998/08/20 19:17:16 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phreport.h,v 1.2 2000/01/31 09:52:07 adurant Exp $
 //
 // Physics report generation header
 //
+#pragma once
 
 #ifndef __PHREPORT_H
 #define __PHREPORT_H

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/physapi.h 1.55 1999/08/05 17:26:34 Justin Exp $
+// $Header: r:/t2repos/thief2/src/physics/physapi.h,v 1.56 2000/01/31 09:52:12 adurant Exp $
 //
 // Physics API
 //
@@ -9,6 +9,7 @@
 //                        PhysClsn in phytyp2.h, then allow the installation of game
 //                        callbacks for control, update, collision handling, etc.
 //
+#pragma once
 
 #ifndef __PHYSAPI_H
 #define __PHYSAPI_H

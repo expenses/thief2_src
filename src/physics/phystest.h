@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/phystest.h 1.8 1998/08/19 09:57:59 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phystest.h,v 1.9 2000/01/31 09:52:16 adurant Exp $
+#pragma once
 
 #ifndef _PHYSTEST_H
 #define _PHYSTEST_H

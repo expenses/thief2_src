@@ -1,9 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phutils.h 1.8 1998/09/27 09:52:22 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phutils.h,v 1.9 2000/01/31 09:52:11 adurant Exp $
 //
 //
 // utility functions, mainly vector
 //
+#pragma once
 
 #ifndef __PHUTILS_H
 #define __PHUTILS_H
@@ -59,7 +60,7 @@ inline BOOL IsZeroVector(const mxs_vector & v)
 
 inline void MonoPrintVector(const mxs_vector & v)
 {
-   mprintf("(%g %g %g)\n", v.x, v.y, v.z);
+   mprintf("(0 0 0)\n", v.x, v.y, v.z);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

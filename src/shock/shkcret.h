@@ -1,5 +1,6 @@
+#pragma once
 
-// $Header: r:/prj/cam/src/shock/RCS/shkcret.h 1.11 1999/03/01 09:24:52 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcret.h,v 1.12 2000/01/31 09:55:21 adurant Exp $
 
 #ifndef __SHKCRET_H
 #define __SHKCRET_H

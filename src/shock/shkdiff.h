@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkdiff.h 1.1 1999/06/08 16:09:27 mahk Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkdiff.h,v 1.2 2000/01/31 09:55:34 adurant Exp $
+#pragma once
 
 #ifndef __SHKDIFF_H
 #define __SHKDIFF_H
