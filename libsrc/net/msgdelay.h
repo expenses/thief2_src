@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/net/RCS/msgdelay.h 1.2 1999/10/21 15:32:36 MAT Exp $
 // declares cMessageDelayQueue
 
