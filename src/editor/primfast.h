@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/primfast.h,v 1.3 2000/01/29 13:12:59 adurant Exp $
 // fast unsafe non checking primal brush use
 // really just for editbr, which "knows what it is doing"
