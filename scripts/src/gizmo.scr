@@ -377,14 +377,27 @@ BEGIN_SCRIPT(StdKey,RootScript)
               Property.Possessed(obj,"TransDoor"));
      }
    MESSAGES:
-     // Keys of the same KeySrc value combine in inventory.
-     // we do this thusly: if a key without a Combine Type (as is the default)
-     // comes into the player's inventory, we cook the KeySrc into a string
-     // which gets slammed into its CombineType.  Then the object is punched
-     // back into inventory so as to combine.  Lets go:
      OnContained()
      {
-        if(message.event==kContainAdd)
+        if(message.event!=kContainRemove)
+        {
+           if(object(message.container)==Object.Named("Player"))
+           {
+              object schem=Object.Named("pickup_key");
+              
+              if(Object.Exists(schem))
+                 Sound.PlaySchemaAmbient(self,schem);
+           }
+        }
+        DefaultOnContained();
+     }
+
+     // Keys of the same KeySrc value combine in inventory.
+     // we do this thusly:  we cook the KeySrc into a string
+     // which gets slammed into its CombineType.
+     OnSim()
+     {
+        if(message.starting)
         {
            if(!Property.Possessed(self,"CombineType") &&
               Property.Possessed(self,"KeySrc"))
@@ -398,23 +411,9 @@ BEGIN_SCRIPT(StdKey,RootScript)
               combine=combine+string(region)+"i"+string(id);
               
               Property.Set(self,"CombineType",(const char*)(combine));
-           
-              if(object(message.container)==Object.Named("Player"))
-              {
-                  object schem=Object.Named("pickup_key");
-
-                  if(Object.Exists(schem))
-                     Sound.PlaySchemaAmbient(self,schem);
-                  // Not clear if this is safe to do inside the OnContained handler...
-                  // the point is to force the combination now that combine type
-                  // has been set.  Since we check for the CombineType property
-                  // above, we recurse, but trivially.
-                  Container.Remove(self);
-                  Container.Add(self,Object.Named("Player"));
-              }
            }
         }
-        DefaultOnContained();
+        DefaultOnSim();
      }
      OnFrobToolEnd()
      {
