@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.9 1993/04/08 10:28:16 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.10 1993/04/22 11:39:53 rex Exp $
 # $Log: makefile $
-# Revision 1.9  1993/04/08 10:28:16  rex
-# Added MemStat.C
+# Revision 1.10  1993/04/22 11:39:53  rex
+# Added kb.lib to test prog libs
 #
+# Revision 1.9  1993/04/08  10:28:16  rex
+# Added MemStat.C
+# 
 # Revision 1.8  1993/03/24  12:12:37  matt
 # install assembly macros header file
 # 
@@ -63,7 +66,7 @@ DBGMAKEH_LIBS = lg.lib
 
 DBGTEST_SRCS = dbgtest.c
 DBGTEST_OBJS = dbgtest.obj
-DBGTEST_LIBS = lg.lib mprintf.lib
+DBGTEST_LIBS = lg.lib mprintf.lib kb.lib
 
 
 !include $(INIT)/make.rc
