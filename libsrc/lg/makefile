@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.14 1993/08/11 17:31:47 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.15 1993/09/13 11:11:17 dfan Exp $
 # $Log: makefile $
-# Revision 1.14  1993/08/11 17:31:47  rex
-# Dependencies
+# Revision 1.15  1993/09/13 11:11:17  dfan
+# Add memstack stuff
 #
+# Revision 1.14  1993/08/11  17:31:47  rex
+# Dependencies
+# 
 # Revision 1.13  1993/08/06  11:00:03  rex
 # Dependencies
 # 
@@ -61,14 +64,14 @@ INCDIR = $(RELDIR)
 BINDIR = n:\bin
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = $(RELDIR)
-PROG_TARGETS = dbgmakeh dbgtest
+PROG_TARGETS = dbgmakeh dbgtest stacktst
 LIB_TARGETS = lg
 INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
 
 LG_SRCS = dbg.c dbgcfg.c datapath.c exit.c memall.c memstat.c bugtrak.c
 LG_OBJS = dbg.obj dbgcfg.obj datapath.obj exit.obj memall.obj memstat.obj \
-        bugtrak.obj
+        bugtrak.obj stack.obj
 LG_HDRS = lg.h lgalt.h dbg.h datapath.h memmacro.inc dbgmacro.inc \
 	memall.h memstat.h bugtrak.h
 LG_H2I  = lg.inc memall.inc dbg.inc
@@ -80,6 +83,9 @@ DBGMAKEH_LIBS = lg.lib
 DBGTEST_SRCS = dbgtest.c
 DBGTEST_OBJS = dbgtest.obj
 DBGTEST_LIBS = lg.lib kb.lib mprintf.lib
+
+STACKTST_OBJS = stacktst.obj
+STACKTST_LIBS = lg.lib mprintf.lib
 
 !include $(INIT)/make.rc
 
