@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/textarch.cpp,v 1.12 1998/11/10 23:06:31 mahk Exp $
 #include <textarch.h>
 
