@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //////////////////////////////////////////////////////////////////////////
 //
 // $Header: x:/prj/tech/libsrc/namedres/rcs/strrstyp.h 1.2 1998/07/30 14:03:52 JUSTIN Exp $
