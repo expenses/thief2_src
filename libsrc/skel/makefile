@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/skel/RCS/makefile $
-# $Revision: 1.4 $
-# $Author: JAEMZ $
-# $Date: 1995/08/22 19:03:24 $
+# $Revision: 2.1 $
+# $Author: ept $
+# $Date: 1995/10/18 12:56:34 $
 #
 # Makefile for Skel library
 #
