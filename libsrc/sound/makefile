@@ -19,7 +19,7 @@ miditest_OBJS = miditest
 miditest_LIBS = sound dsound winmm wail32
 
 sndtest_OBJS = sndtest
-sndtest_LIBS = sound dsound winmm wail32
+sndtest_LIBS = sound winmm
 sndtest_COMPILER_LIBS = uuid
 sndtest_RC = sndtest
 
