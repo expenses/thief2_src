@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/drum/RCS/drumx.h 1.1 1996/05/21 16:26:39 TOML Exp $
 // xternal drum system prototypes/headers for the app to see
 
