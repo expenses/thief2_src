@@ -81,19 +81,25 @@ MESSAGES:
 
     OnFrobWorldEnd()
     {
-      if(Locked.IsLocked(self) && Door.GetDoorState(self)==kDoorClosed)
-      {
-         Sound.PlayEnvSchema(self,"Event Reject, Operation OpenDoor",self);
-      }
-      else
-      {
-         if(object(message.Frobber)==object("Player"))
-         {
-            SetData("PlayerFrob",0);
-         }
-         Door.ToggleDoor(self);
-      }
-      DefaultOnFrobWorldEnd();
+       boolean playerfrob=(object(message.Frobber)==object("Player"));
+       boolean locked=(Locked.IsLocked(self) && Door.GetDoorState(self)==kDoorClosed);
+
+       if(playerfrob && DarkGame.ConfigIsDefined("LockCheat"))
+          locked=FALSE;
+
+       if(locked)
+       {
+          Sound.PlayEnvSchema(self,"Event Reject, Operation OpenDoor",self);
+       }
+       else
+       {
+          if(playerfrob)
+          {
+             SetData("PlayerFrob",0);
+          }
+          Door.ToggleDoor(self);
+       }
+       DefaultOnFrobWorldEnd();
     }
     OnDoorHalt()
     {
