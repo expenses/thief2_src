@@ -282,7 +282,52 @@ MESSAGES:
 END_SCRIPT(TrackHid)
 
 
+/* If ANY human becomes fully aware of Garrett, or gets knocked out, or gets
+   killed by him, the mission ends.  We handle the kill case using CONVICT.
+   The other two cases are handled here.  This script MUST go on ALL humans
+   in mission 12.
+   */
+BEGIN_SCRIPT(AICatchPlayer, AI)
+METHODS:
+   METHOD void Catch(void)
+   {
+      Quest.Set(GoalStateVarName(M12_CAGEY_GOAL),kGoalFailed);
+   }
+MESSAGES:
+   OnAIModeChange()
+   {
+      if(message.mode==kAIM_Dead)
+      {
+         // It's possible for us to be killed and not to blame Garrett.
+         // CONVICT handles that.  So here we only want to catch the
+         // case where we're KO'd.
+         integer hp=99;
 
+         if(Property.Possessed(self,"HitPoints"))
+            hp=Property.Get(self,"HitPoints");
+         if(hp>0)
+            Catch();
+      }
+      DefaultOnAIModeChange();
+   }
+
+   OnHighAlert()
+   {
+      Catch();
+      DefaultOnHighAlert();
+   }
+   // @TODO: Well, this is really the wrong thing, but it will do until the
+   // right thing (above) actually works.
+   OnAlertness()
+   {
+      if(message.level==kHighAlert)
+      {
+         Catch();
+      }
+      DefaultOnAlertness();
+   }
+
+END_SCRIPT(AICatchPlayer)
 
 
 
