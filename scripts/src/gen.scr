@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.47 2000/01/28 18:35:45 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.48 2000/01/30 19:28:39 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -914,6 +914,15 @@ METHODS:
 END_SCRIPT(GasMine)
 
 
+
+BEGIN_SCRIPT(FlashMine, Mine)
+METHODS:
+   METHOD object ArmType()
+   {
+      return(object("ActiveFlashMine"));
+   }
+END_SCRIPT(FlashMine)
+
 /* When active (armed) the mine detonates in response to collisions,
    or when triggered by associated bounds trigger.  When slain, also
    clean up bounds trigger.
@@ -1051,6 +1060,23 @@ METHODS:
       return(object("GasMine"));
    }
 END_SCRIPT(ActiveGasMine)
+
+
+BEGIN_SCRIPT(ActiveFlashMine, ActiveMine)
+METHODS:
+   METHOD object DisarmType()
+   {
+      return(object("FlashMine"));
+   }
+MESSAGES:
+   OnSlain()
+   {
+      DrkPowerups.TriggerWorldFlash(self);
+      DefaultOnSlain();
+   }
+END_SCRIPT(ActiveFlashMine)
+
+
 
 // Script: MossLump
 /* When the moss lump falls asleep, create a moss launcher */
@@ -2588,48 +2614,6 @@ MESSAGES:
    }
 
 END_SCRIPT(StdParticleGroup)
-
-
-// Behaviors of the fire elemental's particle group to reflect
-// AI state and such.
-BEGIN_SCRIPT(FireElemSparx, StdParticleGroup)
-
-METHODS:
-
-   METHOD void SetColorToMood(int alertness)
-   {
-      static const int alert_red[] = {185, 187, 187, 122};
-      // @TODO: In the future, when particle color is really
-      // RGB instead of a palette index in "red," do the obvious.
-
-      if((alertness<0)||(alertness>=(sizeof(alert_red)/sizeof(alert_red[0]))))
-      {
-         Debug.MPrint("Heeey! Invalid alertness ",alertness,
-                      " in method SetColorToMood.");
-         return;
-      }
-      Property.Set(self,"ParticleGroup","red",alert_red[alertness]);
-   }
-
-
-MESSAGES:
-
-   OnMessage()
-   {
-      if(Property.Possessed(self,"ParticleGroup"))
-      {
-         // Hack hack
-         if(MessageIs("Mood0")||MessageIs("Mood1")||MessageIs("Mood2")||
-            MessageIs("Mood3"))
-         {
-            SetColorToMood(message.message[4]-'0');
-         }
-      }
-      DefaultOnMessage();
-   }
-
-END_SCRIPT(FireElemSparx)
-
 
 
 
