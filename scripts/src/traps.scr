@@ -558,6 +558,27 @@ METHODS:
 END_SCRIPT(TrapFindSecret)
 
 
+/* Retexture an area, as indicated by crazy texture replace properties. */
+BEGIN_SCRIPT(TrapTexture, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
+   {
+      if(Property.Possessed(self,"TerrRepOn") &&
+         Property.Possessed(self,"TerrRepOff"))
+      {
+         string ontex=Property.Get(self,"TerrRepOn");
+         string offtex=Property.Get(self,"TerrRepOff");
+
+         if(on)
+            AnimTexture.ChangeTexture(self,NULL,offtex,NULL,ontex);
+         else
+            AnimTexture.ChangeTexture(self,NULL,ontex,NULL,offtex);
+      }
+   }
+            
+END_SCRIPT(TrapTexture)
+
+
 // Script: TrapPatrol
 /* Turns an AI's patrol on or off.  Could do this with TrapConverse,
    but that's kind of overkill for this speicalized use.
