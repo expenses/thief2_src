@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/net/RCS/net.h 1.9 1999/10/21 15:29:53 MAT Exp $
 
 #ifndef __NET_H
