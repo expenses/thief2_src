@@ -58,32 +58,6 @@ MESSAGES:
 END_SCRIPT(SpecialGoals)
 
 
-/* TravellingMcGuffin
-   An object with this script send a TurnOn message when
-   taken to a specific room.  Link the object to the room, with a Route
-   link, to specify where it needs to go.  It'll also get a TurnOff
-   when removed from the room.
-   We intend that this will be used to score victory conditions, by
-   making the object also a Quest Var setting trap.
-   @TODO: This might actually be a good trigger to put in Gen.
-   */
-BEGIN_SCRIPT(TrigRoomObject, Room)
-MESSAGES:
-   OnObjRoomTransit()
-   {
-      string msg;
-      object newroom=message.ToObjId; // what room am I entering?
-
-      if(Link.AnyExist("Route",self,newroom))
-         msg="TurnOn";
-      else
-         msg="TurnOff";
-
-      Link.BroadcastOnAllLinks(self,msg,"ControlDevice");
-      DefaultOnObjRoomTransit();
-   }
-END_SCRIPT(TrigRoomObject)
-
 
 
 
