@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/hsrc/RCS/srgba.h 1.3 1999/04/20 17:01:50 JAEMZ Exp $
 //
