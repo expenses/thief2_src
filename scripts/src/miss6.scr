@@ -1,4 +1,5 @@
 #include "convict.scr"
+#include "tweqflgs.h"
 
 #define KEYPATHS 10
 
@@ -61,14 +62,27 @@ METHODS:
     {
       link splink = Link.GetOne("ScriptParams",checkobj,checkobj);
       integer qdata = (integer)splink.GetData();
+
       Debug.MPrint("Completing conversation goal.  Path is ",qdata);
       SetData("PathNumber",qdata);
+
       Debug.MPrint("Setting ",GoalVisibleVarName(1)," to 1");
       Quest.Set(GoalVisibleVarName(1),1,kQuestDataMission);
+
       Debug.MPrint("Setting ",GoalStateVarName(0)," to complete.");
       Quest.Set(GoalStateVarName(0),kGoalComplete,kQuestDataMission);
+
+      if (HaveTheWax())
+      {
+        Debug.MPrint("Making goal 3 visible.");
+        ObjectiveShow(3,TRUE);
+      }
+
       if (HaveTheKey())
-        PlayRightKey(1);  //1 means should do wax check afterwards.
+      {
+        PostMessage(KeyObj(),"heardit");
+        SetOneShotTimer(self,"DummySounds",1.5);
+      }
     }
   }
 
@@ -143,12 +157,49 @@ METHODS:
     return (object)GetData("TheKeyObj");
   }
 
+  METHOD object WaxObj()
+  {
+    return (object)GetData("HaveWaxObj");
+  }
+
   METHOD void FollowUpKeySound(int i)
   {
     if (i==2)
+    {
       Debug.MPrint("I'm following up the have key bit right after eavesdropping.");
+      if (HaveTheWax())
+      {
+        object schmname;
+        schmname = ScriptParamPropagate(WaxObj(),"knewwax");
+        SetData("HavePlayedKey",3);
+        if (schmname != (object)0)
+        {
+          Debug.MPrint("Playing the bit where I already have the wax(",schmname,").");
+          Sound.PlaySchema(self,schmname,self);
+        }
+        else
+        {
+          SetData("HavePlayedKey",4);
+          Debug.MPrint("Failed to find schema for already have wax.");
+          FollowUpKeySound(4);
+        }
+      }
+    }
     if (i==4)
+    {
       Debug.MPrint("I'm following up the have key bit right after picking it up.");
+      object schmname;
+      schmname = ScriptParamPropagate(KeyObj(),"getwax");
+      if (schmname != (object)0)
+      {
+        Debug.MPrint("Playing the bit where I decide to get an impression.");
+        Sound.PlaySchema(self,schmname,self);
+      }
+      else
+      {
+        Debug.MPrint("Failed to find schema for get impression.");
+      }
+    }
   }
 
   METHOD void PlayRightKey(int i)
@@ -181,6 +232,8 @@ METHODS:
 
   METHOD boolean HaveTheKey()
   {
+    if ((integer)GetData("TheKeyObj")==0)
+      return FALSE;
     linkset myinv = Link.GetAll("Contains",self);
     boolean retval = FALSE;
     while (myinv.AnyLinksLeft())
@@ -195,6 +248,23 @@ METHODS:
     return retval;
   }
 
+  METHOD boolean HaveTheWax()
+  {
+    linkset myinv = Link.GetAll("Contains",self);
+    boolean retval = FALSE;
+    while (myinv.AnyLinksLeft())
+    {
+      link curitem = myinv.Link();
+
+      if (curitem.To() == (object)GetData("HaveWaxObj"))
+        retval = TRUE;
+
+      myinv.NextLink();
+    }
+    return retval;
+  }
+
+
 MESSAGES:
 
   OnSim()
@@ -208,6 +278,7 @@ MESSAGES:
         SetData("PathNumber",0);       //which random path
         SetData("TheKeyObj",0);       //obj id of real key
         SetData("PlayedHaveKey",0);   //played this vo already.
+        SetData("HaveWaxObj",0); //wax object
 	if ((object)self != object("Player"))
         {
 	  SetData("PathNumber",Data.RandInt(1,KEYPATHS)); //which key we're 
@@ -258,7 +329,26 @@ MESSAGES:
       if ((integer)GetData("PathNumber")!=0)
       {
         PlayRightKey(3); //meaning, this isn't just after eavesdropping bit.
+        PostMessage(message.from,"heardit"); //tell the key we know we've
+				             //eavesdropped
       }
+    }
+    if (MessageIs("gotthewax"))
+    {
+      SetData("HaveWaxObj",message.from);
+      ObjectiveSet(2,kGoalComplete);
+      Debug.MPrint("Picked up wax ",message.from);
+      if ((integer)GetData("PathNumber")!=0)
+      {
+        Debug.MPrint("Making goal 3 visible");
+        ObjectiveShow(3,TRUE); //make it visible
+      }
+    }
+    if (MessageIs("lostthewax"))
+    {
+      SetData("HaveWaxObj",0);
+      ObjectiveSet(2,kGoalIncomplete);
+      Debug.MPrint("Droped the wax ",message.from);
     }
     if ((MessageIs("badkey")) && ((integer)GetData("PathNumber")!=0))
     {
@@ -281,6 +371,15 @@ MESSAGES:
     }
     ConversationCheckStep((integer)GetData("StartedConversation"));
     DefaultOnObjRoomTransit();
+  }
+
+  OnTimer()
+  {
+    if (message.name=="DummySounds")
+    {
+      Debug.MPrint("Dummy sounds timer triggered.");
+      PlayRightKey(1);  //1 means should do wax check afterwards.        
+    }
   }
 
 
@@ -353,12 +452,41 @@ MESSAGES:
     DefaultOnContained();
   }
 
+  OnFrobToolEnd()
+  { 
+    PostMessage(message.DstObjId,"fakekeyfrob");
+    DefaultOnFrobToolEnd();
+  }
+
 END_SCRIPT(BadKey)
 
-BEGIN_SCRIPT(KeyGuy, RootScript)
+BEGIN_SCRIPT(KeyGuy, Room)
 
 METHODS:
  
+  METHOD void PlayDropMe(object playr)
+  {
+    Debug.MPrint(self," would be playing dropme safe, but we pulled that.");
+  }
+
+  METHOD void SetRoomGoal()
+  {
+    SetData("RightRoom",GetData("CurrentRoom"));
+    Debug.MPrint("Right room is now ",GetData("CurrentRoom"));
+  }
+
+  METHOD void CheckRightRoom()
+  {
+    if (GetData("RightRoom")==GetData("CurrentRoom"))
+    {
+      Quest.Set(GoalStateVarName(3),kGoalComplete,kQuestDataMission);
+    }
+    else
+    {
+      Quest.Set(GoalStateVarName(3),kGoalIncomplete,kQuestDataMission);
+    }
+  }
+
   METHOD void DoKeySetup(int i)
   {
     Debug.MPrint(self," running key setup on path ",i);    
@@ -378,10 +506,33 @@ METHODS:
 
       splinks.NextLink();
     }
+    SetRoomGoal();
 
   }
 
 MESSAGES:
+
+  OnSim()
+  {
+    if (message.starting)
+    {
+      SetData("Eavesdropped",0); //haven't eavesdropped yet.
+      SetData("RightRoom",0);  //room where it should end up.
+      SetData("CurrentRoom",0); //current room
+    }
+    DefaultOnSim();
+  }
+
+  OnObjRoomTransit()
+  {
+    if ((integer)GetData("CurrentRoom") != message.ToObjId)
+    {
+      Debug.MPrint("Key ",self," is now in room ",message.ToObjId);
+      SetData("CurrentRoom",message.ToObjId);
+    }
+    CheckRightRoom();
+    DefaultOnObjRoomTransit();
+  }
  
   OnMessage()
   {
@@ -389,8 +540,14 @@ MESSAGES:
     for (i = 1;i<=KEYPATHS;i++)
     {
       string teststr = "eaves" + (string)i;
-      if (MessageIs(teststr))
+      if (MessageIs(teststr)) 
         DoKeySetup(i);
+    }
+    if ((MessageIs("heardit")) && ((integer)GetData("Eavesdropped")==0))
+    {
+      Debug.MPrint("Key knows you eavesdropped.");
+      SetData("Eavesdropped",1);
+      PlayDropMe(message.from);
     }
     DefaultOnMessage();
   }
@@ -399,9 +556,260 @@ MESSAGES:
   {
     if ((message.event!=kContainRemove) &&
 	object(message.container)==Object.Named("Player"))
+    {
       PostMessage(message.container,"gotthekey");
+      if ((integer)GetData("Eavesdropped")==1)
+        PlayDropMe(message.container);
+    }
+    DefaultOnContained();
+  }
+
+  OnFrobToolEnd()
+  {
+    PostMessage(message.DstObjId,"realkeyfrob");
+    DefaultOnFrobToolEnd();
+  }
+
+END_SCRIPT(KeyGuy)
+
+
+BEGIN_SCRIPT(WaxDoll, RootScript)
+
+MESSAGES:
+
+  OnContained()
+  {
+    if ((message.event!=kContainRemove) &&
+	object(message.container)==Object.Named("Player"))
+      PostMessage(message.container,"gotthewax");
+
+    if ((message.event==kContainRemove) &&
+	object(message.container)==Object.Named("Player"))
+      PostMessage(message.container,"lostthewax");
+
     DefaultOnContained();
   }
 
 
-END_SCRIPT(KeyGuy)
+END_SCRIPT(WaxDoll)
+
+
+BEGIN_SCRIPT(WaxCube, RootScript)
+
+METHODS:
+
+  METHOD void SetTweqModel(integer tweqmod)
+  {
+    string model=Property.Get(self,"ModelName");
+    if (Property.Possessed(self,"CfgTweqModels"))
+      model=Property.Get(self,"CfgTweqModels",
+                         string("Model ")+string(tweqmod));
+ 
+    Property.Set(self,"ModelName",(const char*)model);
+  }
+
+  METHOD object ScriptParamPropagate(object source,string testdata)
+  {
+    linkset splinks = Link.GetAll("ScriptParams",source);
+    object found = (object)0;
+    while ((splinks.AnyLinksLeft()) && (found==(object)0))
+    {
+      link splinkex = splinks.Link();
+      if ((string)splinkex.GetData() == testdata)
+        {
+	  found = splinkex.To();
+        }
+      splinks.NextLink();
+    }
+    return found;
+  }
+
+  METHOD void SetCombType(object whichone)
+  {
+    if (!Property.Possessed(whichone,"CombineType"))
+      Property.Add(whichone,"CombineType");
+    Property.Set(whichone,"CombineType",(cMultiParm)GetData("PrintName"));
+    Debug.MPrint("Set combine type on ",whichone," to ",(string)GetData("PrintName"));
+  }
+
+  METHOD string GetCombType(object whichone)
+  {
+    if (Property.Possessed(whichone,"CombineType"))
+    {
+      return Property.Get(whichone,"CombineType");
+    }
+    else
+    {
+      return "blankbad";
+    }
+  }
+
+  METHOD void ResetWaxModel(object wrongobj)
+  {
+    SetTweqModel(0);
+    SetData("PrintType",0);    
+    SetData("PrintName","blank");
+    Debug.MPrint("Setting next combine type to ",GetData("PrintName"));
+  }
+
+  METHOD void PressBadKey(object wrongobj)
+  {
+    SetTweqModel(1);
+    SetData("PrintType",1);
+    string ctype = GetCombType(wrongobj);
+    SetData("PrintName",(cMultiParm)((string)ctype+"wax"));
+    Debug.MPrint("Setting next combine type to ",GetData("PrintName"));
+  }
+
+  METHOD void PressGoodKey(object goodkey)
+  {
+    SetTweqModel(2);
+    SetData("PrintType",2);
+    SetData("PrintName",(cMultiParm)((string)GetCombType(goodkey)+"wax"));
+
+    if (Quest.Get(GoalVisibleVarName(1))==1)
+    {
+      Debug.MPrint("Setting ",GoalVisibleVarName(2)," to 1");
+      Quest.Set(GoalVisibleVarName(2),1,kQuestDataMission);
+    }
+
+    Debug.MPrint("Setting goal 1 to complete");
+    Quest.Set(GoalStateVarName(1),kGoalComplete,kQuestDataMission);
+    Debug.MPrint("Setting next combine type to ",GetData("PrintName"));
+  }
+
+  METHOD void PuttyPass(object knifeobj)
+  {
+    if (!Link.AnyExist("~Contains",knifeobj))
+    {
+      Debug.MPrint("Putty knife ",knifeobj," not carried?");
+      return;
+    }
+    link clink = Link.GetOne("~Contains",knifeobj);
+    Debug.MPrint("Putty knife carried by ",clink.To());
+    if ((integer)GetData("PrintType")==0)  //junk
+    {
+      object junkwax = Object.Create("JunkWax");
+      SetCombType(junkwax);
+      Container.Add(junkwax,clink.To());
+    }
+    if ((integer)GetData("PrintType")==1)  //bad key
+    {
+      object badwax = Object.Create("BadWax");
+      SetCombType(badwax);
+      Container.Add(badwax,clink.To());
+    }
+    if ((integer)GetData("PrintType")==2) //good key
+    {
+      Debug.MPrint("Creating good key impression");
+      object goodwax = Object.Create("GoodWax");
+      SetCombType(goodwax);
+      Container.Add(goodwax,clink.To());
+    }
+    ResetWaxModel(knifeobj);
+    return;
+  }
+
+  METHOD void TestKeyPress(object destobj)
+  {
+    if (!Object.InheritsFrom(destobj,Object.Named("Key")))
+    {
+      Debug.MPrint("Non-key ",destobj," pressed on wax.");
+      ResetWaxModel(destobj);
+      return;
+    }
+    boolean goodkey = FALSE;
+    if (Link.AnyExist("ScriptParams",self,destobj))
+    {
+      link splink = Link.GetOne("ScriptParams",self,destobj);
+      if ((string)splink.GetData() == "realkey")
+	goodkey = TRUE;
+    }
+    if (goodkey == FALSE)
+    {
+      Debug.MPrint("Wrong key ",destobj," pressed on wax.");
+      PressBadKey(destobj);
+    }
+    else
+    {
+      Debug.MPrint("Correct key ",destobj," pressed on wax.");
+      PressGoodKey(destobj);
+    }
+    
+  }
+
+MESSAGES:
+
+  OnSim()
+  {
+    if (message.starting)
+    {
+      SetData("PrintType",0);  //Print Type 0 is nothing
+			       //1 is bad key
+                               //2 is good key
+      SetData("PrintName","blank");
+    }
+    DefaultOnSim();
+  }
+
+  OnMessage()
+  {
+    if (MessageIs("realkeyfrob"))
+      TestKeyPress(message.from);
+    if (MessageIs("fakekeyfrob"))
+      TestKeyPress(message.from);
+    if (MessageIs("puttyknifefrob"))
+      PuttyPass(message.from);
+    DefaultOnMessage();
+  }
+
+END_SCRIPT(WaxCube)
+
+BEGIN_SCRIPT(PuttyKnife,RootScript)
+
+MESSAGES:
+
+  OnFrobToolEnd()
+  {
+    PostMessage(message.DstObjId,"puttyknifefrob");
+    DefaultOnFrobToolEnd();
+  }
+
+END_SCRIPT(PuttyKnife)
+
+BEGIN_SCRIPT(KillWax,RootScript)
+
+METHODS:
+
+  METHOD void SetTweqDelete(boolean onoff)
+  {
+    if (Property.Possessed(self,"StTweqDelete"))
+    { 
+      int curanimst = Property.Get(self,"StTweqDelete","AnimS");
+      if (onoff)
+        Property.Set(self,"StTweqDelete","AnimS",curanimst | TWEQ_AS_ONOFF);
+      else
+        Property.Set(self,"StTweqDelete","AnimS",curanimst & ~TWEQ_AS_ONOFF);
+      Debug.MPrint("Set wax ",self," to delete: ",onoff);
+    }
+    else
+      Debug.MPrint("Wanted to tweqdelete set ",self," but no prop!");
+  }
+
+MESSAGES:
+
+  OnContained()
+  {
+    if (message.event!=kContainRemove)
+    {
+      SetTweqDelete(FALSE);
+    }
+
+    if (message.event==kContainRemove)
+    {
+      SetTweqDelete(TRUE);
+    }
+    DefaultOnContained();
+  }
+
+END_SCRIPT(KillWax)
