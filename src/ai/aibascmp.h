@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibascmp.h 1.26 1999/05/10 19:08:20 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibascmp.h,v 1.31 2000/02/16 12:06:13 bfarquha Exp $
 //
 // Base implementation of an AI component as a template
 //
+#pragma once
 
 #ifndef __AIBASCMP_H
 #define __AIBASCMP_H
@@ -36,7 +37,7 @@ public:
    // Hook up the component
    STDMETHOD_(void, GetSubComponents)(cAIComponentPtrs *);
    STDMETHOD_(void, ConnectComponent)(IInternalAI * pOuterAI, unsigned ** ppNotifications);
-   
+
    // Initialize the component
    STDMETHOD_(void, Init)();
 
@@ -61,11 +62,20 @@ public:
    STDMETHOD_(void, OnGoalChange)(const cAIGoal * pPrevious, const cAIGoal * pGoal);
    STDMETHOD_(void, OnActionChange)(IAIAction * pPrevious, IAIAction * pAction);
 
-   STDMETHOD_(void, OnAlertness)(ObjID source,
-                                 eAIAwareLevel previous, 
+   STDMETHOD_(void, OnAwareness)(ObjID source,
                                  eAIAwareLevel current,
                                  const sAIAlertness * pRaw);
-                                 
+
+   STDMETHOD_(void, OnAlertness)(ObjID source,
+                                 eAIAwareLevel previous,
+                                 eAIAwareLevel current,
+                                 const sAIAlertness * pRaw);
+
+   STDMETHOD_(void, OnHighAlert)(ObjID source,
+                                 eAIAwareLevel previous,
+                                 eAIAwareLevel current,
+                                 const sAIAlertness * pRaw);
+
    STDMETHOD_(void, OnDamage)(const sDamageMsg * pMsg, ObjID realCulpritID);
    STDMETHOD_(void, OnDeath)(const sDamageMsg * pMsg);
 
@@ -76,8 +86,10 @@ public:
 
    STDMETHOD_(void, OnFoundBody)(ObjID body);
 
+   STDMETHOD_(void, OnFoundSuspicious)(ObjID suspobj);
+
    STDMETHOD_(void, OnScriptCommand)(eAIScriptCmd command, void *);
-   
+
    STDMETHOD_(void, OnProperty)(IProperty *, const sPropertyListenMsg *);
 
    STDMETHOD_(void, OnDefend)(const sAIDefendPoint *);
@@ -92,10 +104,13 @@ public:
 
    STDMETHOD_(void, OnTripwire)(ObjID objID, BOOL enter);
 
+   // pass in object that is frustrating us.
+   STDMETHOD_(void, OnFrustration)(ObjID source, ObjID dest, IAIPath *pPath);
+
    // Special callbacks
    STDMETHOD_(void, OnGameEvent)(void *);
 
-   // Save/load   
+   // Save/load
    STDMETHOD_(BOOL, PreSave)();
    STDMETHOD_(BOOL, Save)(ITagFile *);
    STDMETHOD_(BOOL, PostSave)();
@@ -130,7 +145,7 @@ protected:
 
 private:
    unsigned m_notifications;
-   
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
