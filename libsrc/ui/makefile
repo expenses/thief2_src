@@ -63,7 +63,7 @@ gadgets.obj: 2d.h 2dres.h array.h ctype.h cursors.h datapath.h dbg.h \
 
 gadtest.obj: 2d.h 2dres.h array.h bugtrak.h butarray.h ctype.h cursors.h \
 	 data\resgadg.h datapath.h dbg.h dbgmacro.h error.h event.h fix.h \
-	 gadgets.h gfx.h io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h \
+	 gadgets.h io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h \
 	 memall.h memmacro.h mouse.h mprintf.h projdbg.h pushbutt.h \
 	 qboxgadg.h rect.h region.h res.h restypes.h slab.h slider.h \
 	 slist.h stat.h stdio.h stdlib.h textgadg.h texttool.h tng.h \
@@ -130,10 +130,10 @@ textgadg.obj: 2d.h 2dres.h array.h cursors.h datapath.h dbg.h dbgmacro.h \
 	 textgadg.h texttool.h tng.h tngapp.h tngslidr.h tngtextg.h types.h
 
 texttest.obj: 2d.h 2dres.h array.h ctype.h cursors.h data\resgadg.h \
-	 datapath.h dbg.h dbgmacro.h error.h event.h fix.h gadgets.h gfx.h \
-	 io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 memmacro.h mouse.h mprintf.h projdbg.h pushbutt.h rect.h region.h \
-	 res.h restypes.h slab.h slider.h slist.h stat.h stdio.h stdlib.h \
+	 datapath.h dbg.h dbgmacro.h error.h event.h fix.h gadgets.h io.h \
+	 kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h memmacro.h \
+	 mouse.h mprintf.h projdbg.h pushbutt.h rect.h region.h res.h \
+	 restypes.h slab.h slider.h slist.h stat.h stdio.h stdlib.h \
 	 textgadg.h texttool.h tng.h tngapp.h tngpushb.h tngslidr.h \
 	 tngtextg.h types.h
 
@@ -183,10 +183,10 @@ tngslidr.obj: 2d.h 2dres.h datapath.h dbg.h dbgmacro.h error.h fix.h \
 	 types.h
 
 tngtest.obj: 2d.h 2dres.h array.h bugtrak.h butarray.h ctype.h cursors.h \
-	 datapath.h dbg.h dbgmacro.h error.h event.h fix.h gadgets.h gfx.h \
-	 io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 memmacro.h mouse.h mprintf.h pushbutt.h qboxgadg.h rect.h region.h \
-	 res.h resgadg.h restypes.h slab.h slider.h slist.h stat.h stdio.h \
+	 datapath.h dbg.h dbgmacro.h error.h event.h fix.h gadgets.h io.h \
+	 kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h memmacro.h \
+	 mouse.h mprintf.h pushbutt.h qboxgadg.h rect.h region.h res.h \
+	 resgadg.h restypes.h slab.h slider.h slist.h stat.h stdio.h \
 	 stdlib.h textgadg.h texttool.h tng.h tngapp.h tngbarry.h \
 	 tngpushb.h tngqbox.h tngslidr.h tngtextg.h types.h
 
@@ -198,7 +198,7 @@ tngtextg.obj: 2d.h 2dres.h datapath.h dbg.h dbgmacro.h error.h fakefont.h \
 
 uitest.obj: 2d.h 2dres.h array.h bugtrak.h butarray.h ctype.h cursors.h \
 	 data\resgadg.h datapath.h dbg.h dbgmacro.h error.h event.h fix.h \
-	 gadgets.h gfx.h hash.h hotkey.h io.h kb.h kbcook.h keydefs.h lg.h \
+	 gadgets.h hash.h hotkey.h io.h kb.h kbcook.h keydefs.h lg.h \
 	 lgalt.h libdbg.h malloc.h memall.h memmacro.h menu.h mouse.h \
 	 mprintf.h plain.h projdbg.h pushbutt.h qboxgadg.h rect.h region.h \
 	 res.h restypes.h slab.h slider.h slist.h stat.h stdio.h stdlib.h \
