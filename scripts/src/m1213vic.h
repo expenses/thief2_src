@@ -1,3 +1,4 @@
 #define M13_LETTER_GOAL 3
 #define M13_CULTIVATOR_GOAL 4
+#define M12_CAGEY_GOAL 9
 
