@@ -1,8 +1,9 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkchat.h 1.2 1999/04/24 18:34:37 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkchat.h,v 1.3 2000/01/29 13:40:34 adurant Exp $
 //
 // The multiplayer chat system. This module hides the gory details of
 // machine-to-machine chat behind a fairly small interface.
 //
+#pragma once
 
 #ifndef __SHKCHAT_H
 #define __SHKCHAT_H

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaircp.h 1.1 1999/03/25 17:39:37 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaircp.h,v 1.2 2000/01/29 13:40:19 adurant Exp $
 //
 // Ranged-combat-related properties and relations
 //
+#pragma once
 
 #ifndef __SHKAIRCP_H
 #define __SHKAIRCP_H

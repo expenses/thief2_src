@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkbooko.h 1.4 1998/11/23 15:55:35 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkbooko.h,v 1.5 2000/01/29 13:40:31 adurant Exp $
+#pragma once
 
 #ifndef __SHKBOOKO_H
 #define __SHKBOOKO_H

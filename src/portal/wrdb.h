@@ -1,6 +1,7 @@
-// $Header: r:/prj/cam/src/portal/RCS/wrdb.h 1.27 1999/12/01 09:24:01 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/wrdb.h,v 1.28 2000/01/29 13:37:41 adurant Exp $
 //
 // World Representation Database
+#pragma once
 
 #ifndef __WRDB_H
 #define __WRDB_H

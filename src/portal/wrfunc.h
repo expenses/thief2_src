@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/portal/RCS/wrfunc.h 1.10 1998/10/08 16:29:39 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/portal/wrfunc.h,v 1.11 2000/01/29 13:37:43 adurant Exp $
+#pragma once
 
 // World Representation Functions
 

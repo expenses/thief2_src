@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcheck.h 1.2 1999/11/19 14:52:59 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcheck.h,v 1.3 2000/01/29 13:40:35 adurant Exp $
+#pragma once
 
 This file has been moved to spherchk.h AMSD
 

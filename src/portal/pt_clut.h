@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/pt_clut.h 1.2 1996/09/10 18:25:20 buzzard Exp $
+// $Header: r:/t2repos/thief2/src/portal/pt_clut.h,v 1.3 2000/01/29 13:37:37 adurant Exp $
+#pragma once
 
 #ifndef __PT_CLUT_H
 #define __PT_CLUT_H
