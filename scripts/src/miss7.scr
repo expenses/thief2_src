@@ -105,6 +105,53 @@ END_SCRIPT (DiffBasedKeyDst)
 
 
 
+// Script:	TheRecording
+
+// Play SoundDescription-linked sound ambiently when object is frobbed
+BEGIN_SCRIPT (TheRecording, RootScript)
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+	{
+		SetData("Playing",FALSE);
+	}
+	DefaultOnSim();
+}
+OnFrobInvEnd()
+{
+	if (!(boolean)GetData("Playing"))
+	{
+		if (Link.AnyExist("SoundDescription",self))
+		{
+			object schema = Link.GetOne("SoundDescription",self).To();
+			if (Sound.PlaySchemaAmbient(self,schema))
+				SetData("Playing",TRUE);
+		}
+		else
+			Debug.MPrint(" TheRecording is not SoundDescription linked to anything.");
+	}
+
+	DefaultOnFrobInvEnd();
+}
+OnSchemaDone()
+{
+	object schema;
+
+	if (Link.AnyExist("SoundDescription",self,Object.Named(message.name)))
+	{
+		SetData("Playing",FALSE);
+	}
+
+	DefaultOnSchemaDone();
+}
+
+END_SCRIPT (TheRecording)
+
+
+
+
+
 // Script: GuardSummoner
 
 // Upon receipt of a "TurnOn", sends a "ComeARunnin" msg to
@@ -160,10 +207,20 @@ OnMessage()
 {
 	if (MessageIs("ComeARunnin"))
 	{
-		GotoObjLoc(message.from, kFast);
+		SetOneShotTimer("Delay",1.5);
 	}
 
 	DefaultOnMessage();
+}
+
+OnTimer()
+{
+	if (message.name == "Delay")
+	{
+		Debug.MPrint(self," pathfinding now.");
+		GotoObjLoc(message.from, kFast);
+	}
+	DefaultOnTimer();
 }
 
 END_SCRIPT (SummonableGuard)
@@ -213,7 +270,7 @@ OnMessage()
 	if (MessageIs("TurnOn"))
 		Link.BroadcastOnAllLinks(self,"TrapLock","ControlDevice",NULL);
 	else if (MessageIs("TurnOff"))
-		Link.BroadcastOnAllLinks(self,"Close","ControlDevice",NULL);
+		Link.BroadcastOnAllLinks(self,"TrapUnlock","ControlDevice",NULL);
 
 	DefaultOnMessage();
 }
