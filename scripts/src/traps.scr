@@ -1096,6 +1096,9 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
 
       if(!IsDataSet("WasSatisfied"))
       {
+         // before we subscribe, let's make sure the quest var _exists_, shall we?
+         Quest.Set(qvar,Quest.Get(qvar));
+
          Quest.SubscribeMsg(self,qvar);
          SetData("WasSatisfied",!satisfied); // So we'll _always send initially
       }
