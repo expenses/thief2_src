@@ -1,31 +1,7 @@
-head	 1.1;
-branch   ;
-access   ;
-symbols  ;
-locks    ; strict;
-comment  @REM @;
-
-
-1.1
-date	 1999.10.05.18.29.33;  author adurant;  state Exp;
-branches ;
-next	 ;
-
-
-desc
-@@
-
-
-
-1.1
-log
-@Initial revision
-@
-text
-@@@echo off
+@echo off
 rem ============================================================
 rem
-rem $Header: r:/prj/cam/reltools/RCS/buildscr.bat 1.1 1998/10/14 09:15:36 DAVET Exp $
+rem $Header: r:/prj/cam/reltools/RCS/buildscr.bat 1.1 1999/10/05 18:29:33 adurant Exp $
 rem Script builder
 rem
 rem ============================================================
@@ -60,7 +36,7 @@ rem ------------------------------------------------------------
       quit
     endiff
 
-    iff .%@@ext[%1]. == .. then
+    iff .%@ext[%1]. == .. then
         set target=%1.scr
     else
         set target=%1
@@ -85,7 +61,7 @@ rem ------------------------------------------------------------
     set lib=s:\prj\tech\lib\WIN32\v42\a611\opt;p:\v42\lib
 
     echo %target /Zp1 /FI"scrptimp.h" %PrjFlags% /DSCRIPT /DSCRIPT_MAIN_MODULE /DSTRICT /MT /TP /D_WIN32 /D_WINDLL > buildscr.tmp
-    echo /Fe"%@@name[%target].osm" >> buildscr.tmp
+    echo /Fe"%@name[%target].osm" >> buildscr.tmp
     iff .%2. == ./o. then
        echo /LD >> buildscr.tmp
        echo /link "/incremental:no /map lg.lib cpptools.lib mprintf.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib" >> buildscr.tmp
@@ -95,19 +71,19 @@ rem ------------------------------------------------------------
     endiff
 
     echo Compiling script...
-    cl /nologo @@buildscr.tmp > buildscr.tm2
+    cl /nologo @buildscr.tmp > buildscr.tm2
     n:\bin\win95\grep -i error buildscr.tm2 
-    if exist %@@name[%target].err del /q %@@name[%target].err
-    if errorlevel == 0 n:\bin\win95\grep -i error buildscr.tm2 > %@@name[%target].err
+    if exist %@name[%target].err del /q %@name[%target].err
+    if errorlevel == 0 n:\bin\win95\grep -i error buildscr.tm2 > %@name[%target].err
     echo Done.
 
     del /q buildscr.tmp
     del /q buildscr.tm2
-    del /e /q %@@name[%target].lib
-    del /e /q %@@name[%target].exp
-    del /e /q %@@name[%target].map
-    del /e /q %@@name[%target].obj
-    del /e /q %@@name[%target].pdb
+    del /e /q %@name[%target].lib
+    del /e /q %@name[%target].exp
+    del /e /q %@name[%target].map
+    del /e /q %@name[%target].obj
+    del /e /q %@name[%target].pdb
 
     rem
 
@@ -119,4 +95,3 @@ rem ------------------------------------------------------------
     quit
 
 :Exit
-@
