@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/strprop_.h 1.1 1999/04/07 14:40:23 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/strprop_.h,v 1.5 1998/08/24 20:57:59 mahk Exp $
 #pragma once  
 #ifndef __STRPROP__H
 #define __STRPROP__H
@@ -36,6 +36,11 @@ public:
 // Property Class
 //
 
+#ifdef EDITOR
+EXTERN void CreateStringPropEditor(IStringProperty* prop); 
+#else 
+#define CreateStringPropEditor(x)
+#endif 
 
 //
 // TEMPLATE: cStringPropertyExtensions
@@ -102,6 +107,10 @@ public:
    }
  
 protected:
+   virtual void CreateEditor()
+   {
+       CreateStringPropEditor(this); 
+   }
 
 }; 
 
