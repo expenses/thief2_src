@@ -27,13 +27,13 @@ RES_OBJS = lzw.obj res.obj restypes.obj resbuild.obj
 RES_HDRS = lzw.h res.h restypes.h
 
 RESDUMP_OBJS	= resdump.obj
-RESDUMP_LIBS	= _res.lib _lg.lib mprintf.lib
+RESDUMP_LIBS	= res.lib _lg.lib mprintf.lib
 
 RESPACK_OBJS	= respack.obj
-RESPACK_LIBS	= _res.lib _lg.lib mprintf.lib
+RESPACK_LIBS	= res.lib _lg.lib mprintf.lib
 
 RESTEST_OBJS	= restest.obj
-RESTEST_LIBS	= _res.lib _lg.lib mprintf.lib
+RESTEST_LIBS	= res.lib _lg.lib mprintf.lib
 
 !include n:/etc/make.rc
 
