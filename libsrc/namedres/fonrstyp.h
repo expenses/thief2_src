@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //////////////////////////////////////////////////////////////////////////
 //
 // $Header: x:/prj/tech/libsrc/namedres/RCS/fonrstyp.h 1.1 1998/08/19 20:03:42 JUSTIN Exp $
