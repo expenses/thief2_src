@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.13 $
-# $Author: kaboom $
-# $Date: 1994/02/02 12:50:14 $
+# $Revision: 1.14 $
+# $Author: dfan $
+# $Date: 1994/02/16 17:33:37 $
 #
 
 COMPILER = watcom
@@ -16,7 +16,7 @@ LIBPATH = $(RELDIR)
 
 DEBUG_ON = yeah
 
-PROG_TARGETS = fixtest fix24tst fmaketab trigerr fixovtst #sqrttest
+PROG_TARGETS = fixtest fix24tst fmaketab trigerr #sqrttest
 LIB_TARGETS = fix
 HDR_TARGETS = fix
 INST_TARGETS = fix
@@ -28,9 +28,6 @@ FIX_OBJS = fix.obj fixsprnt.obj fix_asm.obj atofix.obj
 FIXTEST_OBJS = $(FIX_OBJS) fixtest.obj
 
 FIX24TST_OBJS = $(FIX_OBJS) fix24tst.obj
-
-FIXOVTST_OBJS = $(FIX_OBJS) fixovtst.obj
-FIXOVTST_LIBS = _lg.lib _mprintf.lib
 
 FMAKETAB_OBJS = fmaketab.obj
 
