@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/linkboth.h,v 1.2 1997/11/06 18:36:25 mahk Exp $
 #pragma once  
 #ifndef __LINKBOTH_H
