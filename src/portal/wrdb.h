@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/portal/RCS/wrdb.h 1.25 1998/10/31 08:14:39 buzzard Exp $
+// $Header: r:/prj/cam/src/portal/RCS/wrdb.h 1.27 1999/12/01 09:24:01 MAT Exp $
 //
 // World Representation Database
 
@@ -155,6 +155,8 @@ typedef struct st_PortalLightMap PortalLightMap;
 #define PORTAL_SPLITS_OBJECT    16
 #define RENDER_REBUILD_SURFACE  32   // when lighting or texture has changed
                                      // (not used for one-frame dynamic light)
+#define RENDER_CALLBACK         64   // called after poly is drawn, so the
+                                     // game can overlay extra layers
 
 
 ////
@@ -175,6 +177,15 @@ typedef struct st_PortalLightMap PortalLightMap;
 // PortalBlockVision() and PortalUnblockVision() and such in wrfunc.
 #define CELL_BLOCKS_VISION          8
 #define CELL_CAN_BLOCK_VISION       16
+#define CELL_FOGGED_OUT             32
+
+#define CELL_OBSCURED (CELL_BLOCKS_VISION | CELL_FOGGED_OUT)
+
+// We handle fog separately from clutting because there's no obvious
+// way to combine them when you're looking at both: cluts are based
+// on medium boundaries while fog varies with depth.
+#define CELL_FOG                    64
+
 
 ///////////////////////////////////////////
 //
