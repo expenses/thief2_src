@@ -123,6 +123,16 @@ MESSAGES:
             }
          }
       }
+      else if(MessageIs("SeeBasso"))
+      {
+         // Start conversation
+         if(Link.AnyExist("~AIConversationActor",self))
+         {
+            object conv=Link.GetOne("~AIConversationActor",self).To();
+            Debug.MPrint("Trying to start conversation ",conv);
+            AI.StartConversation(conv);
+         }
+      }
       DefaultOnMessage();
    }
 END_SCRIPT(Jenivere)
