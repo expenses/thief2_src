@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.46 2000/01/28 00:32:51 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.47 2000/01/28 18:35:45 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -132,6 +132,27 @@ MESSAGES:
       DefaultOnFrobInvEnd();
    }
 END_SCRIPT(MapSupplement)
+
+
+/* Musical instruments: make a sound (on yourself) if world frobbed
+   or inv frobbed.  FrobInfo handles whether sound should be made,
+   since nobody's forcing us to send frobs to scripts.
+   */
+BEGIN_SCRIPT(Instrument, RootScript)
+   MESSAGES:
+
+   OnFrobWorldEnd()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,message.Frobber,kEnvSoundAtObjLoc);
+      DefaultOnFrobWorldEnd();
+   }
+   OnFrobInvEnd()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,message.Frobber,kEnvSoundAtObjLoc);
+      DefaultOnFrobInvEnd();
+   }
+
+END_SCRIPT(Instrument)
 
 
 /* Goofy food script.  In addition to destroying the item
@@ -2248,54 +2269,6 @@ BEGIN_SCRIPT(FrobSounds, RootScript)
       DefaultOnFrobWorldEnd();
    }
 END_SCRIPT(FrobSounds)
-
-
-BEGIN_SCRIPT(WhistleCall, RootScript)
-
-METHODS:
-
-boolean WithinRange(object target, integer sigdistance)
-   {
-	vector mypos = Object.Position(self);
-	vector targpos = Object.Position(target);
-//do ugly nasty distance calculation.
-	if (( ((mypos.z - targpos.z) * (mypos.z - targpos.z)) +
-	      ((mypos.y - targpos.y) * (mypos.y - targpos.y)) + 
-	      ((mypos.x - targpos.x) * (mypos.x - targpos.x)) ) <
-	      (sigdistance * sigdistance))
-	    return TRUE;
-	else
-	    return FALSE;
-   }
-
-
-MESSAGES:
-   OnFrobInvEnd()
-   {
-	object signaltarget;
-	integer distancetotarget;
-	if(Link.AnyExist("ScriptParams",self))
-	    {
-		linkset allparamlinks = Link.GetAll("ScriptParams",self);
-		while (allparamlinks.AnyLinksLeft())
-		{
-		    link currentparamlink = allparamlinks.Link();
-		    integer sigdistance = (integer)currentparamlink.GetData();
-		    object target = (object)currentparamlink.To();
-		    Debug.MPrint("Attempting to signal ",target);
-		    if (WithinRange(target,sigdistance))
-			AI.Signal(target,"WhistleBlown");
-		    else
-			Debug.MPrint("Out of range");
-		    allparamlinks.NextLink();
-		}
-	    }
-	else
-	   Debug.MPrint("No script param links found!");
-	DefaultOnFrobInvEnd();
-   }
-
-END_SCRIPT(WhistleCall);
 
 /* Using a flare (unlit) in your inventory causes it to produce a lit
    flare (a new junk object, separate from your stack of unlit flares)
