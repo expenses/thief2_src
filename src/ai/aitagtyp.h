@@ -1,11 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aitagtyp.h 1.4 1999/04/16 17:05:37 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aitagtyp.h,v 1.5 2000/01/31 09:34:10 adurant Exp $
 //
 // Save/load tag management
 //
 // @Note (toml 10-05-98): It is gross to have a completely parallel way to 
 // refer to component types...
 // 
+#pragma once
 
 #ifndef __AITAGTYP_H
 #define __AITAGTYP_H
