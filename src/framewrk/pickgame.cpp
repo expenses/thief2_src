@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/pickgame.cpp,v 1.8 1997/10/14 11:20:32 TOML Exp $
 #include <string.h>
 

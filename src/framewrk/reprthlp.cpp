@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/reprthlp.cpp,v 1.2 1998/10/21 23:40:49 dc Exp $
 // Misc helper functions for better/easier report generation
 

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/netman.cpp,v 1.119 1999/10/20 16:43:10 Justin Exp $
 //
 // NetMan.cpp
