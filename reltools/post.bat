@@ -107,7 +107,7 @@ mkdirs redist\x86
 
 xcopy /s r:\prj\thief2\reltools\redist redist
 
-copy r:\prj\thief2\reltools\redist\crt\msvcrt40.dll %_DAILYCD_%\thief
+copy r:\prj\thief2\reltools\redist\crt\msvcrt40.dll %_DAILYTHIEF_%
 
 rem **************************************************************
 rem if doing a non english verion, then grab it's version
