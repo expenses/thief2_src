@@ -5,8 +5,8 @@ DBG_ON = 1
 
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\dstruct
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\dstruct
+RELDIR = r:\prj\lib\release
 
 OBJDIR = obj
 BINDIR =
@@ -101,3 +101,4 @@ symtab.obj: ctype.h dbg.h dbgmacro.h fix.h hheap.h lg.h lgalt.h llist.h \
 symtest.obj: conio.h ctype.h dbg.h dbgmacro.h fix.h hheap.h lg.h lgalt.h \
 	 llist.h malloc.h memall.h memmacro.h slist.h stdio.h stdlib.h \
 	 strall.h symtab.h types.h
+
