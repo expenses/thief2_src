@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/donorq.cpp,v 1.4 1997/10/14 11:20:13 TOML Exp $
 #include <donorq_.h>
 #include <lnkquery.h>
