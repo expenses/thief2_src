@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.7 $
+# $Revision: 1.8 $
 # $Author: kaboom $
-# $Date: 1993/05/17 11:40:43 $
+# $Date: 1993/11/19 03:02:01 $
 #
 
 DEBUG_ON=1
@@ -38,10 +38,10 @@ kb.h: kbdecl.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
         kblow.inc kbscan.inc kbstate.inc
         rm -f junk
         @echo cat $^ \>junk
-        !foreach FILE $(^, M\.h)
+        !foreach FILE $(^,M\.h)
           @cat $(FILE) >>junk
         !end
-        !foreach FILE $(^, M\.inc)
+        !foreach FILE $(^,M\.inc)
           @inc2h $(FILE) junk
         !end
         @echo \#ifndef __KB_H >$(@,F)
