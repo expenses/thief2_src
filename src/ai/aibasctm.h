@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibasctm.h 1.24 1999/05/10 19:08:28 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibasctm.h,v 1.31 2000/02/17 23:34:31 adurant Exp $
 //
 // Template file for non-inline members of the AI component base class
 //
+#pragma once
 
 #ifndef __AIBASCTM_H
 #define __AIBASCTM_H
@@ -11,6 +12,12 @@
 
 #include <aiapiiai.h>
 #include <aitagtyp.h>
+
+#define AIUPDATE 0
+
+#ifdef AIUPDATE
+#include <config.h>
+#endif 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -40,7 +47,7 @@ STDMETHODIMP AI_COMPONENT_BASE::QueryInterface(REFIID id, void ** ppI)
 AI_COMPONENT_BASE_TEMPLATE
 STDMETHODIMP_(void) AI_COMPONENT_BASE::GetSubComponents(cAIComponentPtrs *)
 {
-   
+
 }
 
 ///////////////////////////////////////
@@ -160,7 +167,27 @@ STDMETHODIMP_(void) AI_COMPONENT_BASE::OnActionChange(IAIAction *, IAIAction *)
 
 AI_COMPONENT_BASE_TEMPLATE
 STDMETHODIMP_(void) AI_COMPONENT_BASE::OnAlertness(ObjID source,
-                                                   eAIAwareLevel previous, 
+                                                   eAIAwareLevel previous,
+                                                   eAIAwareLevel current,
+                                                   const sAIAlertness * pRaw)
+{
+}
+
+
+AI_COMPONENT_BASE_TEMPLATE
+STDMETHODIMP_(void) AI_COMPONENT_BASE::OnAwareness(ObjID source,
+                                 eAIAwareLevel current,
+                                 const sAIAlertness * pRaw)
+{
+}
+
+
+
+///////////////////////////////////////
+
+AI_COMPONENT_BASE_TEMPLATE
+STDMETHODIMP_(void) AI_COMPONENT_BASE::OnHighAlert(ObjID source,
+                                                   eAIAwareLevel previous,
                                                    eAIAwareLevel current,
                                                    const sAIAlertness * pRaw)
 {
@@ -211,10 +238,17 @@ STDMETHODIMP_(void) AI_COMPONENT_BASE::OnFoundBody(ObjID body)
 ///////////////////////////////////////
 
 AI_COMPONENT_BASE_TEMPLATE
+STDMETHODIMP_(void) AI_COMPONENT_BASE::OnFoundSuspicious(ObjID suspobj)
+{
+}
+
+///////////////////////////////////////
+
+AI_COMPONENT_BASE_TEMPLATE
 STDMETHODIMP_(void) AI_COMPONENT_BASE::OnScriptCommand(eAIScriptCmd command, void *)
 {
 }
-   
+
 ///////////////////////////////////////
 
 AI_COMPONENT_BASE_TEMPLATE
@@ -234,7 +268,7 @@ STDMETHODIMP_(void) AI_COMPONENT_BASE::OnDefend(const sAIDefendPoint *)
 AI_COMPONENT_BASE_TEMPLATE
 STDMETHODIMP_(void) AI_COMPONENT_BASE::OnSignal(const sAISignal *)
 {
-   
+
 }
 
 ///////////////////////////////////////
@@ -255,6 +289,13 @@ STDMETHODIMP_(void) AI_COMPONENT_BASE::OnCollision(const sPhysListenMsg*)
 
 AI_COMPONENT_BASE_TEMPLATE
 STDMETHODIMP_(void) AI_COMPONENT_BASE::OnTripwire(ObjID objID, BOOL enter)
+{
+}
+
+///////////////////////////////////////
+
+AI_COMPONENT_BASE_TEMPLATE
+STDMETHODIMP_(void) AI_COMPONENT_BASE::OnFrustration(ObjID source, ObjID dest, IAIPath *pPath)
 {
 }
 
@@ -359,7 +400,19 @@ void AI_COMPONENT_BASE::SaveNotifications(ITagFile * pTagFile)
 AI_COMPONENT_BASE_TEMPLATE
 void AI_COMPONENT_BASE::LoadNotifications(ITagFile * pTagFile)
 {
-   AITagMove(pTagFile, &m_notifications);
+#ifdef AIUPDATE // sometimes, this it is necessary to reset notification, if some were added or removed.
+   if (!config_is_defined("AIUpdate"))
+#endif
+      AITagMove(pTagFile, &m_notifications);
+#ifdef AIUPDATE
+   else
+   {
+      unsigned nTempNotifications;
+      AITagMove(pTagFile, &nTempNotifications);
+      if (nTempNotifications != m_notifications)
+         Warning(("Updating %d's notifications from %x to %x\n", GetID(), nTempNotifications, m_notifications));
+   }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
