@@ -205,7 +205,7 @@ rem **************************************************************
 
 cd %_ALTPATH_%\install
 
-make local sb=r:\prj lcode=%_lcode_% COUNTRY=%_country_% INSTALL=%_DAILYCD_%
+make local sb=r:\prj lcode=%_lcode_% COUNTRY=%_country_% INSTALL=%_DAILY_%\cd1
 
 cd %_DAILYCD2_%
 xcopy /s r:\prj\thief2\install\cd2\%_lcode_%\* .
