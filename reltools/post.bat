@@ -197,6 +197,8 @@ rem **************************************************************
 
 copy r:\prj\thief2\reltools\url\%_country_%\*.url  %_DAILYTHIEFCD2_%
 copy r:\prj\thief2\reltools\url\%_country_%\patch.url  %_DAILYTHIEFCD_%
+copy r:\prj\thief2\reltools\url\%_country_%\patch.url  %_DAILYCD_%
+copy r:\prj\thief2\reltools\url\%_country_%\patch.url  %_DAILYCD2_%
 
 rem **************************************************************
 rem put the installer in place
