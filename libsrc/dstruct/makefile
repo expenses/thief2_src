@@ -19,8 +19,9 @@ LIB_TARGETS = dstruct
 HDR_TARGETS =  
 INST_TARGETS = dstruct
 
-DSTRUCT_OBJS = hash.obj hheap.obj lllist.obj llist.obj rect.obj strall.obj
-DSTRUCT_HDRS = array.h hash.h hheap.h llist.h rect.h strall.h
+DSTRUCT_OBJS = hash.obj hheap.obj lllist.obj llist.obj rect.obj strall.obj \
+               array.obj
+DSTRUCT_HDRS = array.h hash.h hheap.h llist.h rect.h strall.h 
 
 HASHTEST_OBJS = hashtest.obj  hashlex.obj hash.obj
 HASHTEST_LIBS = lg.lib mprintf.lib
