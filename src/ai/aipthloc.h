@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthloc.h 1.4 1998/11/06 22:53:26 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthloc.h,v 1.7 2000/03/01 13:02:55 bfarquha Exp $
 //
 // AI Path cell locators/spatial queries
 //
+#pragma once
 
 #ifndef __AIPTHLOC_H
 #define __AIPTHLOC_H
@@ -14,8 +15,8 @@ struct sAIPathCell;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tAIPathCellID AILocateBestLocoCell(const mxs_vector & fromLoc, 
-                                   const tAIPathCellID fromCell, 
+tAIPathCellID AILocateBestLocoCell(const mxs_vector & fromLoc,
+                                   const tAIPathCellID fromCell,
                                    const mxs_vector & to);
 
 
@@ -29,16 +30,17 @@ enum eAIFindCellFlags
 
 tAIPathCellID __fastcall AIFindClosestCell(const mxs_vector & location,
                                            tAIPathCellID    hintCell,
-                                           ObjID objID = -1, 
+                                           ObjID objID = -1,
                                            unsigned flags = 0);
 
 ///////////////////////////////////////
 
-BOOL AIFindClosestConnectedCell(tAIPathCellID      from, 
+BOOL AIFindClosestConnectedCell(tAIPathCellID      from,
                                 const mxs_vector & fromLoc,
                                 const mxs_vector & toLoc,
                                 tAIPathCellID *    pResultCell,
-                                mxs_vector *       pClosestLoc);
+                                mxs_vector *       pClosestLoc,
+                                tAIPathOkBits nStressBits);
 
 ///////////////////////////////////////
 
@@ -55,7 +57,7 @@ float AIGetZAtXYOnCell(const mxs_vector & pt, tAIPathCellID cellID);
 
 ///////////////////////////////////////
 
-unsigned AIGetCellZone(tAIPathCellID cell);
+unsigned AIGetCellZone(eAIPathZoneType ZoneType, tAIPathCellID cell);
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipathdb.h 1.20 1999/06/27 14:36:00 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipathdb.h,v 1.27 2000/03/01 13:02:52 bfarquha Exp $
 //
 //
 //
@@ -9,9 +9,18 @@
 
 #include <aipthbas.h>
 #include <aipthzon.h>
+#include <aiokbits.h>
+
+#include <dbmem.h>
 
 #pragma pack(1)
 #pragma once
+
+#define HUGE_Z    ((float)5.10)
+
+// Anything less than 2 feet high will use SmallCreature links.
+#define AIPATHDB_SmallCreatureHeight 0.5
+
 
 F_DECLARE_INTERFACE(ITagFile);
 class cAIPath;
@@ -27,6 +36,9 @@ void AIPathFindMTWaypointLeft(ObjID movingTerrain);
 
 void AIPathFindRead(ITagFile *);
 void AIPathFindWrite(ITagFile *);
+
+// Given flee point, return flee region, else -1.
+int AIGetFleeRegion(ObjID id);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +57,7 @@ struct sAIExternCell
       mxs_vector normal;
       float      constant;
    };
-   
+
    sPlane     plane;
    unsigned   nVertices;
    mxs_vector vertices[1];
@@ -66,6 +78,35 @@ inline sAIExternCell * AINewExternCell(const mxs_vector & normal, float constant
    return p;
 };
 
+
+struct sFleeRegionData
+{
+   int nRegionId;
+   ObjID id;
+};
+
+class cFleeRegionsHash : public cHashSet<sFleeRegionData *, const ObjID, cHashFunctions>
+{
+public:
+   virtual tHashSetKey GetKey(tHashSetNode p) const
+   {
+      return (tHashSetKey) ((sFleeRegionData *)p)->id;
+   }
+};
+
+
+
+struct sZoneDatabase
+{
+   cZonePairTable                         m_ZonePairTable;
+   int                                    m_nZones;
+
+   // array of zones for each cell
+   cAIPathArray<tAIPathZone>              m_CellZones;
+};
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cAIPathDB
@@ -76,14 +117,14 @@ class cAIPathDB
 public:
 
    cAIPathDB();
-   
+
    void Init();
    void Term();
-   
+
    ////////////////////////////////////
-   
+
    unsigned NumCells() const;
-   
+
    const sAIPathCell *     GetCell(const tAIPathCellID cell) const;
    sAIPathCell *           AccessCell(const tAIPathCellID cell);
    const sAIPathCellLink * GetCellLink(tAIPathCell2CellLinkID linkId) const;
@@ -93,7 +134,7 @@ public:
 
    const sAIPathCellPlane * GetCellPlane(const tAIPathCellID cell) const;
    const sAIPathCellPlane * GetCellPlane(const sAIPathCell * pCell) const;
-   
+
    ////////////////////////////////////
 
    const mxs_vector & GetCellVertex(tAIPathCellID cell, int index) const;
@@ -109,18 +150,18 @@ public:
    int                GetVertexInfo(tAIPathVertexID id) const;
 
    ////////////////////////////////////
-   
+
    ObjID GetCellDoor(tAIPathCellID cell);
-   
+
    ////////////////////////////////////
-   
+
    sbool IsUnpathable(tAIPathCellID cell);
    sbool IsBelowDoor(tAIPathCellID cell);
    sbool IsBlockedOBB(tAIPathCellID cell);
    sbool IsActiveMovingTerrain(tAIPathCellID cell);
-   
+
    ////////////////////////////////////
-   
+
    void MarkBegin();
    void Mark(tAIPathCellID cell);
    void Unmark(tAIPathCellID cell);
@@ -129,11 +170,12 @@ public:
 
    ////////////////////////////////////
 
-   BOOL          CanPathfindBetweenZones(tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits);
+   // wsf: doen't use condition bits for zones.
+   BOOL          CanPathfindBetweenZones(eAIPathZoneType ZoneType, tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits);
 
-   tAIPathZone   GetCellZone(tAIPathCellID cell);
-   tAIPathOkBits GetZoneOkBits(tAIPathZone zone1, tAIPathZone zone2);
-   void          SetZoneOkBits(tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits);
+   tAIPathZone   GetCellZone(eAIPathZoneType ZoneType, tAIPathCellID cell);
+   tAIPathOkBits GetZoneOkBits(eAIPathZoneType ZoneType, tAIPathZone zone1, tAIPathZone zone2);
+   void          SetZoneOkBits(eAIPathZoneType ZoneType, tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits);
 
    ////////////////////////////////////
 
@@ -144,11 +186,11 @@ public:
    float GetLowestZ(tAIPathCellID cell) const;
 
    ////////////////////////////////////
-   
+
    float ComputeArea(tAIPathCellID cell) const;
-   
+
    ////////////////////////////////////
-   
+
    void DeleteCell(tAIPathCellID cell);
    void GetCell(tAIPathCellID cell, sAIExternCell **);
    BOOL AddOBBCell(sAIExternCell *, tAIPathCellID cell = 0, BOOL movable = FALSE);
@@ -156,7 +198,7 @@ public:
    int GetLineIntersections(tAIPathCellID cell, const mxs_vector & line1, const mxs_vector & line2, sAICellLineIntersect * pIntersect) const;
    BOOL SplitCellByLine(tAIPathCellID cell, const mxs_vector & line1, const mxs_vector & line2);
    BOOL SplitCell(tAIPathCellID cell, const mxs_vector & pt1, const mxs_vector & pt2);
-   
+
    // @TBD (toml 08-24-98):    void Compact();
 
    ////////////////////////////////////
@@ -165,7 +207,7 @@ private:
 
    friend BOOL AIPathFind(const cMxsVector & fromLocation, tAIPathCellID startCell,
                           const cMxsVector & toLocation, tAIPathCellID endCell,
-                          cAIPath * pPath, tAIPathOkBits OkBits);
+                          cAIPath * pPath, tAIPathOkBits OkBits, tAIPathOkBits okCondBits = 0);
 
 public:
    // array of cells
@@ -196,13 +238,8 @@ public:
    cAIPathArray<sAIPathCellObjMap>        m_CellObjMap;
    int                                    m_nCellObjMaps;
 
-   // mapping of zone-pairs to okbits for pathfinding
-   cZonePairTable                         m_ZonePairTable;
-   int                                    m_nZones;
+   sZoneDatabase                          m_ZoneDatabases[kAIZone_Num];
 
-   // array of zones for each cell
-   cAIPathArray<tAIPathZone>              m_CellZones;
-   
    // Cell to door mapping
    cAICellDoorTable                       m_CellToDoorsTable;
    cAIPathArray<sAICellDoor>              m_CellDoors;
@@ -215,6 +252,9 @@ public:
    cDynArray_<tAIPathCellID, 128>         m_MarkedCells;
    int                                    m_nMarkedCells;
    cAIPathArray<ushort>                   m_BestCostToReach;
+
+   cFleeRegionsHash                       m_FleeRegions;
+   int                                    m_nNumFleeRegions;
 };
 
 extern cAIPathDB g_AIPathDB;
@@ -292,7 +332,7 @@ inline float cAIPathDB::GetZAtXY(const tAIPathCellID cell, const mxs_vector & pt
 
 ///////////////////////////////////////
 
-// Normalize a vertex index. 
+// Normalize a vertex index.
 #define cAIPathDB_NormalizeVertexIndex(i) \
    { \
       const int _nVertices = m_Cells[cell].vertexCount; \
@@ -408,10 +448,10 @@ inline void cAIPathDB::MarkBegin()
 
 inline void cAIPathDB::Mark(tAIPathCellID cell)
 {
-   m_Marks[cell] = TRUE; 
-   if (m_MarkedCells.Size() == m_nMarkedCells) 
-      m_MarkedCells.Grow(16); 
-   m_MarkedCells[m_nMarkedCells] = cell; 
+   m_Marks[cell] = TRUE;
+   if (m_MarkedCells.Size() == m_nMarkedCells)
+      m_MarkedCells.Grow(16);
+   m_MarkedCells[m_nMarkedCells] = cell;
    m_nMarkedCells++;
 }
 
@@ -443,7 +483,7 @@ inline void cAIPathDB::MarkEnd()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline BOOL cAIPathDB::CanPathfindBetweenZones(tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits)
+inline BOOL cAIPathDB::CanPathfindBetweenZones(eAIPathZoneType ZoneType, tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits)
 {
    if (zone1 == zone2)
       return TRUE;
@@ -455,9 +495,9 @@ inline BOOL cAIPathDB::CanPathfindBetweenZones(tAIPathZone zone1, tAIPathZone zo
       return FALSE;
 
    // the okbits must satisfy all okbits between the zones
-   tAIPathOkBits zoneOkBits = GetZoneOkBits(zone1, zone2);
+   tAIPathOkBits zoneOkBits = GetZoneOkBits(ZoneType, zone1, zone2);
 
-   if ((zoneOkBits != 0) && ((zoneOkBits & okBits) == zoneOkBits))
+   if ((zoneOkBits != 0) && ((zoneOkBits & okBits & kNoConditionMask) == zoneOkBits))
       return TRUE;
    else
       return FALSE;
@@ -465,24 +505,24 @@ inline BOOL cAIPathDB::CanPathfindBetweenZones(tAIPathZone zone1, tAIPathZone zo
 
 ////////////////////////////////////////
 
-inline tAIPathZone cAIPathDB::GetCellZone(tAIPathCellID cell)
+inline tAIPathZone cAIPathDB::GetCellZone(eAIPathZoneType ZoneType, tAIPathCellID cell)
 {
-   if (cell < m_CellZones.Size())
-      return m_CellZones[cell];
+   if (cell < m_ZoneDatabases[ZoneType].m_CellZones.Size())
+      return m_ZoneDatabases[ZoneType].m_CellZones[cell];
    else
       return 0;
 }
 
 ////////////////////////////////////////
 
-inline tAIPathOkBits cAIPathDB::GetZoneOkBits(tAIPathZone zone1, tAIPathZone zone2)
+inline tAIPathOkBits cAIPathDB::GetZoneOkBits(eAIPathZoneType ZoneType, tAIPathZone zone1, tAIPathZone zone2)
 {
    if (zone1 == AI_ZONE_SOLO || zone2 == AI_ZONE_SOLO)
       return 0;
 
    int key = (zone1 << 16) | zone2;
 
-   sZoneOkBitsMap *pMap = m_ZonePairTable.Search(key);
+   sZoneOkBitsMap *pMap = m_ZoneDatabases[ZoneType].m_ZonePairTable.Search(key);
 
    if (pMap == NULL)
       return 0;
@@ -492,7 +532,7 @@ inline tAIPathOkBits cAIPathDB::GetZoneOkBits(tAIPathZone zone1, tAIPathZone zon
 
 ////////////////////////////////////////
 
-inline void cAIPathDB::SetZoneOkBits(tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits)
+inline void cAIPathDB::SetZoneOkBits(eAIPathZoneType ZoneType, tAIPathZone zone1, tAIPathZone zone2, tAIPathOkBits okBits)
 {
    if (zone1 == AI_ZONE_SOLO || zone2 == AI_ZONE_SOLO)
       return;
@@ -502,12 +542,14 @@ inline void cAIPathDB::SetZoneOkBits(tAIPathZone zone1, tAIPathZone zone2, tAIPa
    pMap->key = (zone1 << 16) | zone2;
    pMap->okBits = okBits;
 
-   m_ZonePairTable.RemoveByKey(pMap->key);
-   m_ZonePairTable.Insert(pMap);
+   m_ZoneDatabases[ZoneType].m_ZonePairTable.RemoveByKey(pMap->key);
+   m_ZoneDatabases[ZoneType].m_ZonePairTable.Insert(pMap);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma pack()
+
+#include <undbmem.h>
 
 #endif /* !__AIPATHDB_H */

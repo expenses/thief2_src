@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthdbg.h 1.9 1998/11/03 16:24:47 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthdbg.h,v 1.12 2000/03/01 13:02:53 bfarquha Exp $
 //
 //
 //
@@ -27,12 +27,14 @@ extern void AIPathFindDrawPath(IAIPath * pPath);
 // status of flags below
 extern "C" void AIPathFindDrawDB();
 extern void AIPathDrawCellsToggle();
-extern void AIPathDrawLinksToggle();
+extern void AIPathDrawCellIdsToggle();
+extern void AIPathDrawLinksToggle(int i);
 
 extern void AIPathFindSpewZone();
 extern void AIPathFindSpewZones();
 
 extern int g_AIPathDBDrawZone;
+extern int g_AIPathDBDrawZoneType;
 extern int g_AIPathDBDrawRoom;
 
 void ValidateAllCellSpaces(float height, BOOL linkedOnly, cDynArray<tAIPathCellID> * pFailures);

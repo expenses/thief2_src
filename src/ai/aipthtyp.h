@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthtyp.h 1.3 1998/09/05 11:01:12 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthtyp.h,v 1.4 2000/03/01 13:02:57 bfarquha Exp $
 //
 //
 
@@ -25,6 +25,15 @@ typedef ushort   tAIPathCell2VertexLinkIDPacked;
 typedef ushort   tAIPathZone;
 
 typedef uchar    tAIPathOkBits;
+
+typedef enum
+{
+   kAIZone_Normal = 0,
+   kAIZone_NormalLVL,
+   kAIZone_HighStrike,
+   kAIZone_HighStrikeLVL,
+   kAIZone_Num
+} eAIPathZoneType;
 
 ///////////////////////////////////////////////////////////////////////////////
 
