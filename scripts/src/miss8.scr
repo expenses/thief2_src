@@ -1,0 +1,111 @@
+#include "invtype.h"
+#include "drkgoalt.h"
+
+#define FOLLOW_NOTE_GOAL 0
+
+// Script file for Thief 2 - Mission 8 - Courier
+
+BEGIN_SCRIPT(GoalScroll, RootScript)
+
+MESSAGES:
+   OnContained()
+   {
+      if(message.event==kContainRemove)
+      {
+         // perhaps the Courier dropped us.  We'll need physics.
+         if(!Physics.HasPhysics(self))
+            Property.Add(self,"PhysType");
+         Object.RemoveMetaProperty(self,"FrobInert");
+      }
+      else
+      {
+         if(Property.Possessed(message.container,"AI"))
+         {
+            // @TODO: Object should not be frobbable while "in hand" unless
+            // carrying AI is dead/unconscious.  You can't pickpocket something
+            // out of someone's left hand!!
+
+            // This should _necessarily_ be true, but check anyway
+            if(Link.AnyExist("~Contains",self))
+            {
+               link contlink=Link.GetOne("~Contains",self);
+
+               contlink.SetData(kContainTypeAlt);
+            }
+         }
+      }
+      DefaultOnContained();
+   }
+
+END_SCRIPT(GoalScroll)
+
+
+#define NULLOBJ object(0)
+/* This script goes on the guys carrying the note.  If they spot Garrett _while_
+   they are carrying the note, you lose.
+   */
+BEGIN_SCRIPT(Courier, AI)
+METHODS:
+   METHOD object TheNote()
+   {
+      if(Link.AnyExist("Contains",self))
+      {
+         linkset inv=Link.GetAll("Contains",self);
+         while(inv.AnyLinksLeft())
+         {
+            if(inv.Link().To()==object("TheNote"))
+               return inv.Link().To();
+            inv.NextLink();
+         }
+      }
+      return NULLOBJ;
+   }
+   METHOD void CheckNoteProps()
+   {
+      object note=TheNote();
+      integer mode=kAIM_Dead;
+
+      if(Property.Possessed(self,"AI_Mode"))
+         mode=Property.Get(self,"AI_Mode");
+      if(note!=NULLOBJ && mode!=kAIM_Dead &&
+         !Object.HasMetaProperty(note,"FrobInert"))
+         Object.AddMetaProperty(note,"FrobInert");
+   }
+METHODS:
+   OnBeginScript()
+   {
+      CheckNoteProps();
+      DefaultOnBeginScript();
+   }
+   OnAIModeChange()
+   {
+      object note=TheNote();
+      switch(message.mode)
+      {
+         case kAIM_Dead:
+            // Dead or KO'd.  Scroll I carry is now frobbable.
+            if(note!=NULLOBJ)
+               Object.RemoveMetaProperty(note,"FrobInert");
+            break;
+         case kAIM_Combat:
+            // Player loses the mission if we currently have the note.
+            if(note!=NULLOBJ)
+               Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+            break;
+      }
+         
+      DefaultOnAIModeChange();
+   }
+   OnContainer()
+   {
+      CheckNoteProps();
+      DefaultOnContainer();
+   }
+
+END_SCRIPT(Courier)
+
+
+
+
+
+
