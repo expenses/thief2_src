@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.8 $
-# $Author: TOML $
-# $Date: 1996/11/04 13:56:53 $
+# $Revision: 1.9 $
+# $Author: KEVIN $
+# $Date: 1996/11/07 17:28:37 $
 #
 
 MAKETOP = $(CWD)
@@ -50,19 +50,19 @@ G2_OBJS = \
         sply tmapd trifan \
         fl8o2ni fl8nni fl8o2wi fl8lo2wi \
         trigrad trirast plyshell golftmap \
-        g2makewr
+        g2makewr area
 
 G2_HDRS= g2.h icanvas.inc
 
 g2.h .REREAD :\
         stupid.h \
 	icanvas.h plytyp.h \
+        g2spoint.h \
         sftype.h lftype.h tftype.h pftype.h \
         g2d.h g2clip.h \
 	grlin.h grtm.h grcurv.h \
 	grply.h grscale.h init.h \
         buffer.h blnfcn.h \
-        g2spoint.h \
         water.h \
         grchkply.h setdrv.h frame.h
 	$(eko1) $(@,F) \<-- $(?,F)
