@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aidev.h 1.6 1999/05/01 18:21:49 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aidev.h,v 1.7 1999/11/23 19:07:11 adurant Exp $
 //
 //
 //
@@ -60,6 +60,7 @@ private:
    BOOL ShouldChangeFacing(void);
 
    BOOL ReadyToDeactivate(void);
+   BOOL ReadyToActivate(void);
 };
 
 
