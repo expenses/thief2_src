@@ -1,0 +1,132 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.1 1999/10/06 11:34:56 TJS Exp $
+//
+
+/* Creates watch links to this object when it gets created.
+   Used for such things as blood pools and missing loot markers.
+   For now, we decide who cares by deciding it's always "All Humans"
+*/
+BEGIN_SCRIPT(WatchMe, RootScript)
+
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("Init"))
+      {
+         Link.CreateMany("AIWatchObj","@Human",self);
+         SetData("Init",TRUE);
+      }
+      DefaultOnBeginScript();
+   }
+END_SCRIPT(WatchMe)
+
+
+// Script: BloodDeathSentence
+/* Ticks off a random number of frames of the object's TweqFlicker
+   (up to the number specified in its scriptTiming property) as soon
+   as the object is created.  Number of ticks is biased towards the
+   high end of the curve.
+   Intended to cause blood stains to not pile up so much, while still
+   leaving a reasonably high duration possible for those which do stick
+   around.
+*/
+BEGIN_SCRIPT(DeathSentence, RootScript)
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("Init"))
+      {
+         SetOneShotTimer(self,"Tick",0.5);
+         SetData("Init",TRUE);
+      }
+      DefaultOnBeginScript();
+   }
+   OnTimer()
+   {
+      if(message.name=="Tick")
+      {
+         if(Property.Possessed(self,"ScriptTiming") &&
+            Property.Possessed(self,"StTweqBlink"))
+         {
+            integer DieMax=Property.Get(self,"ScriptTiming");
+            integer Die=Data.RandInt(0,DieMax);
+            integer Frames=Property.Get(self,"StTweqBlink","Frame #");
+         
+            Frames-=Die;
+            if(Frames<0) Frames=0;
+
+            if(Frames>0)
+               Property.Set(self,"StTweqBlink","Frame #",Frames);
+            else
+               Damage.Slay(self,self);
+         }
+      }         
+      DefaultOnTimer();
+   }
+END_SCRIPT(DeathSentence)
+
+/* For objects which are conspicuous in their absence, e.g.
+   major treasure items.  Causes the item to leave behind a "MissingLoot"
+   object when it is first frobbed.  This had better correspond to it being
+   picked up.  This wants to happen on frob and not on contain to be
+   certain that the object's position is still valid.
+*/
+BEGIN_SCRIPT(GoMissing, RootScript)
+
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      if(!IsDataSet("OutOfPlace"))
+      {
+         object newobj=Object.Create("MissingLoot");
+
+         Object.Teleport(newobj, vector(0,0,0), vector(0,0,0), self);
+         SetData("OutOfPlace",TRUE);
+      }
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(GoMissing)
+
+// Script: SecureDoor
+/* For doors which are conspicuous should they be open.
+   Adds AIWatchLink from all humans whenever the door is open.
+*/
+BEGIN_SCRIPT(SecureDoor, Door)
+METHODS:
+   METHOD void Insecure()
+   {
+      boolean secure=GetData("secure");
+
+      if(secure)
+         Link.CreateMany("AIWatchObj","@Human",self);
+      SetData("secure",FALSE);
+   }
+   METHOD void Secure()
+   {
+      Link.DestroyMany("AIWatchObj","@Human",self);
+      SetData("secure",TRUE);
+   }
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+         SetData("secure",TRUE);
+      DefaultOnSim();
+   }
+   OnDoorHalt()
+   {
+       Insecure();
+       DefaultOnDoorHalt();
+   }
+   OnDoorClose()
+   {
+      Secure();
+      DefaultOnDoorClose();
+   }
+   OnDoorOpen()
+   {
+      Insecure();
+      DefaultOnDoorOpen();
+   }
+END_SCRIPT(SecureDoor)
+
