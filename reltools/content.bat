@@ -159,6 +159,8 @@ rem xcopy /D %_MISPATH_%\*.mis %_DAILYTHIEFCD2_%\*.*
 
 xcopy /D %_MISPATH_%\dark.gam %_DAILYTHIEFCD2_%\*.*
 
+mkdirs %_MAINCRFPATH_%
+
 rem **************************************************************
 rem zip the art.  it is on the local drive _BLDDRV_
 rem **************************************************************
