@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/dllsrc/mottable/mottable.cpp,v 1.2 1998/03/04 19:12:56 kate Exp $
 
 #include <motdata.h>
