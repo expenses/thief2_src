@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkrphlp.h,v 1.4 1998/10/19 01:12:30 dc Exp $
 
 #pragma once
