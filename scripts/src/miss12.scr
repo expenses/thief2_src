@@ -487,3 +487,118 @@ END_SCRIPT(AICatchPlayer)
 
 
 
+/* For the Phantom appearances in the library.  Pick a random conversation
+   when triggered, to take place at the trigger's location.
+   */
+BEGIN_SCRIPT(ConvJukebox, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn") && Link.AnyExist("ControlDevice",self))
+      {
+         object trig=message.from;
+         linkset jukelinx=Link.GetAll("ControlDevice",self);
+         integer jukecount=0, convnumber=0;
+         object conv=object(0);
+
+         while(jukelinx.AnyLinksLeft())
+         {
+            jukecount++;
+            jukelinx.NextLink();
+         }
+         convnumber=Data.RandInt(1,jukecount);
+         linkset jukelinks=Link.GetAll("ControlDevice",self);
+         while(jukelinks.AnyLinksLeft())
+         {
+            jukecount--;
+            if(jukecount<=0)
+            {
+               conv=jukelinks.Link().To();
+
+               // only really support one-actor CVs, here.
+               if(Link.AnyExist("AIConversationActor",conv))
+               {
+                  object actor=Link.GetOne("AIConversationActor",conv).To();
+                  Object.Teleport(actor,vector(0,0,0),vector(0,0,0),trig);
+                  Object.Destroy(trig);
+                  Property.Remove(actor,"AI_IdleOrgn");
+               }
+               AI.StartConversation(conv);
+               break;
+            }
+            jukelinks.NextLink();
+         }
+         if(conv!=object(0))
+            Link.DestroyMany("ControlDevice",self,conv);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(ConvJukebox)
+
+
+
+// @TODO: These need to synch between mission 12 and 13.  Use qvar.
+BEGIN_SCRIPT(LibraryBook, RootScript)
+METHODS:
+   METHOD void AmbientHack(boolean on)
+   {
+      if(Property.Possessed(self,"AmbientHacked"))
+      {
+         integer flags=Property.Get(self,"AmbientHacked","Flags");
+         
+         if(!on)
+            flags|=AMBFLG_S_TURNEDOFF;
+         else
+            flags&=(~AMBFLG_S_TURNEDOFF);
+         Property.Set(self,"AmbientHacked","Flags",flags);
+      }
+   }
+   METHOD boolean GetBookBit()
+   {
+      integer books=Quest.Get("LibBooks");
+      integer mask=0;
+    
+      // This case only really applies to the secret door button, which
+      // would have a hard time parsing what it's proper quest flag is.
+      // The books have an easy time, and books use their TrapQVar property
+      // for something different already, so they'd _rather_ do it that way.
+      if(Property.Possessed(self,"TrapQVar"))
+      {
+         string qv=Property.Get(self,"TrapQVar");
+         mask=atoi(qv);
+      }
+      // Otherwise, figure out by looking at the qvar trap we're linked to.
+      else if(Link.AnyExist("ControlDevice",self))
+      {
+         linkset controlled=Link.GetAll("ControlDevice",self);
+         while(controlled.AnyLinksLeft())
+         {
+            object trap=controlled.Link().To();
+            if(Property.Possessed(trap,"TrapQVar"))
+            {
+               string qv=Property.Get(trap,"TrapQVar");
+               mask=atoi(((const char *)qv)+1);
+            }
+            controlled.NextLink();
+         }
+      }
+      
+      // Debug.MPrint("Book ",self," want flag ",mask);
+
+      return(mask&books);
+   }      
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Quest.SubscribeMsg(self,"LibBooks");
+      AmbientHack(!GetBookBit());
+      DefaultOnBeginScript();
+   }
+   OnQuestChange()
+   {
+      AmbientHack(!GetBookBit());
+      DefaultOnQuestChange();
+   }
+
+END_SCRIPT(LibraryBook)
