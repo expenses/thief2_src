@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aidetect.h 1.3 1998/10/06 15:03:05 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aidetect.h,v 1.4 2000/01/24 12:12:00 adurant Exp $
 //
 
 #ifndef __AIDETECT_H
@@ -37,6 +37,8 @@ public:
 private:
    // helper call that does the real work
    BOOL SearchForBodies(void);
+
+   BOOL SearchForSuspicious(void);
 
    // our data
    cAITimer m_Timer;
