@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.6 2000/01/02 22:06:38 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.7 2000/01/12 14:19:10 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -412,7 +412,20 @@ MESSAGES:
       {
          CheckComplete();
       }
+      // Some scripts screw with the quest variables, which can invalidate
+      // my subscriptions.  Let me know, and I'll redo them.
+      if(MessageIs("ReSubscribe"))
+      {
+         SubscribeToGoalChanges(TRUE);
+      }
       DefaultOnMessage();
    }
 
 END_SCRIPT(VictoryChecker)
+
+
+
+
+
+
+
