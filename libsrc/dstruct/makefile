@@ -20,7 +20,7 @@ HDR_TARGETS =
 INST_TARGETS = dstruct
 
 DSTRUCT_OBJS = array.obj fname.obj hash.obj hheap.obj lllist.obj llist.obj \
-	message.obj pqueue.obj rect.obj strall.obj symtab.obj
+	message.obj pqueue.obj rect.obj strall.obj symtab.obj symdump.obj
 DSTRUCT_HDRS = array.h fname.h hash.h hheap.h llist.h message.h pqueue.h \
 	rect.h slist.h strall.h symtab.h
 
