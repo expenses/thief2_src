@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.74 2000/03/21 11:54:14 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.75 2000/03/22 23:41:32 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -3074,4 +3074,49 @@ MESSAGES:
   }
 
 END_SCRIPT(SecretSounds)
+
+
+BEGIN_SCRIPT(PlayerCheatScript, RootScript)
+
+METHODS:
+
+   METHOD void Catch(string whatdata)
+   {
+      if ((integer)GetData(whatdata)==0)
+         return;
+      Debug.MPrint(self," is Garrett, getting caught");
+      integer i;
+      for (i=0;i<20;i++)
+      {
+         if (Quest.Get(GoalVisibleVarName(i)))
+            Quest.Set(GoalStateVarName(i),kGoalFailed);
+      }
+   }
+
+MESSAGES:
+  
+   OnBeginScript()
+   {
+      if (!IsDataSet("FailOnKill"))
+      {
+         if (DarkGame.ConfigIsDefined("FailOnKill"))
+            SetData("FailOnKill",1);
+         else
+            SetData("FailOnKill",0);       
+         if ((integer)GetData("FailOnKill")==1)
+            Debug.MPrint("Garrett(",self,") should not kill.\n");
+      }
+      DefaultOnBeginScript();
+   }
+
+   OnMessage()
+   {
+      if (MessageIs("J'Accuse"))
+         Catch("FailOnKill");
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(PlayerCheatScript)
+
+
 
