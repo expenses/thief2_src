@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.4 $
+# $Revision: 1.5 $
 # $Author: KEVIN $
-# $Date: 1996/04/22 14:56:52 $
+# $Date: 1996/04/25 12:36:14 $
 #
 
 MAKETOP = $(CWD)
@@ -47,7 +47,7 @@ dev2d_OBJS = \
         f16fl8 f16mono f16f16 fl8rsd8 \
         gdbm gdgbm gdrect gdlin gdpix \
         genbm \
-        genlin genfl8u genmonou \
+        genlin genfl8u genf16u genmonou \
         genbmf genfl8 genmono genmx \
         genrsd8 genf16 \
         lpix \
