@@ -1,5 +1,6 @@
 #include "invtype.h"
 #include "drkgoalt.h"
+#include "aiteams.h"
 
 #include "tally.scr"
 
@@ -103,10 +104,11 @@ END_SCRIPT(GoalScroll)
 /* This script goes on the guys carrying the note.  If they spot Garrett _while_
    they are carrying the note, you lose.
    */
-BEGIN_SCRIPT(Courier, AI)
+BEGIN_SCRIPT(Conspirator, AI)
 METHODS:
    METHOD object TheNote()
    {
+      // @TODO: Why did I write this in this crazy-ass way? -TJS
       if(Link.AnyExist("Contains",self))
       {
          linkset inv=Link.GetAll("Contains",self);
@@ -130,6 +132,10 @@ METHODS:
          !Object.HasMetaProperty(note,"FrobInert"))
          Object.AddMetaProperty(note,"FrobInert");
    }
+END_SCRIPT(Conspirator)
+
+
+BEGIN_SCRIPT(Courier, Conspirator)
 METHODS:
    OnBeginScript()
    {
@@ -177,7 +183,7 @@ METHODS:
 END_SCRIPT(Courier)
 
 
-BEGIN_SCRIPT(Moseley, RootScript)
+BEGIN_SCRIPT(Moseley, Conspirator)
 METHODS:
    METHOD void StartStakeoutTimers()
    {
@@ -205,17 +211,15 @@ MESSAGES:
 END_SCRIPT(Moseley)
 
 // Script specially for the pagan agent.
-BEGIN_SCRIPT(ThePagan, Room)
+BEGIN_SCRIPT(ThePagan, Conspirator)
 METHODS:
-  METHOD object HaveNote()
+  METHOD void Bleed(void)
   {
-     object note=object("TheNote");
-     if (Object.Exists(note) &&
-         Link.AnyExist("Contains",self,note))
-        return note;
-     return object(0);
+     // Start "bleeding"
+     ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoActivate);
+     // @TODO: Start fleeing at this point.
   }
-        
+
 MESSAGES:
   OnMessage()
   {
@@ -257,6 +261,13 @@ MESSAGES:
      {
         eek=TRUE;
      }
+     else if(MessageIs("StartAttack"))
+     {
+        // Change in team will help precipitate attack
+        Property.Set(self,"AI_Team",kAIT_Bad2);
+        SetOneShotTimer(self,"Bleed",10.0);
+        Reply(TRUE);
+     }
 
      if(eek)
      {
@@ -269,11 +280,25 @@ MESSAGES:
 
      DefaultOnMessage();
   }
+  OnDamage()
+  {
+     object culprit=message.culprit;
+     if(Object.Exists(culprit))
+     {
+        if(Link.AnyExist("~CulpableFor",culprit))
+           culprit=Link.GetOne("~CulpableFor",culprit).To();
+        if(Object.InheritsFrom(culprit,"Mechanist"))
+        {
+           Bleed();
+        }
+     }
+     DefaultOnDamage();
+  }
   OnTimer()
   {
      if(message.name=="TPort")
      {
-        object note=HaveNote();
+        object note=TheNote();
         // make sure to destroy note, just to be safe.  This will stop the note
         // from checking for the player getting too far away.
         if(note!=object(0))
@@ -286,13 +311,18 @@ MESSAGES:
      }
      else if(message.name=="CheckGotNote")
      {
-        if(HaveNote()==object(0))
+        if(TheNote()==object(0))
            Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+     }
+     else if(message.name=="Bleed")
+     {
+        Bleed();
      }
 
      DefaultOnTimer();
   }
 END_SCRIPT(ThePagan)
+
 
 /* The portal at the end of the mission.  Gets rid of the pagan if he runs into it.
    Ends the mission if the player runs into it.  Maybe the player even wins.  Maybe not.
@@ -344,3 +374,8 @@ BEGIN_SCRIPT(MawPortal, Physics)
    }
 
 END_SCRIPT(MawPortal)
+
+
+
+
+
