@@ -1,11 +1,11 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkganpr.h 1.2 1998/07/19 11:29:16 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkganpr.h 1.3 1999/11/19 14:51:22 adurant Exp $
 // Shock gun animation properties
 
 #ifndef __SHKGANPR_H
 #define __SHKGANPR_H
 
 #include <propface.h>
-#include <shkgunan.h>
+#include <gunanim.h>
 
 // Gun Anim 
 #undef INTERFACE

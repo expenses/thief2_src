@@ -1,8 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkflash.h 1.2 1999/08/05 17:37:59 Justin Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkflash.h 1.3 1999/11/19 14:52:39 adurant Exp $
 //
 // gun flashes
 //
+
+This file has been moved to gunflash.h AMSD
+
 
 #ifndef __SHKFLASH_H
 #define __SHKFLASH_H

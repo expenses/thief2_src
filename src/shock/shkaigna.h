@@ -1,8 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaigna.h 1.7 1999/05/15 13:15:06 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaigna.h,v 1.8 1999/11/19 14:52:19 adurant Exp $
 //
 // AI Action - gun attack
 //
+
+This file has been moved to aigunact.h  AMSD
+
 
 #ifndef __SHKAIGNA_H
 #define __SHKAIGNA_H

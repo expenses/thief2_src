@@ -1,7 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaidth.h 1.1 1999/06/04 18:55:33 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaidth.h,v 1.2 1999/11/19 14:52:34 adurant Exp $
 //
 //
+
+This file has been moved to aiqdeath.h AMSD
+
 
 #ifndef __SHKAIDTH_H
 #define __SHKAIDTH_H
