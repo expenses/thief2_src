@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		Mouse.H		Mouse library header file
 //		MAHK Leblanc 2/19/93
 /*
