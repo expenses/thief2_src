@@ -1,8 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaitbs.h 1.3 1999/06/04 18:57:59 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaitbs.h,v 1.4 1999/11/19 14:52:27 adurant Exp $
 //
 //
 //
+
+This file has been moved to aiturbs.h AMSD
+
 
 #ifndef __SHKAITBS_H
 #define __SHKAITBS_H

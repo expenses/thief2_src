@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcheck.h 1.1 1998/12/13 16:11:52 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkcheck.h 1.2 1999/11/19 14:52:59 adurant Exp $
+
+This file has been moved to spherchk.h AMSD
+
 
 #ifndef __SHKCHECK_H
 #define __SHKCHECK_H

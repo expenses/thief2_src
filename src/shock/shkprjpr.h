@@ -1,5 +1,9 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkprjpr.h 1.1 1998/07/21 11:07:07 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkprjpr.h 1.2 1999/11/19 14:53:08 adurant Exp $
 // Shock projectile related properties
+
+This file has been moved to projprop.h AMSD
+
+
 
 #ifndef __SHKPRJPR_H
 #define __SHKPRJPR_H

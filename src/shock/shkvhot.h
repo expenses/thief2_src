@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkvhot.h 1.3 1999/04/29 18:14:36 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkvhot.h 1.4 1999/11/19 14:52:53 adurant Exp $
+
+This file has been moved to gunvhot.h AMSD
+
 
 #ifndef __SHKVHOT_H
 #define __SHKVHOT_H

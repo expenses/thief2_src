@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgnbas.h 1.15 1999/02/27 13:54:32 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkgnbas.h 1.16 1999/11/19 14:53:22 adurant Exp $
+
+This file has been moved to gunbase.h AMSD
+
 
 #ifndef __SHKGNBAS_H
 #define __SHKGNBAS_H

@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgnapi.h 1.16 1999/06/16 01:32:57 XEMU Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkgnapi.h 1.17 1999/11/19 14:53:14 adurant Exp $
+
+This file has been moved to gunapi.h AMSD
+
 
 #ifndef __SHKGNAPI_H
 #define __SHKGNAPI_H
