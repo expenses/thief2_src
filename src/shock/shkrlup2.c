@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkrlup2.c,v 1.6 2000/02/19 13:26:08 toml Exp $
 
 // disabling whole file on account of pointlessness
