@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/nameprop.h 1.1 1999/04/07 14:40:19 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/nameprop.h,v 1.4 2000/01/29 13:23:46 adurant Exp $
+#pragma once
 #ifndef __NAMEPROP_H
 #define __NAMEPROP_H
 #include <propface.h>

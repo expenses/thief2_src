@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/objcore/RCS/objquery.h 1.1 1999/04/07 14:38:43 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/objquery.h,v 1.4 2000/01/29 13:23:59 adurant Exp $
+#pragma once
 
 #ifndef __OBJQUERY_H
 #define __OBJQUERY_H

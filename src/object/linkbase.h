@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/linkbase.h 1.1 1999/04/07 14:38:20 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkbase.h,v 1.14 2000/01/29 13:23:15 adurant Exp $
+#pragma once
 
 #ifndef __LINKBASE_H
 #define __LINKBASE_H
@@ -63,6 +64,7 @@ enum eRelationFlags
    kRelationDirectionless     = 1 << 2,  // My links are directionless (@NIY)
    kRelationNoEdit            = 1 << 3,  // Don't show this relation in the editor
    kRelationNetworkLocalOnly  = 1 << 4,  // Don't broadcast changes in a network game
+   kRelationNetProxyChangeable = 1 << 5,  // Allow proxy machines to change this link
 }; 
 
 struct sRelationDesc 

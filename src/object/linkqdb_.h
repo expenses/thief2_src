@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/linkqdb_.h 1.1 1999/04/07 14:38:22 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkqdb_.h,v 1.4 2000/01/29 13:23:32 adurant Exp $
+#pragma once
 
 #ifndef __LINKQDB__H
 #define __LINKQDB__H

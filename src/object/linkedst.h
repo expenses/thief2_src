@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/objedit/RCS/linkedst.h 1.1 1999/04/07 14:39:40 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkedst.h,v 1.3 2000/01/29 13:23:18 adurant Exp $
+#pragma once
 
 #ifndef __LINKEDST_H
 #define __LINKEDST_H

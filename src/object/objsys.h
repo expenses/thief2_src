@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/RCS/objsys.h 1.6 1999/01/27 16:00:45 mahk Exp $
+// $Header: r:/t2repos/thief2/src/object/objsys.h,v 1.6 2000/01/29 13:24:06 adurant Exp $
+#pragma once
 
 #ifndef OBJSYS_H
 #define OBJSYS_H

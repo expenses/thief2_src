@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/mclntapi.h 1.21 1999/10/19 16:50:53 BFarquha Exp $
+// $Header: r:/t2repos/thief2/src/motion/mclntapi.h,v 1.22 2000/01/29 13:22:12 adurant Exp $
+#pragma once
 
 // This file declares the interface to the motion system to be used by
 // higher-level systems.  The basic idea is that a client uses the

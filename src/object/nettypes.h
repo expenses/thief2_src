@@ -1,7 +1,10 @@
-// $Header: x:/prj/tech/libsrc/object/RCS/nettypes.h 1.5 1999/01/27 16:00:42 mahk Exp $
+// $Header: r:/t2repos/thief2/src/object/nettypes.h,v 1.8 2000/01/29 13:23:52 adurant Exp $
+#pragma once
 
 #ifndef __NETTYPES_H
 #define __NETTYPES_H
+
+#include <objtype.h>
 
 // Initial bytes of a message contain this ID of the message handler.
 typedef ubyte tNetMsgHandlerID; 
@@ -21,13 +24,18 @@ EXTERN const tNetPlayerID NULL_NET_ID;
 // shortest type actually capable of holding all objects
 typedef short NetObjID;
 
-// The globally unique ID for this object.  It should only be necessary to use this when
-// sending an object in a network message where the object is not necessarily hosted
-// by either the sender or the receiver of the message (in those cases, you should just
-// send the object's objID on its host).
+// A compact ID for player number. Since player numbers are simply ordinals,
+// and since we don't support a *lot* of players, this can be very short:
+typedef uchar tNetPlayerNum;
+
+// The globally unique ID for this object. This identifies a player whose
+// "namespace" this object should be dereferenced from.
 typedef struct sGlobalObjID {
-   tNetPlayerID host;
+   tNetPlayerNum host;
    NetObjID obj;
 } sGlobalObjID;
+
+// Network listener messages. These are actually defined in netnotif.h:
+typedef ulong eNetListenMsgs;
 
 #endif //__NETTYPES_H

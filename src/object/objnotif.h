@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/objcore/RCS/objnotif.h 1.1 1999/04/07 14:38:43 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/objnotif.h,v 1.6 2000/01/29 13:23:56 adurant Exp $
+#pragma once
 #ifndef __OBJNOTIF_H
 #define __OBJNOTIF_H
 #include <objtype.h>

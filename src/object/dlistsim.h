@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/RCS/dlistsim.h 1.7 1999/01/27 16:00:12 mahk Exp $
+// $Header: r:/t2repos/thief2/src/object/dlistsim.h,v 1.7 2000/01/29 13:23:01 adurant Exp $
+#pragma once
 
 #ifndef __DLISTSIM_H
 #define __DLISTSIM_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/crattach.h 1.6 1998/12/10 10:16:20 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/motion/crattach.h,v 1.8 2000/01/29 13:21:59 adurant Exp $
+#pragma once
 
 #ifndef __CRATTACH_H
 #define __CRATTACH_H
@@ -37,7 +38,7 @@ EXTERN void CreatureDetachWeapon(ObjID creature, ObjID weaponObj);
 EXTERN BOOL CreatureMakeWeaponPhysical(ObjID creature, ObjID weapon, int weaponType);
 EXTERN void CreatureMakeWeaponNonPhysical(ObjID creature, ObjID weapon);
 EXTERN void CreatureAttachmentModify(ObjID creature, ObjID weapon, sCreatureAttachInfo *pAttachInfo);
-
+EXTERN sCreatureAttachInfo* CreatureAttachmentGet(ObjID creature, ObjID item, const int& inIndex);
 ////////////////////////////////////////
 
 #endif

@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/dataops/RCS/dataops.h 1.1 1999/04/07 14:36:02 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/dataops.h,v 1.4 2000/01/29 13:22:58 adurant Exp $
+#pragma once
 
 #ifndef __DATAOPS_H
 #define __DATAOPS_H
