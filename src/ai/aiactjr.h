@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiactjr.h 1.8 1999/09/03 20:05:36 Justin Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiactjr.h,v 1.9 1999/11/19 20:51:27 adurant Exp $
 //
 // AI joint rotate
 //
@@ -35,6 +35,8 @@ public:
    void Set(int jointID, ObjID targetObj, floatang epsilonAng = 0.01);
 
    ObjID GetTarget(void) const {return m_targetID;}
+   floatang GetTargetAng(void) const {return m_targetAng;}
+   int GetJointID(void) const {return m_jointID;}
    void SetTarget(ObjID targetID) {m_targetID = targetID;}
 
    // Update the action
