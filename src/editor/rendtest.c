@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/rendtest.c,v 1.6 2000/02/19 13:11:20 toml Exp $
 // tests the renderer by doing lots of renderings from various places
 
