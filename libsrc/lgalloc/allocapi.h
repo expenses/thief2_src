@@ -1,8 +1,13 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/allocapi.h $
-// $Author: ccarollo $
-// $Date: 1999/02/11 11:48:14 $
-// $Revision: 1.10 $
+// $Author: TOML $
+// $Date: 1970/01/01 00:00:00 $
+// $Revision: 1.11 $
 //
 // Allocator APIs
 //
@@ -188,12 +193,14 @@ DECLARE_INTERFACE_(IDebugMalloc, IMalloc)
       {
          __cAutoAllocCredit(const char * pszFile, int line)
          {
-            g_pMalloc->PushCredit(pszFile, line);
+            if (g_pMalloc)
+               g_pMalloc->PushCredit(pszFile, line);
          }
          
          ~__cAutoAllocCredit()
          {
-            g_pMalloc->PopCredit();
+            if (g_pMalloc)
+               g_pMalloc->PopCredit();
          }
       };
       #define LGALLOC_AUTO_CREDIT() __cAutoAllocCredit _AAC_ ## __LINE__ (__FILE__, __LINE__)
