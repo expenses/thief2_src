@@ -1,7 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.3 2000/02/11 11:16:39 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.4 2000/02/21 19:43:11 TJS Exp $
 //
 
+
+#ifdef TOO_DANGEROUS_TO_LIVE
 /* Creates watch links to this object when it gets created.
    Used for such things as blood pools and missing loot markers.
    For now, we decide who cares by deciding it's always "All Humans"
@@ -19,7 +21,7 @@ MESSAGES:
       DefaultOnBeginScript();
    }
 END_SCRIPT(WatchMe)
-
+#endif
 
 // Script: BloodDeathSentence
 /* Ticks off a random number of frames of the object's TweqFlicker
@@ -82,8 +84,8 @@ MESSAGES:
 
          Object.Teleport(newobj, vector(0,0,0), vector(0,0,0), self);
 
-	 Property.Set(newobj,"SuspObj","Is Suspicious",TRUE);
-	 Property.Set(newobj,"SuspObj","Suspicious Type","missingloot");
+         Property.Set(newobj,"SuspObj","Is Suspicious",TRUE);
+         Property.Set(newobj,"SuspObj","Suspicious Type","missingloot");
 	
          SetData("OutOfPlace",TRUE);
       }
@@ -91,6 +93,7 @@ MESSAGES:
    }
 END_SCRIPT(GoMissing)
 
+#ifdef OLD_WAY
 // Script: SecureDoor
 /* For doors which are conspicuous should they be open.
    Adds AIWatchLink from all humans whenever the door is open.
@@ -144,6 +147,8 @@ MESSAGES:
       DefaultOnFrobWorldEnd();
    }
 END_SCRIPT(SecureDoor)
+#endif
+
 
 
 //since suspicious objects now require that objects have the property 
