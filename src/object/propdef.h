@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/propdef.h,v 1.5 1998/10/08 16:30:10 MROWLEY Exp $
 #pragma once  
 #ifndef __PROPDEF_H
