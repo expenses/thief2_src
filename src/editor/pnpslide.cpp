@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/pnpslide.cpp,v 1.19 1997/12/22 18:24:19 mahk Exp $
 
 #include <string.h>

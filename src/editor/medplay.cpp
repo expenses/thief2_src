@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/medplay.cpp,v 1.8 2000/02/19 13:11:04 toml Exp $
 // XXX @TODO: either get rid of cur_role stuff, or make it work
 
