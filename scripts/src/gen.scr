@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.35 2000/01/20 11:08:23 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.36 2000/01/20 11:24:28 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -3115,17 +3115,17 @@ MESSAGES:
 
    OnFrobWorldEnd()
    {
-       if (DarkGame.BindingGetFloat("auto_search") != 0.0)
-       {
-           Debug.MPrint("Performing Loot And Lug");
-           object carriedobj = GetCarriedObj(self);
-	   if (carriedobj != object(self))
-	   {
-	       Container.Add(carriedobj,message.Frobber);
-	       Reply(FALSE);
-           }       
-       }
-       DefaultOnFrobWorldBegin();
+      if (DarkGame.BindingGetFloat("auto_search") != 0.0)
+      {
+         Debug.MPrint("Performing Loot And Lug");
+         object carriedobj = GetCarriedObj(self);
+         if (carriedobj != object(self))
+         {
+            Container.Add(carriedobj,message.Frobber);
+            Reply(FALSE);
+         }       
+      }
+      DefaultOnFrobWorldEnd();
    }
 
    OnSlain()
