@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/texmem.c,v 1.50 2000/02/14 20:35:21 bfarquha Exp $
 // this system tracks and deals with current textures in memory
 // knows how to load them and convert into portal format
