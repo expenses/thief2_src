@@ -1,16 +1,22 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.16 $
-# $Author: jaemz $
-# $Date: 1994/10/11 13:02:35 $
+# $Revision: 1.17 $
+# $Author: dc $
+# $Date: 1994/11/07 20:44:24 $
 #
+
+%if defined(NONET)
+ROOTDRIVE=$(NONET):
+%else
+ROOTDRIVE=r:
+%endif
 
 DEBUG_ON= 1
 
 COMPILER= watcom
-SRCDIR= r:\prj\lib\src\input
-RELDIR= r:\prj\lib\rel
-BUILD_DIR= r:\prj\lib\build\input
+SRCDIR= $(ROOTDRIVE)\prj\lib\src\input
+RELDIR= $(ROOTDRIVE)\prj\lib\rel
+BUILD_DIR= $(ROOTDRIVE)\prj\lib\build\input
 
 OBJDIR= objo
 BINDIR=
@@ -38,7 +44,7 @@ INPUT_OBJS= \
         kbstate.obj kbcook.obj kbasctab.obj \
         kbcntry.obj \
         leds.obj \
-        joyflat.obj joystick.obj ngpjoy.obj basjoy.obj \
+        joyflat.obj joystick.obj ngpjoy.obj basjoy.obj fanjoy.obj \
         mouse.obj  mousedev.obj
 INPUT_HDRS= mouse.h kb.h kbcook.h joystick.h mousevel.h
 
