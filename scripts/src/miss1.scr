@@ -576,6 +576,24 @@ BEGIN_SCRIPT(Training, RootScript)
              return DoLesson("UseFlareLight","Use");
        return FALSE;
     }
+
+    METHOD boolean IsKeyFrom(object parent, object targ)
+    {
+       if(Property.Possessed(parent,"KeySrc"))
+          return(Key.TryToUseKey(parent,targ,kKeyUseCheck));
+       else
+       {
+          linkset descend=Link.GetAll("~MetaProp",parent);
+          while(descend.AnyLinksLeft())
+          {
+             // We loves recursion.
+             if(IsKeyFrom(descend.Link().To(),targ))
+                return TRUE;
+             descend.NextLink();
+          }
+          return FALSE;
+       }
+    }
     /* How the heck do we do the map lesson?
        What about the light gem lesson?  Do we just score it complete N
        seconds after putting it up?
@@ -602,7 +620,13 @@ BEGIN_SCRIPT(Training, RootScript)
              return DoLesson("SelectKey","CycleInventory");
           }
           else
-             return DoLesson("GoFindKey","");
+          {
+             // Oh, Jesus, now we have to check if there even _is_ a key.
+             if(IsKeyFrom("Key",world))
+                return DoLesson("GoFindKey","");
+             else
+                return DoLesson("NoKeyDoor","");
+          }
        }
     }
     METHOD boolean IsDoor(object obj)
