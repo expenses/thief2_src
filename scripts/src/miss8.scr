@@ -660,7 +660,9 @@ MESSAGES:
 
    OnSim()
    {
-      SetOneShotTimer(self,"verifypockets",5.0);
+      if (message.starting)
+         SetOneShotTimer(self,"verifypockets",5.0);
+      DefaultOnSim();
    }
 
    OnBeginScript()
