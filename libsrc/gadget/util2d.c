@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/util2d.c 1.17 1997/08/15 10:30:52 JAEMZ Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/util2d.c,v 1.17 1997/08/15 10:30:52 JAEMZ Exp $
 
 #include <lg.h>
 #include <comtools.h>

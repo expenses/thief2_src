@@ -1,7 +1,12 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #ifndef __UIGADG_H
 #define __UIGADG_H
 /*
- * $Source: x:/prj/tech/libsrc/gadget/RCS/uigadget.h $
+ * $Source: r:/t2repos/thief2/libsrc/gadget/uigadget.h,v $
  * $Revision: 1.1 $
  * $Author: mahk $
  * $Date: 1996/07/25 03:32:39 $
