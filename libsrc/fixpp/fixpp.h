@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: x:/prj/tech/libsrc/fixpp/RCS/fixpp.h 1.49 1996/10/11 12:52:44 TOML Exp $
  */
 
