@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.16 2000/03/03 09:47:08 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.17 2000/03/04 18:45:06 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -539,7 +539,7 @@ OnMessage()
 		PostMessage(TheDoor,"TurnOn");
 
 		// alert the bots
-		BroadcastToThoseWhoInherit("TurnOn",Object.Named("CombatBot"));
+		BroadcastToThoseWhoInherit("TurnOn",Object.Named("Robot"));
 	}
 
 	DefaultOnMessage();
@@ -1060,8 +1060,8 @@ void PlaceAtOutput(integer slot, object obj)
    if ((integer)obj == OBJ_NULL)
       return;
 
-	// if obj is a grenade, remove its physics
-	if (Object.InheritsFrom(obj,Object.Named("Grenadz")))
+	// if obj is a flashbomb, remove its physics
+	if (Object.InheritsFrom(obj,Object.Named("Flashbomb")))
 	{
 		if (Property.Possessed(obj,"PhysType"))
 		{
@@ -1206,11 +1206,15 @@ END_SCRIPT (MachineSlot)
 
 #define kRollingExtra1  "FlareMixture"
 #define kRollingExtra2  "PlateO'Metal"
-#define kRollingResult  "Flare"
+#define kRollingExtra3  "CombatBotBoiler"
+#define kRollingResult1 "Flare"
+#define kRollingResult2 "QuoteList"
 
 #define kSealingExtra1  "MineBulb"
 #define kSealingExtra2  "PlateO'Metal"
-#define kSealingResult  "Mine"
+#define kSealingExtra3  "BantamNode"
+#define kSealingResult1 "Mine"
+#define kSealingResult2 "ExplosiveCharge"
 
 #define kLinkingExtra1  "InvGauge"
 #define kLinkingExtra2  "BantamNode"
@@ -1218,7 +1222,10 @@ END_SCRIPT (MachineSlot)
 
 #define kFusingExtra1   "AcidMixture"
 #define kFusingExtra2   "WireSpool"
-#define kFusingResult   "FluxSpheroid"
+#define kFusingExtra3   "PlateO'Metal"
+#define kFusingExtra4   "FluxSpheroid"
+#define kFusingResult1  "FluxSpheroid"
+#define kFusingResult2  "Flashbomb"
 
 #define kAmalgExtra1    "IronChassis"
 #define kAmalgExtra2    "QuickLimeMixture"
@@ -1226,7 +1233,7 @@ END_SCRIPT (MachineSlot)
 #define kAmalgExtra4    "FlareMixture"
 #define kAmalgResult1   "MineBulb"
 #define kAmalgResult2   "FlareMixture"
-#define kAmalgResult3   "Flashbomb"
+#define kAmalgResult3   "FlashMine"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -1300,7 +1307,20 @@ void Transmogrify()
    if (Object.InheritsFrom(obj1, Object.Named(kRollingExtra1)) && 
        Object.InheritsFrom(obj2, Object.Named(kRollingExtra2)))
    {
-      newObj = Object.Create(Object.Named(kRollingResult));
+      newObj = Object.Create(Object.Named(kRollingResult1));
+   }
+   else
+   if (Object.InheritsFrom(obj1, Object.Named(kRollingExtra3)) && 
+       Object.InheritsFrom(obj2, Object.Named(kRollingExtra2)))
+   {
+      SetData("Extra3Count", (integer)GetData("Extra3Count") + 1);
+
+		int N=4;
+	   if ((integer)GetData("Extra3Count") >= N) 
+		{
+	      newObj = Object.Create(Object.Named(kRollingResult2));
+	      SetData("Extra3Count", (integer)GetData("Extra3Count") - N);
+		}
    }
    else
       newObj = obj1;
@@ -1387,7 +1407,15 @@ void Transmogrify()
 			(Object.InheritsFrom(obj2, Object.Named(kSealingExtra1)) && 
 			 Object.InheritsFrom(obj1, Object.Named(kSealingExtra2)))	)
    {
-      newObj = Object.Create(Object.Named(kSealingResult));
+      newObj = Object.Create(Object.Named(kSealingResult1));
+   }
+   else
+   if (	(Object.InheritsFrom(obj1, Object.Named(kSealingExtra1)) && 
+			 Object.InheritsFrom(obj2, Object.Named(kSealingExtra3))) )
+   {
+      newObj = Object.Create(Object.Named(kSealingResult2));
+		// tell secret its been scored
+		PostMessage(Object.Named("ManufactureSecret3"),"TurnOn");
    }
    else
    {
@@ -1515,11 +1543,25 @@ void Transmogrify()
        ((integer)GetData("Extra1Count") > 0) &&
        ((integer)GetData("Extra2Count") > 0))
    {
-      newObj = Object.Create(Object.Named(kFusingResult));
+      newObj = Object.Create(Object.Named(kFusingResult1));
 
       SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
       SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
    }
+	else
+   if (((integer)newObj == OBJ_NULL) && 
+       ((integer)GetData("Extra3Count") > 0) &&
+       ((integer)GetData("Extra4Count") > 0))
+   {
+      newObj = Object.Create(Object.Named(kFusingResult2));
+
+		// tell secret its been scored
+		PostMessage(Object.Named("ManufactureSecret2"),"TurnOn");
+
+      SetData("Extra3Count", (integer)GetData("Extra3Count") - 1);
+      SetData("Extra4Count", (integer)GetData("Extra4Count") - 1);
+   }
+
 
    // Place any output object at our output location
    PlaceAtOutput(1, newObj);
@@ -1542,6 +1584,18 @@ void HandleInput(integer slot, object obj)
    if (Object.InheritsFrom(obj, Object.Named(kFusingExtra2)))
    {
       SetData("Extra2Count", (integer)GetData("Extra2Count") + 1);
+      Object.Destroy(obj);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kFusingExtra3)))
+   {
+      SetData("Extra3Count", (integer)GetData("Extra3Count") + 1);
+      Object.Destroy(obj);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kFusingExtra4)))
+   {
+      SetData("Extra4Count", (integer)GetData("Extra4Count") + 1);
       Object.Destroy(obj);
    }
    else
@@ -1584,8 +1638,11 @@ void Transmogrify()
    if (((integer)GetData("Extra1Count") > 0) &&
        ((integer)GetData("Extra4Count") > 0))
    {
+		// tell secret its been scored
+		PostMessage(Object.Named("ManufactureSecret1"),"TurnOn");
+
       object newObj = Object.Create(Object.Named(kAmalgResult3));
-      PlaceAtOutput(2, newObj);
+      PlaceAtOutput(1, newObj);
 
       SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
       SetData("Extra4Count", (integer)GetData("Extra4Count") - 1);
