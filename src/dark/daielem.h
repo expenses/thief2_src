@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/dark/RCS/daielem.h 1.2 1998/08/31 11:16:18 TOML Exp $
+// $Header: r:/t2repos/thief2/src/dark/daielem.h,v 1.3 2000/01/31 09:39:49 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __DAIELEM_H
 #define __DAIELEM_H

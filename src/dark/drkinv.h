@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkinv.h 1.4 1998/05/22 00:35:53 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkinv.h,v 1.5 2000/01/31 09:39:56 adurant Exp $
 // dark specific inventory stuff
+#pragma once
 
 #ifndef __DRKINV_H
 #define __DRKINV_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkloop.h 1.2 1998/04/24 14:13:16 TOML Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkloop.h,v 1.3 2000/01/31 09:39:58 adurant Exp $
+#pragma once
 #ifndef __DRKLOOP_H
 #define __DRKLOOP_H
 

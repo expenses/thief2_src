@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkwbow_.h 1.1 1998/05/01 11:59:31 kate Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkwbow_.h,v 1.2 2000/01/31 09:40:08 adurant Exp $
+#pragma once
 
 #ifndef __DRKWBOW__H
 #define __DRKWBOW__H

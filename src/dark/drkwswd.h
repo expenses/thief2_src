@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkwswd.h 1.8 1998/11/02 03:18:45 dc Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkwswd.h,v 1.9 2000/01/31 09:40:09 adurant Exp $
 // Player-specific weapon stuff
+#pragma once
 
 #ifndef __DRKWSWD_H
 #define __DRKWSWD_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkreact.h 1.2 1997/10/13 20:31:43 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkreact.h,v 1.3 2000/01/31 09:40:03 adurant Exp $
+#pragma once
 
 #ifndef __DRKREACT_H
 #define __DRKREACT_H
