@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadget.c 1.54 1998/04/08 13:38:03 KEVIN Exp $
+// $Header: r:/t2repos/thief2/libsrc/gadget/gadget.c,v 1.56 1998/09/09 14:59:27 KEVIN Exp $
 
 // library includes
 #include <lg.h>
@@ -205,10 +205,8 @@ bool LGadKeyHandler(uiEvent *e, Region *r, void *data)
         else
                 retval = FALSE;
       }
-      if (!retval)
-         hotkey_dispatch(e->subtype);
    }
-   return(TRUE);
+   return(retval);
 }
 
 bool LGadMouseHandler(uiEvent *e, Region *r, void *data)
@@ -745,6 +743,23 @@ int LGadDrawCallback(DrawCallback dcb, LGadBox *vb, void *data, Rect *r)
                    min(can->bm.w - r->ul.x,sub.bm.w),
                    min(can->bm.h - r->ul.y,sub.bm.h));
    dcb(data,vb);
+
+   // draw to both video pages, if requested
+   if (vb->box_flags & BOXFLAG_FLIP) {
+      IDisplayDevice *dd = AppGetObj(IDisplayDevice);
+      int flags;
+      int count;
+      // first, check if we're in page flipping mode!
+      dd->lpVtbl->GetKind2(dd, NULL, &flags, NULL);
+      if (flags & kDispAttemptFlippable) {
+         count = dd->lpVtbl->BreakLock(dd);
+         dd->lpVtbl->PageFlip(dd);
+         dd->lpVtbl->RestoreLock(dd, count);
+         dcb(data,vb);
+      }
+      SafeRelease(dd);
+   }
+
    gr_pop_canvas();
    gr_close_sub_canvas(&sub);
    return(0);
