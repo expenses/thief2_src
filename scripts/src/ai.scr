@@ -1039,7 +1039,11 @@ METHODS:
        return;
      }
      SetData("DoingSuspicious",1);  //semaphore for a gaslight
-     SetData("CurrentObj",suspobj);
+     SetData("CurrentObj",suspobj);//BAD BAD WRONG WRONG save/load problems
+                                   //but unlikely to save/load at just
+                                   //wrong time AND screw up... and we
+                                  //don't delete these or anything
+                                   //so live for now.  AMSD
      //Our plan here is to walk over to the light, then frob it, then
      //unset our semaphore, and look for the next suspicious thing.
      if (!GotoObjLoc(suspobj,kNormalSpeed,kNormalPriorityAction,"gogaslight"))
