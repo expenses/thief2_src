@@ -1858,6 +1858,10 @@ METHODS:
       Property.Set(self,"ScriptTiming",minutes);
       SetFace();
    }
+   METHOD integer AxleID(boolean minutes)
+   {
+      return(minutes?5:4); // @TODO: Magic numbers must die.
+   }
 
    // @TODO: Animate nicely when changing face setting instead of changing instantly.
    METHOD void SetFace()
@@ -1866,8 +1870,8 @@ METHODS:
       float hours=float(minutes)/60.0; // float to preserve angle precision
       float minjoint=(minutes*360)/60;
       float hourjoint=(hours*360)/12;
-      const integer minaxle=5; // @TODO: Magic numbers must die.
-      const integer houraxle=4;
+      const integer minaxle=AxleID(TRUE); 
+      const integer houraxle=AxleID(FALSE);
 
       minutes=minutes%60;
       if(minaxle!=0)
@@ -1931,6 +1935,15 @@ MESSAGES:
    }
   
 END_SCRIPT(Clock)
+
+
+BEGIN_SCRIPT(BigClockFace, Clock)
+   METHOD integer AxleID(boolean minutes)
+   {
+      return(minutes?2:1); // @TODO: Magic numbers must die.
+   }
+END_SCRIPT(BigClockFace)
+
 
 /* For "locks" that want to model-swap when unlocked, as when the
    "key" is really a missing part that slots into the locked object.
