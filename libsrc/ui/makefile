@@ -3,7 +3,7 @@ SPEW_ON = 1
 WARN_ON = 1
 DBG_ON = 1
 
-PROG_TARGETS =  regtest arraytst gadtest dummy # citadel
+PROG_TARGETS =  regtest arraytst gadtest texttest # citadel
 LIB_TARGETS =
 INST_TARGETS =
 
@@ -27,11 +27,14 @@ ARRAYTST_OBJS = array.obj arraytst.obj
 ARRAYTST_LIBS = lg.lib mprintf.lib
 
 GADTEST_OBJS = gadgets.obj rect.obj gadtest.obj region.obj event.obj \
-        array.obj pushbutt.obj butarray.obj slider.obj
+        array.obj pushbutt.obj butarray.obj slider.obj textgadg.obj \
+        qboxgadg.obj        
 GADTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib kb.lib mouse.lib
 
-DUMMY_OBJS = dummy.obj
-DUMMY_LIBS = lg.lib mprintf.lib
+TEXTTEST_OBJS = texttest.obj gadgets.obj region.obj slider.obj \
+        textgadg.obj rect.obj pushbutt.obj \
+        event.obj array.obj
+TEXTTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib kb.lib mouse.lib
 
 # Libraries
 
