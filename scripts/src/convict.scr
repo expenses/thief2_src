@@ -111,8 +111,21 @@ MESSAGES:
 
    OnObjRoomTransit()
    {
+      /* This code used to say this:
       ScanGoals(kGoalGoTo,message.ToObjId,TRUE);
       ScanGoals(kGoalGoTo,message.FromObjId,FALSE);
+      
+      the problem with this is that if both the To and From rooms inherit from a target
+      room, the goal won't be scored correctly.  The player is still in the target room,
+      but seems to be out of it.  Reversing the logic fixes the short-term problem.
+      It still will break in the case of a REVERSE room transition goal, since the player
+      will briefly seem to be leaving the target room (as required) when instead he's
+      really just going from one descendant of that room to another. -TJS 11/3/99
+      @TODO: Fix this.
+      */
+      
+      ScanGoals(kGoalGoTo,message.FromObjId,FALSE);
+      ScanGoals(kGoalGoTo,message.ToObjId,TRUE);
    }
    OnMessage()
    {
@@ -127,3 +140,11 @@ MESSAGES:
 
 
 END_SCRIPT(VictoryCheck)
+
+
+
+
+
+
+
+
