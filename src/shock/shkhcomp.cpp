@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkhcomp.cpp,v 1.7 2000/02/19 13:25:21 toml Exp $
 
 // alarm icon
