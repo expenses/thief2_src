@@ -2,11 +2,14 @@
 #	Makefile for GFILE library
 #	----------------------------------
 #
-# $Header: x:/prj/tech/libsrc/gfile/RCS/makefile 1.3 1993/09/27 19:22:42 rex Exp $
+# $Header: x:/prj/tech/libsrc/gfile/RCS/makefile 1.4 1993/10/07 09:44:55 rex Exp $
 # $Log: makefile $
-# Revision 1.3  1993/09/27 19:22:42  rex
-# Added cel.obj
+# Revision 1.4  1993/10/07 09:44:55  rex
+# Added bmp.obj
 #
+# Revision 1.3  1993/09/27  19:22:42  rex
+# Added cel.obj
+# 
 # Revision 1.2  1993/09/27  18:01:07  rex
 # Added gif.obj
 # 
@@ -33,7 +36,7 @@ LIBPATH = $(RELDIR)
 LIB_TARGETS  = gfile
 INST_TARGETS = gfile
 
-GFILE_OBJS = gfile.obj pcx.obj gif.obj cel.obj
+GFILE_OBJS = gfile.obj pcx.obj gif.obj cel.obj bmp.obj
 GFILE_HDRS = gfile.h
 
 BUILD_DIR	= n:\project\lib\build\gfile
@@ -45,6 +48,10 @@ BUILD_DIR	= n:\project\lib\build\gfile
 #	----------------------------------
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
+
+bmp.obj: 2d.h datapath.h dbg.h dbgmacro.h fix.h gfile.h lg.h lgalt.h \
+	 malloc.h memall.h memmacro.h rect.h stdio.h stdlib.h string.h \
+	 types.h
 
 cel.obj: 2d.h datapath.h dbg.h dbgmacro.h fix.h gfile.h lg.h lgalt.h \
 	 limits.h malloc.h memall.h memmacro.h pjfli.h pjstypes.h rect.h \
