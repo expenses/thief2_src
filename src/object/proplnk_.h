@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/proplnk_.h,v 1.5 2000/01/29 13:24:36 adurant Exp $
 #pragma once
 #ifndef __PROPLNK__H
