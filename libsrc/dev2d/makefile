@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.12 $
+# $Revision: 1.13 $
 # $Author: KEVIN $
-# $Date: 1996/08/22 15:12:18 $
+# $Date: 1996/08/29 09:43:52 $
 #
 
 MAKETOP = $(CWD)
@@ -29,7 +29,7 @@ dev2d_OBJS = \
         astring bitmap blend gr \
         bank canvas mxlatch screen grd \
         grnull grmalloc valloc \
-        init svgainit cominit \
+        init svgainit cominit novinit \
         mode \
         bk8cnv bk8p8f \
         bk8vlinf bk8hlinf bk8ubmf \
@@ -65,8 +65,9 @@ dev2d_OBJS = \
         rsdcvt rsdunpck rsdblt8 rsdblt16 \
         smode stastk \
         tluctab \
-        comdtab vgadtab fl8dtab w32dtab vsadtab \
-        comdfcn \
+        comdtab fl8dtab novdtab \
+        vgadtab vsadtab w32dtab \
+        comdfcn nulldfcn \
         vesac vesaasm vsastate \
         vgaasm vgasmod vgastate \
         clpfl8
