@@ -147,6 +147,17 @@ METHODS:
       CheckNoteProps();
       DefaultOnContainer();
    }
+   OnMessage()
+   {
+      if (MessageIs("Reached"))
+      {
+         int stop_chance = (int)message.data;
+         int r = Data.RandInt(0,100);
+
+         Reply(r <= stop_chance);
+      }
+      DefaultOnMessage();
+   }
 
 END_SCRIPT(Courier)
 
