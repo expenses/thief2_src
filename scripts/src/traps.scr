@@ -1078,6 +1078,14 @@ END_SCRIPT(QVarTrapTrigBase)
  */
 BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
 
+   METHOD void Trigger(boolean satisfied)
+   {
+      if(satisfied)
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      else
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+
    /* Process should be called once on begin script to subscribe
       to variable changes and send initial TurnOn/TurnOff consistent
       with quest variable value.
@@ -1108,10 +1116,7 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
 
       if(satisfied!=wassatisfied)
       {
-         if(satisfied)
-            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-         else
-            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         Trigger(satisfied);
       }
       SetData("WasSatisfied",satisfied);
    }
