@@ -221,9 +221,13 @@ OnTimer()
 	{
 		if ((object)GetData("Dest")!=(object)0)
 		{
-			Debug.MPrint(self," going to ",(object)GetData("Dest"));
-			GotoObjLoc((object)GetData("Dest"), kFast, kHighPriorityAction);
+			Property.Set (self, "AI_AlertCap", "Min level", 3);
+			GotoObjLoc((object)GetData("Dest"), kFast); 
 		}
+	}
+	else if (message.name == "Declamp")
+	{
+		Property.Set (self, "AI_AlertCap", "Min level", 0);
 	}
 	DefaultOnTimer();
 }
@@ -239,8 +243,11 @@ OnObjActResult()
 			if (Link.AnyExist("Route",dest))
 			{
 				SetData("Dest",Link.GetOne("Route",dest).To());
-				Debug.MPrint(self," got to ",dest,". Now I'm going to ",(object)GetData("Dest"));
-				GotoObjLoc((object)GetData("Dest"), kFast, kHighPriorityAction);
+				GotoObjLoc((object)GetData("Dest"), kFast); 
+			}
+			else
+			{
+				SetOneShotTimer("Declamp",8.0);
 			}
 		}
 	}
