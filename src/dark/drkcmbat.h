@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkcmbat.h,v 1.4 1998/10/27 20:26:11 dc Exp $
 #pragma once  
 #ifndef __DRKCMBAT_H
