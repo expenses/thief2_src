@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/ghostlst.cpp,v 1.19 1999/12/17 15:37:16 PATMAC Exp $
 // internal data structures/lists for ghost control
 
