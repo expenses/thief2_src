@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.18 1999/11/07 14:41:33 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.19 1999/11/08 11:03:23 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -3203,3 +3203,32 @@ OnAlertness()
 
 END_SCRIPT (WorkerRobot)
 
+
+
+/* Hidden object with this script on it counts as found when slain.
+   Intended primarily for banners, which are marked hidden to indicate
+   that there is something hidden _behind_ them.
+   */
+BEGIN_SCRIPT(SlayFind, RootScript)
+MESSAGES:
+   OnSlain()
+   {
+      DarkGame.FoundObject(self);
+      DefaultOnSlain();
+   }
+END_SCRIPT(SlayFind)
+
+
+/* Hidden object with this script on it counts as found when frobbed.
+   Intended primarily for inventory objects.  Note this doesn't work
+   if the object is in a container, but it's not clear how it could
+   be meaningfully considered "hidden" in that case anyway.
+   */
+BEGIN_SCRIPT(FrobFind, RootScript)
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      DarkGame.FoundObject(self);
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(FrobFind)
