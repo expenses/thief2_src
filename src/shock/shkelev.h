@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkelev.h 1.2 1999/08/07 21:07:53 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkelev.h,v 1.3 2000/01/31 09:55:40 adurant Exp $
+#pragma once
 
 #ifndef __SHKELEV_H
 #define __SHKELEV_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgnapi.h 1.17 1999/11/19 14:53:14 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkgnapi.h,v 1.18 2000/01/31 09:55:48 adurant Exp $
+#pragma once
 
 This file has been moved to gunapi.h AMSD
 

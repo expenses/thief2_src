@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phterr.h 1.6 1998/10/03 10:36:45 TOML Exp $
+// $Header: r:/t2repos/thief2/src/physics/phterr.h,v 1.7 2000/01/31 09:52:10 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __PHTERR_H
 #define __PHTERR_H

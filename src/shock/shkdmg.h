@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkdmg.h 1.2 1998/07/09 14:41:11 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkdmg.h,v 1.3 2000/01/31 09:55:37 adurant Exp $
 // Shock damage models
+#pragma once
 
 #ifndef __SHKDMG_H
 #define __SHKDMG_H

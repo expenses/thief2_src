@@ -1,8 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phprops.h 1.21 1999/02/11 17:03:38 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phprops.h,v 1.23 2000/01/31 09:52:05 adurant Exp $
 //
 // Physics property structures
 //
+#pragma once
 
 #ifndef __PHPROPS_H
 #define __PHPROPS_H
@@ -51,6 +52,9 @@ struct sPhysAttrProp
 
    int  climbable_sides;
    BOOL edge_trigger;
+   mxs_real pore_size; //apparently BOOL is 4 bytes, so 
+                       //this struct is still aligned properly.
+
 };
 
 struct sPhysStateProp

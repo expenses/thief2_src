@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phsubmod.h 1.5 1999/06/29 09:52:38 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phsubmod.h,v 1.6 2000/01/31 09:52:09 adurant Exp $
 //
 // Accessory data structures used by contact tracking code
 //
+#pragma once
 
 #ifndef __PHSUBMOD_H
 #define __PHSUBMOD_H

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phpos.h 1.6 1998/09/18 22:31:01 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phpos.h,v 1.7 2000/01/31 09:52:03 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __PHPOS_H
 #define __PHPOS_H

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phprop.h 1.19 1999/02/26 19:01:39 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phprop.h,v 1.23 2000/01/31 09:52:04 adurant Exp $
 //
 // Physics model properties
 //
+#pragma once
 
 #ifndef __PHPROP_H
 #define __PHPROP_H
@@ -56,6 +57,7 @@ extern void UpdatePhysModel(ObjID objID, int type);
 #define PHYS_STATE_NAME   "PhysState"
 #define PHYS_CONTROL_NAME "PhysControl"
 #define PHYS_DIMS_NAME    "PhysDims"
+#define PHYS_CANMANTLE_NAME "PhysCanMant"
 
 class cPhysTypeProp : public sPhysTypeProp
 {
@@ -80,17 +82,17 @@ public:
 #define INTERFACE IPhysTypeProperty
 DECLARE_PROPERTY_INTERFACE(IPhysTypeProperty)
 {
-   DECLARE_UNKNOWN_PURE(); 
-   DECLARE_PROPERTY_PURE(); 
-   DECLARE_PROPERTY_ACCESSORS(cPhysTypeProp *); 
-}; 
+   DECLARE_UNKNOWN_PURE();
+   DECLARE_PROPERTY_PURE();
+   DECLARE_PROPERTY_ACCESSORS(cPhysTypeProp *);
+};
 
 class cPhysAttrProp : public sPhysAttrProp
 {
 public:
    cPhysAttrProp()
    {
-      Assert_(sizeof(sPhysAttrProp) == 48);  // reminder to update initializers
+      Assert_(sizeof(sPhysAttrProp) == 52);  // reminder to update initializers
 
       gravity = 100.0;
       mass = 30.0;
@@ -105,6 +107,7 @@ public:
 
       climbable_sides = 0;
       edge_trigger = 0;
+      pore_size = 0.0;
    }
 };
 
@@ -112,10 +115,10 @@ public:
 #define INTERFACE IPhysAttrProperty
 DECLARE_PROPERTY_INTERFACE(IPhysAttrProperty)
 {
-   DECLARE_UNKNOWN_PURE(); 
-   DECLARE_PROPERTY_PURE(); 
-   DECLARE_PROPERTY_ACCESSORS(cPhysAttrProp *); 
-}; 
+   DECLARE_UNKNOWN_PURE();
+   DECLARE_PROPERTY_PURE();
+   DECLARE_PROPERTY_ACCESSORS(cPhysAttrProp *);
+};
 
 class cPhysStateProp : public sPhysStateProp
 {
@@ -135,10 +138,10 @@ public:
 #define INTERFACE IPhysStateProperty
 DECLARE_PROPERTY_INTERFACE(IPhysStateProperty)
 {
-   DECLARE_UNKNOWN_PURE(); 
-   DECLARE_PROPERTY_PURE(); 
-   DECLARE_PROPERTY_ACCESSORS(cPhysStateProp *); 
-}; 
+   DECLARE_UNKNOWN_PURE();
+   DECLARE_PROPERTY_PURE();
+   DECLARE_PROPERTY_ACCESSORS(cPhysStateProp *);
+};
 
 class cPhysControlProp : public sPhysControlProp
 {
@@ -159,10 +162,10 @@ public:
 #define INTERFACE IPhysControlProperty
 DECLARE_PROPERTY_INTERFACE(IPhysControlProperty)
 {
-   DECLARE_UNKNOWN_PURE(); 
-   DECLARE_PROPERTY_PURE(); 
-   DECLARE_PROPERTY_ACCESSORS(cPhysControlProp *); 
-}; 
+   DECLARE_UNKNOWN_PURE();
+   DECLARE_PROPERTY_PURE();
+   DECLARE_PROPERTY_ACCESSORS(cPhysControlProp *);
+};
 
 class cPhysDimsProp : public sPhysDimsProp
 {
@@ -187,16 +190,18 @@ public:
 #define INTERFACE IPhysDimsProperty
 DECLARE_PROPERTY_INTERFACE(IPhysDimsProperty)
 {
-   DECLARE_UNKNOWN_PURE(); 
-   DECLARE_PROPERTY_PURE(); 
-   DECLARE_PROPERTY_ACCESSORS(cPhysDimsProp *); 
-}; 
+   DECLARE_UNKNOWN_PURE();
+   DECLARE_PROPERTY_PURE();
+   DECLARE_PROPERTY_ACCESSORS(cPhysDimsProp *);
+};
 
 EXTERN IPhysTypeProperty    *g_pPhysTypeProp;
 EXTERN IPhysAttrProperty    *g_pPhysAttrProp;
 EXTERN IPhysStateProperty   *g_pPhysStateProp;
 EXTERN IPhysControlProperty *g_pPhysControlProp;
 EXTERN IPhysDimsProperty    *g_pPhysDimsProp;
+EXTERN IBoolProperty        *g_pPhysCanMantleProp;
+EXTERN IVectorProperty      *g_pPhysConveyorVelProp;
 
 #endif /* !__PHPROP_H */
 

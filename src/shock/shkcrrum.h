@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkcrrum.h 1.1 1998/12/02 10:47:26 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcrrum.h,v 1.2 2000/01/31 09:55:26 adurant Exp $
 //
+#pragma once
 
 #ifndef __SHKCRRUM_H
 #define __SHKCRRUM_H

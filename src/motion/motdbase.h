@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/motdbase.h 1.5 1998/08/05 11:01:50 kate Exp $
+// $Header: r:/t2repos/thief2/src/motion/motdbase.h,v 1.6 2000/01/31 09:50:57 adurant Exp $
+#pragma once
 
 // declaration of motdatabase structs that are forward declared in motdbtyp.h
 #ifndef __MOTDBASE_H

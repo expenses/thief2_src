@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/phnet.h 1.11 1999/08/05 17:23:41 Justin Exp $
+// $Header: r:/t2repos/thief2/src/physics/phnet.h,v 1.12 2000/01/31 09:52:01 adurant Exp $
+#pragma once
 
 #ifndef _PHYSNET_H
 #define _PHYSNET_H

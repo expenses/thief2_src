@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgame.h 1.8 1999/02/13 23:18:32 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkgame.h,v 1.9 2000/01/31 09:55:46 adurant Exp $
+#pragma once
 
 #ifndef SHKGAME_H
 #define SHKGAME_H

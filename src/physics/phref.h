@@ -1,8 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phref.h 1.8 1998/07/08 18:10:55 mahk Exp $
+// $Header: r:/t2repos/thief2/src/physics/phref.h,v 1.9 2000/01/31 09:52:06 adurant Exp $
 //
 // Physics ref system header
 //
+#pragma once
 
 #ifndef __PHREF_H
 #define __PHREF_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgunan.h 1.3 1999/11/19 14:53:31 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkgunan.h,v 1.4 2000/01/31 09:55:51 adurant Exp $
+#pragma once
 
 This file has been moved to gunanim.h AMSD
 

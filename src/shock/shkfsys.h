@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkfsys.h 1.5 1999/04/02 12:08:12 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkfsys.h,v 1.6 2000/01/31 09:55:45 adurant Exp $
+#pragma once
 
 #ifndef __SHKFSYS_H
 #define __SHKFSYS_H

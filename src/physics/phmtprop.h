@@ -1,8 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmtprop.h 1.4 1999/03/10 13:02:40 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmtprop.h,v 1.5 2000/01/31 09:52:00 adurant Exp $
 //
 // Physics moving terrain properties/links
 //
+#pragma once
 
 #ifndef __PHMTPROP_H
 #define __PHMTPROP_H

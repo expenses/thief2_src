@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phscrt.h 1.5 1998/07/21 19:00:31 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phscrt.h,v 1.6 2000/01/31 09:52:08 adurant Exp $
 //
+#pragma once
 
 #ifndef __PHSCRT_H
 #define __PHSCRT_H

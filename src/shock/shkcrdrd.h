@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////
 //
-// $Header: r:/prj/cam/src/shock/RCS/shkcrdrd.h 1.2 1998/12/02 10:48:00 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcrdrd.h,v 1.3 2000/01/31 09:55:20 adurant Exp $
 //
+#pragma once
 
 #ifndef __SHKCRDRD_H
 #define __SHKCRDRD_H

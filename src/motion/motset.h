@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/motset.h 1.5 1998/08/07 15:18:31 kate Exp $
+// $Header: r:/t2repos/thief2/src/motion/motset.h,v 1.6 2000/01/31 09:51:04 adurant Exp $
+#pragma once
 
 #ifndef __MOTSET_H
 #define __MOTSET_H
