@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.18 $
+# $Revision: 1.19 $
 # $Author: KEVIN $
-# $Date: 1996/12/06 15:28:49 $
+# $Date: 1996/12/06 15:46:47 $
 #
 
 MAKETOP = $(CWD)
@@ -80,6 +80,10 @@ gdtest_LIBS = lg dev2d mprintf
 
 DEV2D_HDRS = dev2d.h astring.h bitmap.inc cseg.inc dseg.inc gdican.inc
 
+newline_hack=" "
+newline=$(newline_hack,W\n)
+dependent_includes="\#include \<fix.h\>"$(newline)"\#include \<matrixs.h\>"
+
 dev2d.h .REREAD :\
         emode.h grs.h bitmap.h canvas.h screen.h mode.h alpha.h \
         fill.h clip.h icanvas.h idevice.h grd.h context.h \
@@ -90,7 +94,7 @@ dev2d.h .REREAD :\
         rgb.h blnfcn.h \
         stupid.h
 	$(eko1) $(@,F) \<-- $(?,F)
-	%do comp_h h_pre="\#include \<fix.h\>" h_in="$^" h_out="$(@,F)"
+	%do comp_h h_pre=$(dependent_includes) h_in="$^" h_out="$(@,F)"
 
 %include $(MRC)\make.rc
 
