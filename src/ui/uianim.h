@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/ui/uianim.h,v 1.2 1998/11/04 22:39:17 jaemz Exp $
 
 // this is for little anims on the screen that
