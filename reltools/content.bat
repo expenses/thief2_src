@@ -99,7 +99,7 @@ rem so now we grab the separate thief 2 stuff
 xcopy /D /s /I %_ARTPATH2_%\finals\bitmap %_BLDDRV_%\prj\cam\art\finals\bitmap
 xcopy /D /s /I %_ARTPATH2_%\finals\fam %_BLDDRV_%\prj\cam\art\finals\fam
 xcopy /D /s /I %_ARTPATH2_%\finals\books %_BLDDRV_%\prj\cam\art\finals\books
-rem xcopy /D /s /I %_ARTPATH2_%\finals\default %_BLDDRV_%\prj\cam\art\finals\default
+xcopy /D /s /I %_ARTPATH2_%\finals\default %_BLDDRV_%\prj\cam\art\finals\default
 xcopy /D /s /I %_ARTPATH2_%\finals\editor %_BLDDRV_%\prj\cam\art\finals\editor
 xcopy /D /s /I %_ARTPATH2_%\finals\intrface %_BLDDRV_%\prj\cam\art\finals\intrface
 xcopy /D /s /I %_ARTPATH2_%\finals\mesh %_BLDDRV_%\prj\cam\art\finals\mesh
