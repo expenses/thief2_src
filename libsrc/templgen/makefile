@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/templgen/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1996/05/01 17:00:11 $
+# $Date: 1996/05/03 15:10:21 $
 #
 # Makefile for templgen library
 #
@@ -17,8 +17,8 @@ PROJECT = tech
 
 LIBTARGS = templgen
 
-COMTOOLS_OBJS = templ1
+templgen_OBJS = templ1
 
-COMTOOLS_HDRS =
+templgen_HDRS =
 
 %include $(MRC)\make.rc
