@@ -40,3 +40,159 @@ UITEST_LIBS = _lg.lib _2d.lib _input.lib _res.lib _fix.lib \
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
+butarray.obj: 2d.h array.h butarray.h ctype.h cursors.h datapath.h dbg.h \
+	 error.h event.h fcntl.h fix.h gadgets.h gfx.h io.h kb.h kbcook.h \
+	 lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h rect.h region.h \
+	 res.h restypes.h slab.h slider.h slist.h stat.h stdio.h stdlib.h \
+	 string.h tng.h tngapp.h tngbarry.h tngslidr.h types.h
+
+cursors.obj: 2d.h array.h cursors.h dbg.h error.h fix.h lg.h lgalt.h \
+	 libdbg.h malloc.h memall.h mouse.h rect.h region.h slab.h slist.h \
+	 stdio.h string.h types.h
+
+event.obj: 2d.h array.h ctype.h cursors.h dbg.h error.h event.h fix.h kb.h \
+	 kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h rect.h \
+	 region.h slab.h slist.h stdio.h types.h
+
+gadgets.obj: 2d.h array.h ctype.h cursors.h datapath.h dbg.h error.h \
+	 event.h fix.h gadgets.h gfx.h kb.h kbcook.h lg.h lgalt.h libdbg.h \
+	 malloc.h memall.h mouse.h rect.h region.h res.h restypes.h slab.h \
+	 slist.h stdio.h stdlib.h string.h tng.h tngapp.h types.h
+
+gadtest.obj: 2d.h array.h bugtrak.h butarray.h ctype.h cursors.h \
+	 resgadg.h datapath.h dbg.h error.h event.h fix.h gadgets.h \
+	 gfx.h io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 mouse.h mprintf.h pushbutt.h qboxgadg.h rect.h region.h res.h \
+	 restypes.h slab.h slider.h slist.h stat.h stdio.h stdlib.h \
+	 textgadg.h texttool.h tng.h tngapp.h tngbarry.h tngpushb.h \
+	 tngqbox.h tngslidr.h tngtextg.h types.h
+
+hotkey.obj: array.h ctype.h dbg.h error.h hash.h hotkey.h kb.h kbcook.h \
+	 lg.h lgalt.h libdbg.h malloc.h memall.h stdio.h string.h types.h
+
+hottest.obj: ctype.h dbg.h error.h hash.h hotkey.h kb.h kbcook.h lg.h \
+	 lgalt.h libdbg.h malloc.h memall.h stdio.h stdlib.h types.h
+
+menu.obj: 2d.h array.h ctype.h cursors.h datapath.h dbg.h error.h event.h \
+	 fix.h gadgets.h gfx.h hash.h hotkey.h kb.h kbcook.h lg.h lgalt.h \
+	 libdbg.h llist.h malloc.h memall.h menu.h mouse.h rect.h region.h \
+	 res.h restypes.h slab.h slist.h stdio.h stdlib.h string.h \
+	 texttool.h tng.h tngapp.h tngmenu.h types.h
+
+monofont.obj: mprintf.h rect.h string.h texttool.h
+
+plain.obj: 2d.h array.h cursors.h datapath.h dbg.h error.h event.h fix.h \
+	 gadgets.h gfx.h lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h \
+	 plain.h rect.h region.h res.h restypes.h slab.h slist.h stdio.h \
+	 stdlib.h tng.h tngapp.h tngplain.h types.h
+
+pushbutt.obj: 2d.h array.h cursors.h datapath.h dbg.h error.h event.h fix.h \
+	 gadgets.h gfx.h lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h \
+	 pushbutt.h rect.h region.h res.h restypes.h slab.h slist.h stdio.h \
+	 stdlib.h tng.h tngapp.h tngpushb.h types.h
+
+qboxgadg.obj: 2d.h array.h ctype.h cursors.h datapath.h dbg.h error.h \
+	 event.h fcntl.h fix.h gadgets.h gfx.h io.h kb.h kbcook.h lg.h \
+	 lgalt.h libdbg.h malloc.h memall.h mouse.h qboxgadg.h rect.h \
+	 region.h res.h restypes.h slab.h slist.h stat.h stdio.h stdlib.h \
+	 string.h tng.h tngapp.h tngqbox.h types.h
+
+realfont.obj: 2d.h fakefont.h fcntl.h fix.h io.h mprintf.h rect.h stat.h \
+	 stdlib.h string.h texttool.h types.h
+
+region.obj: 2d.h array.h cursors.h datapath.h dbg.h error.h event.h fix.h \
+	 gadgets.h gfx.h lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h \
+	 mprintf.h rect.h region.h res.h restypes.h slab.h slist.h stdio.h \
+	 stdlib.h tng.h tngapp.h types.h
+
+slab.obj: 2d.h array.h cursors.h dbg.h error.h fix.h lg.h lgalt.h libdbg.h \
+	 malloc.h memall.h mouse.h rect.h region.h slab.h slist.h stdio.h \
+	 types.h
+
+slider.obj: 2d.h array.h cursors.h datapath.h dbg.h error.h event.h fix.h \
+	 gadgets.h gfx.h lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h \
+	 rect.h region.h res.h restypes.h slab.h slider.h slist.h stdio.h \
+	 stdlib.h string.h tng.h tngapp.h tngslidr.h types.h
+
+textgadg.obj: 2d.h array.h cursors.h datapath.h dbg.h error.h event.h \
+	 fakefont.h fix.h gadgets.h gfx.h lg.h lgalt.h libdbg.h malloc.h \
+	 memall.h mouse.h rect.h region.h res.h restypes.h slab.h slider.h \
+	 slist.h stdio.h stdlib.h string.h textgadg.h texttool.h tng.h \
+	 tngapp.h tngslidr.h tngtextg.h types.h
+
+texttest.obj: 2d.h array.h ctype.h cursors.h resgadg.h datapath.h \
+	 dbg.h error.h event.h fix.h gadgets.h gfx.h io.h kb.h kbcook.h \
+	 lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h mprintf.h \
+	 pushbutt.h rect.h region.h res.h restypes.h slab.h slider.h \
+	 slist.h stat.h stdio.h stdlib.h textgadg.h texttool.h tng.h \
+	 tngapp.h tngpushb.h tngslidr.h tngtextg.h types.h
+
+texttool.obj: ctype.h dbg.h fakefont.h lg.h lgalt.h libdbg.h malloc.h \
+	 memall.h mprintf.h rect.h stdio.h string.h texttool.h tngfont.h \
+	 types.h
+
+tng.obj: 2d.h datapath.h dbg.h error.h fix.h gadgets.h gfx.h lg.h lgalt.h \
+	 libdbg.h malloc.h memall.h rect.h res.h restypes.h stdio.h \
+	 stdlib.h tng.h tngapp.h types.h
+
+tngbarry.obj: 2d.h datapath.h dbg.h error.h fcntl.h fix.h gadgets.h gfx.h \
+	 io.h lg.h lgalt.h libdbg.h malloc.h memall.h rect.h res.h \
+	 restypes.h stat.h stdio.h stdlib.h tng.h tngapp.h tngbarry.h \
+	 tngslidr.h types.h
+
+tngfont.obj: 2d.h datapath.h dbg.h error.h fakefont.h fcntl.h fix.h \
+	 gadgets.h gfx.h io.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 mprintf.h rect.h res.h restypes.h stat.h stdio.h stdlib.h string.h \
+	 texttool.h tng.h tngapp.h tngfont.h types.h
+
+tngmenu.obj: 2d.h ctype.h datapath.h dbg.h error.h fix.h gadgets.h gfx.h \
+	 hash.h hotkey.h kb.h kbcook.h keydefs.h lg.h lgalt.h libdbg.h \
+	 llist.h malloc.h memall.h rect.h res.h restypes.h stdio.h stdlib.h \
+	 string.h texttool.h tng.h tngapp.h tngfont.h tngmenu.h types.h
+
+tngplain.obj: 2d.h datapath.h dbg.h error.h fix.h gadgets.h gfx.h lg.h \
+	 lgalt.h libdbg.h malloc.h memall.h rect.h res.h restypes.h stdio.h \
+	 stdlib.h tng.h tngapp.h tngplain.h types.h
+
+tngpushb.obj: 2d.h datapath.h dbg.h error.h fcntl.h fix.h gadgets.h gfx.h \
+	 io.h lg.h lgalt.h libdbg.h malloc.h memall.h rect.h res.h \
+	 restypes.h stat.h stdio.h stdlib.h tng.h tngapp.h tngpushb.h \
+	 types.h
+
+tngqbox.obj: 2d.h datapath.h dbg.h error.h fcntl.h fix.h gadgets.h gfx.h \
+	 io.h lg.h lgalt.h libdbg.h malloc.h memall.h rect.h res.h \
+	 restypes.h stat.h stdio.h stdlib.h string.h texttool.h tng.h \
+	 tngapp.h tngqbox.h tngslidr.h tngtextg.h types.h
+
+tngslidr.obj: 2d.h datapath.h dbg.h error.h fix.h gadgets.h gfx.h lg.h \
+	 lgalt.h libdbg.h malloc.h memall.h rect.h res.h restypes.h stdio.h \
+	 stdlib.h tng.h tngapp.h tngslidr.h types.h
+
+tngtest.obj: 2d.h array.h bugtrak.h butarray.h ctype.h cursors.h datapath.h \
+	 dbg.h error.h event.h fix.h gadgets.h gfx.h io.h kb.h kbcook.h \
+	 lg.h lgalt.h libdbg.h malloc.h memall.h mouse.h mprintf.h \
+	 pushbutt.h qboxgadg.h rect.h region.h res.h resgadg.h restypes.h \
+	 slab.h slider.h slist.h stat.h stdio.h stdlib.h textgadg.h \
+	 texttool.h tng.h tngapp.h tngbarry.h tngpushb.h tngqbox.h \
+	 tngslidr.h tngtextg.h types.h
+
+tngtextg.obj: 2d.h datapath.h dbg.h error.h fakefont.h fcntl.h fix.h \
+	 gadgets.h gfx.h io.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 rect.h res.h restypes.h stat.h stdio.h stdlib.h texttool.h tng.h \
+	 tngapp.h tngfont.h tngslidr.h tngtextg.h types.h
+
+uitest.obj: 2d.h array.h bugtrak.h butarray.h ctype.h cursors.h \
+	 resgadg.h datapath.h dbg.h error.h event.h fix.h gadgets.h \
+	 gfx.h hash.h hotkey.h io.h kb.h kbcook.h lg.h lgalt.h libdbg.h \
+	 malloc.h memall.h menu.h mouse.h mprintf.h plain.h projdbg.h \
+	 pushbutt.h qboxgadg.h rect.h region.h res.h restypes.h slab.h \
+	 slider.h slist.h stat.h stdio.h stdlib.h string.h textgadg.h \
+	 texttool.h tng.h tngapp.h tngbarry.h tngplain.h tngpushb.h \
+	 tngqbox.h tngslidr.h tngtextg.h types.h
+
+workgadg.obj: 2d.h array.h bugtrak.h butarray.h cursors.h resgadg.h \
+	 datapath.h dbg.h error.h event.h fix.h gadgets.h gfx.h lg.h \
+	 lgalt.h libdbg.h malloc.h memall.h mouse.h mprintf.h pushbutt.h \
+	 qboxgadg.h rect.h region.h res.h restypes.h slab.h slider.h \
+	 slist.h stdio.h stdlib.h textgadg.h texttool.h tng.h tngapp.h \
+	 tngbarry.h tngpushb.h tngqbox.h tngslidr.h tngtextg.h types.h
