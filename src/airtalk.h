@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/airtalk.h 1.3 1997/01/18 17:15:10 mahk Exp $
 
 #ifndef __AIRTALK_H
