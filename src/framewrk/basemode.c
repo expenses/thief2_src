@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/basemode.c,v 1.32 2000/02/19 12:29:37 toml Exp $
 
 #include <stdio.h>
