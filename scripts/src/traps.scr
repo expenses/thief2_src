@@ -1671,6 +1671,32 @@ METHOD void Activate(boolean on, object sender)
 }
 END_SCRIPT(TrapLocker)
 
+//dammit, I'm going to make this available for the dromedheads out there,
+//at least.
+BEGIN_SCRIPT(AdvPickScript,RootScript)
+
+MESSAGES:
+
+   OnPickStateChange()
+   {
+      linkset splinks = Link.GetAll("ScriptParams",self);
+      while (splinks.AnyLinksLeft())
+      {
+         link cursplink = splinks.Link();
+         if ((integer)cursplink.GetData() == message.prevstate)
+         {
+            SendMessage(cursplink.To(),"TurnOff");             
+         }
+         if ((integer)cursplink.GetData() == message.currentstate)
+         {
+            SendMessage(cursplink.To(),"TurnOn");            
+         }
+         splinks.NextLink();         
+      }
+      DefaultOnPickStateChange();
+   }
+
+END_SCRIPT(AdvPickScript)
 
 
 
