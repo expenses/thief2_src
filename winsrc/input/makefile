@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.12 $
-# $Author: TOML $
-# $Date: 1996/11/05 14:28:54 $
+# $Revision: 2.13 $
+# $Author: JON $
+# $Date: 1997/10/06 20:47:12 $
 #
 
 MAKETOP = $(CWD)
@@ -36,7 +36,8 @@ test_LIBS = input
 input_OBJS = \
 	     joystick kbstart kbshut kbasctab mousesys \
         kbsys kbdev kbcook kbwin defehand joywin hatcal fanjoy \
-        recinput inpinit inpguid inpcompo
+        recinput inpinit inpcompo inpdynf inperr \
+		joyold inpman inpguid
 
 input_LIBS = compapis recorder mprintf
 
@@ -47,7 +48,8 @@ input_LIBS = compapis recorder mprintf
 #	kbnext kbphnd kbqueue kbrhnd kbsflag kbshut kbssig kbsstat \
 #	kbstart kbstate leds mouse mousedev
 
-input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h inpinit.h
+input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h inpinit.h joystick.h \
+        joyapi.h inpapi.h inpbase.h inpface.h
 
 # fix this, want right h2i args
 
@@ -82,6 +84,14 @@ kb.h: kbs.h kbdecl.h kbscan.h kbmod.h kbarray.h kbstate.h
         @echo \#endif /* !__KB_H */>>$(@,F)
 
 %include $(MRC)\make.rc
+
+
+
+
+
+
+
+
 
 
 
