@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/inv_rend.c,v 1.47 2000/02/19 13:15:07 toml Exp $
 // code to draw the current inventory object
 // more generally, code to support the issue of rendering models to various canvases

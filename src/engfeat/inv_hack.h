@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/inv_hack.h,v 1.9 1998/05/14 22:52:29 dc Exp $
 // inventory basics till we have real code
 
