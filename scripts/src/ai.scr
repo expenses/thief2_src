@@ -1275,4 +1275,14 @@ END_SCRIPT(ContainWaterProp)
 
 
 
+/* We don't want dead AIs to ping back mines.  This takes care of that.
+ */
+BEGIN_SCRIPT(NoPingBack, AI)
 
+   OnAIModeChange()
+   {
+      if (message.mode == kAIM_Dead && !Object.HasMetaProperty(self,"NoPingBack"))
+         Object.AddMetaProperty(self,"NoPingBack");
+      DefaultOnAIModeChange();
+   }
+END_SCRIPT(NoPingBack)
