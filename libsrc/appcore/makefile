@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/appcore/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1996/04/22 11:33:07 $
+# $Date: 1996/04/25 10:01:53 $
 #
 #
 
@@ -18,7 +18,7 @@ LIBTARGS = appcore
 
 EXETARGS =
 
-appcore_OBJS = appcore
+appcore_OBJS = appcore wappcore
 
 appcore_HDRS =
 
