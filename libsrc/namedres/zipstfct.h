@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/namedres/RCS/zipstfct.h 1.3 1998/09/15 18:52:40 JUSTIN Exp $
 //
