@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/ui/RCS/makefile $
-# $Revision: 1.23 $
-# $Author: kaboom $
-# $Date: 1993/12/16 08:03:01 $
+# $Revision: 1.24 $
+# $Author: mahk $
+# $Date: 1994/02/07 16:15:27 $
 
 DEBUG_ON = 1
 SPEW_ON = 1
@@ -33,7 +33,8 @@ UI_OBJS = gadgets.obj region.obj cursors.obj curdrw.obj event.obj slab.obj \
 UI_HDRS = gadgets.h region.h cursors.h event.h slab.h pushbutt.h \
         butarray.h qboxgadg.h textgadg.h slider.h texttool.h \
         tngqbox.h tngtextg.h tngpushb.h tngslidr.h tngbarry.h tng.h \
-        tngapp.h hotkey.h plain.h tngplain.h menu.h tngmenu.h
+        tngapp.h hotkey.h plain.h tngplain.h menu.h tngmenu.h \
+        curdat.h curtyp.h
 
 UITEST_OBJS = uitest.obj
 UITEST_LIBS = _lg.lib _2d.lib _input.lib _res.lib _fix.lib \
