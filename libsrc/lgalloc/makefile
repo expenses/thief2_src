@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lgalloc/RCS/makefile $
-# $Revision: 1.4 $
+# $Revision: 1.5 $
 # $Author: TOML $
-# $Date: 1997/07/15 21:27:47 $
+# $Date: 1997/08/16 14:01:37 $
 #
 #
 
@@ -23,7 +23,7 @@ EXETYPE = con
 
 lgalloc_OBJS = allcguid memall memcore membase pool poolimp \
                multpool dbgalloc nonover heap memtimer primallc \
-               stdalloc
+               stdalloc nullallc
 
 lgalloc_opt_objs = pool poolimp multpool heap memtimer stdalloc
 
