@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: r:/flt3repos/flt3/src/wrend/hsv.h,v $
  * $Revision: 1.1 $
  * $Author: bfarquha $
