@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: r:/prj/lib/src/h/rcs/2dres.h 1.9 1995/02/06 12:21:04 buzzard Exp $
  *
  * Macros to use 2d calls with resources
