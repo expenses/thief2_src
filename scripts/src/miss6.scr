@@ -528,7 +528,8 @@ MESSAGES:
       ObjectiveSet(2,kGoalIncomplete);
       Debug.MPrint("Droped the wax ",message.from);
     }
-    if ((MessageIs("badkey")) && ((integer)GetData("PathNumber")!=0))
+    if ((MessageIs("badkey")) && ((integer)GetData("PathNumber")!=0) &&
+        (GetKeyObj()==(object)0)) 
     {
       linkset sounds = Link.GetAll("SoundDescription",message.from);
       while (sounds.AnyLinksLeft())
