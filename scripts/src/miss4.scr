@@ -19,7 +19,7 @@ METHODS:
 
       for(difficulty=0;difficulty<3;difficulty++)
       {
-         limit=Quest.Get("casualty_limit_"+string(difficulty));
+         limit=Quest.Get(string("casualty_limit_")+string(difficulty));
 
          if(casualties>limit)
             Quest.Set(GoalStateVarName(CASUALTY_GOAL_NORMAL+difficulty),kGoalFailed);
