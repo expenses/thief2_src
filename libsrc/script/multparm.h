@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/libsrc/script/RCS/multparm.h 1.10 1998/07/30 20:57:48 TOML Exp $
+// $Header: r:/t2repos/thief2/libsrc/script/multparm.h,v 1.13 1999/12/01 13:24:39 Justin Exp $
 //
 // Multiple Purpose Parameter
 //
@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <matrixs.h>
+#include <scrptobj.h>
 
 // because multiparms can pass memory across script boundaries, they must be 
 // allocated directly from the master heap
@@ -46,6 +47,9 @@ enum eMultiParmType
    kMT_String,
    kMT_Vector,
 
+   // The object type, at the end for historical reasons
+   kMT_Obj,
+
    kMT_TypeMax = 0xffffffff // force it use an int
 };
 
@@ -58,6 +62,7 @@ struct sMultiParm
    union
    {
       int          i;
+      ObjID        o;
       float        f;
       char *       psz;
       mxs_vector * pVec;
@@ -83,6 +88,13 @@ typedef struct sMultiParm sMultiParm;
       ((sMultiParm *)(p))->type = kMT_Int; \
    } while (0)
 
+#define InitObjParm(p, val) \
+   do \
+   { \
+      ((sMultiParm *)(p))->o = val.Get(); \
+      ((sMultiParm *)(p))->type = kMT_Obj; \
+   } while (0)
+
 #define InitFloatParm(p, val) \
    do \
    { \
@@ -106,10 +118,14 @@ typedef struct sMultiParm sMultiParm;
       ((sMultiParm *)(p))->type = kMT_Vector; \
    } while (0)
 
+#define _IsMallocedParm(p) \
+   ((((sMultiParm *)(p))->type >= kMT_String) && \
+    (((sMultiParm *)(p))->type != kMT_Obj))
+
 #define _FreeParmData(p) \
    do \
    { \
-      if (((sMultiParm *)(p))->type >= kMT_String) \
+      if (_IsMallocedParm(p)) \
         MPFree(((sMultiParm *)(p))->psz); \
    } while (0)
 
@@ -148,6 +164,7 @@ class cMultiParm : public sMultiParm
 public:
    cMultiParm()                     { InitParm(this); }
    cMultiParm(int i)                { InitIntParm(this, i); }
+   cMultiParm(const cObj & o)       { InitObjParm(this, o); }
    cMultiParm(float f)              { InitFloatParm(this, f); }
    cMultiParm(double d)             { InitFloatParm(this, d); }
    cMultiParm(const char * s)       { InitStrParm(this, s); }
@@ -163,6 +180,7 @@ public:
    ////////////////////////////////////
 
    const cMultiParm & operator=(int i)                { _FreeParmData(this); InitIntParm(this, i); return (*this); }
+   const cMultiParm & operator=(cObj & o)             { _FreeParmData(this); InitObjParm(this, o); return (*this); }
    const cMultiParm & operator=(true_bool b)          { _FreeParmData(this); InitIntParm(this, b); return (*this); }
    const cMultiParm & operator=(float f)              { _FreeParmData(this); InitFloatParm(this, f); return (*this); }
    const cMultiParm & operator=(double d)             { _FreeParmData(this); InitFloatParm(this, d); return (*this); }
@@ -184,6 +202,9 @@ public:
          case kMT_Int:
             result = i;
             break;
+         case kMT_Obj:
+            result = o;
+            break;
          case kMT_Float:
             result = f;
             break;
@@ -195,6 +216,27 @@ public:
             break;
       }
       return result;
+   }
+
+   operator cObj & () const
+   {
+      gm_scratch.obj.Set(0);
+      switch (type)
+      {
+         case kMT_Int:
+            gm_scratch.obj.Set(i);
+            break;
+         case kMT_Obj:
+            gm_scratch.obj.Set(o);
+            break;
+         case kMT_Undef:
+         case kMT_Float:
+         case kMT_String:
+         case kMT_Vector:
+            // Just leave it as OBJ_NULL
+            break;
+      }
+      return gm_scratch.obj;
    }
 
    operator true_bool() const
@@ -212,6 +254,9 @@ public:
             break;
          case kMT_Int:
             result = i;
+            break;
+         case kMT_Obj:
+            result = o;
             break;
          case kMT_Float:
             result = f;
@@ -244,6 +289,10 @@ public:
             itoa(i, gm_scratch.szBuf, 10);
             pszResult = gm_scratch.szBuf;
             break;
+         case kMT_Obj:
+            itoa(o, gm_scratch.szBuf, 10);
+            pszResult = gm_scratch.szBuf;
+            break;
          case kMT_Float:
             _gcvt(f, 32, gm_scratch.szBuf);
             pszResult = gm_scratch.szBuf;
@@ -269,6 +318,7 @@ public:
    ////////////////////////////////////
 
    BOOL operator==(int i) const                { return operator int() == i; }
+   BOOL operator==(const cObj & o) const       { return operator cObj &() == o; }
    BOOL operator==(true_bool b) const          { return operator true_bool() == b; }
    BOOL operator==(float f) const              { return operator float() == f; }
    BOOL operator==(double d) const             { return operator double() == d; }
@@ -294,6 +344,16 @@ public:
                return (i == m.i);
             if (m.type == kMT_Float)
                return ((float) i == m.f);
+            if (m.type == kMT_Obj)
+               return (i == m.o);
+            return FALSE;
+         }
+         case kMT_Obj:
+         {
+            if (m.type == kMT_Obj)
+               return (o == m.o);
+            if (m.type == kMT_Int)
+               return (o == m.i);
             return FALSE;
          }
          case kMT_Float:
@@ -337,6 +397,7 @@ private:
    {
       char       szBuf[64];
       mxs_vector vec;
+      cObj       obj;
    };
 
    static uScratch gm_scratch;
