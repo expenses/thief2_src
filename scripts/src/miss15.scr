@@ -1,0 +1,55 @@
+#include "gen.scr" // we want to inherit from quest var traps...
+
+#include "time.h" // because we suck.
+
+// Script file for Thief 2 - Mission 15 - Kidnap
+
+/* Randomizes the given quest var at the beginning of time,
+   and deletes self if quest var is initialized (non-zero)
+   and not the value indicated in our property.
+   */
+BEGIN_SCRIPT(RandPatrolPt, TrigQVar)
+
+   METHOD void Trigger(boolean satisfied)
+   {
+      // instead of triggering, self-destruct when unsatisfied
+      if(!satisfied)
+         Object.Destroy(self);
+   }
+
+   METHOD void ProcessOperation(char op, integer arg, integer sigfigs,
+                                string qvar, boolean reverse)
+   {
+      if(Quest.Get(qvar)!=0)
+         Base::ProcessOperation(op,arg,sigfigs,qvar,reverse);
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      // Don't do default, as we don't want to subscribe.
+      ;
+   }
+   OnSim()
+   {
+      if(message.starting)
+      {
+         string command, qvar;
+
+         // Hard-coding the fact that there are only three possibilities.
+         // c'est la vie.
+         if(VarName(command,qvar))
+         {
+            Quest.Set(qvar,Data.RandInt(1,3));
+         }
+         SetOneShotTimer(self,"Go",0.0);
+      }
+      DefaultOnSim();
+   }
+   OnTimer()
+   {
+      ParseOperation(FALSE);
+      DefaultOnTimer();
+   }
+END_SCRIPT(RandPatrolPt)
+
