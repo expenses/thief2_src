@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.9 $
-# $Author: BODISAFA $
-# $Date: 1996/09/13 17:31:03 $
+# $Revision: 2.10 $
+# $Author: TOML $
+# $Date: 1996/09/24 11:47:21 $
 #
 
 MAKETOP = $(CWD)
@@ -17,9 +17,9 @@ SYS ?= WIN32
 %include $(MRC)\init.rc
 
 LIBTARGS = input
-EXETARGS = test
+#EXETARGS = test
 
-test_OBJS = test
+#test_OBJS = test
 test_LIBS = input
 
 #input_dos4g_OBJS = \
