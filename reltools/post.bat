@@ -195,7 +195,8 @@ rem 1. No installer work needed since the ilist.X will take care of it, and
 rem 2. the top level of the CD has five less files. 
 rem **************************************************************
 
-copy r:\prj\thief2\reltools\url\%_country_%\*.url  %_DAILYTHIEFCD_%
+copy r:\prj\thief2\reltools\url\%_country_%\*.url  %_DAILYTHIEFCD2_%
+copy r:\prj\thief2\reltools\url\%_country_%\patch.url  %_DAILYTHIEFCD_%
 
 rem **************************************************************
 rem put the installer in place
