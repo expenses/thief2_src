@@ -540,7 +540,7 @@ BEGIN_SCRIPT(Training, RootScript)
        }
        else
        {
-          Debug.MPrint("Already done lesson: ",Action);
+          // Debug.MPrint("Already done lesson: ",Action);
           return FALSE;
        }
     }
@@ -583,7 +583,8 @@ BEGIN_SCRIPT(Training, RootScript)
     }
     METHOD boolean ObjPortable(object world)
     {
-       if(Property.Possessed(world,"FrobInfo"))
+       if(world!=NO_OBJ &&
+          Property.Possessed(world,"FrobInfo"))
        {
           integer worldfrob=Property.Get(world,"FrobInfo","World Action");
           if(worldfrob & kFrobMove)
@@ -593,7 +594,8 @@ BEGIN_SCRIPT(Training, RootScript)
                 object container=Link.GetOne("~Contains",world).To();
                 integer aware=kAIAL_Lowest;
 
-                Debug.MPrint("Checking protability given container ",container);
+                Debug.MPrint("Checking portability given container ",container);
+                Debug.MPrint("Player object=",object("Player"));
 
                 if(Property.Possessed(container,"AI"))
                 {
@@ -899,8 +901,19 @@ BEGIN_SCRIPT(Training, RootScript)
       object world=Quest.Get(WORLD_ID_QVAR);
 
       // Debug.MPrint("Checking prompt.  Objects=",world,",",inv,",",weap);
+      
+      // Update of world obj can lag a frame behind picking it up.  Since
+      // we're going to do a lot of checking of this below anyway, we might
+      // as well get it right.
+      if(world!=NO_OBJ &&
+         Link.AnyExist("Contains",self,world))
+         world=NO_OBJ;
 
       if(IsDataSet("TipLock") && TrainTransientTip()) return;
+
+      // @TODO: In a perfect universe, we'd just have an array of function pointers
+      // and remove the call from the list entirely once that lesson was over.
+      // Ah, well.
 
       if(
          (Quest.Get("difficulty") > 0) ||
