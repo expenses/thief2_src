@@ -1,13 +1,10 @@
-# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.8 1997/10/09 15:36:13 KEVIN Exp $
+# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.9 1997/10/13 14:38:31 KEVIN Exp $
 
 MAKETOP = $(CWD)
 
 PROJECT = tech
 
 %include $(MRC)\env.rc
-
-# only SYS=WIN32 makes sense
-SYS = WIN32
 
 %include $(MRC)\init.rc
 
@@ -18,7 +15,7 @@ LIBTARGS = lgd3d
 
 lgd3d_OBJS = tmgr tmgrold clip
 
-lgd3d_WIN32_OBJS = setup trifan blit texture 
+lgd3d_WIN32_OBJS = setup trifan blit texture enum
 
 lgd3d_HDRS = lgd3d.h tmgr.h
 
