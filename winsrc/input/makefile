@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.6 $
+# $Revision: 2.7 $
 # $Author: TOML $
-# $Date: 1996/04/08 16:52:52 $
+# $Date: 1996/05/18 13:16:39 $
 #
 
 MAKETOP = $(CWD)
@@ -41,7 +41,7 @@ input_OBJS = \
 #	kbnext kbphnd kbqueue kbrhnd kbsflag kbshut kbssig kbsstat \
 #	kbstart kbstate leds mouse mousedev
 
-input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h defehand.h
+input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h
 
 # fix this, want right h2i args
 
