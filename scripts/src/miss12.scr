@@ -353,6 +353,23 @@ MESSAGES:
       Quest.Set(CultiVisVar, TRUE);
       DefaultOnFrobInvEnd();
    }
+   OnSim()
+   {
+      // Did the player get this scroll already?
+      if(message.starting && Property.Possessed(self,"CombineType"))
+      {
+         string combine=Property.Get(self,"CombineType");
+         boolean got=Quest.Get(string("CarryInv")+combine);
+         object player=object("Player");
+
+         if(got && player!=object(0))
+         {
+            Container.Remove(self); // just in case.
+            Container.Add(self,player);
+         }
+      }
+      DefaultOnSim();
+   }
       
 END_SCRIPT(KarrasLetter)
 
