@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propinv.h 1.1 1999/04/07 14:40:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/propinv.h,v 1.3 2000/01/29 13:24:31 adurant Exp $
+#pragma once
 #ifndef __PROPINV_H
 #define __PROPINV_H
 #include <property.h>

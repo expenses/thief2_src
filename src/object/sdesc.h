@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/obsolete/RCS/sdesc.h 1.1 1999/04/07 14:40:03 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/sdesc.h,v 1.8 2000/01/29 13:24:58 adurant Exp $
+#pragma once
 
 #ifndef SDESC_H
 #define SDESC_H

@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/trait/RCS/trcache.h 1.1 1999/04/07 14:41:01 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/trcache.h,v 1.6 2000/01/29 13:25:21 adurant Exp $
+#pragma once
 #ifndef __TRCACHE_H
 #define __TRCACHE_H
 
