@@ -79,7 +79,7 @@ rem **************************************************************
 rem init the variables
 rem **************************************************************
 
-call r:\prj\campatch\reltools\init.bat
+call r:\prj\thief2\reltools\init.bat
 
 rem **************************************************************
 rem second arg can be the name of the daily directory. For betaFx.x
@@ -105,10 +105,7 @@ cd %_DAILYCD_%
 mkdirs redist\directx\drivers\eng
 mkdirs redist\x86
 
-xcopy r:\prj\campatch\reltools\redist\*.dll redist
-xcopy r:\prj\campatch\reltools\redist\directx redist\directx
-xcopy r:\prj\campatch\reltools\redist\directx\drivers\eng redist\directx\drivers\eng
-xcopy /s r:\prj\campatch\reltools\redist\x86 redist\x86
+xcopy /s r:\prj\thief2\reltools\redist redist
 
 copy r:\prj\campatch\reltools\redist\crt\msvcrt40.dll %_DAILYCD_%\thief
 
@@ -120,7 +117,7 @@ rem **************************************************************
 
 iff %_lcode_% != eng then 
 mkdirs redist\directx\drivers\%_lcode_%
-xcopy r:\prj\campatch\reltools\redist\directx\drivers\%_lcode_% redist\directx\drivers\%_lcode_
+xcopy r:\prj\thief2\reltools\redist\directx\drivers\%_lcode_% redist\directx\drivers\%_lcode_
 endiff 
 
 rem **************************************************************
@@ -131,22 +128,21 @@ rem **************************************************************
 iff %_country_% = jpn then 
   mkdirs redist\directx\drivers\jpn
   mkdirs redist\directx\drivers\nec
-  xcopy r:\prj\campatch\reltools\redist\directx\drivers\jpn redist\directx\drivers\jpn
-  xcopy r:\prj\campatch\reltools\redist\directx\drivers\nec redist\directx\drivers\nec
+  xcopy r:\prj\thief2\reltools\redist\directx\drivers\jpn redist\directx\drivers\jpn
+  xcopy r:\prj\thief2\reltools\redist\directx\drivers\nec redist\directx\drivers\nec
 endiff
 
 copy  r:\prj\thief2\reltools\iv5play.exe
-rem copy  r:\prj\campatch\reltools\amovie.exe
 copy  x:\prj\tech\libsrc\actmovie\lgvid\retail\lgvid.ax %_DAILYTHIEF_%
 
 rem **************************************************************
 rem the bnd files!  
 rem **************************************************************
 
-copy r:\prj\campatch\reltools\bnd\%_lcode_%\dark.bnd %_DAILYTHIEF_%
+copy r:\prj\thief2\reltools\bnd\%_lcode_%\dark.bnd %_DAILYTHIEF_%
 
 mkdirs %_DAILYTHIEF_%\saves
-copy r:\prj\campatch\reltools\bnd\%_lcode_%\saves\cfg????.bnd %_DAILYTHIEF_%\saves
+copy r:\prj\thief2\reltools\bnd\%_lcode_%\saves\cfg????.bnd %_DAILYTHIEF_%\saves
 
 rem **************************************************************
 rem 3dfx drivers  
@@ -155,7 +151,7 @@ rem **************************************************************
 rem mkdirs drivers\voodoo1
 rem mkdirs drivers\voodoo2
 
-rem   r:\prj\campa\reltools\drivers\voodoo2\rkv2dx6.exe  drivers\voodoo2\rkv2dx6.exe
+rem   r:\prj\campatch\reltools\drivers\voodoo2\rkv2dx6.exe  drivers\voodoo2\rkv2dx6.exe
 rem   r:\prj\campatch\reltools\drivers\voodoo1\rkvg.exe  drivers\voodoo1\rkvg.exe
 
 
