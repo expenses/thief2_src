@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/schprop.cpp,v 1.19 1999/04/24 15:47:56 Justin Exp $
 
 #include <property.h>
