@@ -672,12 +672,17 @@ MESSAGES:
          SetData("DiffLevel",(integer)Quest.Get("difficulty"));
          Debug.MPrint("No diff level found, setting to ",(integer)Quest.Get("difficulty"));
       }
+      if (!IsDataSet("AllowedCheck"))
+      {
+         SetData("AllowedCheck",0);
+      }
       DefaultOnBeginScript();
    }
 
    OnContainer()
    {
-      VerifyPickPocket();
+      if ((integer)GetData("AllowedCheck")==1)
+         VerifyPickPocket();
       DefaultOnContainer();
    }
 
@@ -686,6 +691,7 @@ MESSAGES:
       if (message.name=="verifypockets")
       {
          VerifyPickPocket();
+         SetData("AllowedCheck",1);
          SetOneShotTimer(self,"verifypockets",5.0);
       }
       DefaultOnTimer();
