@@ -6,20 +6,6 @@
 BEGIN_SCRIPT(SpecialGoals, RootScript)
 
 METHODS:
-   // gets rid of existing mission quest variable and
-   // substitutes a campaign quest variable.
-   METHOD void MakeCampaignVar(string varname)
-   {
-      integer val=Quest.Get(varname);
-
-      // Axing this variable could will invalidate subscriptions.
-      // We should message back to ourselves (knowing that both this script
-      // and the victory conditions script are supposed to go on the player
-      // object) to make the victory conditions script re-do its subscriptions.
-      Quest.Delete(varname);
-      Quest.Set(varname,val,kQuestDataCampaign);
-      PostMessage(self,"ReSubscribe");
-   }
 
    METHOD void TallyCombine(object obj)
    {
@@ -43,27 +29,6 @@ METHODS:
    }
 
 MESSAGES:
-   OnBeginScript()
-   {
-      if(!IsDataSet("InitQuest"))
-      {
-         // Initialize all of the campaign quest variables we'll use to coordinate
-         // state with "Masks."
-         integer index;
-
-         SetData("InitQuest",TRUE);
-
-         // State of library quest (mask of books read)
-         // @TODO: Should make sure not also mission quest var.
-         Quest.Set("LibBooks", 0, kQuestDataCampaign);
-
-         MakeCampaignVar(GoalStateVarName(M13_LETTER_GOAL));
-         MakeCampaignVar(GoalVisibleVarName(M13_CULTIVATOR_GOAL));
-
-         PostMessage(self,"ReSubscribe");
-      }
-      DefaultOnBeginScript();
-   }
    // Tally keys and such in the player's inventory, at the end of the mission.
    OnSim()
    {
@@ -91,6 +56,59 @@ MESSAGES:
    }
 
 END_SCRIPT(SpecialGoals)
+
+
+BEGIN_SCRIPT(SetupCampaignQVars, RootScript)
+METHODS:
+   // gets rid of existing mission quest variable and
+   // substitutes a campaign quest variable.
+   METHOD void MakeCampaignVar(string varname)
+   {
+      integer val=Quest.Get(varname);
+
+      // Axing this variable could will invalidate subscriptions.
+      // We should message back to ourselves (knowing that both this script
+      // and the victory conditions script are supposed to go on the player
+      // object) to make the victory conditions script re-do its subscriptions.
+      Quest.Delete(varname);
+      Quest.Set(varname,val,kQuestDataCampaign);
+   }
+   OnDifficulty()
+   {
+      // Initialize all of the campaign quest variables we'll use to coordinate
+      // state with "Masks."
+      integer books=Quest.Get("LibBooks");
+      
+      Debug.MPrint("Setting books to ",books);
+      // State of library quest (mask of books read)
+      Quest.Set("LibBooks", books, kQuestDataCampaign);
+      
+      MakeCampaignVar(GoalStateVarName(M13_LETTER_GOAL));
+      MakeCampaignVar(GoalVisibleVarName(M13_CULTIVATOR_GOAL));
+
+      DefaultOnDifficulty();
+   }
+   OnSim()
+   {
+      if(!message.starting)
+      {
+         // If we didn't read the letter from Karras, get rid of M13_CULTIVATOR_GOAL
+         // visibility quest var.  Since Miss 13 will have no mission quest var for
+         // it set, it will start off invisible.
+         if(Quest.Get(GoalStateVarName(M12_LETTER_GOAL))!=kGoalComplete)
+         {
+            string varname=GoalVisibleVarName(M13_CULTIVATOR_GOAL);
+            boolean vis=Quest.Get(varname);
+            Quest.Delete(varname);
+            // still need the visibility varname around locally for our own objective
+            // displays.
+            Quest.Set(varname,vis,kQuestDataMission);
+         }
+      }
+      DefaultOnSim();
+   }
+         
+END_SCRIPT(SetupCampaignQVars)
 
 
 // Handles all the quest item goals, 'cause why not?
@@ -281,7 +299,37 @@ END_SCRIPT(KeyCache)
    -TJS 1/2/00
    */
 
-BEGIN_SCRIPT(KarrasLetter, RootScript)
+BEGIN_SCRIPT(BarkLetter, RootScript)
+METHODS:
+   METHOD object LetterBark(void)
+   {
+      if(Link.AnyExist("SoundDescription",self))
+         return(Link.GetOne("SoundDescription",self).To());
+      return(object(0));
+   }
+MESSAGES:
+   OnFrobInvEnd()
+   {
+      // We get a voice-over at this point.  Delay until we get back from book mode.
+      SetOneShotTimer(self,"LetterBark",0.25);
+      DefaultOnFrobInvEnd();
+   }
+
+   OnTimer()
+   {
+      if(message.name=="LetterBark")
+      {
+         object bark=LetterBark();
+         if(bark!=object(0))
+            Sound.PlayVoiceOver(self,bark);
+      }
+      DefaultOnTimer();
+   }
+
+END_SCRIPT(BarkLetter)
+
+BEGIN_SCRIPT(KarrasLetter, BarkLetter)
+
 MESSAGES:
    OnContained()
    {
@@ -294,38 +342,18 @@ MESSAGES:
       }
       DefaultOnContained();
    }
-      
    OnFrobInvEnd()
    {
       // other scripts handle the actual book action.  We just
-      // do quest variables.
+      // do quest variables.  Oh, and the bark.
       string LetterStateVar=GoalStateVarName(M13_LETTER_GOAL);
       string CultiVisVar=GoalVisibleVarName(M13_CULTIVATOR_GOAL);
-      boolean LetterVis=Quest.Get(GoalVisibleVarName(M13_LETTER_GOAL));
-      boolean CultiVis=Quest.Get(CultiVisVar);
 
-      if(LetterVis)
-      {
-         Debug.MPrint("Peligro! We want to fuss with goal ",M13_LETTER_GOAL,
-                      " under the hood, only it's visible.");
-      }
-      else
-      {
-         Quest.Set(LetterStateVar, kGoalComplete, kQuestDataCampaign);
-      }
-
-      if(!CultiVis)
-      {
-         Debug.MPrint("Peligro! We want to play with campaign visibility of ",
-                      M13_CULTIVATOR_GOAL," under the hood, it's not visible.");
-      }
-      else
-      {
-         Quest.Set(CultiVisVar, TRUE, kQuestDataCampaign);
-      }
-
-      // @TODO: Garrett also probably gets a voice-over at this point.
+      Quest.Set(LetterStateVar, kGoalComplete, kQuestDataCampaign);
+      Quest.Set(CultiVisVar, TRUE);
+      DefaultOnFrobInvEnd();
    }
+      
 END_SCRIPT(KarrasLetter)
 
 
@@ -333,12 +361,14 @@ END_SCRIPT(KarrasLetter)
    own optional objective.
    */
 BEGIN_SCRIPT(KarrasLetter12, KarrasLetter)
+MESSAGES:
    OnFrobInvEnd()
    {
       Quest.Set(GoalStateVarName(M12_LETTER_GOAL),kGoalComplete);
       DefaultOnFrobInvEnd();
    }
 END_SCRIPT(KarrasLetter12)
+
 
 
 /* Clock controlling secret door doesn't let you set its time until you
