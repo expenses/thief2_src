@@ -1,9 +1,10 @@
-// $Header: x:/prj/tech/libsrc/object/objcore/RCS/objdef.h 1.1 1999/04/07 14:38:43 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/objdef.h,v 1.4 1998/08/20 09:29:27 CCAROLLO Exp $
 #pragma once  
 #ifndef __OBJDEF_H
 #define __OBJDEF_H
 
 #include <objtype.h> 
+#include <label.h>
 
 //
 // Built-in properties
@@ -12,6 +13,8 @@ enum eObjSysProperty_
 {
    kSymNameProperty,     // symbolic name property
    kTransienceProperty,  // whether we save to disk or not 
+   kImmobilityProperty,    // whether we can ever move or not
+   
 };
 
 //
