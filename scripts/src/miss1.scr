@@ -1171,14 +1171,12 @@ MESSAGES:
             integer sigdistance = (integer)currentparamlink.GetData();
             object target = (object)currentparamlink.To();
             Debug.MPrint("Attempting to signal ",target);
-            if (WithinRange(target,sigdistance))
+            if (WithinRange(target,sigdistance) &&
+                Quest.Get(GoalStateVarName(GOAL_SIGNAL))!=kGoalComplete)
             {
-               if(Object.HasMetaProperty(target,"M-WhistleResponse"))
-                  Quest.Set(GoalStateVarName(GOAL_SIGNAL),kGoalComplete);
-               AI.Signal(target,"WhistleBlown");
+               Quest.Set(GoalStateVarName(GOAL_SIGNAL),kGoalComplete);
+               AI.Signal(target,"GoTo");
             }
-            else
-               Debug.MPrint("Out of range");
             allparamlinks.NextLink();
          }
       }
@@ -1191,6 +1189,42 @@ END_SCRIPT(WhistleCall)
 
 
 BEGIN_SCRIPT(Basso, RootScript)
+METHODS:
+
+   METHOD void SetThinkTimer(float delay)
+   {
+      vector mypos=Object.Position(self);
+      Property.Set(self,"AI_IdleOrgn","Original Location",mypos);
+
+      if(IsDataSet("ThinkTimer"))
+      {
+         timer_handle thinkt=GetData("ThinkTimer");
+         KillTimer(thinkt);
+      }
+      timer_handle newthinkt=SetOneShotTimer(self,"Think",delay,delay);
+      SetData("ThinkTimer",newthinkt);
+   }
+   METHOD void GoToNextMarker(void)
+   {
+      /* Basso wants to follow a route while changing motion speeds and motion
+         tags along the way.  Patrols won't do this.  We can send him from point
+         to point with pseudoscripts, but if his locomotion is interrupted by some
+         high-priority action (such as getting damaged) he won't pick it back up
+         again as a goal.  So, we keep a link to the next point, which has a signal
+         response property on it which we copy and trigger.  This way, we can re-trigger
+         the signal response regularly if it seems like we might not be making progress.
+         */
+      if(Link.AnyExist("Route",self))
+      {
+         object targ=Link.GetOne("Route",self).To();
+         if(!Link.AnyExist("AIWatchObj",self,targ))
+            Link.Create("AIWatchObj",self,targ);
+         Property.CopyFrom(self,"AI_SigRsp",targ);
+         Debug.MPrint("Copying response from marker ",targ," and going.");
+         SetThinkTimer(5.0);
+         AI.Signal(self,"GoTo");
+      }
+   }
 
 MESSAGES:
    OnSim()
@@ -1198,15 +1232,32 @@ MESSAGES:
       if(message.starting)
       {
          Sound.PreLoad("bas0101a");
-         SetOneShotTimer(self,"CheckDoor",11.0);
+         SetThinkTimer(11.0);
       }
       DefaultOnSim();
+   }
+   OnDamage()
+   {
+      // Kinda obvious that we need to do some thinking after we're done
+      // flinching, if we don't die.  Flinching could take up to 4 or 5 seconds,
+      // but we want to reset the timer.
+      SetThinkTimer(5.0);
+      DefaultOnDamage();
    }
    OnMessage()
    {
       object thedoor=object("JenivereDoor");
 
-      if(MessageIs("StartPicking"))
+      if(MessageIs("GoTo"))
+      {
+         GoToNextMarker();
+      }
+      else if(MessageIs("StartPicking"))
+      {
+         // Don't want to accidentally change what we're doing during this pseudoscript
+         SetThinkTimer(11.0);
+      }
+      else if(MessageIs("DoorPickSpoof"))
       {
          Sound.PlaySchema(thedoor,"lockpik",thedoor);
          ActReact.React("tweq_control",1.0,thedoor,0,kTweqTypeJoints,kTweqDoActivate);
@@ -1215,15 +1266,37 @@ MESSAGES:
       {
          Sound.HaltSchema(thedoor);
          ActReact.React("tweq_control",1.0,thedoor,0,kTweqTypeJoints,kTweqDoHalt);
-         // Property.Set(thedoor,"Locked",FALSE);
+         GoToNextMarker();
+      }
+      else if(MessageIs("StartJenConv"))
+      {
+         // Don't want to reconsider actions during Jen conversation.  We set up our
+         // Route link at the very beginning, so we know to just move if the conversation
+         // gets disrupted.
+         SetThinkTimer(15.0);
+      }
+      else if(MessageIs("GrabJen"))
+      {
+         PostMessage(object("Jenivere"),"FollowBasso");
+         GoToNextMarker();
       }
       Reply(TRUE);
       DefaultOnMessage();
    }
    OnTimer()
    {
-      if(message.name=="CheckDoor")
+      if(message.name=="Think")
       {
+         float time_since_think=message.data;
+         vector mypos=Object.Position(self);
+         boolean timerset=FALSE;
+
+         // Basso certainly doesn't want to return to idle origin.
+         // Sooo... we subvert his Idle Origin property to keep track of his progress.
+         vector lastpos=Property.Get(self,"AI_IdleOrgn","Original Location");
+
+         ClearData("ThinkTimer");
+         Debug.MPrint(self," thinking in scripts. Last update ",time_since_think," sec ago.");
          if(Quest.Get(GoalStateVarName(GOAL_SIGNAL))==kGoalIncomplete)
          {
             object thedoor=object("GatehouseDoor");
@@ -1243,9 +1316,22 @@ MESSAGES:
                Property.Set(thedoor,"Locked",TRUE);
                Property.CopyFrom(thedoor,"KeyDst",object("FrontGateRight"));
             }
-            else
-               SetOneShotTimer(self,"CheckDoor",11.0);
          }
+         else
+         {
+            // Don't reconsider next marker if you're making good progress somewhere
+            float travel=(mypos-lastpos).Magnitude();
+            float rate=travel/time_since_think;
+
+            if(rate<0.5)
+            {
+               GoToNextMarker();
+               timerset=TRUE;
+            }
+         }
+
+         if(!timerset)
+            SetThinkTimer(time_since_think);
       }
       DefaultOnTimer();
    }
