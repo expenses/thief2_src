@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.17 $
-# $Author: buzzard $
-# $Date: 1996/06/30 03:10:59 $
+# $Revision: 1.18 $
+# $Author: JAEMZ $
+# $Date: 1996/09/16 14:44:04 $
 #
 # Makefile for r3d library
 #
@@ -44,6 +44,7 @@ r3d_OBJS = \
   primmisc \
   primpoly \
   space    \
+  utils    \
   view     \
   xfrmclip \
   xfrmglob \
@@ -57,7 +58,8 @@ r3d.h .REREAD :\
         xfrmtab.h xform.h \
         clip.h clipcon.h clipplan.h clipprim.h \
         primcon.h prim.h primtab.h primface.h primconv.h \
-        ctxts.h object.h space.h view.h block.h r3dctxt.h init.h 
+        ctxts.h object.h space.h view.h block.h r3dctxt.h init.h \
+        utils.h
 	$(eko1) $(@,F) \<-- $(?,F)
         %do comp_h h_pre="\#include \<matrix.h\> \#include \<r3ds.h\> \#include \<g2.h\>" h_in="$^" h_out="$(@,F)"
 
