@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.18 $
-# $Author: JAEMZ $
-# $Date: 1996/09/16 14:44:04 $
+# $Revision: 1.19 $
+# $Author: TOML $
+# $Date: 1996/10/17 17:23:00 $
 #
 # Makefile for r3d library
 #
@@ -15,7 +15,7 @@ PROJECT = tech
 
 %include $(MRC)\init.rc
 
-LIBTARGS = r3d 
+LIBTARGS = r3d
 
 # These only work under dos, so it breaks under windows, they should
 # be in a test directory instead
@@ -54,6 +54,10 @@ r3d_OBJS = \
 
 r3d_HDRS= r3d.h r3ds.h
 
+r3d_newline_hack=" "
+r3d_newline=$(r3d_newline_hack,W\n)
+r3d_dependent_includes="\#include \<matrix.h\>"$(r3d_newline)"\#include \<r3ds.h\>"$(r3d_newline)"\#include \<g2.h\>"
+
 r3d.h .REREAD :\
         xfrmtab.h xform.h \
         clip.h clipcon.h clipplan.h clipprim.h \
@@ -61,7 +65,7 @@ r3d.h .REREAD :\
         ctxts.h object.h space.h view.h block.h r3dctxt.h init.h \
         utils.h
 	$(eko1) $(@,F) \<-- $(?,F)
-        %do comp_h h_pre="\#include \<matrix.h\> \#include \<r3ds.h\> \#include \<g2.h\>" h_in="$^" h_out="$(@,F)"
+        %do comp_h h_pre=$(r3d_dependent_includes) h_in="$^" h_out="$(@,F)"
 
 %include $(MRC)\make.rc
 
