@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/matrix/RCS/mxang.h 1.1 1997/08/11 18:41:13 dc Exp $
+// $Header: x:/prj/tech/libsrc/matrix/RCS/mxang.h 1.2 1997/08/20 08:55:33 dc Exp $
 // angle/angvec stuff for mx
 // since it is single/double precision invariant
 
@@ -15,7 +15,7 @@ typedef struct _mxs_angvec {
 } mxs_angvec;
 
 #define MX_ANG_PI 0x8000
-#define MX_REAL_PI 3.141592653589
-#define MX_REAL_2PI (2.0*3.141592653589)
+#define MX_REAL_PI 3.14159265358979323846
+#define MX_REAL_2PI (2.0*MX_REAL_PI)
 
 #endif  // __MXANG_H
