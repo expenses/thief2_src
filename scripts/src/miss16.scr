@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.19 2000/03/05 16:46:24 ccarollo Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.20 2000/03/05 17:37:12 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -744,11 +744,11 @@ OnMessage()
          if ( (schema_type == kSchemaAttack) && ((string)GetData("CurrentSchema") != kSchemaAttack) )
          {
             // halt the old schemas on all the speakers
-            linkset SpeakerList = Link.GetAll("ControlDevice", self);		
+            linkset SpeakerList = Link.GetAll("ControlDevice", self);
             while (SpeakerList.AnyLinksLeft())
             {
                // Re-route the SchemaDone to the speaker object, because we don't want to hear about it.
-               Sound.HaltSchema(SpeakerList.Link().To(), "", SpeakerList.Link().To());
+               Sound.HaltSchema(SpeakerList.Link().To());  //, "", SpeakerList.Link().To());
                SpeakerList.NextLink();
             }
          }
@@ -1095,8 +1095,8 @@ boolean PlayerNeedsResource()
 		Inv.NextLink();
 	}
 
-	Debug.MPrint(" Player has ",sum," of resource.");
-	Debug.MPrint(" Respawning if less than ",Link.GetOne("ScriptParams",self).GetData());
+//	Debug.MPrint(" Player has ",sum," of resource.");
+//	Debug.MPrint(" Respawning if less than ",Link.GetOne("ScriptParams",self).GetData());
 
 	return (sum < (int)Link.GetOne("ScriptParams",self).GetData());
 }
@@ -1135,7 +1135,7 @@ OnTimer()
 		// here, so nevermind
 		if (Link.AnyExist("~ControlDevice",self))
 		{
-			Debug.MPrint(self," still has a resource, not spawning.");
+//			Debug.MPrint(self," still has a resource, not spawning.");
 		}
 		else if (PlayerNeedsResource())
 		{
