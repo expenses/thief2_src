@@ -95,8 +95,8 @@ rem xcopy /D /s /I thief2\finals\default %_BLDDRV_%\prj\cam\art\finals\default
 xcopy /D /s /I thief2\finals\editor %_BLDDRV_%\prj\cam\art\finals\editor
 xcopy /D /s /I thief2\finals\intrface %_BLDDRV_%\prj\cam\art\finals\intrface
 xcopy /D /s /I thief2\finals\mesh %_BLDDRV_%\prj\cam\art\finals\mesh
-rem xcopy /D /s /I thief2\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
-rem xcopy /D /s /I thief2\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
+xcopy /D /s /I thief2\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
+xcopy /D /s /I thief2\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
 xcopy /D /s /I thief2\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
 rem xcopy /D /s /I thief2\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
 xcopy /D /s /I thief2\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
