@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/cpptools/RCS/makefile $
-# $Revision: 1.20 $
+# $Revision: 1.21 $
 # $Author: TOML $
-# $Date: 1997/08/24 18:21:38 $
+# $Date: 1997/09/22 22:29:41 $
 #
 #
 
@@ -27,7 +27,7 @@ cpptools_HDRS = delmlist.h dynfunc.h filekind.h filepath.h filespec.h  \
                 fnamutil.h splitpat.h str.h hashset.h hshsttem.h dlist.h \
                 dlisttem.h templexp.h dynarray.h relocptr.h \
                 hshstimp.h pdynarr.h fixedque.h hashpp.h hshpptem.h \
-                hashfunc.h packflag.h
+                hashfunc.h packflag.h fixedstk.h
 
 
 #########################################
