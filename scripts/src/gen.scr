@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.2 1999/07/05 15:08:25 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.3 1999/07/06 14:28:31 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -4243,6 +4243,30 @@ MESSAGES:
       DefaultOnMessage();
    }
 END_SCRIPT(TrapConverse)
+
+
+// Script: TrapPatrol
+/* Turns an AI's patrol on or off.  Could do this with TrapConverse,
+   but that's kind of overkill for this speicalized use.
+
+   As a matter of style, this should _only_ be used for behind-the-
+   scenes stage managing.  Overt AI decision-making should as a rule
+   be handled with the core AI tools!
+
+   @TODO: Should AIs reset their idle origin when patrolling is
+   turned off?
+*/
+BEGIN_SCRIPT(TrapPatrol, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if (MessageIs("TurnOn"))
+         Property.Set(self,"AI_Patrol",TRUE);
+      else if (MessageIs("TurnOff"))
+         Property.Set(self,"AI_Patrol",FALSE);
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapPatrol)
 
 
 BEGIN_SCRIPT(TrapInverter,RootScript)
