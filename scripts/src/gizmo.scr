@@ -533,13 +533,12 @@ BEGIN_SCRIPT(StdController,Physics)
         // queried for set to 1
         integer AnimS;
 
-        if(!Property.Possessed(self,"StTweqJoints")) // No tweq!
-        {
-           Debug.MPrint(" *** Warning: Object ", obj, " has no TweqState properties (and is in script method TweqAnimStateHasValue).");
+        if(Property.Possessed(obj,"StTweqJoints")) 
+           AnimS=Property.Get(obj,"StTweqJoints","AnimS");
+        else if(Property.Possessed(obj,"StTweqRotate"))
+           AnimS=Property.Get(obj,"StTweqRotate","AnimS");
+        else
            return FALSE;
-        }
-
-        AnimS=Property.Get(obj,"StTweqJoints","AnimS");
 
         // return TRUE if the bit(s) is 1 in the bitfield, FALSE if not
         return ((AnimS & InputMask)!=0);
@@ -647,7 +646,10 @@ METHODS:
         }
         
         // activate/reverse the motion of the lever
-        ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
+        if(Property.Possessed(self,"CfgTweqJoints"))
+           ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
+        else if(Property.Possessed(self,"CfgTweqRotate"))
+           ActReact.React("tweq_control",1.0,self,0, kTweqTypeRotate, kTweqDoDefault);
         Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
      }  
 
@@ -705,7 +707,8 @@ MESSAGES:
      }
      OnTweqComplete()
      {
-        if(message.Type==kTweqTypeJoints)
+        if(message.Type==kTweqTypeJoints ||
+           message.Type==kTweqTypeRotate)
            PostTweqActivate(message.Dir);
         DefaultOnTweqComplete();
      }
