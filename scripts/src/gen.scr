@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.19 1999/11/08 11:03:23 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.20 1999/11/09 13:10:24 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -713,11 +713,9 @@ METHODS:
       // @TODO: Would prefer to determine what we transform into some
       // other way than by overloading this method.
       object newmine=Object.Create(ArmType());
-      object bounds=Object.Create("MineBounds");
       vector z=vector(0,0,0);
 
       Object.Teleport(newmine,z,z,self);
-      Object.Teleport(bounds,z,z,self);
 
       // Just becaue it's a different object didn't mean it isn't
       // you who threw it.  Sorta.
@@ -725,7 +723,6 @@ METHODS:
       // victory conditions and such.
       if(Link.AnyExist("~CulpableFor",self))
          Link.Create("~CulpableFor",newmine,Link.GetOne("~CulpableFor",self).To());
-      Link.Create("ControlDevice",bounds,newmine);      
       Object.Destroy(self);
    }
 
@@ -851,6 +848,10 @@ MESSAGES:
 	  //this doesn't trigger again.
 	  Physics.SubscribeMsg(self, kCollisionMsg);   
 	  Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+	  vector z = vector(0,0,0);
+	  object bounds=Object.Create("MineBounds");
+          Object.Teleport(bounds,z,z,self);
+          Link.Create("ControlDevice",bounds,self);      
 	}
    OnPhysCollision()
    {
