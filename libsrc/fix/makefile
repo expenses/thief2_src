@@ -1,13 +1,13 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.15 $
-# $Author: lmfeeney $
-# $Date: 1994/06/18 03:50:39 $
+# $Revision: 1.16 $
+# $Author: dfan $
+# $Date: 1994/08/11 12:11:23 $
 #
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\fix
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\fix
+RELDIR = r:\prj\lib\rel
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
@@ -23,7 +23,8 @@ INST_TARGETS = fix
 
 FIX.C_CFLAGS= -zu -s
 FIX_HDRS = fix.h fix.inc
-FIX_OBJS = fix.obj fix_pow.obj fixsprnt.obj fix_asm.obj atofix.obj
+FIX_OBJS = fix.obj fix_pow.obj fixsprnt.obj fix_asm.obj atofix.obj \
+           fix24.obj f_exp.obj trigtab.obj
 
 FIXTEST_OBJS = $(FIX_OBJS) fixtest.obj
 
@@ -38,7 +39,7 @@ TRIGERR_OBJS = $(FIX_OBJS) trigerr.obj
 !include $(INIT)/make.rc
 
 trigtab.h: fmaketab.exe
-	fmaketab > trigtab.h
+	fmaketab > trigtab.cc
 
 fix.obj: fix.h trigtab.h
 
