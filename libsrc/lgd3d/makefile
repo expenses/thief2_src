@@ -1,5 +1,4 @@
-# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.5 1997/09/10 15:07:17 KEVIN Exp $
-3RDBACK = x:\dx5b
+# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.6 1997/10/01 09:34:18 DAVET Exp $
 
 MAKETOP = $(CWD)
 
