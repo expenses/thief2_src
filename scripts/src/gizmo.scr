@@ -61,10 +61,34 @@ BEGIN_SCRIPT(StdDoor,Door)
          if(Status!=kDoorClosing && Status!=kDoorOpening)
             ClearData("PlayerFrob");
          return retval;
-      }         
+      }
+
+      // If door has a "ScriptTiming" property, it closes automatically some amount of
+      // time after opening.  Here is where we check.  Time is in milliseconds. 
+      METHOD void ClearTiming(boolean kill)
+      {
+         if(IsDataSet("CloseTimer"))
+         {
+            timer_handle close=GetData("CloseTimer");
+            if(kill) KillTimer(close);
+         }
+      }
+      METHOD void CheckTiming()
+      {
+         if(Property.Possessed(self,"ScriptTiming"))
+         {
+            ClearTiming(TRUE);
+            {
+               integer time=Property.Get(self,"ScriptTiming");
+               timer_handle close=SetOneShotTimer(self,"Close",float(time)/1000.0);
+               SetData("CloseTimer",close);
+            }
+         }
+      }
 
 MESSAGES:
 
+        
     OnSim()
     {
        if(message.starting)
@@ -96,6 +120,16 @@ MESSAGES:
        DefaultOnNowUnlocked();
     }
 
+    OnTimer()
+    {
+       if(message.name=="Close")
+       {
+          ClearTiming(FALSE);
+          Door.CloseDoor(self);
+       }
+       DefaultOnTimer();
+    }
+
     OnFrobWorldEnd()
     {
        boolean playerfrob=(object(message.Frobber)==object("Player"));
@@ -121,6 +155,7 @@ MESSAGES:
     OnDoorHalt()
     {
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       CheckTiming();
        DefaultOnDoorHalt();
     }
     OnDoorOpening()
@@ -134,6 +169,7 @@ MESSAGES:
     {
        PingDoubles();
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       ClearTiming(TRUE);
        DefaultOnDoorClosing();
     }
     OnDoorClose()
@@ -146,6 +182,7 @@ MESSAGES:
     {
        Sound.HaltSchema(self);
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       CheckTiming();
        DefaultOnDoorOpen();
     }
     OnSlain()
