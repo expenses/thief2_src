@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/relation.cpp,v 1.45 1999/08/31 14:40:15 Justin Exp $
 
 #include <relatio_.h>
