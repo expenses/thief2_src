@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.64 2000/02/24 19:28:41 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.65 2000/02/26 20:55:48 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -1030,58 +1030,52 @@ BEGIN_SCRIPT(ActiveMine,Physics)
 MESSAGES:
    OnBeginScript()
    {
-      //so now we wait for the active mine to first come to rest... THEN
-      //we subscribe to collision.  The only case I can think of where
-      //this could be a problem is if the mine comes to rest initially
-      //(and therefore starts activating), then starts falling while
-      //activating, the mine won't explode when it hits the ground, it
-      //will just sit there and be active.  But that seems ok.
+      if (!IsDataSet("MineMode"))
+        SetData("MineMode",0);
       Physics.SubscribeMsg(self, kFellAsleepMsg);
-//      Physics.SubscribeMsg(self, kCollisionMsg);
+      Physics.SubscribeMsg(self, kCollisionMsg);
       DefaultOnBeginScript();
    }
    OnEndScript()
    {
-      //possible to endscript without having subscribed to these... so we
-      //are trying to unsubscribe when not subscribed.  But that's just a 
-      //warning, and can't tell how to check subscription.  AMSD<-the guy
-      //to blame here. :)
-      //since it's highly unlikely that we will NOT have fallen asleep by end
-      //script...  it might be better to not bother unsubscribing to 
-      //fall asleep.  But leaving a subscription open seems bad.
-      Physics.UnsubscribeMsg(self, kCollisionMsg);
-      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+      Physics.UnsubscribeMsg(self,kCollisionMsg);
+      Physics.UnsubscribeMsg(self,kFellAsleepMsg);
       DefaultOnEndScript();
    }
    OnPhysFellAsleep()
-	{
-      Physics.SubscribeMsg(self, kCollisionMsg);   
-      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-      if(!Object.HasMetaProperty(self,"MineSensePing"))
-         Object.AddMetaProperty(self,"MineSensePing");
+   {
+      if ((integer)GetData("MineMode")==0) 
+      {
+         SetData("MineMode",1);
+         if(!Object.HasMetaProperty(self,"MineSensePing"))
+            Object.AddMetaProperty(self,"MineSensePing");
+      }
       DefaultOnPhysFellAsleep();
-	}
+   }
    OnPhysCollision()
    {
-      //really, a mine shouldn't trigger itself...  just bad form.
-      object WhatHitMe = message.collObj;
-      bool   fakeout = FALSE;
-      if (Object.Exists(WhatHitMe))
+      if ((integer)GetData("MineMode")==1)
       {
-         vector selfvel(0,0,0);
-         vector hitmevel(0,0,0);
-         if (Physics.HasPhysics(self))
-            Physics.GetVelocity(self,selfvel);
-         if (Physics.HasPhysics(WhatHitMe))
-            Physics.GetVelocity(WhatHitMe,hitmevel);
-         //make sure that I don't trigger myself, and make sure that
-         //at least one of us is actually moving and this isn't some 
-         //wierd spoof collision...
-         if ((selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0)))
-            fakeout = TRUE;
-      } 
-      if (!fakeout)
-         Reply(kPM_Slay);
+         //really, a mine shouldn't trigger itself...  just bad form.
+         object WhatHitMe = message.collObj;
+         bool   fakeout = FALSE;
+         if (Object.Exists(WhatHitMe))
+         {
+            vector selfvel(0,0,0);
+            vector hitmevel(0,0,0);
+            if (Physics.HasPhysics(self))
+               Physics.GetVelocity(self,selfvel);
+            if (Physics.HasPhysics(WhatHitMe))
+               Physics.GetVelocity(WhatHitMe,hitmevel);
+            //make sure that I don't trigger myself, and make sure that
+            //at least one of us is actually moving and this isn't some 
+            //wierd spoof collision...
+            if ((selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0)))
+               fakeout = TRUE;
+         } 
+         if (!fakeout)
+            Reply(kPM_Slay);
+      }
       DefaultOnPhysCollision();
    }
    OnPickStateChange()
