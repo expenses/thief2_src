@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/inputbnd/RCS/inpbnd_i.h 1.26 1999/06/24 23:29:46 XEMU Exp $
+// $Header: x:/prj/tech/libsrc/inputbnd/RCS/inpbnd_i.h 1.27 1999/10/21 15:23:18 MAT Exp $
 #ifndef __INPBND_I_H
 #define __INPBND_I_H
 #pragma once
@@ -94,6 +94,20 @@ typedef struct _intrnl_var_channel {
    short stamp;
    unsigned long context;
 } intrnl_var_channel;
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Structure used to associate binding contexts. In a bind file, a bind command
+// may be prefixed by a string. This structure is used to map the string (case-
+// insensitive) to its context. "" for aszStr indicates no prefix.
+typedef struct _sBindContext {
+   char aszStr[IB_VARSTRMAX];
+   ulong iContext;
+} sBindContext;
+
+#define kBindContextNull {"", 0}
 
 
 
@@ -222,6 +236,23 @@ DECLARE_INTERFACE_(IInputBinder, IUnknown)
    //
    STDMETHOD_(void, RegisterJoyProcObj) (void *pJoyProc) PURE;
 
+
+   //
+   // This is the preferred method of bind loading. You associate context bitmasks
+   // and context strings with the ContextAssociate method, then LoadBndContexted
+   // will parse the file only once, and map the contexted commands accordingly.
+   //
+   STDMETHOD_(void, LoadBndContexted) (THIS_ char *pBndFname) PURE;
+
+   //
+   // Accepts a pointer to a kBindContextNull-terminated array of sBindContext's.
+   // A call to this method wipes out any previoius context associations. These
+   // associations are then used when mapping contexted binds during a call to
+   // LoadBndContexted.
+   //
+   STDMETHOD_(void, ContextAssociate) (THIS_ sBindContext *pBindContext) PURE;
+
+   
    //
    // Loads a .bnd file into the specified iContext. If pPrefix is not NULL,
    // we bind only the matching prefixed binds.
@@ -316,6 +347,7 @@ EXTERN tResult LGAPI _CreateInputBinder(REFIID, IInputBinder **ppInputBinder, IU
 #define IInputBinder_GetHandler(p, a)  COMCall1(p, a)
 #define IInputBinder_ProcessCmd(p, a)  COMCall1(p, a)
 #define IInputBinder_Update(p)  COMCall0(p)
+#define IInputBinder_LoadBndFile(p, a, b, c)  COMCall3(p, a, b, c)
 #define IInputBinder_LoadBndFile(p, a, b, c)  COMCall3(p, a, b, c)
 #define IInputBinder_SaveBndFile(p, a)  COMCall1(p, a)
 #define IInputBinder_VarSet(p, a)  COMCall1(p, a)
