@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/pfaceiid.h,v 1.42 2000/02/18 14:19:33 MAT Exp $
 #pragma once
 
