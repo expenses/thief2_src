@@ -321,7 +321,7 @@ METHODS:
         {
           //hack, schema name input directly
           Sound.PlaySchema(self,Object.Named("gar0607"),self);
-          SetOneShotTimer(self,"DummySounds2",1.5);
+          SetOneShotTimer(self,"DummySounds2",3.5);
         }
         if (which == 2)
         {
@@ -598,6 +598,18 @@ METHODS:
     }
   }
 
+  METHOD void CopyContains(object obj)
+  {
+    Debug.MPrint("Copying ~contains links from ",obj," to ",self);
+    linkset conlinks = Link.GetAll("~Contains",obj);
+    while (conlinks.AnyLinksLeft())
+    {  
+      link newclink = Link.Create("~Contains",self,conlinks.Link().To());
+      newclink.SetData(conlinks.Link().GetData()); //copy data
+      conlinks.NextLink();
+    }
+  }
+
   METHOD void DoKeySetup(int i)
   {
     Debug.MPrint(self," running key setup on path ",i);    
@@ -612,6 +624,7 @@ METHODS:
           vector destfac = Object.Facing(cursplink.To());
 	  Debug.MPrint("Teleporting key ",self," to fake key ",cursplink.To());
           Object.Teleport(self,destpos,destfac);
+          CopyContains(cursplink.To());
           Object.Destroy(cursplink.To());
         }
 
@@ -691,9 +704,10 @@ MESSAGES:
       PostMessage(message.container,"gotthekey");
       if ((integer)GetData("Eavesdropped")==1)
         PlayDropMe(message.container);
-    }
     if ((integer)GetData("SaidReturn")==0)
       SayReturn(message.container);
+    }
+
     DefaultOnContained();
   }
 
