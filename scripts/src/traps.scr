@@ -541,7 +541,14 @@ BEGIN_SCRIPT(TrapPatrol, StdTrap)
 METHODS:
    METHOD void Activate(boolean on, object sender)
    {
-      Property.Set(self,"AI_Patrol",on);
+      linkset guylinks=Link.GetAll("ControlDevice",self);
+
+      while(guylinks.AnyLinksLeft())
+      {
+         Property.Set(guylinks.Link().To(),"AI_Patrol",on);
+
+         guylinks.NextLink();
+      }
    }
 END_SCRIPT(TrapPatrol)
 
