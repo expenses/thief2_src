@@ -1,12 +1,16 @@
+#pragma once
 /* wrobj.h
 **
 ** Object system stuff that needs to know about the World Rep at compile time
 **
-** $Header: r:/prj/cam/libsrc/portal/RCS/wrobj.h 1.3 1997/11/24 19:32:28 mahk Exp $
-** $Log: wrobj.h $
- * Revision 1.3  1997/11/24  19:32:28  mahk
- * Changed to include wrtype.h instead of wr.h
- * 
+** $Header: r:/t2repos/thief2/src/portal/wrobj.h,v 1.4 2000/01/29 13:37:45 adurant Exp $
+** $Log: wrobj.h,v $
+** Revision 1.4  2000/01/29 13:37:45  adurant
+** #pragma once
+**
+** Revision 1.3  1997/11/24 19:32:28  mahk
+** Changed to include wrtype.h instead of wr.h
+**
  * Revision 1.2  1997/08/05  12:11:37  TOML
  * added extern "C" blocks for C++
  * 
