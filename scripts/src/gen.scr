@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.28 1999/12/26 15:55:44 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.29 1999/12/30 14:56:03 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -705,8 +705,9 @@ BEGIN_SCRIPT(CamReturn, RootScript)
 MESSAGES:
     OnDamage()
     {
-	Camera.ForceCameraReturn();
-	DefaultOnDamage();
+       if(message.damage>0)
+          Camera.ForceCameraReturn();
+       DefaultOnDamage();
     }
 END_SCRIPT(CamReturn);
 
