@@ -313,18 +313,24 @@ MESSAGES:
 
    OnPlayerRoomEnter()
    {
-      if(Link.AnyExist("Route",message.FromObjId,self))
-         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-      if(Link.AnyExist("Route",self,message.FromObjId))
-         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      if ((object)message.FromObjId != (object)0)
+      {
+         if(Link.AnyExist("Route",message.FromObjId,self))
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         if(Link.AnyExist("Route",self,message.FromObjId))
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
       DefaultOnPlayerRoomEnter();
    }
    OnPlayerRoomExit()
    {
-      if(Link.AnyExist("Route",self,message.ToObjId))
-         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-      if(Link.AnyExist("Route",message.ToObjId,self))
-         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      if ((object)message.ToObjId != (object)0)
+      {
+         if(Link.AnyExist("Route",self,message.ToObjId))
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         if(Link.AnyExist("Route",message.ToObjId,self))
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
       DefaultOnPlayerRoomExit();
    }
 
@@ -1531,6 +1537,8 @@ BEGIN_SCRIPT(TrigRoomObject, Room)
 METHODS:
    METHOD boolean RoomIsDest(object room)
    {
+      if ((object)room == (object)0) //obj null is never dest.
+         return FALSE;
       boolean inroom=FALSE;
       object routeroom=OBJ_NULL;
       linkset dest=Link.GetAll("Route",self);
@@ -1632,6 +1640,8 @@ BEGIN_SCRIPT(TrigRoomDeposit, Room)
 METHODS:
    METHOD boolean RoomIsDest(object room)
    {
+      if ((object)room == (object)0) //objnull is never dest.
+         return FALSE;
       boolean inroom=FALSE;
       object routeroom=OBJ_NULL;
       linkset dest=Link.GetAll("Route",self);

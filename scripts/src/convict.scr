@@ -82,6 +82,8 @@ METHODS:
    {
       integer goal;
 
+      if ((object)target == (object)0) //don't score ObjNull.
+         return;
       for(goal=0;goal<=MAX_GOAL;goal++)
       {
          if(GoalType(goal)==typefilter && 
