@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/3dsconv/RCS/efile.h 1.24 1998/09/25 17:19:07 jaemz Exp $
 
 #ifndef EFILE_H
