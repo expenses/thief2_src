@@ -1,6 +1,7 @@
 #include "drkgoalt.h"
 #include "drkstats.h"
 #include "m1213vic.h"
+#include "gen.scr" // oh, yes.
 
 BEGIN_SCRIPT(SpecialGoals, RootScript)
 
@@ -118,12 +119,64 @@ MESSAGES:
 END_SCRIPT(KarrasLetter)
 
 
+/* Clock controlling secret door doesn't let you set its time until you
+   "unlock" it with the cuckoo.
+   When it gets set to 12:00, send a TurnOn.  Else, send a TurnOff.
 
+   @TODO: If we get cuckoo-peeking behavior into the clock script, this clock
+   shouldn't do it until the cuckoo is inserted.
+   */
+BEGIN_SCRIPT(CrazyClock, Clock)
 
+METHODS:
+   METHOD void SetClockTime(integer minutes)
+   {
+      boolean was12=(GetClockTime()==0);
 
+      Base::SetClockTime(minutes);
 
+      if(was12!=(GetClockTime()==0))
+      {
+         Link.BroadcastOnAllLinks(self,was12?"TurnOff":"TurnOn","ControlDevice",NULL);
+      }
+   }
 
+   METHOD void Tock()
+   {
+      // Only tell time if unlocked.
+      if(!Locked.IsLocked(self))
+         Base::Tock();
+   }
 
+MESSAGES:
+   OnNowUnlocked()
+   {
+      ResetBaseTime();
+      DefaultOnNowUnlocked();
+   }
+   OnFrobWorldEnd()
+   {
+      integer minutes=GetClockTime();
+      integer hours=minutes/60;
 
+      if(Locked.IsLocked(self))
+      {
+         // round minutes to nearest clock number
+         minutes=(((minutes+2)/5))%12;
+
+         // Since 3 and 5 are relatively prime, this allows us to put the
+         // clock on an orbit (algebraically speaking) that will never hit
+         // 12:00.
+         minutes=(minutes+5)%12;
+         hours=(hours+3)%12;
+
+         SetClockTime((hours*60)+(minutes*5));
+         // @TODO: make an incongruous "cuckoo" sound at every frob when locked?
+      }
+      else
+         DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(CrazyClock);
 
 
