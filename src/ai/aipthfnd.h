@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthfnd.h 1.15 1998/11/03 16:24:47 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthfnd.h,v 1.17 2000/01/05 15:54:38 BFarquha Exp $
 //
 //
 //
@@ -26,43 +26,48 @@ BOOL AITermPathfinder();
 
 typedef cAIComponentBase<IAIPathfinder, &IID_IAIPathfinder> cAIPathfinderBase;
 
-class cAIPathfinder : public cAIPathfinderBase, 
-                      cCTDelegating<IAIPathfindControl>, 
+class cAIPathfinder : public cAIPathfinderBase,
+                      cCTDelegating<IAIPathfindControl>,
                       cCTDelegating<IAIPathQuery>
 {
-public:   
+public:
    cAIPathfinder();
 
    STDMETHOD (QueryInterface)(REFIID id, void ** ppI);
 
    STDMETHOD_(const char *, GetName)();
-   
+
    //
    // IAIPathfinder methods
    //
-   STDMETHOD_(IAIPath *, Pathfind)(const mxs_vector & toLocation, 
+   STDMETHOD_(IAIPath *, Pathfind)(const mxs_vector & toLocation,
                                    tAIPathCellID endCell = 0,
-                                   tAIPathOkBits fOkBits = kAIOK_All);
+                                   tAIPathOkBits fOkBits = kAIOK_Walk);
 
-   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endLocation, 
+   STDMETHOD_(IAIPath *, PathfindNear)(const mxs_vector & toLocation,
+                                   float fDist,
+                                   tAIPathCellID endCell = 0,
+                                   tAIPathOkBits fOkBits = kAIOK_Walk);
+
+   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endLocation,
                               tAIPathCellID * pEndCell,
                               tAIPathOkBits OkBits = kAIOK_Walk);
 
-   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endPoint, 
+   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endPoint,
                               tAIPathOkBits OkBits = kAIOK_Walk);
 
-   STDMETHOD_(BOOL, IsEdgeVisible)(const cAIPathEdge & edge, 
+   STDMETHOD_(BOOL, IsEdgeVisible)(const cAIPathEdge & edge,
                                    tAIPathOkBits OkBits = kAIOK_Walk);
 
    STDMETHOD_(IAIPathfindControl *, AccessControl)();
-   
+
    //
    // IAIPathfindControl methods
    //
    STDMETHOD_(void, GetRecentCells)(cAICellArray * pResult);
-   
+
    STDMETHOD_(BOOL, CanPassDoor)(ObjID door);
-   
+
 
    STDMETHOD_(BOOL, AppCanPass1)(tAIPathCellID from,
                                  tAIPathCellID to);
@@ -73,10 +78,10 @@ public:
    //
    // Find the edge of the database. Returns TRUE if hit it.
    //
-   STDMETHOD_(BOOL, CastForBoundary)(const mxs_vector & end, 
-                                     mxs_vector * pHitLoc, 
+   STDMETHOD_(BOOL, CastForBoundary)(const mxs_vector & end,
+                                     mxs_vector * pHitLoc,
                                      mxs_vector * pBoundVec);
-   
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
