@@ -36,6 +36,7 @@ set _PRJPATH_=%_PRJDRV_%\prj\thief2
 set _SRCPATH_=%_PRJDRV_%\prj\cam\src
 set _MISPATH_=%_PRJDRV_%\prj\thief2\levels\shipping
 set _ARTPATH_=%_PRJDRV_%\prj\cam\art
+set _ARTPATH2_=%_PRJDRV_%\prj\thief2\art
 set _MOVIEPATH_=%_PRJDRV_%\prj\thief2\art\finals\movies
 set _NEWPATH_=%_PRJDRV_%\prj\thief2
 
