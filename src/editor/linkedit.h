@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/objedit/RCS/linkedit.h 1.1 1999/04/07 14:39:39 TOML Exp $
+// $Header: r:/t2repos/thief2/src/editor/linkedit.h,v 1.2 1997/11/06 13:46:14 mahk Exp $
 #pragma once  
 #ifndef __LINKEDIT_H
 #define __LINKEDIT_H
