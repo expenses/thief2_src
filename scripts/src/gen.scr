@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.70 2000/03/05 10:35:09 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.71 2000/03/15 11:11:00 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -789,8 +789,8 @@ METHODS:
 
    METHOD BOOL PassVelCheck()
    {
-	vector myvel;
-        Physics.GetVelocity(self,myvel);
+      vector myvel;
+      Physics.GetVelocity(self,myvel);
       if (GetMagSq(myvel)<4)
 	return TRUE;
       else
@@ -822,6 +822,10 @@ MESSAGES:
   	 SetData("AmContained",1);
        else
 	 SetData("AmContained",0);
+       //should handle remove from stack case.
+       //Activate makes sure someone is culpable.
+       if (!(integer)GetData("AmContained"))
+          SetOneShotTimer(self,"velcheck",1.0);
        Physics.SubscribeMsg(self, kFellAsleepMsg);
        DefaultOnBeginScript();
     }
@@ -844,7 +848,7 @@ MESSAGES:
       else
         SetData("Amcontained",1);
       if(message.event==kContainRemove &&
-         object(message.container)==Object.Named("Player"))
+         Object.InheritsFrom(message.container,"Avatar"))
       {
 	 SetOneShotTimer(self,"velcheck",1.0);	 
       }
