@@ -222,6 +222,20 @@ MESSAGES:
       DefaultOnInvDeSelect();
    }
 
+   OnInvFocus()
+   {
+      SetID(self);
+      SetUI(kReady);
+      DefaultOnInvFocus();
+   }
+
+   OnInvDeFocus()
+   {
+      SetUI(kUnready);
+      SetID(OBJ_NULL);
+      DefaultOnInvDeFocus();
+   }
+
 // @TODO: This is not really right.  It's just barely possible for 
 // an inventory item that isn't your current one to get destroyed, which
 // would queer this.
