@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkstats.h,v 1.5 1999/11/30 14:57:46 adurant Exp $
 // dark specific stat gathering
 
