@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/r3d/RCS/r3ds.h $
  * $Revision: 1.13 $
  * $Author: KEVIN $
