@@ -90,8 +90,8 @@ iff .%2. != .. then
    set _DAILYDIR_=%_DAILYDRV_%\prj\thief2\%2
    set _DAILYCD_=%_DAILYDIR_%\cd1
    set _DAILYTHIEF_=%_DAILYDIR_%\cd1\thief2
-   set _DAILYCD2_=%_DAILYDIR_%\cd1
-   set _DAILYTHIEFCD2_=%_DAILYDIR_%\cd1\thief2
+   set _DAILYCD2_=%_DAILYDIR_%\cd2
+   set _DAILYTHIEFCD2_=%_DAILYDIR_%\cd2\thief2
    set _DAILY_=%2
    mkdirs %_DAILYCD_%\thief2
    mkdirs %_DAILYCD2_%\thief2
@@ -107,6 +107,12 @@ mkdirs redist\x86
 
 xcopy /s r:\prj\thief2\reltools\redist redist
 
+cd %_DAILYCD2_%
+mkdirs redist\directx\drivers\eng
+mkdirs redist\x86
+
+xcopy /s r:\prj\thief2\reltools\redist redist
+
 copy r:\prj\thief2\reltools\redist\crt\msvcrt40.dll %_DAILYTHIEF_%
 
 rem **************************************************************
@@ -116,8 +122,15 @@ rem 4dos seemed to have a problem evaluating when it was there. Go figure.
 rem **************************************************************
 
 iff %_lcode_% != eng then 
+
+cd %_DAILYCD_%
 mkdirs redist\directx\drivers\%_lcode_%
 xcopy r:\prj\thief2\reltools\redist\directx\drivers\%_lcode_% redist\directx\drivers\%_lcode_
+
+cd %_DAILYCD2_%
+mkdirs redist\directx\drivers\%_lcode_%
+xcopy r:\prj\thief2\reltools\redist\directx\drivers\%_lcode_% redist\directx\drivers\%_lcode_
+
 endiff 
 
 rem **************************************************************
@@ -132,7 +145,10 @@ iff %_country_% = jpn then
   xcopy r:\prj\thief2\reltools\redist\directx\drivers\nec redist\directx\drivers\nec
 endiff
 
-copy  r:\prj\thief2\reltools\iv5play.exe
+
+rem iv5play on cd2 so it gets done when we switch and stay to cd2
+copy  r:\prj\thief2\reltools\iv5play.exe %_DAILYCD2_%
+rem lgvid.ax on cd1 so it gets easily installed.
 copy  x:\prj\tech\libsrc\actmovie\lgvid\retail\lgvid.ax %_DAILYTHIEF_%
 
 rem **************************************************************
@@ -148,6 +164,8 @@ rem **************************************************************
 rem 3dfx drivers  
 rem **************************************************************
 
+rem cd %_DAILYCD_%
+
 rem mkdirs drivers\voodoo1
 rem mkdirs drivers\voodoo2
 
@@ -160,8 +178,12 @@ rem the readme.wri file!  (note that it lives in the top level of the CD)
 rem note that different localizations have differnt readme's
 rem **************************************************************
 
+rem put the readme EVERYWHERE
+
 copy r:\prj\thief2\docs\readme\%_country_%\*.wri %_DAILYCD_%
 copy r:\prj\thief2\docs\readme\%_country_%\*.wri %_DAILYTHIEF_%
+copy r:\prj\thief2\docs\readme\%_country_%\*.wri %_DAILYCD2_%
+copy r:\prj\thief2\docs\readme\%_country_%\*.wri %_DAILYTHIEFCD2_%
 
 rem **************************************************************
 rem The urls.  Eidos.url and ets (eidos tech support) are different
@@ -173,8 +195,7 @@ rem 1. No installer work needed since the ilist.X will take care of it, and
 rem 2. the top level of the CD has five less files. 
 rem **************************************************************
 
-copy r:\prj\thief2\reltools\url\%_country_%\*.url  %_DAILYTHIEF_%
-
+copy r:\prj\thief2\reltools\url\%_country_%\*.url  %_DAILYTHIEFCD_%
 
 rem **************************************************************
 rem put the installer in place
@@ -184,10 +205,10 @@ rem **************************************************************
 
 cd %_ALTPATH_%\install
 
-make local sb=r:\prj lcode=%_lcode_% COUNTRY=%_country_% INSTALL=%_DAILY_%\cd1
+make local sb=r:\prj lcode=%_lcode_% COUNTRY=%_country_% INSTALL=%_DAILYCD_%
 
-rem cd %_DAILYCD2_%
-rem xcopy /s r:\prj\thief2\reltools\setup\%_lcode_%\cd2 .
+cd %_DAILYCD2_%
+xcopy /s r:\prj\thief2\install\cd2\%_lcode_%\* .
 
 rem **************************************************************
 rem build the ilist files
