@@ -103,6 +103,7 @@ MESSAGES:
     OnDoorOpening()
     {
        PingDoubles();
+       DarkGame.FoundObject(self);
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
        DefaultOnDoorOpening();
     }
@@ -675,9 +676,11 @@ BEGIN_SCRIPT(StdLever,StdTwoState)
         if (dir==kTweqDirReverse) 
            // the lever is going from down to up, send TurnOff
            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-        else if (dir==kTweqDirForward)
+        else if (dir==kTweqDirForward) {
            // the lever is going from up to down, send TurnOn
            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+           DarkGame.FoundObject(self);
+        }
      }
 
   MESSAGES:
@@ -739,6 +742,7 @@ METHODS:
       if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
       {
          Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         DarkGame.FoundObject(self);
       }
    } // end of method PostTweqActivate
 
@@ -851,6 +855,7 @@ METHODS:
       Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
       // bounce the button
       ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+      DarkGame.FoundObject(self);
    }
       
 MESSAGES:
@@ -982,6 +987,7 @@ METHODS:
          Property.Set(self,"MovingTerrain","active",FALSE);
          Link.Create("TPathNext",self,dest);
          Property.Set(self,"MovingTerrain","active",TRUE);
+         DarkGame.FoundObject(self);
          ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, kTweqDoActivate);
       }
    }
