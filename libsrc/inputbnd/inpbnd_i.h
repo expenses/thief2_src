@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/inputbnd/RCS/inpbnd_i.h 1.27 1999/10/21 15:23:18 MAT Exp $
 #ifndef __INPBND_I_H
 #define __INPBND_I_H
