@@ -1,8 +1,8 @@
 #include "drkgoalt.h"
 #include "invtype.h"
 
-#define GOAL_ESCAPE 0
-#define GOAL_SIGNAL 1
+#define GOAL_ESCAPE 1
+#define GOAL_SIGNAL 0
 
 #define WEAP_UI_QVAR "WeapUI"
 #define WEAP_ID_QVAR "WeapID"
