@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/actmovie/RCS/makefile $
-# $Revision: 1.7 $
-# $Author: JON $
-# $Date: 1996/09/19 18:49:31 $
+# $Revision: 1.8 $
+# $Author: TOML $
+# $Date: 1996/10/01 18:45:25 $
 #
 # Makefile for actmovie library
 #
@@ -19,9 +19,11 @@ LIBTARGS = actmovie
 
 actmovie_DEFINES =
 
-actmovie_OBJS = actmovie amguids amalloc imutil mtype
+actmovie_OBJS = actmovie amguids amalloc imutil mtype getlgvid
 
-actmovie_HDRS = 
+actmovie_opt_objs = imutil
+
+actmovie_HDRS =
 
 %include $(MRC)\make.rc
 
