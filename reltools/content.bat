@@ -129,25 +129,29 @@ rem **************************************************************
 
 rem of course, we don't have any missions yet.
 
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss1.mis %_DAILYTHIEFCD2_%\miss1.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss2.mis %_DAILYTHIEFCD2_%\miss2.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss3.mis %_DAILYTHIEFCD2_%\miss3.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss4.mis %_DAILYTHIEFCD2_%\miss4.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss5.mis %_DAILYTHIEFCD2_%\miss5.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss6.mis %_DAILYTHIEFCD2_%\miss6.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss7.mis %_DAILYTHIEFCD2_%\miss7.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss9.mis %_DAILYTHIEFCD2_%\miss9.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss10.mis %_DAILYTHIEFCD2_%\miss10.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss11.mis %_DAILYTHIEFCD2_%\miss11.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss12.mis %_DAILYTHIEFCD2_%\miss12.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss13.mis %_DAILYTHIEFCD2_%\miss13.mis
-rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss14.mis %_DAILYTHIEFCD2_%\miss14.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss1.mis %_DAILYTHIEFCD2_%\miss1.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss2.mis %_DAILYTHIEFCD2_%\miss2.mis
+
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss4.mis %_DAILYTHIEFCD2_%\miss4.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss5.mis %_DAILYTHIEFCD2_%\miss5.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss6.mis %_DAILYTHIEFCD2_%\miss6.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss7.mis %_DAILYTHIEFCD2_%\miss7.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss8.mis %_DAILYTHIEFCD2_%\miss8.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss9.mis %_DAILYTHIEFCD2_%\miss9.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss10.mis %_DAILYTHIEFCD2_%\miss10.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss11.mis %_DAILYTHIEFCD2_%\miss11.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss12.mis %_DAILYTHIEFCD2_%\miss12.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss13.mis %_DAILYTHIEFCD2_%\miss13.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss14.mis %_DAILYTHIEFCD2_%\miss14.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss15.mis %_DAILYTHIEFCD2_%\miss15.mis
+%_PRJPATH_%\bin\misstrip %_MISPATH_%\miss16.mis %_DAILYTHIEFCD2_%\miss16.mis
 
 rem well we have some, but we aren't going to strip them yet.
+rem well, now we are stripping them.
 
-xcopy /D %_MISPATH_%\*.mis %_DAILYTHIEF_%\*.*
+rem xcopy /D %_MISPATH_%\*.mis %_DAILYTHIEFCD2_%\*.*
 
-xcopy /D %_MISPATH_%\*.gam %_DAILYTHIEF_%\*.*
+xcopy /D %_MISPATH_%\dark.gam %_DAILYTHIEFCD2_%\*.*
 
 rem **************************************************************
 rem zip the art.  it is on the local drive _BLDDRV_
