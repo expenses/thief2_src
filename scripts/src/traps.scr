@@ -220,7 +220,7 @@ END_SCRIPT(TrigOBB)
 
 
 // TrigOBB that's only triggered by player
-BEGIN_SCRIPT(TrigPlayerOBB, TrigOBB)
+BEGIN_SCRIPT(TrigOBBPlayer, TrigOBB)
 MESSAGES:
    OnPhysEnter()
    {
@@ -230,7 +230,7 @@ MESSAGES:
          DefaultOnPhysEnter();
    }
 
-END_SCRIPT(TrigPlayerOBB)
+END_SCRIPT(TrigOBBPlayer)
 
 // glyphs fire their triggers when a creature collides with
 // their "edge-triggered" physics model.
