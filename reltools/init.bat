@@ -24,6 +24,8 @@ rem and the prj subdirs
 set _DAILY_=%_DAILYDRV_%\prj\thief2\daily
 set _DAILYCD_=%_DAILY_%\cd1
 set _DAILYTHIEF_=%_DAILYCD_%\thief2
+set _DAILYCD2_=%_DAILY_%\cd2
+set _DAILYTHIEFCD2_=%_DAILYCD2_%\thief2
 set _DAILYPRJ_=%_DAILY_%\PRJ 
 
 set _ZIPDIR_=c:\zips
@@ -40,6 +42,7 @@ rem **************************************************************
 
 rem  make the release directory.  
 mkdirs %_DAILYTHIEF_% >& nul
+mkdirs %_DAILYTHIEFCD2_% >& nul
 mkdirs %_DAILYPRJ_% >& nul
 
 
