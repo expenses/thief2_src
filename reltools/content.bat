@@ -109,6 +109,7 @@ xcopy /D /s /I %_ARTPATH2_%\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
 xcopy /D /s /I %_ARTPATH2_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
 xcopy /D /s /I %_ARTPATH2_%\finals\camera %_BLDDRV_%\prj\cam\art\finals\camera
 xcopy /D /s /I %_ARTPATH2_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
+xcopy /D /s /I %_ARTPATH2_%\finals\song %_BLDDRV_%\prj\cam\art\finals\song
 xcopy /D /s /I %_ARTPATH2_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
 
 
@@ -332,6 +333,24 @@ cd ..
 
 copy %_ZIPDIR_%\snd.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\snd.crf
+
+rem **************************************************************
+rem   SONG
+rem **************************************************************
+
+rem note  that we do not compress songs much like sound
+cd song
+
+find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE1_% > %_ZIPDIR_%\elog
+find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
+
+
+pkzip25 -add  -path=current -recurse -store  -nozipextension  -exclude=@%_ZIPDIR_%\elog -store  %_ZIPDIR_%\song.crf   | tee /A r:\prj\thief2\reltools\ziplog 
+
+cd ..
+
+copy %_ZIPDIR_%\song.crf %_MAINCRFPATH_%
+del %_ZIPDIR_%\song.crf
 
 rem **************************************************************
 rem   STRINGS
