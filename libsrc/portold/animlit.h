@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/animlit.h,v 1.2 1997/08/05 12:11:18 TOML Exp $
 
 #ifdef __cplusplus
