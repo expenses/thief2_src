@@ -1,0 +1,288 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.1 2000/01/24 02:02:59 rsmith Exp $
+//
+
+
+#include "animlgte.h"
+
+
+//////////////////////
+//////////////////////
+//  SCRIPT FILE:  Miss16.SCR
+//////////////////////
+//////////////////////
+
+//  To be used Mission 16 of Thief 2 - Endgame/Factory
+
+//////////////////////
+//////////////////////
+
+// Script:	RobotResponse
+
+// This script goes on an AI (assumed to be a combat robot that starts the mission
+// in ASLEEP state).  When the AI receives a "TurnOn", it goes to Normal state and
+// runs to the ControlDevice-linked marker object.  In other words, the AI springs 
+// to life and runs to a predetermined location which correpsonds to, say, an alarm
+// going off.
+
+BEGIN_SCRIPT (RobotResponse, AI)
+
+METHODS:
+
+object GetDest()
+{
+	return Link.GetOne("ControlDevice",self).To();
+}
+
+MESSAGES:
+
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		Property.Set(self,"AI_Mode",3);
+		GotoObjLoc(GetDest(), kFast);
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (RobotResponse)
+
+
+
+// Script:	Microphone
+
+//  If you get to alert 2, go to alert 3 automatically.
+//  Otherwise, same as camera.
+
+BEGIN_SCRIPT (Microphone, AI)
+
+MESSAGES:
+
+OnAlertness()
+{
+	if ( (message.level == kModerateAlert) && (message.oldLevel < kModerateAlert) )
+	{
+		Debug.MPrint(" Mic going from 2 to 3");
+//		Property.Set(self,"AI_Alertness","Level",3);
+		Property.Set(self,"AI_AlertCap","Min level",3);
+	}
+
+	DefaultOnAlertness();
+}
+
+END_SCRIPT (Microphone)
+
+
+
+// Script:  HealingWaterFont
+
+// identical to same in theif 1, miss 11 (RTC)
+
+// When frobbed: heals the player, shuts off its own light, and de-charges - cannot be
+// used to heal the player for a while.
+// A certain amount of time later, it recharges, turns its light back on, and
+// is able to heal the player again.
+
+// @TODO:	this script is supposed to inherit from AnimLight but I had some problems
+//				but i had some trouble including the proper files, so for now the relevant
+//				lines are commented out
+
+//BEGIN_SCRIPT(HealingWaterFont, AnimLight)
+BEGIN_SCRIPT(HealingWaterFont, RootScript)
+
+
+METHODS:
+
+// heals the player and triggers the related de-charge side effects
+METHOD void Heal(object Target)
+{
+	Damage.Damage(Target,self,GetHealAmount(),object("RestoreStim"));
+	SetData("Charged",FALSE);
+//	TurnOff();
+	// shut off the particle stream fountain effects
+	if (Link.AnyExist("~ParticleAttachement",self))
+	{
+		Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
+	}
+
+	SetOneShotTimer("Recharged",GetRechargeTime());
+}
+
+METHOD int GetHealAmount()
+{
+	// should be expressed as negative damage (eg "-4" heals 4 points)
+	return -4;
+}
+
+METHOD float GetRechargeTime()
+{
+	// in seconds
+	return 180.0;
+}
+
+MESSAGES:
+
+OnSim()
+{
+	if (message.starting)
+		SetData("Charged",TRUE);
+	DefaultOnSim();
+}
+
+OnFrobWorldEnd()
+{
+	if ((boolean)GetData("Charged"))
+		Heal(message.Frobber);
+
+	DefaultOnFrobWorldEnd();
+}
+
+OnTimer()
+{
+	if (message.name == "Recharged")
+	{
+		SetData("Charged",TRUE);
+//		TurnOn();
+		// turn on the particle stream fountain effect
+		if (Link.AnyExist("~ParticleAttachement",self))
+		{
+			Link.BroadcastOnAllLinks(self,"TurnOn","~ParticleAttachement");
+		}
+	}
+
+	DefaultOnTimer();
+}
+
+END_SCRIPT(HealingWaterFont)
+
+
+
+// Script:	AntennaManager
+
+// This script goes on a Marker object named "AntennaManager".
+// The object is ~ControlDevice linked to the 8 antenna switches in the mission.
+//  - ie - the 8 antenna switches are ControlDevice linked to it.
+// When it gets either a "TurnOn" or a "TurnOff" message (presumably from one of the
+// antenna switches), it scans through all the ~ControlDevice linked objects (ie - all
+// the antenna switches) and counts how many are in the state that corresponds to "B" -
+// the state the player is supposed to flip them to (they all start at "A").
+// If the number that are in state "B" is >= X, then the "flip the antenna" objective
+// is checked off, otherwise it is marked incomplete.
+// X = the value of the mission quest variable that corresponds to
+// the current difficulty level:
+//   Normal =	num_antenna_norm
+//   Hard =		num_antenna_hard
+//	  Expert =	num_antenna_exp
+
+BEGIN_SCRIPT (AntennaManager, RootScript)
+
+METHODS:
+
+// Searches through all the ~ControlDevice linked objects and checks to see how many are
+// in the state that corresponds to 'B'.
+int CountFlippedAntennas()
+{
+	int X=0;
+
+	if (Link.AnyExist("~ControlDevice",self))
+	{
+		linkset Switches=Link.GetAll("~ControlDevice",self);
+		while(Switches.AnyLinksLeft())
+		{
+			Debug.MPrint (" Checking switch ",Switches.Link().To() );
+
+			if (StateIsB(Switches.Link().To()))
+			{
+				X++;
+				Debug.MPrint (" Switch ",Switches.Link().To()," is in state B.");
+			}
+
+			Switches.NextLink();
+		}
+	}
+	else
+	{
+		Debug.MPrint (" *** WARNING: object ",self," has no incoming ControlDevice links!");
+	}
+
+	return X;
+
+}  // method: CountFlippedAntennas
+
+
+
+// For the passed in object o, presumed to be an antenna switch, returns whether or not o
+// is in the state that corresponds to position "B"
+boolean StateIsB (object o)
+{
+	Debug.MPrint(" Switch ",o," has AnimS = ",Property.Get(o,"StTweqJoints","AnimS"));
+
+	if (  (Property.Get(o,"StTweqJoints","AnimS")) == (0x00)  )
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+
+// Returns the value of the appropriate mission quest variable, based on difficulty.
+int GetNumRequiredFlips()
+{
+	int num;
+
+	int difficulty = Quest.Get("difficulty");
+
+	// EXPERT
+	if (difficulty == 2)
+	{
+		num = Quest.Get("num_antenna_exp");
+	}
+	// HARD
+	else if (difficulty == 1)
+	{
+		num = Quest.Get("num_antenna_hard");
+	}
+	// NORMAL
+	else // if (difficulty == 0)  - best to return something
+	{
+		num = Quest.Get("num_antenna_norm");
+	}
+
+	return num;
+}
+
+
+MESSAGES:
+
+OnMessage()
+{
+	if ( (MessageIs("TurnOn")) || (MessageIs("TurnOff")) )
+	{
+		int X = CountFlippedAntennas();
+
+
+		Debug.MPrint("An antenna has been flipped.  X = ",X,".  NumRequired = ",GetNumRequiredFlips());
+
+		if (X >= GetNumRequiredFlips() )
+		{
+			// mark objective complete
+			//Quest.Set("goal_state_"+string(GOAL_FLIP_ANTENNAS),kGoalComplete,kQuestDataMission);
+		}
+		else
+		{
+			// mark objective incomplete
+			//Quest.Set("goal_state_"+string(GOAL_FLIP_ANTENNAS),kGoalIncomplete,kQuestDataMission);
+		}
+
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (AntennaManager)
