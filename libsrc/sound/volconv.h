@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/sound/RCS/volconv.h 1.1 1999/06/07 16:46:30 mwhite Exp $
+// $Header: x:/prj/tech/libsrc/sound/RCS/volconv.h 1.1 1999/06/07 17:07:21 mwhite Exp $
 
 //
 // Sound volume conversion utility functions.
