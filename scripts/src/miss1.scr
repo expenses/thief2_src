@@ -122,6 +122,8 @@ MESSAGES:
                   follow=666;
             }
          }
+         // and ALWAYS continue conversation.
+         Reply(TRUE);
       }
       else if(MessageIs("SeeBasso"))
       {
@@ -1158,7 +1160,8 @@ MESSAGES:
             Debug.MPrint("Attempting to signal ",target);
             if (WithinRange(target,sigdistance))
             {
-               Quest.Set(GoalStateVarName(GOAL_SIGNAL),kGoalComplete);
+               if(Object.HasMetaProperty(target,"M-WhistleResponse"))
+                  Quest.Set(GoalStateVarName(GOAL_SIGNAL),kGoalComplete);
                AI.Signal(target,"WhistleBlown");
             }
             else
@@ -1172,4 +1175,45 @@ MESSAGES:
    }
 
 END_SCRIPT(WhistleCall);
+
+
+BEGIN_SCRIPT(Basso, RootScript)
+
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         SetOneShotTimer(self,"CheckDoor",11.0);
+      }
+      DefaultOnSim();
+   }
+   OnTimer()
+   {
+      if(message.name=="CheckDoor")
+      {
+         if(Quest.Get(GoalStateVarName(GOAL_SIGNAL))==kGoalIncomplete)
+         {
+            object thedoor=object("GatehouseDoor");
+            // @TODO: Gruesomely single-player.
+            vector playerpos=Object.Position(object("Player"));
+            vector selfpos=Object.Position(self);
+            vector doorpos=Object.Position(thedoor);
+
+            if(((doorpos-selfpos).Magnitude()<20.0) &&
+               ((selfpos-playerpos).Magnitude()>90.0))
+            {
+               Property.Set(thedoor,"Locked",TRUE);
+            }
+            else
+               SetOneShotTimer(self,"CheckDoor",11.0);
+         }
+      }
+      DefaultOnTimer();
+   }
+END_SCRIPT(Basso)
+
+
+
+
 
