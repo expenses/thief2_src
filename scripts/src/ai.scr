@@ -1218,7 +1218,6 @@ MESSAGES:
    {
      if (message.starting)
      {
-       Debug.MPrint("Sim starting ",self," suspicious reaction.");
        SetData("DoingSuspicious",0);
        SetData("CurrentObj",0);
        SetData("SuspiciousQueueType","NULL"); //assumes only 2 semaphore types
@@ -1418,3 +1417,22 @@ BEGIN_SCRIPT(ReGravitize, Physics)
    }
 
 END_SCRIPT(ReGravitize);
+
+//knockedout robots should still corpse swap.  We already have a corpse link
+//so just do the real slay.  We must be our own culprit so that the player
+//gets the appropriate blame stats (deactivate/destroy).
+BEGIN_SCRIPT(RobotSlayScript, AI)
+
+MESSAGES:
+
+   OnAIModeChange()
+   {
+      if (message.mode == kAIM_Dead)
+      {
+         if ((integer)Property.Get(self,"HitPoints")>0)
+            Damage.Slay(self,self); //really just kill me.
+      }
+      DefaultOnAIModeChange();
+   }
+
+END_SCRIPT(RobotSlayScript)
