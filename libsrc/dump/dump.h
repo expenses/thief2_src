@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/dump/RCS/dump.h $
  * $Revision: 1.5 $
  * $Author: JAEMZ $
