@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/propfac_.h,v 1.3 1998/09/07 01:07:18 mahk Exp $
 #pragma once  
 #ifndef __PROPFAC__H
