@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.30 2000/01/05 14:08:08 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.31 2000/01/06 10:50:17 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -497,6 +497,36 @@ BEGIN_SCRIPT(Extinguishable, AnimLight)
   SCRIPT_END_MESSAGE_MAP()
 
 END_SCRIPT(Extinguishable)
+
+
+/* Gaslights (we claim) can be turned on with a frob, but cannot be frobbed off */
+BEGIN_SCRIPT(GasLight, Extinguishable)
+METHODS:
+   METHOD void TurnOn()
+   {
+      if(!Object.HasMetaProperty(self,"FrobInert"))
+         Object.AddMetaProperty(self,"FrobInert");
+      Base::TurnOn();
+   }
+   METHOD void TurnOff()
+   {
+      Object.RemoveMetaProperty(self,"FrobInert");
+      Base::TurnOff();
+   }
+   METHOD void InitModes()
+   {
+      Base::InitModes();
+      if(IsLightOn() && !Object.HasMetaProperty(self,"FrobInert"))
+         Object.AddMetaProperty(self,"FrobInert");
+   }
+
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      TurnOn();
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(GasLight)
 
 
 // fairly generic script to play sounds upon receipt of
