@@ -93,6 +93,7 @@ MESSAGES:
 
          if(Property.Possessed(self,"scriptTiming"))
             thresh=Property.Get(self,"scriptTiming");
+         Property.Set(self,"scriptTiming",thresh);
 
          // Debug.MPrint("Distance to note is ",dist);
 
@@ -238,6 +239,7 @@ METHODS:
      {
         object mawtrol=object("MawPatrol");
         object conversation=object(0);
+        object note=TheNote();
 
         SetData("Bleeding",TRUE);
 
@@ -299,6 +301,14 @@ METHODS:
            AI.StartConversation(conversation);
         }
      
+        // Relax distance restriction on the note.  Easier than removing it entirely,
+        // and we'll be gone soon enough.
+        if(note!=object(0) && Property.Possessed(note,"ScriptTiming"))
+        {
+           integer thresh=Property.Get(note,"ScriptTiming");
+           Property.Set(note,"ScriptTiming",400+thresh);
+        }
+
         // Start fleeing at this point.  Luckily, we claim we just got
         // damaged anyway, so we can be ham-fisted about it.
         Property.CopyFrom(self,"AI_FleeConds","M-OnlyFlee");
