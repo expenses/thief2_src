@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.19 $
-# $Author: TOML $
-# $Date: 1996/10/17 17:23:00 $
+# $Revision: 1.20 $
+# $Author: buzzard $
+# $Date: 1996/10/21 19:58:35 $
 #
 # Makefile for r3d library
 #
@@ -43,6 +43,7 @@ r3d_OBJS = \
   primfunc \
   primmisc \
   primpoly \
+  projfast \
   space    \
   utils    \
   view     \
