@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/loopsys/RCS/loopbrac.h 1.2 1998/06/01 15:54:55 JAEMZ Exp $
 
 #pragma once

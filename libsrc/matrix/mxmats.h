@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/matrix/RCS/mxmats.h 1.11 1999/07/21 15:44:10 JAEMZ Exp $
 
 #ifndef __MXMATS_H
