@@ -1,8 +1,9 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.6 $
+# $Revision: 1.7 $
 # $Author: kaboom $
-# $Date: 1993/05/05 15:47:52 $
+# $Date: 1993/05/17 11:40:43 $
+#
 
 DEBUG_ON=1
 
@@ -34,14 +35,19 @@ INPUT_HDRS = mouse.h kb.h kbcook.h joystick.h
 !include $(INIT)/make.rc
 
 kb.h: kbdecl.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
-      kblow.inc kbscan.inc kbstate.inc
-        @rm $(@,F)
+        kblow.inc kbscan.inc kbstate.inc
+        rm -f junk
+        @echo cat $^ \>junk
         !foreach FILE $(^, M\.h)
-          @cat $(FILE) >>$(@,F)
+          @cat $(FILE) >>junk
         !end
         !foreach FILE $(^, M\.inc)
-          @inc2h $(FILE) $(@,F)
+          @inc2h $(FILE) junk
         !end
+        @echo \#ifndef __KB_H >$(@,F)
+        @echo \#define __KB_H >>$(@,F)
+        sed '/\/\/.*$$/d' junk >>$(@,F)
+        @echo \#endif /* !__KB_H */>>$(@,F)
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
