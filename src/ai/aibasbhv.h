@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibasbhv.h 1.13 1999/03/02 17:42:27 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibasbhv.h,v 1.14 1999/12/01 16:06:06 BFarquha Exp $
 //
 //
 //
@@ -73,7 +73,7 @@ public:
    // Create a gesture for an abstract AI concept
    //
    STDMETHOD_(cAIAction *, CreateGestureAction)(eAIGestureType gesture,
-                                                IAIActor * pOwner, 
+                                                IAIActor * pOwner,
                                                 DWORD data = 0);
 
 
@@ -84,7 +84,7 @@ public:
                                                IAIActor *  pOwner,
                                                DWORD         data = 0);
 
-   // 
+   //
    // Factories for actions that may have proxies in network games.
    // @TBD (toml 02-25-99): should redo terminology as "netprox"
    //
@@ -171,6 +171,23 @@ public:
 protected:
    virtual void CreateCombatAbilities(cAIComponentPtrs * pComponents);
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAIRangedBehaviorSet
+//
+
+class cAISimpleBehaviorSet : public cAIBehaviorSet
+{
+public:
+   STDMETHOD_(const char *, GetName)();
+
+protected:
+   virtual void CreateCombatAbilities(cAIComponentPtrs * pComponents);
+};
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

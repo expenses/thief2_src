@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aistdmrg.h 1.4 1998/10/20 23:15:06 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aistdmrg.h,v 1.5 1999/12/01 16:07:07 BFarquha Exp $
 //
 // The standard movement regulators
 //
@@ -56,7 +56,30 @@ public:
    STDMETHOD (SuggestRegulations)(cAIMoveSuggestions &);
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAILVLMovReg
+//
+// Responsible for making sure the AI doesn't run into unused LVL cells
+//
+
+class cAILVLMovReg : public cAIMoveRegulator
+{
+public:
+   STDMETHOD_(const char *, GetName)();
+
+   //
+   STDMETHOD_(BOOL, NewRegulations)();
+
+   //
+   STDMETHOD (SuggestRegulations)(cAIMoveSuggestions &);
+
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 
 #pragma pack()
 
