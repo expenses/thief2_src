@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.1 1993/01/29 09:48:03 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.2 1993/01/29 17:31:52 rex Exp $
 # $Log: makefile $
-# Revision 1.1  1993/01/29 09:48:03  rex
-# Initial revision
+# Revision 1.2  1993/01/29 17:31:52  rex
+# *** empty log message ***
 #
+# Revision 1.1  1993/01/29  09:48:03  rex
+# Initial revision
+# 
 
 COMPILER = watcom
 SRCDIR = n:\project\lib\src\lg
@@ -13,6 +16,7 @@ RELDIR = n:\project\lib\release
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
+BINDIR = n:\bin
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = $(RELDIR)
 PROG_TARGETS = dbgmakeh dbgtest
