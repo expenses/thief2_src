@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/invtype.h 1.2 1998/06/09 20:03:34 TOML Exp $
+// $Header: r:/t2repos/thief2/src/dark/invtype.h,v 1.3 1999/11/02 16:16:23 adurant Exp $
 #pragma once  
 #ifndef __INVTYPE_H
 #define __INVTYPE_H
@@ -38,9 +38,10 @@ typedef enum eInventoryType
 typedef enum eDarkContainType
 {
    // rendered types (negative numbers)
+   kContainTypeAlt = -3,
    kContainTypeHand = -2, 
    kContainTypeBelt = -1,
-   kContainTypeRendMin = kContainTypeHand,
+   kContainTypeRendMin = kContainTypeAlt,
    kContainTypeRendMax = 0,
 
    // non-rendered
