@@ -1,15 +1,18 @@
 #
 # $Source: x:/prj/tech/libsrc/star/RCS/makefile $
-# $Revision: 2.1 $
+# $Revision: 2.2 $
 # $Author: ept $
-# $Date: 1995/10/18 12:57:56 $
+# $Date: 1995/10/18 12:58:49 $
 #
 # Makefile for Star library
 #
 # $Log: makefile $
-# Revision 2.1  1995/10/18 12:57:56  ept
-# This is the makefile for the new make system.
+# Revision 2.2  1995/10/18 12:58:49  ept
+# Typo fixed.
 #
+# Revision 2.1  1995/10/18  12:57:56  ept
+# This is the makefile for the new make system.
+# 
 # Revision 1.1.1.1  1995/03/20  16:14:41  jaemz
 # New make system
 # 
@@ -41,5 +44,5 @@ ststar_HDRS = star.h
 ststar.c: star.c
         copy star.c ststar.c
 
-!include $(INIT)/make.rc
+%include $(INIT)/make.rc
 
