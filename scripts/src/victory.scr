@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.3 1999/11/10 15:59:52 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.4 1999/12/02 19:08:18 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -233,6 +233,10 @@ METHODS:
 
       // Irreversible goals don't get scored at all when undone
       if(!DoneElseUndone && Quest.Get("GOAL_IRREVERSIBLE_"+string(objective)))
+         return;
+
+      // Inactive goals do not get scored.
+      if(ObjectiveGet(objective)==kGoalInactive)
          return;
 
       // reverse goals are failed in the doing, not completed
