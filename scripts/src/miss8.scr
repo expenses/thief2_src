@@ -295,8 +295,12 @@ METHODS:
         // damaged anyway, so we can be ham-fisted about it.
         Property.CopyFrom(self,"AI_FleeConds","M-OnlyFlee");
         Link.DestroyMany("AIFleeTo",self,AnyObject);
+        Link.DestroyMany("AICurrentPatrol",self,AnyObject);
         if(Object.Exists(mawtrol))
+        {
            Link.Create("AIFleeTo",self,mawtrol);
+           Link.Create("AICurrentPatrol",self,mawtrol);
+        }
         Damage.Damage(self,self,1,object("WeaponStim"));
      }
   }
