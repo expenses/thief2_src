@@ -1,3 +1,5 @@
+#include "drkgoalt.h"
+
 BEGIN_SCRIPT(ListenClosely, Room)
 
 METHODS:
@@ -49,6 +51,16 @@ METHODS:
 	    SetData("StartedConversation",convstate);
           }
       }
+  }
+
+  METHOD void ConversationGoalComplete(integer checkobj)
+  {
+    if (Link.AnyExist("ScriptParams",checkobj,checkobj))
+    {
+      link splink = Link.GetOne("ScriptParams",checkobj,checkobj);
+      integer qdata = (integer)splink.GetData();
+      Quest.Set(GoalStateVarName(0),kGoalComplete,kQuestDataMission);
+    }
   }
 
   METHOD boolean ConversationContinue(integer prevobj)
@@ -103,6 +115,7 @@ MESSAGES:
         Debug.MPrint("Finished conversation on ",convid);
         SetData("FinishedConversation",(integer)GetData("StartedConversation"));
 	SetData("ConversationObject",0);
+	ConversationGoalComplete(message.targetObject);
 	if (!ConversationContinue(message.targetObject))
   	  ConversationCheckStep((integer)GetData("StartedConversation"));
       }
