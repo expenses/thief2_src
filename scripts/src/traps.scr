@@ -1557,7 +1557,35 @@ END_SCRIPT (TrapCapacitor)
 */
 BEGIN_SCRIPT(TurretAlert, TrapRequirement)
 
+   // @TODO: Get awareness communicated from camera, instead of (in addition to?)
+   // alert cap. -TJS
+
 METHODS:
+
+// @TODO: Initialize turret in OFF mode to be AI asleep? -TJS
+
+   METHOD void KillSleepTimer(void)
+   {
+      if(IsDataSet("SleepTimer"))
+      {
+         timer_handle timeh=GetData("SleepTimer");
+         KillTimer(timeh);
+         ClearData("SleepTimer");
+      }
+   }
+
+   METHOD void SleepMode(boolean asleep)
+   {
+      integer mode=Property.Get(self,"AI_Mode");
+
+      if(asleep)
+         mode=kAIM_Asleep;
+      else if(mode==kAIM_Asleep)
+         mode=kAIM_Normal;
+
+      Property.Set(self,"AI_Mode",mode);
+   }
+
    METHOD void ClampAlert(integer alert)
    {
       Property.Set(self,"AI_AlertCap","Min level",alert);
@@ -1566,17 +1594,51 @@ METHODS:
 
    METHOD void Activate(boolean on, object sender)
    {
+      SetData("On",on);
       if(on)
       {
          ClampAlert(kHighAlert);
+         SleepMode(FALSE);
+         KillSleepTimer();
          Base::Activate(on,sender);
       }
       else
       {
          Base::Activate(on,sender);
-         if(!Link.AnyExist("ScriptParams",self)) 
+         if(!Link.AnyExist("ScriptParams",self))
+         {
+            KillSleepTimer();
+
+            // If we sleep right away, it will freeze the creature, possibly
+            // in firing (open) joint position.  We don't want that.
+            timer_handle timeh=SetOneShotTimer(self,"Sleep",2.0);
+            SetData("SleepTimer",timeh);
+            
             ClampAlert(kNoAlert);
+         }
       }
+   }
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("On"))
+      {
+         // we've never been activated or desctivated yet.  We should be asleep.
+         SleepMode(TRUE);
+         SetData("On",FALSE);
+      }
+      DefaultOnBeginScript();
+   }
+   OnTimer()
+   {
+      if(message.name=="Sleep")
+      {
+         integer cap=Property.Get(self,"AI_AlertCap","Max level");
+         ClearData("SleepTimer");
+         if(cap==kNoAlert)
+            SleepMode(TRUE);
+      }
+      DefaultOnTimer();
    }
 
 END_SCRIPT(TurretAlert)
@@ -1593,3 +1655,10 @@ METHOD void Activate(boolean on, object sender)
   Property.Set(self,"Locked",on);
 }
 END_SCRIPT(TrapLocker)
+
+
+
+
+
+
+
