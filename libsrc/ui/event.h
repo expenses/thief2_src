@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/ui/RCS/event.h 1.28 1999/12/28 11:59:40 JAEMZ Exp $
 
 #ifndef _EVENT_H
