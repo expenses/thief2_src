@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.48 2000/01/30 19:28:39 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.49 2000/01/30 21:00:19 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1090,8 +1090,13 @@ MESSAGES:
    {
       object launcher=Object.Create("Mosslauncher");
       Object.Teleport(launcher,vector(0,0,0),vector(0,0,0),self);
-      // make me the "firer" of the lancher, helps with culpability
-      //      Link.Create("firer",launcher,self); 
+
+      // Our own tweq emit property determines what the launcher will
+      // launch.  Difference is, we turn its tweq _on_.
+      Property.CopyFrom(launcher,"CfgTweqEmit",self);
+      Property.CopyFrom(launcher,"StTweqEmit",self);
+      ActReact.React("tweq_control",1.0,launcher,0,kTweqTypeEmitter,kTweqDoActivate);
+
       DefaultOnPhysMadeNonPhysical();
    }
 END_SCRIPT(MossLump)
