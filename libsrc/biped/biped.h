@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: x:/prj/tech/libsrc/biped/RCS/biped.h 1.2 1996/08/23 18:33:29 kate Exp $
  * 
 */

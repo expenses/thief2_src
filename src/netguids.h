@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/netguids.h 1.3 1998/10/02 17:28:37 JUSTIN Exp $
 
 // Defines the table of GUIDs that might register parsers with the

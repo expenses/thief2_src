@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/prj/cam/src/RCS/aikikass.h 1.6 1998/02/20 13:57:08 dc Exp $
 //
