@@ -1,0 +1,40 @@
+rem **************************************************************
+rem the drive where the dark project lives
+set _PRJDRV_=r:
+
+rem **************************************************************
+rem the path to dark 
+
+set _PRJPATH_=%_PRJDRV_%\prj\cam
+
+rem **************************************************************
+rem the drive where the daily will be built (change when testing!)
+
+set  _DAILYDRV_=r:
+
+rem **************************************************************
+rem set the names of the daily, the daily\cd, the daily\cd\thief
+rem and the prj subdirs
+
+set _DAILY_=%_DAILYDRV_%\prj\thief2\daily
+set _DAILYCD_=%_DAILY_%\cd1
+set _DAILYTHIEF_=%_DAILYCD_%\thief2
+set _DAILYPRJ_=%_DAILY_%\PRJ 
+
+set _ZIPDIR_=c:\zips
+
+rem **************************************************************
+rem we want to use the spun off tree, so remap X:
+rem **************************************************************
+
+map root x:=\\wonderland\tech\stprj
+
+rem **************************************************************
+rem  Lets rock and roll!!
+rem **************************************************************
+
+rem  make the release directory.  
+mkdirs %_DAILYTHIEF_% >& nul
+mkdirs %_DAILYPRJ_% >& nul
+
+
