@@ -1,4 +1,4 @@
-# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.2 1997/06/10 12:36:29 KEVIN Exp $
+# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.3 1997/07/07 15:15:26 KEVIN Exp $
 3RDBACK = x:\dx5b
 
 MAKETOP = $(CWD)
@@ -18,7 +18,7 @@ LIBTARGS = lgd3d
 
 lgd3d_OBJS = setup trifan blit texture tmgr
 
-lgd3d_HDRS = lgd3d.h
+lgd3d_HDRS = lgd3d.h tmgr.h
 
 d3dtest_OBJS = comshell d3dtest $(lgd3d_OBJS)
 
