@@ -1,8 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/dark/RCS/drkwbow.h 1.4 1998/10/22 00:11:28 dc Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkwbow.h,v 1.6 2000/01/31 09:40:07 adurant Exp $
 //
 // Weapon (hand-to-hand-combat) related functions
 //
+#pragma once
 
 #ifndef __DRKWBOW_H
 #define __DRKWBOW_H
@@ -12,6 +13,7 @@
 EXTERN BOOL EquipBow();
 EXTERN BOOL UnEquipBow();
 EXTERN BOOL IsBowEquipped();
+EXTERN BOOL IsBowArrowKnocked();
 
 EXTERN void StartBowAttack();
 EXTERN BOOL FinishBowAttack();
@@ -26,7 +28,7 @@ EXTERN ObjID PlayerArrow();
 EXTERN void SetBowZoomActive (BOOL active);
 
 EXTERN void BowInit();
-EXTERN void BowTerm(); 
+EXTERN void BowTerm();
 
 
 #endif

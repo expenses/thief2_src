@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkrend.h 1.1 1997/06/14 13:30:36 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkrend.h,v 1.2 2000/01/31 09:40:04 adurant Exp $
+#pragma once
 
 #ifndef __DRKREND_H
 #define __DRKREND_H
