@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.10 $
+# $Revision: 1.11 $
 # $Author: dc $
-# $Date: 1997/08/12 14:29:27 $
+# $Date: 1997/08/12 14:32:14 $
 #
 # Makefile for Matrix library
 #
@@ -41,7 +41,7 @@ mxd.sed .ALWAYS:
 .BEFORE: mxd.sed matrixd.h matrixds.h mxsymd.h
 
 build_double_version: 
-        @echo Building double version of $(target)
+        @echo Building double version of $(source)
         @sed -f $(fullpath_for_sed_script) $(source) > $(target,F)
 
 #        @chmod -w $(target)
