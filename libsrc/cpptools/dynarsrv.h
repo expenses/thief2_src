@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/dynarsrv.h 1.4 1998/10/03 10:57:41 TOML Exp $
 //
