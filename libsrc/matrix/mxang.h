@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/matrix/RCS/mxang.h 1.3 1999/04/22 10:41:38 JAEMZ Exp $
 // angle/angvec stuff for mx
 // since it is single/double precision invariant
