@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.63 2000/02/23 10:09:34 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.64 2000/02/24 19:28:41 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -2246,6 +2246,19 @@ MESSAGES:
          Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
       else
          SendMessage(weapon, "TurnOff");
+   }
+
+   // @TODO: Should also turn off when AI mode goes to dead, to handle KO's
+   OnSlain()
+   {
+      integer weapon=GetWeap();
+      // Debug.MPrint(self," EndAttack weapon ",message.weapon);
+      if (weapon<=0)
+         Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
+      else
+         SendMessage(weapon, "TurnOff");
+      
+      DefaultOnSlain();
    }
 
 END_SCRIPT(AttackActivate)
