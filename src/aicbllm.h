@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/aicbllm.h 1.9 1998/02/02 15:58:23 kate Exp $
 
 #ifndef __AICBLLM_H
