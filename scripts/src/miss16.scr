@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.11 2000/02/29 07:55:52 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.12 2000/02/29 19:48:47 ccarollo Exp $
 //
 
 #include "animlgte.h"
@@ -1095,30 +1095,31 @@ BEGIN_SCRIPT (BellowingMachine, TransmogrifyMachine)
 
 METHODS:
 
-void Transmogrify()
+void HandleInput(integer slot, object obj)
 {
-   object obj = GetData("InputObj");
    object newObj = OBJ_NULL;
 
    if (Object.InheritsFrom(obj, Object.Named(kBellowPlot)))
    {
       newObj = Object.Create(Object.Named(kRollingPlot));
+      Object.Destroy(obj);
    }
    else
    if (Object.InheritsFrom(obj, Object.Named(kBellowExtra1)))
    {
       SetData("Extra1Count", (integer)GetData("Extra1Count") + 1);
+      Object.Destroy(obj);
    }
    else
    if (Object.InheritsFrom(obj, Object.Named(kBellowExtra2)))
    {
       SetData("Extra2Count", (integer)GetData("Extra2Count") + 1);
+      Object.Destroy(obj);
    }
    else
       newObj = obj;
 
-   // See if we should make a powerup
-   if (((integer)newObj == OBJ_NULL) && 
+   if (((integer)newObj == OBJ_NULL) &&
        ((integer)GetData("Extra1Count") > 0) &&
        ((integer)GetData("Extra2Count") > 0))
    {
@@ -1128,24 +1129,7 @@ void Transmogrify()
       SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
    }
 
-   // If we're making a new object, destroy the old one
-   if (newObj != obj)
-      Object.Destroy(obj);
-
-   // Place any output object at our output location
    PlaceAtOutput(1, newObj);
-}
-
-void HandleInput(integer slot, object obj)
-{
-   if (GetData("InputObj") == OBJ_NULL)
-      SetData("InputObj", obj);
-}
-
-void HandleRemoval(integer slot, object obj)
-{
-   if (obj == GetData("InputObj"))
-      SetData("InputObj", OBJ_NULL);
 }
 
 END_SCRIPT (BellowingMachine)
