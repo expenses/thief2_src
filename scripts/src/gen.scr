@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.53 2000/02/06 00:53:39 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.54 2000/02/08 22:17:01 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1821,10 +1821,14 @@ METHODS:
    // between target surface types, as with the vine arrow.
    METHOD boolean CanAttachToSurface(object targ)
    {
-      if(!(Property.Possessed(targ,"CanAttach")
-           && boolean(Property.Get(targ,"CanAttach"))))
-         return FALSE;
-      return TRUE;
+      integer surf=0, me=0;
+
+      if(Property.Possessed(targ,"CanAttach"))
+         surf=Property.Get(targ,"CanAttach");
+      if(Property.Possessed(self,"CanAttach"))
+         me=Property.Get(self,"CanAttach");
+
+      return(boolean(me&surf));
    }
 
    METHOD boolean CanAttachTo(object targ)
