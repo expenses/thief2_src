@@ -2,7 +2,7 @@
 # $Source: x:/prj/tech/libsrc/res/RCS/makefile $
 # $Revisiion: $
 # $Author: TOML $
-# $Date: 1997/02/24 23:49:32 $
+# $Date: 1997/03/06 21:46:48 $
 
 MAKETOP = $(CWD)
 
@@ -26,7 +26,7 @@ nostackchk_OBJS = pkzip
 res_opt_objs = lzw
 %endif
 
-res_HDRS = lzw.h res.h restypes.h resrect.h resguid.h resagg.h
+res_HDRS = lzw.h res.h restypes.h resrect.h resguid.h resagg.h resthred.h
 
 %include  $(MRC)\make.rc
 
