@@ -499,7 +499,7 @@ BEGIN_SCRIPT(StdKey,RootScript)
               wasused=TRUE;
            }
            else
-              SendMessage(targ,"Wrongkey");
+              SendMessage(targ,"Wrongkey",self);
         }
         Reply(wasused);
         DefaultOnFrobToolEnd();
@@ -588,7 +588,8 @@ BEGIN_SCRIPT(LockSounds,RootScript)
       {
         if(MessageIs("Wrongkey"))
         {
-           Sound.PlayEnvSchema(self,"Event Reject, Operation KeyFit",self,NULL,kEnvSoundAtObjLoc);
+           object thekey=message.data;
+           Sound.PlayEnvSchema(self,"Event Reject, Operation KeyFit",self,thekey,kEnvSoundAtObjLoc);
         }
         else if(MessageIs("PlayerToolFrob"))
            SetData("PlayerFrob",0);
