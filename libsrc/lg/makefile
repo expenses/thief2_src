@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
-# $Revision: 2.10 $
+# $Revision: 2.11 $
 # $Author: TOML $
-# $Date: 1996/08/28 13:57:21 $
+# $Date: 1996/09/20 15:02:04 $
 #
 
 MAKETOP = $(CWD)
@@ -15,7 +15,7 @@ LIBTARGS = lg
 
 lg_OBJS = bugtrak datapath dbg dbgcfg dbgpp exit lgprntf lgsprntf \
 	memall memgrow memstat oheapwal stack tmpalloc lglog lgassert \
-	stktrace pool poolimp breakkey hashfns thrdtool
+	stktrace pool poolimp breakkey hashfns thrdtool appagg
 
 lg_HDRS = bugtrak.h datapath.h dbg.h dbgmacro.inc dbgpp.h lg.h \
 	lgalt.h lgprntf.h lgsprntf.h memall.h memmacro.inc memstat.h \
