@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/objedit/RCS/objedbas.h 1.1 1999/04/07 14:39:40 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/objedbas.h,v 1.3 1997/12/04 15:03:29 mahk Exp $
 #pragma once  
 #ifndef __OBJEDBAS_H
 #define __OBJEDBAS_H
