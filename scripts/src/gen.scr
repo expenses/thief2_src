@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.10 1999/09/27 13:36:34 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.11 1999/09/27 14:38:05 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -540,6 +540,76 @@ MESSAGES:
 END_SCRIPT(MapSupplement)
 
 
+
+/* The roulette table can be frobbed to start the wheel spinning.
+   The wheel slows down over time, eventually coming to a stop.
+   It sends a TurnOn when it starts spinning and (just a guess as 
+   to the right behavior) a TurnOff when it stops.
+ */
+
+const integer ROULETTE_FULL_SPEED=60;
+const integer ROULETTE_TIME_TO_SLOW=9870;
+const string sillyfieldname="    rate-low-high";
+
+BEGIN_SCRIPT(Roulette,RootScript)
+
+METHODS:
+   METHOD void StopWheel()
+   {
+      Property.Set(self,"CfgTweqJoints",sillyfieldname,vector(0,0,360));
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoHalt);
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+
+   MESSAGES:
+   OnTweqComplete()
+   {
+      if(message.Type==kTweqTypeFlicker &&
+         message.Op==kTweqOpFrameEvent)
+      {
+         integer error=GetData("Error");
+         integer rate=Property.Get(self,"CfgTweqBlink","Rate");
+         integer delta=0;
+         const string sillyfieldname="    rate-low-high";
+         vector spin=Property.Get(self,"CfgTweqJoints",sillyfieldname);
+
+         delta=error+(ROULETTE_FULL_SPEED*rate);
+         error=delta%ROULETTE_TIME_TO_SLOW;
+         delta=delta/ROULETTE_TIME_TO_SLOW;
+         SetData("Error",error);
+
+         spin.x-=delta;
+         if(spin.x<0) spin.x=0;
+
+         Property.Set(self,"CfgTweqJoints",sillyfieldname,spin);
+         if(spin.x==0)
+            StopWheel();
+      }
+      DefaultOnTweqComplete();
+   }
+   OnFrobWorldEnd()
+   {
+      // defining a constant so subtle differences in numbers of spaces don't
+      // potentially loom over us. -TJS
+      vector spin=Property.Get(self,"CfgTweqJoints",sillyfieldname);
+
+      if(spin.x==0) // not spinning
+      {
+         Property.Set(self,"CfgTweqJoints",sillyfieldname,vector(60,0,360));
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+         SetData("Error",0);
+      }
+      else // spinning
+      {
+         StopWheel();
+      }
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(Roulette)
 
 
 /* Goofy food script.  In addition to destroying the item
@@ -2310,9 +2380,6 @@ BEGIN_SCRIPT(TweqOnOff,StdController)
         if(TweqMe)
         {
            ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, TweqDo);
-           // use with caution: relaying messages like
-           // this put you in peril of cycles.
-           Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
         }
      }
 
@@ -2668,6 +2735,32 @@ MESSAGES:
       DefaultOnFrobWorldEnd();
    }
 END_SCRIPT(StdButton)
+
+
+
+/* Can't believe we didn't have this already.  Object just makes a sound
+   when frobbed.
+   */
+BEGIN_SCRIPT(FrobSounds, RootScript)
+   OnFrobWorldEnd()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(FrobSounds)
+
+
+
+// Script:		TrigContained
+// Sends "TurnOn" on all outgoing links when the object it is placed on becomes contained 
+BEGIN_SCRIPT (TrigContained, RootScript)
+MESSAGES:
+   OnContained()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice");
+      DefaultOnContained();
+   }
+END_SCRIPT (TrigContained)
 
 
 
@@ -3260,6 +3353,23 @@ MESSAGES:
    }
 
 END_SCRIPT(StopAtWaypoints)
+
+
+
+// Script: StopHere
+/* Put on a moving terrain waypoint to cause platforms
+   reaching it to halt there.
+   */
+BEGIN_SCRIPT(StopHere,Waypoint)
+MESSAGES:
+   OnWaypointReached()
+   {
+      Property.Set(message.moving_terrain,"MovingTerrain","active",FALSE);
+      DefaultOnWaypointReached();
+   }
+END_SCRIPT(StopHere)
+
+
 
 
 BEGIN_SCRIPT(ElevatorSounds,RootScript)
@@ -4400,6 +4510,28 @@ END_SCRIPT(TrigWorldFocus)
 
 
 
+/* These should be self-explanatory
+ */
+BEGIN_SCRIPT(TrigWorldFrob, RootScript)
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      DefaultOnFrobWorldEnd();
+    }
+END_SCRIPT(TrigWorldFrob)
+
+BEGIN_SCRIPT(TrigInvFrob, RootScript)
+MESSAGES:
+   OnFrobInvEnd()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      DefaultOnFrobInvEnd();
+    }
+END_SCRIPT(TrigInvFrob)
+
+
+
 // Script:	TrapConverse
 /* Put on conversation object so as to be able to start it with a "TurnOn." */
 BEGIN_SCRIPT(TrapConverse, RootScript)
@@ -4441,12 +4573,15 @@ BEGIN_SCRIPT(TrapInverter,RootScript)
 MESSAGES:
    OnMessage()
    {
-      if(!Locked.IsLocked(self))
+      if(message.from!=self)
       {
-         if(MessageIs("TurnOn"))
-            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-         else if(MessageIs("TurnOff"))
-            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         if(!Locked.IsLocked(self))
+         {
+            if(MessageIs("TurnOn"))
+               Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+            else if(MessageIs("TurnOff"))
+               Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         }
       }
       DefaultOnMessage();
    }
@@ -4457,15 +4592,18 @@ BEGIN_SCRIPT(TrapRelay, RootScript)
 MESSAGES:
    OnMessage()
    {
-      if(!Locked.IsLocked(self))
+      if(message.from!=self)
       {
-         integer percent_filter=100;
+         if(!Locked.IsLocked(self))
+         {
+            integer percent_filter=100;
          
-         if(Property.Possessed(self,"scriptTiming"))
-            percent_filter=Property.Get(self,"scriptTiming");
+            if(Property.Possessed(self,"scriptTiming"))
+               percent_filter=Property.Get(self,"scriptTiming");
 
-         if(Data.RandFlt0to1()<=(float(percent_filter)/100.0))
-            Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
+            if(Data.RandFlt0to1()<=(float(percent_filter)/100.0))
+               Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
+         }
       }
       DefaultOnMessage();
    }
@@ -4476,10 +4614,13 @@ BEGIN_SCRIPT(TrapOnFilter,RootScript)
 MESSAGES:
    OnMessage()
    {
-      if(!Locked.IsLocked(self))
+      if(message.from!=self)
       {
-         if(MessageIs("TurnOn"))
-            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         if(!Locked.IsLocked(self))
+         {
+            if(MessageIs("TurnOn"))
+               Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         }
       }
       DefaultOnMessage();
    }
@@ -5020,6 +5161,26 @@ MESSAGES:
 END_SCRIPT(TrapDeadfall)
 
 
+
+
+/* Sends a TurnOn if the AI is brain-killed (killed or KO'd)
+ */
+BEGIN_SCRIPT(TrigBrainDead, AI)
+MESSAGES:
+   OnAIModeChange()
+   {
+      // Debug.MPrint(self," changing mode to ",message.mode);
+      if (message.mode == kAIM_Dead)
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+      DefaultOnAIModeChange();
+   }
+END_SCRIPT(TrigBrainDead)
+
+
+
+
 // Script to derive from with basic parsing routines for
 // TrapQVar properties.
 BEGIN_SCRIPT(QVarTrapTrigBase, RootScript)
@@ -5098,10 +5259,6 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
    METHOD void ProcessOperation(char op, integer arg, string qvar, 
                                 boolean reverse)
    {
-      Debug.MPrint("Calling process on ",op,arg,":",qvar,", reverse=",reverse);
-
-      if(!Quest.Exists(qvar)) return;
-
       integer qvarval=Quest.Get(qvar);
       boolean satisfied=FALSE, wassatisfied;
 
@@ -5181,8 +5338,6 @@ METHODS:
    METHOD void ProcessOperation(char op, integer arg, string qvar, 
                                 boolean reverse)
    {
-      if(!Quest.Exists(qvar)) return;
-
       integer qvarval=Quest.Get(qvar);
 
       switch(op)
@@ -5419,6 +5574,9 @@ END_SCRIPT (WorkerRobot)
 
 	X is defined by the data hanging off a ScriptParams link from the object
 	to itself, or 30.0 by default if that data does not exist.
+
+   @TODO: This should use the existing ScriptTiming property, not
+   the ScriptParams data.
 */
 
 BEGIN_SCRIPT (TrapCapacitor, RootScript)
