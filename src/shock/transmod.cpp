@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/transmod.cpp,v 1.6 1999/02/08 14:56:31 XEMU Exp $
 #include <loopapi.h>
 #include <appagg.h>

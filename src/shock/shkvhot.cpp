@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkvhot.cpp,v 1.5 1999/11/19 14:55:09 adurant Exp $
 
 This file has been moved to gunvhot.cpp AMSD
