@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/pkupdate.h 1.1 1996/10/11 22:29:18 dc Exp $
 
 #ifndef __PKUPDATE_H
