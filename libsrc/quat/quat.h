@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/quat/RCS/quat.h 1.2 1999/03/31 17:22:52 Johan Exp $
 
 #ifndef __QUAT_H
