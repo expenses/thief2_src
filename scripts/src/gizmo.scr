@@ -491,10 +491,20 @@ BEGIN_SCRIPT(LockSounds,RootScript)
            SetData("PlayerFrob",0);
         DefaultOnMessage();
       }
+      OnFrobWorldEnd()
+      {
+         // Nothing really stopping player from frobbing lockboxes and such.  
+         // sound feedback on the futility of it all happens here.
+
+         // Note, _some_ objects with LockSounds can be frobbed perfectly fine.
+         // they should simply not have Reject/FrobLock schemas for their
+         // DeviceType.
+         Sound.PlayEnvSchema(self,"Event Reject, Operation FrobLock",
+                             self,message.Frobber,kEnvSoundAtObjLoc);
+         DefaultOnFrobWorldEnd();
+      }
 
 END_SCRIPT(LockSounds)
-
-
 
 
 /* The roulette table can be frobbed to start the wheel spinning.
