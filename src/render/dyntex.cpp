@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/dyntex.cpp,v 1.3 1999/04/27 01:01:34 XEMU Exp $
 
 #include <appagg.h>
