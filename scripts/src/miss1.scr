@@ -1174,7 +1174,7 @@ MESSAGES:
       DefaultOnFrobInvEnd();
    }
 
-END_SCRIPT(WhistleCall);
+END_SCRIPT(WhistleCall)
 
 
 BEGIN_SCRIPT(Basso, RootScript)
@@ -1203,7 +1203,13 @@ MESSAGES:
             if(((doorpos-selfpos).Magnitude()<20.0) &&
                ((selfpos-playerpos).Magnitude()>90.0))
             {
+               // Okay, this is a hack.  Basso, like all AIs, is apt
+               // to lock any door he can behind him.  We don't want
+               // that, so the gatehouse door doesn't have a KeyDst
+               // property at all until the player is safely away from
+               // it and Basso is good and ready to lock it.
                Property.Set(thedoor,"Locked",TRUE);
+               Property.CopyFrom(thedoor,"KeyDst",object("FrontGateRight"));
             }
             else
                SetOneShotTimer(self,"CheckDoor",11.0);
@@ -1215,5 +1221,13 @@ END_SCRIPT(Basso)
 
 
 
-
+BEGIN_SCRIPT(GatehouseDoor, RootScript)
+MESSAGES:
+   OnNowUnlocked()
+   {
+      Property.Remove(self,"Locked");
+      Property.Remove(self,"KeyDst");
+      DefaultOnNowUnlocked();
+   }
+END_SCRIPT(GatehouseDoor)
 
