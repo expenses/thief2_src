@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dump/RCS/makefile $
-# $Revision: 1.2 $
-# $Author: TOML $
-# $Date: 1996/04/08 16:51:20 $
+# $Revision: 1.3 $
+# $Author: JAEMZ $
+# $Date: 1996/12/13 16:55:53 $
 #
 
 MAKETOP = $(CWD)
@@ -15,7 +15,7 @@ PROJECT = tech
 
 LIBTARGS = dump
 
-dump_OBJS = filefind gifdump pcxdump
+dump_OBJS = filefind gifdump pcxdump bmpdump
 
 dump_HDRS = dump.h
 
