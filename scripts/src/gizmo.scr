@@ -1,5 +1,6 @@
 #include "tfint.h" //trapflags
 #include "tweqflgs.h" //tweq flags
+#include "ambbase.h" //ambient hack flags
 
 /* ====== StdDoor ======
 script for basic door behavior.  The door opens, closes, or changes
