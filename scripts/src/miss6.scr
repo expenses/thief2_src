@@ -588,7 +588,8 @@ METHODS:
 
   METHOD void CheckRightRoom()
   {
-    if (GetData("RightRoom")==GetData("CurrentRoom"))
+    if ((GetData("RightRoom")==GetData("CurrentRoom")) &&
+        !(Link.AnyExist("Contains",Object.Named("Player"),self)))
     {
       Quest.Set(GoalStateVarName(3),kGoalComplete,kQuestDataMission);
     }
@@ -701,12 +702,16 @@ MESSAGES:
     if ((message.event!=kContainRemove) &&
 	object(message.container)==Object.Named("Player"))
     {
+      CheckRightRoom();
       PostMessage(message.container,"gotthekey");
       if ((integer)GetData("Eavesdropped")==1)
         PlayDropMe(message.container);
     if ((integer)GetData("SaidReturn")==0)
       SayReturn(message.container);
     }
+
+    if ((message.event==kContainRemove))
+      CheckRightRoom();
 
     DefaultOnContained();
   }
