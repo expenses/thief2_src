@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.2 $
+# $Revision: 1.3 $
 # $Author: KEVIN $
-# $Date: 1996/04/11 14:23:25 $
+# $Date: 1996/04/11 14:31:18 $
 #
 
 MAKETOP = $(CWD)
@@ -18,8 +18,8 @@ LIBTARGS = dev2d
 EXETARGS = gdtest
 
 irrupt_OBJS = \
-        fl8bm bk8bm mxbm \
-        genfl8 genf16 genrsd8 \
+        f16bm fl8bm bk8bm mxbm \
+        genf16 genfl8 genmx genrsd8 \
         fl8fl8 fl8bk8 fl8mx \
         bk8fl8 mxfl8 f16f16 f16fl8 \
         gdbm gdgbm canvas bitmap grnull
