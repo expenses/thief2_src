@@ -1,36 +1,44 @@
 # $RCSFile$
 # $Author: kaboom $
-# $Date: 1992/08/24 17:27:40 $
+# $Date: 1992/08/25 08:47:39 $
 #
 # Makefile for Watcom C/Micosoft ASM
 #
 # $Log: makefile $
-# Revision 1.2  1992/08/24 17:27:40  kaboom
-# Added RCS keywords and header at top of file.
+# Revision 1.3  1992/08/25 08:47:39  kaboom
+# Added INST_TARGETS macro, a list of which targets should be installed when
+# a make install is done.  Executables are copied to $(BIN), libraries are
+# copied to $(LIB) and library headers are copied to $(INC).
 #
+# Revision 1.2  1992/08/24  17:27:40  kaboom
+# Added RCS keywords and header at top of file.
+# 
 
-SRC_DIR = n:\project\lib\src\fix
+SRCDIR = n:\project\lib\src\fix
 VPATH =
-VPATH.c = $(SRC_DIR)
-VPATH.h = $(SRC_DIR)
-VPATH.asm = $(SRC_DIR)
+VPATH.c = $(SRCDIR)
+VPATH.h = $(SRCDIR)
+VPATH.asm = $(SRCDIR)
 
 OBJDIR = .\obj
 INCDIR = .\
 
 PROG_TARGETS =
 LIB_TARGETS = fix
+INST_TARGETS = fix
 
-FIX_OBJS = \
-        fix.obj
+FIX_OBJS = fix.obj
+FIX_HDRS = fix.h
 
 WATCOM = p:\w90
 BIN = n:\bin
+LIB = n:\lib
+INC = n:\inc
 
 CC = wcc386p
 CDEBUG = -d2
 COPT = -ox
-CFLAGS = -3r -w4 -zq -i=$(INCDIR) -i=$(SRC_DIR)\inc -fo=$@ $(CCDEBUG) $(CCOPT)
+CFLAGS = -3r -w4 -zq -i=$(INCDIR) -i=$(SRCDIR)\inc -fo=$@ $(CCDEBUG) $(CCOPT)
 LD = wlinkp
 LDEBUG = debug all
 LDFLAGS = system dos4g option caseexact option map option quiet $(LDDEBUG)
@@ -89,9 +97,16 @@ optimize .PHONY:
 depend .PHONY:
         $(MAKEDEPEND) *.c
 
-install .PHONY:
-        !foreach FILE $(TARGEXE)
-          $(CP) $(FILE) $(BIN)
+install .PHONY: $(INST_TARGETS)
+        !foreach TARGET $(INST_TARGETS)
+          !if '$(PROG_TARGETS,M$(TARGET))'
+            $(CP) $(TARGET).exe $(BIN)
+          !else if '$(LIB_TARGETS,M$(TARGET))'
+            $(CP) $(TARGET).lib $(LIB)
+            !foreach FILE $($(TARGET)_HDRS)
+              $(CP) $(SRCDIR)\$(INCDIR)\$(FILE) $(INC)
+            !end
+          !endif
         !end
 
 uninstall .PHONY:
