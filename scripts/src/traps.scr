@@ -630,6 +630,77 @@ MESSAGES:
 END_SCRIPT(TrapRevert)
 
 
+/* Sends alternating turn on/turn off messages based in its Tweq Flicker property.
+   If the tweq turns off (e.g. due to player going out of radius) makes sure it
+   always ends with an "off"
+   */
+BEGIN_SCRIPT(TrigFlicker, StdTrap)
+METHODS:
+   METHOD void Fire(boolean on)
+   {
+      if(IsDataSet("Check"))
+      {
+         timer_handle check=GetData("Check");
+         KillTimer(check);
+      }
+      SetData("IsOn",on);
+      Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice",NULL);
+      if(on)
+      {
+         integer time=15000;
+
+         if(Property.Possessed(self,"CfgTweqBlink"))
+            time=Property.Get(self,"CfgTweqBlink","Rate");
+         timer_handle check=SetOneShotTimer(self,"Check",float(2.0*time)/1000.0);
+         SetData("Check",check);
+      }
+   }
+   METHOD void Activate(boolean on, object sender)
+   {
+      if(on)
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
+      else
+      {
+         boolean on=GetData("IsOn");
+         if(on)
+            Fire(FALSE);
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
+      }
+   }
+
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+         SetData("IsOn",FALSE);
+      DefaultOnSim();
+   }
+   OnTweqComplete()
+   {
+      if(message.Type==kTweqTypeFlicker &&
+         message.Op==kTweqOpFrameEvent)
+      {
+         boolean on=GetData("IsOn");
+         on=!on;
+         Fire(on);
+      }
+      DefaultOnTweqComplete();
+   }
+   OnTimer()
+   {
+      if(message.name=="Check")
+      {
+         boolean on=GetData("IsOn");
+         if(on)
+            Fire(FALSE);
+         Debug.MPrint("Flicker Trigger safety deactivation.");
+      }
+      DefaultOnTimer();
+   }
+
+END_SCRIPT(TrigFlicker)
+
+
 BEGIN_SCRIPT(TrigPPlate, PressurePlate)
 MESSAGES:
    OnPressurePlateActive()
