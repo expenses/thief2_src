@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/gedit.h 1.37 1998/12/15 16:37:11 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/editor/gedit.h,v 1.38 2000/01/29 13:12:06 adurant Exp $
+#pragma once
 
 // gedit.c -  geometry editing tools
 

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/objedit.h 1.3 1998/09/17 02:56:40 dc Exp $
+// $Header: r:/t2repos/thief2/src/editor/objedit.h,v 1.4 2000/01/29 13:12:49 adurant Exp $
+#pragma once
 
 #ifndef __OBJEDIT_H
 #define __OBJEDIT_H

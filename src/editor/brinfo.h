@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/editor/RCS/brinfo.h 1.14 1998/09/30 14:28:16 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/editor/brinfo.h,v 1.15 2000/01/29 13:11:12 adurant Exp $
 // brinfo has the nasty internal types and defines for gedit
+#pragma once
 
 #ifndef __BRINFO_H
 #define __BRINFO_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/brushgfh.h 1.8 1998/12/15 16:36:18 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/editor/brushgfh.h,v 1.9 2000/01/29 13:11:20 adurant Exp $
+#pragma once
 
 #ifndef __BRUSHGFH_H
 #define __BRUSHGFH_H
