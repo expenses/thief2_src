@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.27 1999/12/17 15:55:02 PATMAC Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.28 1999/12/26 15:55:44 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -712,15 +712,41 @@ END_SCRIPT(CamReturn);
 
 BEGIN_SCRIPT(CamGrenade, Physics)
 
+METHODS:
+   METHOD void Activate()
+   {
+      //will be back when player throws it again
+      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+      // Physics.UnsubscribeMsg(self, kContactMsg);
+
+      // So, who ever said I was in motion because the player threw me, anyway?
+      // Need to check that.
+      if(IsDataSet("Armed") && boolean(GetData("Armed")) &&
+         Link.AnyExist("~CulpableFor",self))
+      {
+         if(Object.InheritsFrom(Link.GetOne("~CulpableFor",self).To(),
+                                "Avatar"))
+            Camera.DynamicAttach(self);
+      }
+      SetData("Armed",FALSE);
+   }
+
 MESSAGES:
+
     OnBeginScript()
     {
-       if(!IsDataSet("Armed")) SetData("Armed",FALSE);
-       Physics.SubscribeMsg(self, kFellAsleepMsg);
+       if(!IsDataSet("Armed"))
+          SetData("Armed",FALSE);
+       else if(boolean(GetData("Armed")))
+       {
+          // Physics.SubscribeMsg(self, kContactMsg);
+          Physics.SubscribeMsg(self, kFellAsleepMsg);
+       }
        DefaultOnBeginScript();
     }
     OnEndScript()
     {
+       // Physics.UnsubscribeMsg(self, kContactMsg);
        Physics.UnsubscribeMsg(self, kFellAsleepMsg);
        DefaultOnEndScript();
     }
@@ -728,25 +754,12 @@ MESSAGES:
     OnFrobWorldEnd()
     {	
        //he picked me up, subscribe again
-       Physics.SubscribeMsg(self, kFellAsleepMsg);
        DefaultOnFrobWorldEnd();
     }
 	
     OnPhysFellAsleep()
     {
-       //will be back when player throws it again
-       Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-
-       // So, who ever said I was in motion because the player threw me, anyway?
-       // Need to check that.
-       if(IsDataSet("Armed") && boolean(GetData("Armed")) &&
-          Link.AnyExist("~CulpableFor",self))
-       {
-          if(Object.InheritsFrom(Link.GetOne("~CulpableFor",self).To(),
-                                 "Avatar"))
-             Camera.DynamicAttach(self);
-       }
-       SetData("Armed",FALSE);
+       Activate();
        DefaultOnPhysFellAsleep();
     }
 
@@ -761,6 +774,8 @@ MESSAGES:
     {
        Camera.CameraReturn(self);
        //I'm irked that this isn't DefaultOnDestroy
+       //
+       // Me too.
        BaseOnDestroy();
     }
 
@@ -770,6 +785,8 @@ MESSAGES:
           Object.InheritsFrom(message.container,"Avatar"))
        {
           // Player just threw/dropped us
+          // Physics.SubscribeMsg(self, kContactMsg);
+          Physics.SubscribeMsg(self, kFellAsleepMsg);
           SetData("Armed",TRUE);
        }
        DefaultOnContained();
@@ -3442,6 +3459,7 @@ END_SCRIPT(FrobFind)
 #define degreesPerRadian 57.295779513
 /*
  * Conveyor belt script
+ * @TODO: This should probably be in gizmo.scr, guys.
  */
 BEGIN_SCRIPT(ConveyorBelt, Physics)
 
