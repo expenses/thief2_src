@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.15 $
+# $Revision: 1.16 $
 # $Author: KEVIN $
-# $Date: 1996/09/20 12:37:38 $
+# $Date: 1996/09/26 15:20:53 $
 #
 
 MAKETOP = $(CWD)
@@ -79,7 +79,7 @@ gdtest_LIBS = lg dev2d mprintf
 DEV2D_HDRS = dev2d.h astring.h bitmap.inc cseg.inc dseg.inc gdican.inc
 
 dev2d.h .REREAD :\
-        grs.h bitmap.h canvas.h screen.h mode.h \
+        emode.h grs.h bitmap.h canvas.h screen.h mode.h \
         fill.h clip.h icanvas.h idevice.h grd.h context.h \
         bmftype.h linftype.h pixftype.h \
         gdbm.h gdlin.h gdrect.h gdpix.h grdev.h \
