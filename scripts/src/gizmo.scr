@@ -1,0 +1,1295 @@
+/* ====== StdDoor ======
+script for basic door behavior.  The door opens, closes, or changes
+direction of motion when frobbed, and can respond to "TurnOn" and
+"TurnOff" messages by opening and closing (respectively).
+
+The standard frob response takes into account whether the door is locked.
+The door will Open and Close in response to messages even if locked,
+but will not respond to frobs if locked. Responsibility for locking
+and unlocking falls on the lock boxes themselves.
+
+How TurnOn/TurnOff messages are delivered is intentionally left flexible:
+the usual vector would presumably be from a controlling lever.
+
+If a door should not open to frobs at all (e.g., in the case where the
+door is strictly remote-controlled) there are two options.  Either the
+door can simply be absent a "scripts" flag in its "FrobInfo" property
+(or without a FrobInfo property at all) in which case it will of course
+have absolutely no scripted Frob response.  The other option is to have
+a special-purpose script for that door, though possibly one which
+inherits from StdDoor but declines to chain up with DefaultOnFrobWorldEnd()
+
+This script includes synchronizing behavior for double doors, indicated
+by a ScriptParams link (in either direction) with the data "Double."
+Such doors will attempt to open and close as a unit, and keep the same
+lock state.
+
+*/
+
+BEGIN_SCRIPT(StdDoor,Door)
+
+   METHODS:
+
+      METHOD void PingDoubles(void)
+      {
+         Link.BroadcastOnAllLinks(self,"SynchUp","ScriptParams","Double");
+         Link.BroadcastOnAllLinks(self,"SynchUp","~ScriptParams","Double");
+      }
+
+      METHOD integer TargState(integer state)
+      {
+         if(state==kDoorClosing) return kDoorClosed;
+         if(state==kDoorOpening) return kDoorOpen;
+         return state;
+      }
+
+      METHOD string StateChangeTags(integer Status, integer OldStatus)
+      {
+         static string StateTags[]={"Open","Closed","Opening","Closing","Halted"};
+         string retval="Event StateChange, OpenState ";
+
+         retval=retval+StateTags[Status]+string(", OldOpenState ")+StateTags[OldStatus];
+
+         if(IsDataSet("PlayerFrob"))
+         {
+            retval=retval+", CreatureType Player";
+         }
+         // When I halt, open, or close, clear the player frob info
+         if(Status!=kDoorClosing && Status!=kDoorOpening)
+            ClearData("PlayerFrob");
+         return retval;
+      }         
+
+MESSAGES:
+
+    // Since we know we probably have our hands full with a key
+    // when we unlock a door, and using the key and door are now
+    // on the same mouse button, locking and unlocking a door
+    // will also close and open it.  -TJS
+    OnNowLocked()
+    {
+       PingDoubles();
+       Door.CloseDoor(self);
+       DefaultOnNowLocked();
+    }
+    OnNowUnlocked()
+    {
+       PingDoubles();
+       Door.OpenDoor(self);
+       DefaultOnNowUnlocked();
+    }
+
+    OnFrobWorldEnd()
+    {
+      if(Locked.IsLocked(self) && Door.GetDoorState(self)==kDoorClosed)
+      {
+         Sound.PlayEnvSchema(self,"Event Reject, Operation OpenDoor",self);
+      }
+      else
+      {
+         if(object(message.Frobber)==object("Player"))
+         {
+            SetData("PlayerFrob",0);
+         }
+         Door.ToggleDoor(self);
+      }
+      DefaultOnFrobWorldEnd();
+    }
+    OnDoorHalt()
+    {
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorHalt();
+    }
+    OnDoorOpening()
+    {
+       PingDoubles();
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorOpening();
+    }
+    OnDoorClosing()
+    {
+       PingDoubles();
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorClosing();
+    }
+    OnDoorClose()
+    {
+       Sound.HaltSchema(self);
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorClose();
+    }
+    OnDoorOpen()
+    {
+       Sound.HaltSchema(self);
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorOpen();
+    }
+    OnSlain()
+    {
+       // Resurrect so that I can potentially be bashed open again.
+       Damage.Resurrect(self);
+       Property.Set(self,"HitPoints",1);
+
+       /* Note that this doesn't deal with double doors
+          at all.  We presume that for double doors to be
+          locked, all of the synchronized doors will be
+          locked.  Probably there will be a separate script
+          with the sole responsibility of slaying all doors
+          in the set when any of them is slain, if that's
+          what you want.
+          */
+       linkset locks=Link.GetAll("Lock",self);
+
+       while(locks.AnyLinksLeft())
+       {
+          Link.Destroy(locks.Link());
+          locks.NextLink();
+       }
+       if(Property.Possessed(self,"Locked"))
+       {
+          // see how sneaky!  first we set to FALSE, so the TweqLock
+          // listener knows.
+          Property.Set(self,"Locked",FALSE);
+          // but really, we don't want it around at all anymore.
+          Property.Remove(self,"Locked");
+       }
+       if(Property.Possessed(self,"KeyDst"))
+          Property.Remove(self,"KeyDst");
+
+       Door.OpenDoor(self);
+    }
+    
+    OnMessage()
+    {
+       // interpret TurnOn/TurnOff messages, in this case as Open/Close
+       if(MessageIs("TurnOn") || MessageIs("Open"))
+          Door.OpenDoor(self);
+       else if(MessageIs("TurnOff") || MessageIs("Close"))
+          Door.CloseDoor(self);
+       // used by key script to let the door know of tool-frobs by the player
+       // so we can treat them as direct frobs with respect to sound.  This
+       // message better be strictly correlated with immediately subsequent
+       // events causing changes in door state...
+       else if(MessageIs("PlayerToolFrob"))
+       {
+          SetData("PlayerFrob",0);
+       }
+       else if(MessageIs("SynchUp"))
+       {
+          // @TODO: Work out what to do about PlayerFrob data in this case.
+          object otherdoor=message.from;
+          integer othertargstate=TargState(Door.GetDoorState(otherdoor));
+          integer mytargstate=TargState(Door.GetDoorState(self));
+
+          if(mytargstate!=othertargstate)
+          {
+             if(othertargstate==kDoorClosed)
+                Door.CloseDoor(self);
+             else
+                Door.OpenDoor(self);
+          }
+          // @TODO: Address lock states. Currently causing hang in Thief Gold
+          // if(Property.Possessed(otherdoor,"Locked"))
+          //    Property.CopyFrom(self,"Locked",otherdoor);
+       }
+    }
+
+END_SCRIPT(StdDoor)
+
+
+BEGIN_SCRIPT(ToggleDoor, StdDoor)
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn")||MessageIs("TurnOff"))
+         Door.ToggleDoor(self);
+      else
+         DefaultOnMessage();
+   }
+END_SCRIPT(ToggleDoor)
+
+
+/* Key which knows how to lock and unlock an object, if and only 
+   if it matches that object's RegionID and either has its Master
+   bit set or matches the object's LockID.  Mind you, all of that
+   is adjudicated by the Key service.
+*/
+BEGIN_SCRIPT(StdKey,RootScript)
+
+   METHODS: 
+     METHOD boolean IsDoor(object obj)
+     {
+       return(Property.Possessed(obj,"RotDoor") ||
+              Property.Possessed(obj,"TransDoor"));
+     }
+   MESSAGES:
+     // Keys of the same KeySrc value combine in inventory.
+     // we do this thusly: if a key without a Combine Type (as is the default)
+     // comes into the player's inventory, we cook the KeySrc into a string
+     // which gets slammed into its CombineType.  Then the object is punched
+     // back into inventory so as to combine.  Lets go:
+     OnContained()
+     {
+        if(message.event==kContainAdd &&
+           object(message.container)==Object.Named("Player"))
+        {
+           object schem=Object.Named("pickup_key");
+
+           // all keys coming into player inv must have stack count 
+           // so it'll be clear when they combine.
+           if(!Property.Possessed(self,"StackCount"))
+              Property.Set(self,"StackCount",1);
+
+           if(!Property.Possessed(self,"CombineType") &&
+              Property.Possessed(self,"KeySrc"))
+           {
+              string combine="key";
+              boolean master=Property.Get(self,"KeySrc","MasterBit");
+              integer region=Property.Get(self,"KeySrc","RegionMask");
+              integer id=Property.Get(self,"KeySrc","LockID");
+
+              combine=combine+(master?"T":"F");
+              combine=combine+string(region)+"i"+string(id);
+              
+   // Debug.MPrint("Setting combine type on ",self," to ",combine);
+                                   
+              Property.Set(self,"CombineType",(const char*)(combine));
+              // Not clear if this is safe to do inside the OnContained handler...
+              Container.Remove(self);
+              Container.Add(self,Object.Named("Player"));
+           }
+           if(schem!=object(0))
+              Sound.PlaySchemaAmbient(self,schem);
+        }
+        DefaultOnContained();
+     }
+     OnFrobToolEnd()
+     {
+        object targ=message.DstObjId;
+        // we use kKeyUseCheck instead of (before) kKeyUseDefault because
+        // we don't want to lock/unlock until we know whether the frob
+        // will succeed, since we need to send PlayerFrob messages to
+        // the affected door beforehand, so it can tag the sounds
+        // appropriately.  Ick.
+        boolean keyfit=Key.TryToUseKey(self,targ,kKeyUseCheck);
+        boolean playerfrob=(object(message.Frobber)==object("Player"));
+        boolean wasused=keyfit;
+
+        if(keyfit)
+        {
+           if(playerfrob) SendMessage(targ,"PlayerToolFrob");
+           Key.TryToUseKey(self,targ,kKeyUseDefault);
+        }
+        else
+        {
+           // okay, so the key doesn't fit whatever I'm trying to
+           // use it on.  The least I can do, is if the thing I'm
+           // trying to use it on is a door which has no lock,
+           // to use the door.  But if it _has_ a lock, maybe I really
+           // am trying to lock the lock, and the key just doesn't
+           // fit.  Oi.  This is what happens when you try to read
+           // the player's mind.
+
+           // Not clear if we really need to check whether our targ
+           // is a door.  Could the Door service be handing us this
+           // information instead?
+           if(IsDoor(targ) && !Property.Possessed(targ,"Locked")
+              && !Locked.IsLocked(targ))
+           {
+              if(playerfrob) SendMessage(targ,"PlayerToolFrob");
+              Door.ToggleDoor(targ);
+              wasused=TRUE;
+           }
+           else
+              SendMessage(targ,"Wrongkey");
+        }
+        Reply(wasused);
+        DefaultOnFrobToolEnd();
+     }
+
+END_SCRIPT(StdKey)
+
+
+
+/* Basic script for locking and unlocking objects.
+   Responds to TurnOn and TurnOff messages by locking
+   and unlocking, respectively.  This script can be used on
+   an abstract object (Lock linked to some device) as
+   part of a trap mechanism, or can be derived from for
+   objects which want more concrete additional behaviors
+   (such as lock boxes)
+   */
+BEGIN_SCRIPT(Lock, RootScript)
+
+  MESSAGES:
+      OnMessage()
+      {
+         // if Locked property is not present, take this to
+         // represent a potentially- or previously-lockable
+         // object which does not currently have a lock
+         // (e.g., when a door is forced open, it loses its
+         // locks).  So, do not add the property; do nothing.
+         if(Property.Possessed(self,"Locked"))
+            if(MessageIs("TurnOn") || MessageIs("Lock"))
+            {
+               Property.Set(self,"Locked",TRUE);
+            }
+            else if(MessageIs("TurnOff") || MessageIs("Unlock"))
+            {
+               Property.Set(self,"Locked",FALSE);
+            }
+         DefaultOnMessage();
+      }
+
+END_SCRIPT(Lock)
+
+/* LockSounds
+   Control logic for lock box objects, doors, chests, encoding
+   the sounds they make to express their state changes.  Visible
+   state changes are handled by the TweqLock property.
+*/
+BEGIN_SCRIPT(LockSounds,RootScript)
+   METHODS:
+      METHOD string CritterTag(string tagset)
+      {
+         if(IsDataSet("PlayerFrob"))
+         {
+            tagset+=", CreatureType Player";
+            ClearData("PlayerFrob");
+         }
+         return tagset;
+      }
+   MESSAGES:
+      OnNowLocked()
+      {
+         string tags="Event StateChange, LockState Locked";
+         Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         DefaultOnNowLocked();
+      }
+      OnNowUnlocked()
+      {
+         string tags="Event StateChange, LockState Unlocked";
+         Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         DefaultOnNowUnlocked();
+      }
+      OnMessage()
+      {
+        if(MessageIs("Wrongkey"))
+        {
+           Sound.PlayEnvSchema(self,"Event Reject, Operation KeyFit",self,NULL,kEnvSoundAtObjLoc);
+        }
+        else if(MessageIs("PlayerToolFrob"))
+           SetData("PlayerFrob",0);
+        DefaultOnMessage();
+      }
+
+END_SCRIPT(LockSounds)
+
+
+
+
+/* The roulette table can be frobbed to start the wheel spinning.
+   The wheel slows down over time, eventually coming to a stop.
+   It sends a TurnOn when it starts spinning and (just a guess as 
+   to the right behavior) a TurnOff when it stops.
+ */
+
+const integer ROULETTE_FULL_SPEED=60;
+const integer ROULETTE_TIME_TO_SLOW=9870;
+const string sillyfieldname="    rate-low-high";
+
+BEGIN_SCRIPT(Roulette,RootScript)
+
+METHODS:
+   METHOD void StopWheel()
+   {
+      Property.Set(self,"CfgTweqJoints",sillyfieldname,vector(0,0,360));
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoHalt);
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+
+   MESSAGES:
+   OnTweqComplete()
+   {
+      if(message.Type==kTweqTypeFlicker &&
+         message.Op==kTweqOpFrameEvent)
+      {
+         integer error=GetData("Error");
+         integer rate=Property.Get(self,"CfgTweqBlink","Rate");
+         integer delta=0;
+         const string sillyfieldname="    rate-low-high";
+         vector spin=Property.Get(self,"CfgTweqJoints",sillyfieldname);
+
+         delta=error+(ROULETTE_FULL_SPEED*rate);
+         error=delta%ROULETTE_TIME_TO_SLOW;
+         delta=delta/ROULETTE_TIME_TO_SLOW;
+         SetData("Error",error);
+
+         spin.x-=delta;
+         if(spin.x<0) spin.x=0;
+
+         Property.Set(self,"CfgTweqJoints",sillyfieldname,spin);
+         if(spin.x==0)
+            StopWheel();
+      }
+      DefaultOnTweqComplete();
+   }
+   OnFrobWorldEnd()
+   {
+      // defining a constant so subtle differences in numbers of spaces don't
+      // potentially loom over us. -TJS
+      vector spin=Property.Get(self,"CfgTweqJoints",sillyfieldname);
+
+      if(spin.x==0) // not spinning
+      {
+         Property.Set(self,"CfgTweqJoints",sillyfieldname,vector(60,0,360));
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+         SetData("Error",0);
+      }
+      else // spinning
+      {
+         StopWheel();
+      }
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(Roulette)
+
+
+
+//////////////////////////////////////////////////////////
+///////  GENERIC LEVER SCRIPTS BELOW THIS POINT  /////////
+//////////////////////////////////////////////////////////
+
+// Note: until we demonstrate a compelling need for genericity
+// here, only controllers which animate via TweqJoints will be
+// supported.  If other tweqs need to be supported we should
+// pursue better service-side utilities. -TJS
+BEGIN_SCRIPT(StdController,Physics)
+
+  METHODS:
+
+     /* TODO: In the future (when we all drive electric cars)
+        there should be a better way of detecting this. */
+     METHOD boolean TweqAnimStateHasVal(object obj, int InputMask)
+     {
+        // InputMask should be all zeros except bit(s) being
+        // queried for set to 1
+        integer AnimS;
+
+        if(!Property.Possessed(self,"StTweqJoints")) // No tweq!
+        {
+           Debug.MPrint(" *** Warning: Object ", obj, " has no TweqState properties (and is in script method TweqAnimStateHasValue).");
+           return FALSE;
+        }
+
+        AnimS=Property.Get(obj,"StTweqJoints","AnimS");
+
+        // return TRUE if the bit(s) is 1 in the bitfield, FALSE if not
+        return ((AnimS & InputMask)!=0);
+     }  // end of Method: TweqAnimStateHasVal
+
+END_SCRIPT(StdController)
+
+// script for object which turns on its tweq when it gets a 
+// "TurnOn" message and turns off when it gets "TurnOff".
+// To start and stop associated sound with environmental
+// sound schema, just add the OnOffSounds script.
+BEGIN_SCRIPT(TweqOnOff,StdController)
+
+  MESSAGES:
+     OnMessage()
+     {
+        integer TweqDo=kTweqDoActivate;
+        boolean TweqMe=FALSE;
+
+        if(MessageIs("GoForward"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoForward;
+        }
+        else if(MessageIs("GoReverse"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoReverse;
+        }                
+        else if (MessageIs("TurnOn"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoActivate;
+        }
+        else if (MessageIs("TurnOff"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoHalt;
+        }
+
+        if(TweqMe)
+        {
+           ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, TweqDo);
+        }
+     }
+
+END_SCRIPT(TweqOnOff)
+
+
+/*
+Script for a two-state device which animates between
+states using the Tweq system.  The actual tweq involved
+is not specified, but detected by the script.  For
+convenience, kTweqDirForward is used to refer to the 
+state which is reached by the tweq acting in the "forward"
+direction, and kTweqDirReverse refers to the state 
+reached by acting in reverse.
+*/
+BEGIN_SCRIPT(StdTwoState,StdController)
+
+METHODS:
+
+     /* Return the state (kTweqDirForward or kTweqDirReverse
+        which the device is either resting (if resting)
+        in or moving towards (if moving). */
+     METHOD integer TargetState(object obj)
+     {
+        // Device is in or towards forward position IFF it
+        // is currently active and going forwards (of course)
+        // or inactive and set to reverse.  That is, if its
+        // ACTIVE bit (0x01) is not equal to its REVERSE
+        // bit (0x02).
+        if(TweqAnimStateHasVal(obj,0x01)!=TweqAnimStateHasVal(obj,0x02))
+           return(kTweqDirForward);
+        else
+           return(kTweqDirReverse);
+     }  // end of Method: TargetState
+
+     METHOD string DirectionTags(integer dir)
+     {
+        if(dir==kTweqDirForward)
+           return("Forward");
+        else
+           return("Reverse");
+     }
+
+     METHOD void PreTweqActivate (integer dir)
+     {
+        // this method should be defined by scripts that derive from this one
+     }
+     METHOD void PostTweqActivate (integer dir)
+     {
+        // this method should be defined by scripts that derive from this one
+     }
+
+     METHOD void TweqActivateNoSE()
+     {
+        if(!TweqAnimStateHasVal(self,0x01)) // 0x01==ON, so if anims are OFF
+        {
+           integer targ=TargetState(self);
+           string tags="Event StateChange, DirectionState "+DirectionTags(targ);
+
+           PreTweqActivate(targ);
+           Sound.PlayEnvSchema(self,tags,self,NULL,kEnvSoundAtObjLoc);
+        }
+        
+        // activate/reverse the motion of the lever
+        ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
+        Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
+     }  
+
+     /*
+       Like TweqActivateNoSE, but also causes side-effects on any other levers
+       that want to toggle along with this one.  This is MOST of the time
+       the desired behavior.  The exception is when the lever is toggling
+       _as_ a side effect: then it doesn't want to chain side effects.
+       */
+     METHOD void TweqActivate()
+     {
+        TweqActivateNoSE();
+        Link.BroadcastOnAllLinks(self,"ToggleNoSE","ScriptParams","SideEffect");
+     }
+
+     /* Sends the tweq device towards the specified state if it's
+        not already there.  
+     */
+     METHOD void GoTowardsState(integer stateId)
+     {
+        if(TargetState(self)==stateId)
+           return;
+        else // get moving, then
+           TweqActivate();
+
+           // The TweqActivate call will take care of synching the frob proxies
+     }  // end of Method: GoTowardsState
+
+MESSAGES:
+     OnMessage()
+     {
+        if (MessageIs("TurnOn") || MessageIs("GoForward"))
+           GoTowardsState(kTweqDirForward);
+        else if (MessageIs("TurnOff") || MessageIs("GoBackward"))
+           GoTowardsState(kTweqDirReverse);
+        else if (MessageIs("Toggle"))
+           TweqActivate();
+        else if (MessageIs("ToggleNoSE"))
+        {
+           // Toggling as a side effect of another lever toggling.
+           // don't chain side effects.
+           TweqActivateNoSE();
+        }
+        else if (MessageIs("Target?"))
+           Reply(TargetState(self));
+        else if (MessageIs("SynchUp"))
+        {
+           // synch up with another lever, for when multiple levers
+           // are frob proxied to control a single two-state mechanism
+           // and you want to keep all levers in the same animation
+           // state.
+           GoTowardsState(TargetState(message.from));
+        }
+        DefaultOnMessage();
+     }
+     OnTweqComplete()
+     {
+        if(message.Type==kTweqTypeJoints)
+           PostTweqActivate(message.Dir);
+        DefaultOnTweqComplete();
+     }
+
+END_SCRIPT(StdTwoState)
+
+// This script activates the animation on a lever when it is frobbed,
+// and calls the method Activate and passes in the message.Dir from the
+// TweqComplete message.
+// A lever that uses this script needs FrobWorld and Tweq properties on it.
+BEGIN_SCRIPT(StdLever,StdTwoState)
+
+  METHODS:
+     METHOD void PostTweqActivate (integer dir)
+     {
+        // if you want to modify the basic behavior of broadcasting
+        // TurnOn and TurnOff messages, you can derive from this
+        // script and override the method.
+        if (dir==kTweqDirReverse) 
+           // the lever is going from down to up, send TurnOff
+           Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+        else if (dir==kTweqDirForward)
+           // the lever is going from up to down, send TurnOn
+           Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+     }
+
+  MESSAGES:
+     OnFrobWorldEnd()
+     {
+       // If lever is locked, then it can't move in respone to frobs.
+       // There must of course be some feedback to the frob, but unlike
+       // in the door case this feedback won't be as natural with just
+       // lock-rattling sounds and/or Garrett voice-overs.  So, we
+       // assume that there's some external error-signalling mechanism,
+       // like an alarm light.  This should be indicated by a (insert
+       // link flavor here) link, which will direct a TurnOn message.
+       if(Locked.IsLocked(self)) {
+          Link.BroadcastOnAllLinks(self,"TurnOn","ScriptParams","ErrorOutput");
+       }
+       else {
+          TweqActivate();
+       }
+       DefaultOnFrobWorldEnd();
+     }
+
+END_SCRIPT(StdLever)
+
+
+/* Slight variation on the standard lever behavior in
+   terms of triggering circumstances. 
+   This script sends a "TurnOn" message when the attached object's
+   tweq animation has ended in the forward direction; for the reverse
+   direction, it sends a "TurnOff" message when the frob has ended.
+   This behavior corresponds to a JumperSwitch in which the electric
+   current is connected only when the switch is fully closed.
+   */
+BEGIN_SCRIPT(JumperSwitch,StdLever)
+
+METHODS:
+
+   METHOD void PreTweqActivate(integer dir)
+   {
+      //    This gets called just after the object is frobbed and before the
+      // tweq animation starts.
+      //    If the tweq is set to go in reverse, then last time the tweq went
+      // forward and the JumperSwitch is currently engaged. We wish to shut
+      // off the "electric current" now since the connection is about to be
+      // broken.
+      // @TODO: Get rid of magic numbers.
+      if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
+   }  // end of method PreTweqActivate
+
+   METHOD void PostTweqActivate (int dir)
+   {
+      //    This gets called just after the tweq animation finishes.
+      //   If the tweq is set to go in reverse, then it just got done
+      // going forward and the JumperSwitch just got engaged.  We wish to
+      // turn on the "electric current" now that the connection has been
+      // established.
+      if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+   } // end of method PostTweqActivate
+
+END_SCRIPT(JumperSwitch)
+
+
+/* STANDARD GAUGE (no pun intended)
+
+   Gauges are essentially levers with a twist.  They animate in response to
+   turnon and turnoff messages, and can run Pre- and Post-TweqActivate methods
+   when they reach their limits.  The difference is that some gauges also
+   have some intermediate point in their animation which we want to be able
+   to detect and respond to, as when the gauge enters the "danger zone."
+
+   This is less a behavior that it's clear you'd really want on a particular
+   gauge than a core infrastructure for implementing this kind of (potent,
+   intricate) gauge.
+
+   For right now, we're going to totally hack this.
+*/
+
+BEGIN_SCRIPT(StdGauge,StdLever)
+
+METHODS:
+
+States
+{
+   lowrangerising=0,
+   redzonerising=1,
+   falling=2
+};
+/* Stages are
+   0 (rising from low to error point),
+   1 (rising from error point to max),
+   2 (falling)
+
+   Gauge can have different tweq params for each stage.
+   Overload this method to change.
+   */
+   METHOD vector TweqParams(integer stage)
+   {
+      return(vector(0,0,0));
+   }
+
+   // This method gets called as the gauge passes the designated error point.
+   // overload as necessary.
+   METHOD void MidTweqActivate()
+   {
+      return;
+   }
+
+   METHOD void StateChange(integer stage)
+   {
+      Property.Set(self,"CfgTweqJoints","    rate-low-high",TweqParams(stage));
+      SetState(stage);
+   }
+
+MESSAGES:
+
+   OnTweqComplete()
+   {
+      vector limits;
+
+      if(!Property.Possessed(self, "CfgTweqJoints"))
+         return;
+      limits=Property.Get(self,"CfgTweqJoints","    rate-low-high");
+      if(message.Dir==kTweqDirReverse) // joint returning to rest
+      {
+         StateChange(lowrangerising);
+         DefaultOnTweqComplete();
+      }
+      else if(limits.z==TweqParams(redzonerising).z) // joint reached real upper limit
+      {
+         // as payback for the brutal tweqjoint hackery we do,
+         // incorrect initial conditions for the guage's
+         // tweqjoint extents can keep the MidTweqActivate from
+         // ever being run.  So, we detect this case and issue a warning.
+
+         if(!StateIs((int)redzonerising))
+         {
+            // Debug.MPrint("Hey!  Gauge ",self," has got no red zone!");
+            MidTweqActivate();
+         }
+
+         StateChange(falling);
+         DefaultOnTweqComplete();
+      }
+      else // joint reached error angle
+      {
+         StateChange(redzonerising);
+         MidTweqActivate();
+         // keep going to new upper range
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoForward);
+      }
+   }
+    
+END_SCRIPT(StdGauge)  
+      
+
+
+/* STANDARD BUTTON
+Standard button, when frobbed, sends a TurnOn message.
+*/
+BEGIN_SCRIPT(StdButton, StdController)
+
+METHODS:
+   METHOD void ButtonPush()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      // bounce the button
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+   }
+      
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // only pushed by collisions with your front face
+      // @TODO: Get rid of magic number.
+      if(message.collSubmod==4)
+      {
+        // collisions with AI's don't push the button; they're
+        // assumed to be controlling themselves a bit better than that.
+        if(! (Object.InheritsFrom(message.collObj,"Avatar")
+              || Object.InheritsFrom(message.collObj,"Creature")))
+        {
+          ButtonPush();
+        }
+      }
+      DefaultOnPhysCollision();
+   }
+   OnFrobWorldEnd()
+   {
+      ButtonPush();
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(StdButton)
+
+
+
+/*
+  VICTROLA
+  A Victrola simply plays a sound when frobbed.  We actually presume the
+  victrola will have some sort of Tweq joint on it, so we script that to
+  animate while the sound is playing.  If frobbed again, stop the old sound
+  and start over.  Also, trigger across ControlDevice links when frobbed.
+ */
+BEGIN_SCRIPT(Victrola, RootScript)
+MESSAGES:
+   OnSchemaDone()
+   {
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoHalt);
+      DefaultOnSchemaDone();
+   }
+   OnFrobWorldEnd()
+   {
+      Sound.HaltSchema(self);
+      if(Link.AnyExist("SoundDescription",self))
+      {
+         object schem=Link.GetOne("SoundDescription",self).To();
+         Sound.PlaySchema(self,schem,self);
+      }
+
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      // bounce the button
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(Victrola)
+
+
+
+/* STANDARD ELEVATOR
+The basic "elevator" behavior will be to go between two states,
+interpreting "Off" as the highest terrpt it can find and "On"
+as the lowest.  This is a bit counterintuitive, but corresponds
+to the action of a typical lever.
+
+Obviously, this is only really supported if there
+exactly two waypoints associated with the moving terrain object.
+In truth, the code is easy to write for any cycle of
+waypoints, but it's not like there's any point in setting things
+up that way.
+
+It's also possible to have a multi-stage elevator where each
+waypoint on its path can "call" the elevator.  Thus, the elevator
+can respond to calls by just going towards a specific waypoint.
+*/
+BEGIN_SCRIPT(StdElevator, RootScript)
+
+METHODS:
+
+   METHOD void SeekPoint(object dest)
+   {
+      if(dest==object(self)) return;
+      if(Property.Possessed(self,"MovingTerrain"))
+      {
+         // Hack alert: different scripts know about the elevator
+         // starting and stopping (woe, lamentation), so we just
+         // message ourselves about these things happening so that
+         // yet a third script can handle the sounds.
+         {
+            // At short distances, we may not go at all, and no sound
+            // for tiny trips won't kill us, so check that.
+            vector p1=Object.Position(self);
+            vector p2=Object.Position(dest);
+            real dist=(p1-p2).Magnitude();
+
+            if(dist>0.5)
+            {
+               SendMessage(self,"Starting");
+            }
+         }
+         
+         if(Link.AnyExist("TPathNext",self))
+         {
+            link destlink = Link.GetOne("TPathNext",self);
+            // if we're already going to the right place, 
+            // don't munge the links, but do make sure we're active
+
+            if(destlink.To()==dest)
+            {
+               Property.Set(self,"MovingTerrain","active",TRUE);
+               return;
+            }
+            Property.Set(self,"MovingTerrain","active",FALSE);
+            Link.Destroy(destlink);
+         }
+         // if it so happens that this gets set false twice, it won't hurt.
+         Property.Set(self,"MovingTerrain","active",FALSE);
+         Link.Create("TPathNext",self,dest);
+         Property.Set(self,"MovingTerrain","active",TRUE);
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, kTweqDoActivate);
+      }
+   }
+
+   // Find "the" next waypoint along the moving terrain route.
+   // this assumes that no object has two outgoing TPath
+   // links, which is the only supported case.  Behavior in
+   // other cases is unspecified but should be non-disastrous.
+   // This assumes Link.GetOne acts deterministically so two
+   // calls to NextPoint from the same start do not go different
+   // places. 
+   METHOD object NextPoint(object curpt, linkkind linktype)
+   {
+      if(Link.AnyExist(linktype,curpt))
+         return(Link.GetOne(linktype,curpt).To());
+      else
+         return curpt;
+   }
+
+   // find either the highest or lowest waypoint on the cycle associated
+   // with myself.
+   METHOD object FindPoint(bool highest)
+   {
+      int transform=1;
+      object curpoint;
+
+      // to find the lowest point, turn the world upside-down and find the highest.
+      if(!highest) transform=-1;
+
+      // what waypoint path am I on?
+      if(Link.AnyExist("TPathNext",self))
+         curpoint=Link.GetOne("TPathNext",self).To();
+      else if(Link.AnyExist("TPathInit",self))
+         curpoint=Link.GetOne("TPathInit",self).To();
+      else {
+         Debug.MPrint("Warning: elevator ",self," could not find path.");
+         return(self);
+      }
+
+      // now, starting from initpoint, traverse TPath links and search
+      // for the highest point.  detect both dead ends and cycles by
+      // sending a scouting traversal ahead.  You'll either dead-end
+      // and catch up to the scout, our cycle and be caught by it.
+      {
+         float hgt, max=transform*(Object.Position(curpoint).z);
+         object highpoint=curpoint;
+         object scoutpt=curpoint;
+
+         do {
+            // is current point higher than any found before?
+            hgt=transform*(Object.Position(curpoint).z);
+            if(hgt>max)
+            {
+               max=hgt;
+               highpoint=curpoint;
+            }
+
+            curpoint=NextPoint(curpoint,"TPath");
+            scoutpt=NextPoint(NextPoint(scoutpt,"TPath"),"TPath");
+
+         } while (curpoint!=scoutpt);
+
+         return(highpoint);   
+      }
+   }
+         
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         SeekPoint(FindPoint(FALSE));
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         SeekPoint(FindPoint(TRUE));
+      }
+      else if(MessageIs("Call"))
+      {
+         SeekPoint(message.from);
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(StdElevator)
+
+
+/* Pretty self-explanatory.  A moving terriain object with
+   this script will deactivate when it gets to waypoints.
+   It must rely on some other agency (such as the StdElevator
+   script) to start it up again if it is ever to do so.
+   */
+BEGIN_SCRIPT(StopAtWaypoints,MovingTerrain)
+
+MESSAGES:
+   OnMovingTerrainWaypoint()
+   {
+      // stop when you reach waypoints
+      if(Property.Possessed(self,"MovingTerrain"))
+      {
+         // Debug.MPrint("Lo!  I, ",self,", have reached waypoint ",message.waypoint);
+         Property.Set(self,"MovingTerrain","active",FALSE);
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, kTweqDoHalt);
+
+         // Hack alert: different scripts know about the elevator
+         // starting and stopping (woe, lamentation), so we just
+         // message ourselves about these things happening so that
+         // yet a third script can handle the sounds.
+         SendMessage(self,"Stopping");
+      }
+      DefaultOnMovingTerrainWaypoint();
+   }
+
+END_SCRIPT(StopAtWaypoints)
+
+
+
+// Script: StopHere
+/* Put on a moving terrain waypoint to cause platforms
+   reaching it to halt there.
+   */
+BEGIN_SCRIPT(StopHere,Waypoint)
+MESSAGES:
+   OnWaypointReached()
+   {
+      Property.Set(message.moving_terrain,"MovingTerrain","active",FALSE);
+      DefaultOnWaypointReached();
+   }
+END_SCRIPT(StopHere)
+
+
+
+
+BEGIN_SCRIPT(ElevatorSounds,RootScript)
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         SetData("ElevLooping",FALSE);
+      }
+      DefaultOnSim();
+   }
+   OnMessage()
+   {
+      boolean looping=GetData("ElevLooping");
+
+      if(MessageIs("Starting") && !looping)
+      {
+         Sound.PlayEnvSchema(self,"Event ActiveLoop",self);
+         SetData("ElevLooping",TRUE);
+      }
+      else if(MessageIs("Stopping"))
+      {
+         Sound.HaltSchema(self);
+         SetData("ElevLooping",FALSE);
+         Sound.PlayEnvSchema(self,"Event Deactivate",self);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(ElevatorSounds)
+
+
+
+/* STANDARD TERRAIN WAYPOINT
+Terrain waypoints respond to TurnOn messages by calling their associated
+moving terrain object.
+*/
+BEGIN_SCRIPT(StdTerrpoint, RootScript)
+
+METHODS:
+
+   // Find "the" next waypoint along the moving terrain route.
+   // this assumes that no object has two outgoing TPath
+   // links, which is the only supported case.  Behavior in
+   // other cases is unspecified but should be non-disastrous.
+   // This assumes Link.GetOne acts deterministically so two
+   // calls to NextPoint from the same start do not go different
+   // places. 
+
+   METHOD object NextPoint(object curpt, linkkind linktype)
+   {
+      if(Link.AnyExist(linktype,curpt))
+         return(Link.GetOne(linktype,curpt).To());
+      else
+         return curpt;
+   }
+
+   // This of course assumes that only one object links
+   // to the current TPath, and that the current TPath
+   // is non-branching (either a cycle or a sequence).  
+   METHOD object MyTerrObj()
+   {
+      // this is a bit pesky.  scan the waypoints on my path
+      // (assumed to be a simple cycle) to find the one my
+      // terrain object actually currently knows about.
+      object curpoint=self;
+      object scoutpt=curpoint;
+      linkkind linktypes[]={"TPath","~TPath"};
+      linkkind linkdir=linktypes[0];
+      int pass;
+
+      // do one scan traversing forwards, one backwards, in case
+      // we're not just on a simple cycle for some reason.
+      for(pass=0;pass<2;pass++) {
+         do {
+            // found a terrain obj yet?
+            if(Link.AnyExist("~TPathNext",curpoint))
+               return(Link.GetOne("~TPathNext",curpoint).To());
+            else if(Link.AnyExist("~TPathInit",curpoint))
+               return(Link.GetOne("~TPathInit",curpoint).To());
+            
+            linkdir=linktypes[pass];
+
+            curpoint=NextPoint(curpoint,linkdir);
+            scoutpt=NextPoint(NextPoint(scoutpt,linkdir),linkdir);
+         
+         } while (curpoint!=scoutpt);
+      }
+      // if all else fails...
+      return(self);
+   }
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         object MyTerr=MyTerrObj();
+         if(MyTerr!=object(self))
+            SendMessage(MyTerr,"Call");
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(StdTerrpoint)
+
+
+
+
+// the script for alarm gongs.  When rung, either by frobbing
+// or impact, make appropriate activation sound so as to notify
+// any AI's within earshot.
+BEGIN_SCRIPT(Gong,StdController)
+
+METHODS:
+
+   METHOD void Ring()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      /* @TODO: In our perfect world, guys would just hear
+         the sound and get the signal.  Sadly...
+         Well, suffice to say that if you want a guy to  
+         get the signal whether or not he really hears the
+         gong, give him an "Owns" link to the gong.
+         */
+      {
+         linkset owners=Link.GetAll("~Owns",self);
+         while(owners.AnyLinksLeft())
+         {
+            object owner=owners.Link().To();
+            AI.Signal(owner,"gong_ring");
+            owners.NextLink();
+         }
+      }
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // Only collisions with broad faces of gong will ring it.
+      // @TODO: Kill magic numbers
+      // @TODO: If we get a jointed model and TweqWubWub, do so.
+      if(message.collSubmod==1 || message.collSubmod==4)
+      {
+        // collisions with AI's don't ring the gong; they're
+        // assumed to be controlling themselves a bit better than that.
+        if(! (Object.InheritsFrom(message.collObj,"Avatar")
+              || Object.InheritsFrom(message.collObj,"Creature")))
+        {
+          Ring();
+        }
+      }
+      DefaultOnPhysCollision();
+   }
+   OnFrobWorldEnd()
+   {
+      Ring();
+      DefaultOnFrobWorldEnd();
+   }
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         Ring();
+   }
+
+END_SCRIPT(Gong)
