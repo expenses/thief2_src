@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/linkloop.cpp,v 1.7 1998/04/24 14:12:38 TOML Exp $
 
 #include <lg.h>
