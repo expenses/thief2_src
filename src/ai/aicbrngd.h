@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aicbrngd.h,v 1.21 1999/12/02 18:54:35 BFarquha Exp $
 //
