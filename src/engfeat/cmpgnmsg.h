@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/cmpgnmsg.h,v 1.2 1998/09/22 14:16:55 mahk Exp $
 #pragma once  
 #ifndef __CMPGNMSG_H
