@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/mvrtport.cpp,v 1.2 1997/12/19 15:28:33 TOML Exp $
 
 #include <mmanuver.h>
