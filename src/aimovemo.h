@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/aimovemo.h 1.4 1997/10/04 17:10:49 TOML Exp $
 
 // This file defines the type returned by
