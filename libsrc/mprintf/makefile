@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/mprintf/RCS/makefile $
-# $Revision: 2.2 $
+# $Revision: 2.3 $
 # $Author: JACOBSON $
-# $Date: 1996/02/14 14:33:29 $
+# $Date: 1996/02/14 14:35:02 $
 #
 
 MAKETOP = $(CWD)
