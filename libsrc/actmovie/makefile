@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/actmovie/RCS/makefile $
-# $Revision: 1.6 $
+# $Revision: 1.7 $
 # $Author: JON $
-# $Date: 1996/09/18 12:08:17 $
+# $Date: 1996/09/19 18:49:31 $
 #
 # Makefile for actmovie library
 #
@@ -21,7 +21,7 @@ actmovie_DEFINES =
 
 actmovie_OBJS = actmovie amguids amalloc imutil mtype
 
-actmovie_HDRS = movieapi.h movconst.h
+actmovie_HDRS = 
 
 %include $(MRC)\make.rc
 
