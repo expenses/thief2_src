@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/brinfo.h,v 1.15 2000/01/29 13:11:12 adurant Exp $
 // brinfo has the nasty internal types and defines for gedit
 #pragma once
