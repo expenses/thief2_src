@@ -1,15 +1,15 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.11 $
-# $Author: kaboom $
-# $Date: 1994/02/12 18:36:20 $
+# $Revision: 1.12 $
+# $Author: mahk $
+# $Date: 1994/06/21 05:29:17 $
 #
 
 DEBUG_ON= 1
 
 COMPILER= watcom
 SRCDIR= n:\project\lib\src\input
-RELDIR= n:\project\lib\release
+RELDIR= n:\prj\lib\rel
 BUILD_DIR= n:\project\lib\build\input
 
 OBJDIR= objo
@@ -38,7 +38,7 @@ INPUT_OBJS= \
         kbstate.obj kbcook.obj kbasctab.obj \
         joyflat.obj joystick.obj ngpjoy.obj basjoy.obj \
         mouse.obj  mousedev.obj
-INPUT_HDRS= mouse.h kb.h kbcook.h joystick.h
+INPUT_HDRS= mouse.h kb.h kbcook.h joystick.h mousevel.h
 
 !include $(INIT)/make.rc
 
@@ -59,65 +59,55 @@ kb.h: kbs.h kbdecl.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-basjoy.obj: _input.h basjoy.h dbg.h dbgmacro.h stdio.h types.h
+basjoy.obj objo\basjoy.obj objd\basjoy.obj: basjoy.h
 
-joystick.obj: basjoy.h joystick.h ngpjoy.h
+joystick.obj objo\joystick.obj objd\joystick.obj: basjoy.h joystick.h ngpjoy.h
 
-kbasctab.obj: ctype.h dbg.h dbgmacro.h error.h kb.h kbcook.h lg.h lgalt.h \
-	 malloc.h memall.h memmacro.h stdio.h types.h
+kbasctab.obj objo\kbasctab.obj objd\kbasctab.obj: ctype.h kb.h kbcook.h
 
-kbbflush.obj: type.inc
+kbclose.obj objo\kbclose.obj objd\kbclose.obj: kbd.inc kberr.inc kbhnd.inc kblow.inc
 
-kbclose.obj: dpmi.inc kbd.inc kberr.inc kbhnd.inc kblow.inc macros.inc \
-	 type.inc types.inc
+kbcook.obj objo\kbcook.obj objd\kbcook.obj: ctype.h kb.h kbcook.h
 
-kbcook.obj: ctype.h dbg.h dbgmacro.h error.h kb.h kbcook.h lg.h lgalt.h \
-	 malloc.h memall.h memmacro.h stdio.h types.h
+kbcstat.obj objo\kbcstat.obj objd\kbcstat.obj: kbd.inc kblow.inc
 
-kbcstat.obj: kbd.inc kblow.inc type.inc
+kbd.obj objo\kbd.obj objd\kbd.obj: kbd.inc kblow.inc
 
-kbd.obj: kbd.inc kblow.inc
+kbflush.obj objo\kbflush.obj objd\kbflush.obj: kbd.inc kblow.inc
 
-kbflush.obj: kbd.inc kblow.inc type.inc
+kbgen.obj objo\kbgen.obj objd\kbgen.obj: kbreg.inc
 
-kbgen.obj: kbreg.inc
+kbgflag.obj objo\kbgflag.obj objd\kbgflag.obj: kbd.inc kblow.inc
 
-kbgflag.obj: kbd.inc kblow.inc type.inc
+kbgstat.obj objo\kbgstat.obj objd\kbgstat.obj: kbd.inc kblow.inc
 
-kbgstat.obj: kbd.inc kblow.inc type.inc
+kbinit.obj objo\kbinit.obj objd\kbinit.obj: kbarray.inc kbclose.asm kbd.inc kberr.inc kbflag.inc kbhnd.inc \
+	 kbint.inc kblow.inc kbphnd.asm kbreg.inc kbrhnd.asm kbscan.inc
 
-kbinit.obj: dpmi.inc kbarray.inc kbclose.asm kbd.inc kberr.inc kbflag.inc \
-	 kbhnd.inc kbint.inc kblow.inc kbphnd.asm kbreg.inc kbrhnd.asm \
-	 kbscan.inc macros.inc type.inc types.inc
+kblnext.obj objo\kblnext.obj objd\kblnext.obj: kbd.inc kbflag.inc kblow.inc
 
-kblnext.obj: kbd.inc kbflag.inc kblow.inc type.inc
+kbnext.obj objo\kbnext.obj objd\kbnext.obj: kbd.inc kbflag.inc kblow.inc
 
-kblow.obj: dpmi.h
+kbphnd.obj objo\kbphnd.obj objd\kbphnd.obj: kbarray.inc kbd.inc kbflag.inc kblow.inc kbreg.inc kbscan.inc
 
-kbnext.obj: kbd.inc kbflag.inc kblow.inc type.inc
+kbqueue.obj objo\kbqueue.obj objd\kbqueue.obj: kbs.h
 
-kbphnd.obj: kbarray.inc kbd.inc kbflag.inc kblow.inc kbreg.inc kbscan.inc \
-	 macros.inc type.inc types.inc
+kbrhnd.obj objo\kbrhnd.obj objd\kbrhnd.obj: kbarray.inc kbflag.inc kblow.inc kbreg.inc kbscan.inc
 
-kbqueue.obj: kbs.h
+kbsflag.obj objo\kbsflag.obj objd\kbsflag.obj: kbd.inc kblow.inc
 
-kbrhnd.obj: kbarray.inc kbflag.inc kblow.inc kbreg.inc kbscan.inc type.inc
+kbshut.obj objo\kbshut.obj objd\kbshut.obj: kbint.h kblow.h
 
-kbsflag.obj: kbd.inc kblow.inc
+kbssig.obj objo\kbssig.obj objd\kbssig.obj: kbarray.h
 
-kbshut.obj: dpmi.h kbint.h kblow.h
+kbsstat.obj objo\kbsstat.obj objd\kbsstat.obj: kbd.inc kblow.inc
 
-kbssig.obj: kbd.inc kblow.inc type.inc
+kbstart.obj objo\kbstart.obj objd\kbstart.obj: kbarray.h kbglob.h kbint.h kblow.h kbqueue.h kbs.h string.h
 
-kbsstat.obj: kbd.inc kblow.inc type.inc
+kbstate.obj objo\kbstate.obj objd\kbstate.obj: kbarray.inc kbd.inc kblow.inc
 
-kbstart.obj: dpmi.h kbarray.h kbglob.h kbint.h kblow.h kbqueue.h kbs.h \
-	 string.h
+mouse.obj objo\mouse.obj objd\mouse.obj: dos.h i86.h mouse.h mousevel.h stdlib.h
 
-kbstate.obj: kbarray.inc kbd.inc kblow.inc type.inc
+ngpjoy.obj objo\ngpjoy.obj objd\ngpjoy.obj: dos.h i86.h ngpjoy.h
 
-mouse.obj: _mouse.h dbg.h dbgmacro.h dos.h dpmi.h error.h i86.h lg.h \
-	 lgalt.h malloc.h memall.h memmacro.h mouse.h stdio.h stdlib.h \
-	 types.h
-
-ngpjoy.obj: _input.h dbg.h dbgmacro.h dos.h i86.h ngpjoy.h stdio.h types.h
+testcook.obj objo\testcook.obj objd\testcook.obj: ctype.h kb.h kbcook.h
