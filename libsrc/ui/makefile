@@ -26,8 +26,9 @@ REGTEST_LIBS = lg.lib mprintf.lib
 ARRAYTST_OBJS = array.obj arraytst.obj
 ARRAYTST_LIBS = lg.lib mprintf.lib
 
-GADTEST_OBJS = gadgets.obj rect.obj gadtest.obj region.obj 
-GADTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib
+GADTEST_OBJS = gadgets.obj rect.obj gadtest.obj region.obj event.obj \
+        array.obj
+GADTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib mouse.lib kb.lib
 
 # Libraries
 
