@@ -31,13 +31,13 @@ METHODS:
 
   METHOD void ConversationCheckStep(integer convstate)
   {
-    if ((InConversationRoom()) && (convstate<3) &&
+    if ((InConversationRoom()) &&
 	((integer)GetData("ConversationObject")==0) &&
 	((integer)GetData("FinishedConversation")<=convstate))
       {
-        Debug.MPrint("In conversation room");
+        Debug.MPrint("Allowed to play conversation");
 	string linkinfo = "convobj"+(string)(convstate+1);
-        object convsource = ScriptParamPropagate(message.ToObjId,linkinfo);
+        object convsource = ScriptParamPropagate((integer)GetData("PlayerRoomLocation"),linkinfo);
         if (convsource != (object)0)
           {
 	    convstate = convstate + 1;
@@ -49,6 +49,17 @@ METHODS:
 	    SetData("StartedConversation",convstate);
           }
       }
+  }
+
+  METHOD boolean ConversationContinue(integer prevobj)
+  {
+    object newspeaker = ScriptParamPropagate(prevobj,"convcont");
+    if (newspeaker == (object)0)
+      return FALSE;
+    Debug.MPrint("Continuing conversation ",(integer)GetData("StartedConversation")," on ",newspeaker);
+    PlayConversation(newspeaker);
+    SetData("ConversationObject",(integer)newspeaker);
+    return TRUE;
   }
 
   METHOD boolean InConversationRoom()
@@ -92,7 +103,8 @@ MESSAGES:
         Debug.MPrint("Finished conversation on ",convid);
         SetData("FinishedConversation",(integer)GetData("StartedConversation"));
 	SetData("ConversationObject",0);
-	ConversationCheckStep((integer)GetData("StartedConversation"));
+	if (!ConversationContinue(message.targetObject))
+  	  ConversationCheckStep((integer)GetData("StartedConversation"));
       }
     DefaultOnSchemaDone();
   }
