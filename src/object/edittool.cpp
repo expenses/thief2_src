@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/edittool.cpp,v 1.9 1999/11/01 18:07:28 henrys Exp $
 #include <appagg.h>
 #include <aggmemb.h>
