@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/sndframe.cpp,v 1.2 2000/02/28 17:28:27 toml Exp $
 
 #include <sndframe.h>
