@@ -24,7 +24,8 @@ INST_TARGETS = res resdump respack
 EXTRA_TARGET =
 
 RES_OBJS = lzw.obj res.obj restypes.obj resfile.obj resacc.obj refacc.obj \
-	resload.obj resmem.obj rescum.obj resbuild.obj resmake.obj resexblk.obj
+	resload.obj resmem.obj rescum.obj resbuild.obj resmake.obj resexblk.obj \
+        resmisc.obj
 RES_HDRS = lzw.h res.h restypes.h
 
 RESDUMP_OBJS	= resdump.obj
