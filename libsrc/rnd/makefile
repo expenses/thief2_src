@@ -1,46 +1,23 @@
-#	----------------------------------
-#	Makefile for RND library
-#	----------------------------------
 # 
+# $Source: x:/prj/tech/libsrc/rnd/RCS/makefile $
+# $Revision: 2.1 $
+# $Author: MBAER $
+# $Date: 1995/10/02 20:10:30 $
+#
 
-DEBUG_ON = 1
-DBG_ON = 1
-WARN_ON = 1
-SPEW_ON = 1
+MAKETOP = $(CWD)
 
-COMPILER = watcom
-SRCDIR = n:\project\lib\src\res
-RELDIR = n:\project\lib\release
-OBJDIR = obj
-LIBDIR = $(RELDIR)
-INCDIR = $(RELDIR)
-BINDIR = n:\bin
-INCPATH = . $(SRCDIR) $(RELDIR)
-LIBPATH = $(RELDIR)
+PROJECT = windex
 
-PROG_TARGETS = rndtest
-LIB_TARGETS = rnd
-INST_TARGETS = rnd
-EXTRA_TARGETS =
+%include $(MRC)\env.rc
 
-RND_SRCS	= rnd.c
-RND_OBJS = rnd.obj
-RND_HDRS	= rnd.h
+%include $(MRC)\init.rc
 
-RNDTEST_SRCS = rndtest.c
-RNDTEST_OBJS = rndtest.obj
-RNDTEST_LIBS = rnd.lib fix.lib lg.lib mprintf.lib
+LIBTARGS = rnd
 
-!include n:/etc/make.rc
+rnd_OBJS = rnd
+rnd_HDRS = rnd.h
 
-#	----------------------------------
-#	Object file dependencies
-#	----------------------------------
+%include $(MRC)\make.rc
 
-### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-rnd.obj: dbg.h fix.h lg.h lgalt.h libdbg.h malloc.h math.h memall.h rnd.h \
-	 stdio.h types.h
-
-rndtest.obj: conio.h ctype.h fix.h math.h rnd.h stdio.h stdlib.h string.h \
-	 types.h
