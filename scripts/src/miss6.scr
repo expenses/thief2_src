@@ -1,8 +1,8 @@
-#include "drkgoalt.h"
+#include "convict.scr"
 
 #define KEYPATHS 10
 
-BEGIN_SCRIPT(ListenClosely, Room)
+BEGIN_SCRIPT(ListenClosely, VictoryCheck)
 
 METHODS:
 
@@ -63,7 +63,12 @@ METHODS:
       integer qdata = (integer)splink.GetData();
       Debug.MPrint("Completing conversation goal.  Path is ",qdata);
       SetData("PathNumber",qdata);
+      Debug.MPrint("Setting ",GoalVisibleVarName(1)," to 1");
+      Quest.Set(GoalVisibleVarName(1),1,kQuestDataMission);
+      Debug.MPrint("Setting ",GoalStateVarName(0)," to complete.");
       Quest.Set(GoalStateVarName(0),kGoalComplete,kQuestDataMission);
+      if (HaveTheKey())
+        PlayRightKey(1);  //1 means should do wax check afterwards.
     }
   }
 
@@ -112,6 +117,7 @@ METHODS:
       }
       if (spdata == "keyobj")
       {
+	SetData("TheKeyObj",(integer)cursplink.To());
         string messdata = "eaves" + (string)GetData("PathNumber");
         PostMessage(cursplink.To(),messdata);
         Debug.MPrint("Told key ",cursplink.To()," to set up with ",messdata);
@@ -132,6 +138,63 @@ METHODS:
     return FALSE;
   }
 
+  METHOD object KeyObj()
+  {
+    return (object)GetData("TheKeyObj");
+  }
+
+  METHOD void FollowUpKeySound(int i)
+  {
+    if (i==2)
+      Debug.MPrint("I'm following up the have key bit right after eavesdropping.");
+    if (i==4)
+      Debug.MPrint("I'm following up the have key bit right after picking it up.");
+  }
+
+  METHOD void PlayRightKey(int i)
+  {
+    //1 means should play wax check afterwards, 2 means finished and doing
+    //wax check
+
+    //3 means should play drop me afterwards, 4 means finished  and doing 
+    //drop me.
+    if ((integer)GetData("PlayedHaveKey")!=0)
+      return; //already done this.
+    object schmname;
+    if (i==2)
+      schmname = ScriptParamPropagate(KeyObj(),"havekey");
+    else
+      schmname = ScriptParamPropagate(KeyObj(),"gotkey");
+    SetData("PlayedHaveKey",i); //am playing
+    if (schmname != (object)0)
+    {
+      Debug.MPrint("Have key, playing schema ",schmname);
+      Sound.PlaySchema(self,schmname,self);
+    }
+    else
+    {
+      Debug.MPrint("Have key, schema load failed");
+      SetData("PlayedHaveKey",i+1);  //finished playing
+      FollowUpKeySound(i+1);
+    }
+  }
+
+  METHOD boolean HaveTheKey()
+  {
+    linkset myinv = Link.GetAll("Contains",self);
+    boolean retval = FALSE;
+    while (myinv.AnyLinksLeft())
+    {
+      link curitem = myinv.Link();
+
+      if (curitem.To() == (object)GetData("TheKeyObj"))
+        retval = TRUE;
+
+      myinv.NextLink();
+    }
+    return retval;
+  }
+
 MESSAGES:
 
   OnSim()
@@ -142,7 +205,9 @@ MESSAGES:
         SetData("StartedConversation",0); //last conv started
         SetData("FinishedConversation",0); //last conv finished
 	SetData("ConversationObject",0); //current conv object.
-        SetData("PathNumber",0);
+        SetData("PathNumber",0);       //which random path
+        SetData("TheKeyObj",0);       //obj id of real key
+        SetData("PlayedHaveKey",0);   //played this vo already.
 	if ((object)self != object("Player"))
         {
 	  SetData("PathNumber",Data.RandInt(1,KEYPATHS)); //which key we're 
@@ -176,7 +241,35 @@ MESSAGES:
 	if (!ConversationContinue(message.targetObject))
   	  ConversationCheckStep((integer)GetData("StartedConversation"));
       }
+    if ((integer)GetData("PlayedHaveKey")==1)
+      {
+        SetData("PlayedHaveKey",2);
+        FollowUpKeySound(2);        
+      }
     DefaultOnSchemaDone();
+  }
+
+  OnMessage()
+  {
+    if (MessageIs("gotthekey"))
+    {
+      SetData("TheKeyObj",message.from);
+      Debug.MPrint("Picked up correct key, ",message.from);
+      if ((integer)GetData("PathNumber")!=0)
+      {
+        PlayRightKey(3); //meaning, this isn't just after eavesdropping bit.
+      }
+    }
+    if ((MessageIs("badkey")) && ((integer)GetData("PathNumber")!=0))
+    {
+      linkset sounds = Link.GetAll("SoundDescription",message.from);
+      while (sounds.AnyLinksLeft())
+      {
+        Sound.PlaySchema(self,sounds.Link().To(),self);
+	sounds.NextLink();
+      }
+    }
+    DefaultOnMessage();
   }
 
   OnObjRoomTransit()
@@ -248,9 +341,19 @@ MESSAGES:
 
 END_SCRIPT(SoundGuy)
 
+BEGIN_SCRIPT(BadKey, RootScript)
 
+MESSAGES:
 
+  OnContained()
+  {
+    if ((message.event!=kContainRemove) &&
+	object(message.container)==Object.Named("Player"))
+    PostMessage(message.container,"BadKey");
+    DefaultOnContained();
+  }
 
+END_SCRIPT(BadKey)
 
 BEGIN_SCRIPT(KeyGuy, RootScript)
 
@@ -258,7 +361,24 @@ METHODS:
  
   METHOD void DoKeySetup(int i)
   {
-    Debug.MPrint(self," running key setup on path ",i);
+    Debug.MPrint(self," running key setup on path ",i);    
+    linkset splinks = Link.GetAll("ScriptParams",self);
+    while (splinks.AnyLinksLeft())
+    {
+      link cursplink = splinks.Link();
+
+      if ((string)i == (string)cursplink.GetData())
+        {
+	  vector destpos = Object.Position(cursplink.To());
+          vector destfac = Object.Facing(cursplink.To());
+	  Debug.MPrint("Teleporting key ",self," to fake key ",cursplink.To());
+          Object.Teleport(self,destpos,destfac);
+          Object.Destroy(cursplink.To());
+        }
+
+      splinks.NextLink();
+    }
+
   }
 
 MESSAGES:
@@ -272,9 +392,16 @@ MESSAGES:
       if (MessageIs(teststr))
         DoKeySetup(i);
     }
+    DefaultOnMessage();
   }
 
+  OnContained()
+  {
+    if ((message.event!=kContainRemove) &&
+	object(message.container)==Object.Named("Player"))
+      PostMessage(message.container,"gotthekey");
+    DefaultOnContained();
+  }
+
+
 END_SCRIPT(KeyGuy)
-
-
-
