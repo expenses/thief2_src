@@ -1,4 +1,4 @@
-
+#include "phprops.h"
 
 BEGIN_SCRIPT(TrigDoorOpen, Door)
 MESSAGES:
@@ -1292,3 +1292,44 @@ OnTimer()
 }
 
 END_SCRIPT (TrapCapacitor)
+
+
+/* Turrets' alertness is controlled by external sensors, such as cameras
+   or other triggers.   When a turret gets a "TurnOn," it goes to high
+   alertness and stays there.  When it gets a "TurnOff," it goes to low
+   alertness and stays _there_.
+   Turrets inherit from TrapRequirement so they can be on so long as
+   _any_ of their sensors have sent them a TurnOn without a matching
+   TurnOff.
+*/
+BEGIN_SCRIPT(TurretAlert, TrapRequirement)
+
+METHODS:
+   METHOD void ClampAlert(integer alert)
+   {
+      Property.Set(self,"AI_AlertCap","Min level",alert);
+      Property.Set(self,"AI_AlertCap","Max level",alert);
+
+      // Placeholder joint animation until we get real turret AI
+      // Assumes we'll use the StdTwoState script for this.
+      PostMessage(self,alert==kHighAlert?"GoForward":"GoBackward");
+   }
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         ClampAlert(kHighAlert);
+         DefaultOnMessage();
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         DefaultOnMessage();
+         if(!Link.AnyExist("ScriptParams",self))
+            ClampAlert(kNoAlert);
+      }
+   }
+
+END_SCRIPT(TurretAlert)
+
