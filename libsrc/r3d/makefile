@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.4 $
-# $Author: dc $
-# $Date: 1996/05/06 01:13:17 $
+# $Revision: 1.5 $
+# $Author: buzzard $
+# $Date: 1996/05/06 08:10:46 $
 #
 # Makefile for r3d library
 #
@@ -18,7 +18,6 @@ PROJECT = tech
 LIBTARGS = r3d 
 
 r3d_OBJS = \
-  clip     \
   clipclip \
   clipglob \
   cliplin  \
