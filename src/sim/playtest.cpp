@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/playtest.cpp,v 1.27 2000/02/24 23:33:43 patmac Exp $
 
 #ifdef PLAYTEST

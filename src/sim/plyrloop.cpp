@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/plyrloop.cpp,v 1.81 2000/01/25 23:19:52 adurant Exp $
 
 #include <lg.h>

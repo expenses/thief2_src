@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/objnet.cpp,v 1.46 1999/08/31 14:45:25 Justin Exp $
 //
 // Object Networking implementation

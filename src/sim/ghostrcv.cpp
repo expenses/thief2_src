@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/ghostrcv.cpp,v 1.17 1999/08/26 12:53:02 dc Exp $
 // receive systems for ghosts
 
