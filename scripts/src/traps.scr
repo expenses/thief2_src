@@ -452,6 +452,21 @@ MESSAGES:
    }
 END_SCRIPT(TrapConverse)
 
+// Script:	TrapFindSecret
+/* When this trap is triggered, the player is credited with finding a secret.
+   One secret per trap, please, as the service call marks anything we say
+   is "found" as no longer being "hidden"!
+   */
+BEGIN_SCRIPT(TrapFindSecret, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if (MessageIs("TurnOn"))
+         DarkGame.FoundObject(self);
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapFindSecret)
+
 
 // Script: TrapPatrol
 /* Turns an AI's patrol on or off.  Could do this with TrapConverse,
