@@ -1,0 +1,129 @@
+#include "drkgoalt.h"
+#include "drkstats.h"
+#include "m1213vic.h"
+
+BEGIN_SCRIPT(SpecialGoals, RootScript)
+
+METHODS:
+   // gets rid of existing mission quest variable and
+   // substitutes a campaign quest variable.
+   METHOD void MakeCampaignVar(string varname)
+   {
+      integer val=Quest.Get(varname);
+
+      // @TODO: Axing this variable could will invalidate subscriptions.
+      // We should message back to ourselves (knowing that both this script
+      // and the victory conditions script are supposed to go on the player
+      // object) to make the victory conditions script re-do its subscriptions.
+      Quest.Delete(varname);
+      Quest.Set(varname,val,kQuestDataCampaign);
+      PostMessage(self,"ReSubscribe");
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("InitQuest"))
+      {
+         // Initialize all of the campaign quest variables we'll use to coordinate
+         // state with "Masks."
+         integer index;
+
+         SetData("InitQuest",TRUE);
+
+         // State of library quest (mask of books read)
+         Quest.Set("LibBooks", 0, kQuestDataCampaign);
+         // States of items that carry over in inventory
+         Quest.Set("GotLetter",0,kQuestDataCampaign);
+
+         MakeCampaignVar(GoalStateVarName(M13_LETTER_GOAL));
+         MakeCampaignVar(GoalVisibleVarName(M13_CULTIVATOR_GOAL));
+      }
+      DefaultOnBeginScript();
+   }
+
+END_SCRIPT(SpecialGoals)
+
+/* Two goals states can carry over from mission to mission.
+   
+   First, if the player reads the letter in _this_ mission,
+   the goal to read it in the next mission starts off complete
+   (but still visible).  We do this by choosing a goal we
+   require to be invisible in _this_ mission, and changing
+   its state, after making it a campaign quest variable.
+   The next mission will use this campaign variable instead of
+   a mission variable.
+   
+   Also, if the goal to read the letter is done, next mission  
+   starts with a goal visible that would not be otherwise.  We
+   do that by requiring that goal to have the number of a goal
+   in this mission which we know to be _visible_, and giving it
+   no mission quest variable for visibility next mission.  That
+   way, it will ordinarily be invisible (since nonexistent quest
+   variables are treated as 0).  But, if we want to make it visible
+   from this mission we can make a campaign quest variable to make
+   it visible with no chance of unwanted side effects on this
+   mission.
+   
+   All of these things, of course, are admitted hacks.
+   
+   -TJS 1/2/00
+   */
+
+BEGIN_SCRIPT(KarrasLetter, RootScript)
+MESSAGES:
+   OnContained()
+   {
+      if(Object.InheritsFrom(message.container,"Avatar"))
+      {
+         boolean got=TRUE;
+         // player picked up (or dropped) scroll
+         if(message.event==kContainRemove) got=FALSE;
+         Quest.Set("GotLetter",got);
+      }
+      DefaultOnContained();
+   }
+      
+   OnFrobInvEnd()
+   {
+      // other scripts handle the actual book action.  We just
+      // do quest variables.
+      string LetterStateVar=GoalStateVarName(M13_LETTER_GOAL);
+      string CultiVisVar=GoalVisibleVarName(M13_CULTIVATOR_GOAL);
+      boolean LetterVis=Quest.Get(GoalVisibleVarName(M13_LETTER_GOAL));
+      boolean CultiVis=Quest.Get(CultiVisVar);
+
+      if(LetterVis)
+      {
+         Debug.MPrint("Peligro! We want to fuss with goal ",M13_LETTER_GOAL,
+                      " under the hood, only it's visible.");
+      }
+      else
+      {
+         Quest.Set(LetterStateVar, kGoalComplete, kQuestDataCampaign);
+      }
+
+      if(!CultiVis)
+      {
+         Debug.MPrint("Peligro! We want to play with campaign visibility of ",
+                      M13_CULTIVATOR_GOAL," under the hood, it's not visible.");
+      }
+      else
+      {
+         Quest.Set(CultiVisVar, TRUE, kQuestDataCampaign);
+      }
+
+      // @TODO: Garrett also probably gets a voice-over at this point.
+   }
+END_SCRIPT(KarrasLetter)
+
+
+
+
+
+
+
+
+
+
+
