@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * JPEG: This file contains all of the definitions needed externally for the jpeg
  *       implementation that we have implemented.  This is the file which is
  *       publically available.
