@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.10 1993/04/22 11:39:53 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.11 1993/05/01 20:33:02 xemu Exp $
 # $Log: makefile $
-# Revision 1.10  1993/04/22 11:39:53  rex
-# Added kb.lib to test prog libs
+# Revision 1.11  1993/05/01 20:33:02  xemu
+# added bugtrak to the LG library
 #
+# Revision 1.10  1993/04/22  11:39:53  rex
+# Added kb.lib to test prog libs
+# 
 # Revision 1.9  1993/04/08  10:28:16  rex
 # Added MemStat.C
 # 
@@ -54,10 +57,11 @@ LIB_TARGETS = lg
 INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
 
-LG_SRCS = dbg.c dbgcfg.c datapath.c exit.c memall.c memstat.c
-LG_OBJS = dbg.obj dbgcfg.obj datapath.obj exit.obj memall.obj memstat.obj
+LG_SRCS = dbg.c dbgcfg.c datapath.c exit.c memall.c memstat.c bugtrak.c
+LG_OBJS = dbg.obj dbgcfg.obj datapath.obj exit.obj memall.obj memstat.obj \
+        bugtrak.obj
 LG_HDRS = lg.h lgalt.h dbg.h datapath.h memmacro.inc dbgmacro.inc \
-	memall.h memstat.h
+	memall.h memstat.h bugtrak.h
 LG_H2I  = lg.inc memall.inc dbg.inc
 
 DBGMAKEH_SRCS = dbgmakeh.c
@@ -96,3 +100,4 @@ memall.obj: dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
 	 stdio.h string.h types.h
 
 memstat.obj: malloc.h memstat.h string.h types.h
+
