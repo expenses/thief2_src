@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiprutil.h 1.6 1998/08/16 11:43:15 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiprutil.h,v 1.8 2000/03/25 22:15:35 adurant Exp $
 //
 // @TBD (toml 06-09-98): these should be moved into their corresponding
 // ability files?
@@ -20,6 +20,7 @@ F_DECLARE_INTERFACE(IAISoundTypeProperty);
 
 void AIInitUtilProps();
 void AITermUtilProps();
+void AIDBResetUtilProps();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -63,6 +64,16 @@ EXTERN IBoolProperty * g_pStimKnockoutProperty;
 #define AIGetStimKnockout(obj) AIGetProperty(g_pStimKnockoutProperty, (obj), FALSE)
 
 ///////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////
+//
+// AI Shoots Through objects prop
+//
+
+#define PROP_AI_SHOOTS_THROUGH_NAME "AIFiresThrough"
+        
+EXTERN void SetAIShootsThrough(ObjID object, BOOL shootsthrough);
+EXTERN BOOL GetAIShootsThrough(ObjID object);
 
 #pragma pack()
 
