@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: x:/prj/tech/libsrc/tn_edms/RCS/edms.h 1.22 1996/01/07 16:40:25 DFAN Exp $
  */
 
