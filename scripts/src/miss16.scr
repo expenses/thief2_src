@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.5 2000/02/21 06:11:29 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.6 2000/02/25 16:47:48 ccarollo Exp $
 //
 
 #include "animlgte.h"
@@ -554,7 +554,7 @@ OnObjActResult()
 		if (dest == (object)NULL)
 			dest = Object.Named("Player");
 
-		if (SuccessfulGoto(dest))
+		if (SuccessfulGoto((object)dest))
 		{
 			if (linkdata == "patrol")
 			{
@@ -611,5 +611,116 @@ OnMessage()
 
 END_SCRIPT (OnOffFlame)
 
+
+// Script: BroadcastSchemaListNoRep
+
+// Randomly selects a schema from its ScriptParam links and plays it from each object connected
+// via ControlDevice links.  Will not repeat a schema until all have been played.
+
+// TurnOn - selects a schema and plays it
+
+BEGIN_SCRIPT (BroadcastSchemaListNoRep, RootScript)
+
+MESSAGES:
+
+OnSim()
+{
+   if (message.starting && Property.Possessed(self, "ScriptTiming"))
+   {
+      int delay = Property.Get(self, "ScriptTiming");
+      SetData("SchemaDelay", delay);
+
+      delay = (int)((float)delay * (float)Data.RandInt(80, 120) / 100.0);
+      SetOneShotTimer(self, "FireSchema", delay);
+   }
+
+   DefaultOnSim();
+}
+
+OnTimer()
+{
+   if (message.name == "FireSchema")
+   {
+      int delay = GetData("SchemaDelay");
+
+      if (delay != 0)
+      {
+         delay = (int)((float)delay * (float)Data.RandInt(80, 120) / 100.0);
+         SetOneShotTimer(self, "FireSchema", delay);
+
+         PostMessage(self, "TurnOn");
+      }
+   }
+
+   DefaultOnTimer();
+}
+
+OnMessage()
+{
+   if (MessageIs("TurnOn"))
+   {
+      if (Link.AnyExist("ScriptParams", self))
+      {
+         int nValid = 0;
+
+         // count the number of links to select from
+         linkset SchemaList = Link.GetAll("ScriptParams", self);
+         while (SchemaList.AnyLinksLeft())
+         {
+            if ((int)SchemaList.Link().GetData() != 1)
+               nValid++;
+
+            SchemaList.NextLink();
+         }
+
+         // If no valid links remaining, reset them all, and recompute the number of
+         // links to pick randomly from
+         if (nValid == 0)
+         {
+            linkset ResetList = Link.GetAll("ScriptParams", self);
+            while (ResetList.AnyLinksLeft())
+            {
+               nValid++;
+               ResetList.Link().SetData(0);
+               ResetList.NextLink();
+            }
+         }
+
+         // Randomly pick which to play
+         int toPlay = Data.RandInt(1, nValid) - 1;
+
+         // Advance to that link, and get the schema
+         linkset PlayList = Link.GetAll("ScriptParams", self);
+
+         while (PlayList.AnyLinksLeft())
+         {
+            if (PlayList.Link().GetData() == 0)
+            {
+               if (toPlay == 0)
+                  break;
+               else
+                  toPlay--;
+            }
+
+            PlayList.NextLink();
+         }
+
+         // Play it over all objects connected by ControlDevice links
+         linkset SpeakerList = Link.GetAll("ControlDevice", self);
+         while (SpeakerList.AnyLinksLeft())
+         {
+            Sound.PlaySchema(SpeakerList.Link().To(), PlayList.Link().To(), SpeakerList.Link().To());
+            SpeakerList.NextLink();
+         }
+
+         // Adjust its script
+         PlayList.Link().SetData(1);
+      }
+   }
+
+   DefaultOnMessage();
+}
+
+END_SCRIPT(BroadcastSchemaListNoRep)
 
 
