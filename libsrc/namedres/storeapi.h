@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //////////////////////////////////////////////////////////////////////////
 //
 // $Header: x:/prj/tech/libsrc/namedres/RCS/storeapi.h 1.9 1998/08/19 20:29:07 JUSTIN Exp $
