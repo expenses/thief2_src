@@ -48,8 +48,7 @@ set _DAILY_=%_BLDDRV_%\prj\thief2\daily
 set _DAILYCD_=%_DAILY_%\cd1
 set _DAILYTHIEF_=%_DAILYCD_%\thief2
 
-rem for now, cd1 and cd2 are the same.
-set _DAILYCD2_=%_DAILY_%\cd1
+set _DAILYCD2_=%_DAILY_%\cd2
 set _DAILYTHIEFCD2_=%_DAILYCD2_%\thief2
 set _DAILYPRJ_=%_DAILY_%\PRJ 
 
