@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.12 1999/09/27 16:59:20 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.13 1999/10/04 17:19:54 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1595,54 +1595,144 @@ MESSAGES:
 END_SCRIPT(AirPotion)
 
 
-BEGIN_SCRIPT(SpeedPotion,EatFood)
+BEGIN_SCRIPT(TimedPotion,EatFood)
+METHODS:
+  METHOD object Subject()
+  {
+     if(Link.AnyExist("~ScriptParams",self))
+        return(Link.GetOne("~ScriptParams",self).To());
+     return NULL;
+  }
+  METHOD object GetHandler(object imbiber)
+  {
+     object handler=NULL;
+     string ctype="";
+
+     if(Property.Possessed(self,"CombineType"))
+        ctype=Property.Get(self,"CombineType");
+
+     if(imbiber!=object(NULL))
+     {
+        // Not necessarily links to potions, but we'll check link data to verify
+        linkset potions=Link.GetAll("ScriptParams",imbiber);
+
+        while(potions.AnyLinksLeft())
+        {
+           link potlink=potions.Link();
+           object pot=potlink.To();
+           // Hmm. Questionable.  Detect same sort of potion by checking combine type.
+           if(string(potlink.GetData())=="Potion" &&
+              Property.Possessed(pot,"CombineType") &&
+              ctype==Property.Get(pot,"CombineType"))
+              handler=pot;
+           
+           potions.NextLink();
+        }
+     }
+
+     if(handler==object(NULL))
+     {
+        // the handler is a clone of ourselves to gurantee it has the same scripts
+        handler=Object.BeginCreate(self);
+        link newlink=Link.Create("ScriptParams",imbiber,handler);
+
+        newlink.SetData("Potion");
+        Property.Set(handler,"HasRefs",FALSE);
+        Object.EndCreate(handler);
+        // Debug.MPrint("No handler for potion type matching combine ",ctype,".  Creating handler ",handler);
+     }
+     //else
+     //   Debug.MPrint("Found handler ",handler," for potion matching combine ",ctype);
+
+     return handler;
+  }
+  METHOD void PotionEffect(object imbiber, boolean start)
+  {
+     return;
+  }
 MESSAGES:
   OnFrobInvEnd()
   {
-     object imbiber=message.Frobber;
-
-     if(Object.InheritsFrom(imbiber,Object.Named("Avatar")))
-     {
-        if(!Object.HasMetaProperty(imbiber,Object.Named("M-SpeedyPlayer")))
-           Object.AddMetaProperty(imbiber,Object.Named("M-SpeedyPlayer"));
-        PostMessage(imbiber,"Speedy");
-     }
+     PostMessage(GetHandler(message.Frobber),"StartPotion");
      DefaultOnFrobInvEnd();
   }
-
-END_SCRIPT(SpeedPotion)
-
-BEGIN_SCRIPT(SpeedyPlayer,RootScript)
-MESSAGES:
   OnMessage()
   {
-     if(MessageIs("Speedy"))
+     if(MessageIs("StartPotion"))
      {
-        DrkInv.AddSpeedControl("Speedy", 1.75,1.25);
-        if(!IsDataSet("Timeout"))
-           SetOneShotTimer(self,"Pokey",1.0);
-        SetData("Timeout",GetTime()+8.6);
+        integer timeout=8600; // arbitrary default, compatible with old speed potions
+        timer_handle potiontimer;
+
+        // If we're already waiting on a timeout, kill the old one and refresh.
+        if(IsDataSet("PotionTimer"))
+        {
+           // Debug.MPrint(self," resetting pre-existing timer.");
+           potiontimer=GetData("PotionTimer");
+           KillTimer(potiontimer);
+        }
+        if(Property.Possessed(self,"ScriptTiming"))
+           timeout=Property.Get(self,"ScriptTiming");
+        PotionEffect(Subject(),TRUE);
+        // Debug.MPrint(self," setting timer for timeout of ",float(timeout)/1000.0);
+        potiontimer=SetOneShotTimer(self,"EndPotion",float(timeout)/1000.0);
+        SetData("PotionTimer",potiontimer);
      }
      DefaultOnMessage();
   }
   OnTimer()
   {
-     if(message.name=="Pokey")
+     // Debug.MPrint(self," got timer message, ",message.name);
+     if(message.name=="EndPotion")
      {
-        real timeout=0.0;
-        if(IsDataSet("Timeout")) timeout=GetData("Timeout");
-        if(GetTime()>=timeout)
-        {
-           Object.RemoveMetaProperty(self,"M-SpeedyPlayer");
-           DrkInv.RemoveSpeedControl("Speedy");
-           ClearData("Timeout");
-        }
-        else
-           SetOneShotTimer(self,"Pokey",1.0);
+        // Debug.MPrint("Got endpotion message.");
+        PotionEffect(Subject(),FALSE);
+        Object.Destroy(self);
      }
      DefaultOnTimer();
   }
-END_SCRIPT(SpeedyPlayer)
+END_SCRIPT(TimedPotion)
+
+
+/* Potion's effect is to increase movement speed by 75%.
+   Only supported for player-character imbiber.
+   */
+BEGIN_SCRIPT(SpeedPotion,TimedPotion)
+METHODS:
+   METHOD void PotionEffect(object imbiber, boolean start)
+   {
+      if(!Object.InheritsFrom(imbiber,Object.Named("Avatar")))
+         return;
+      if(start)
+         DrkInv.AddSpeedControl("Speedy", 1.75,1.25);
+      else
+         DrkInv.RemoveSpeedControl("Speedy");
+   }
+END_SCRIPT(SpeedPotion)
+
+
+/* Potion's effect is to reduce gravity on the imbiber to 50%.
+   Also reduces movement speed by 50%, keeping jump distance about
+   the same.  Only supported for player-character imbiber.
+   */
+BEGIN_SCRIPT(LoGravPotion,TimedPotion)
+METHODS:
+   METHOD void PotionEffect(object imbiber, boolean start)
+   {
+      if(!Object.InheritsFrom(imbiber,Object.Named("Avatar")))
+         return;
+      if(start)
+      {
+         DrkInv.AddSpeedControl("LoGrav",0.5,1.0);
+         Property.Set(imbiber,"PhysAttr","Gravity %",50);
+      }
+      else
+      {
+         Property.Set(imbiber,"PhysAttr","Gravity %",100);
+         DrkInv.RemoveSpeedControl("LoGrav");
+      }
+   }
+END_SCRIPT(LoGravPotion)
+
 
 
 BEGIN_SCRIPT (Arrow, RootScript)
@@ -3688,6 +3778,31 @@ MESSAGES:
    }
 
 END_SCRIPT(FlashBomb)
+
+/* For use in test levels without a full victory conditions script,
+   so Garrett will get the appropriate difficulty metaprops.
+   */
+BEGIN_SCRIPT(DiffSpoof, RootScript)
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!Object.InheritsFrom(self,Object.Named("M-GarrettDiffSettings")))
+      {
+         // For non-existent or invalid difficulty quest var, treat as Normal.
+         // This will result naturally from quest var default to 0.
+         integer diff=Quest.Get("difficulty");
+         object diffsettings=Object.Named("M-GarrettDiffNormal");
+
+         if(diff==1)
+            diffsettings=Object.Named("M-GarrettDiffHard");
+         else if(diff==2)
+            diffsettings=Object.Named("M-GarrettDiffExpert");
+         Object.AddMetaProperty(self,diffsettings);
+
+         Property.Add(self,"AirSupply");
+      }
+   }
+END_SCRIPT(DiffSpoof)
 
 
 BEGIN_SCRIPT(JAccuse, RootScript)
