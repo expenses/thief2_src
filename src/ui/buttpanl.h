@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/ui/buttpanl.h,v 1.5 1998/10/30 02:03:02 mahk Exp $
 #pragma once  
 #ifndef __BUTTPANL_H
