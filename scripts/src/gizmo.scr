@@ -915,6 +915,42 @@ MESSAGES:
 END_SCRIPT(StdButton)
 
 
+/* NUMBER BUTTON
+   Like a standard button, but includes quest-var setting feature for convenience
+   in setting up combination pads (and to reduce total number of objects by not
+   requiring a separate trap).  If the object has a replacable texture property
+   and a TrapQVar property, the TxtRepl property is parsed for a digit (presumably
+   the digit on the face of the button) and this digit is stuffed into the ones
+   digit of the quest variable in the TrapQVar propery.  As with quest var traps,
+   eight digits are kept.
+   */
+BEGIN_SCRIPT(NumberButton, StdButton)
+   METHODS:
+      METHOD void ButtonPush()
+      {
+         Base::ButtonPush();
+         if(Property.Possessed(self,"OTxtRepr0") && 
+            Property.Possessed(self,"TrapQVar"))
+         {
+            integer place=0;
+            string texture=Property.Get(self,"OTxtRepr0");
+            string qvar=Property.Get(self,"TrapQVar");
+            integer qvarval=Quest.Get(qvar);
+
+            for(;texture[place];place++)
+            {
+               if(texture[place]>='0' && texture[place]<='9')
+               {
+                  qvarval=((qvarval*10)+(texture[place]-'0')%100000000);
+                  Quest.Set(qvar,qvarval);
+                  return;
+               }
+            }
+         }
+      }
+END_SCRIPT(NumberButton)
+
+
 /* DOUBLE BUTTON:
    A toggling switch with two buttons on it.  When one is depressed, the other is expressed
    (as it were).  Functionally equivalent to a lever (toggling between TurnOn and TurnOff
