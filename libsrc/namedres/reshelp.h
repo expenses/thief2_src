@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/namedres/RCS/reshelp.h 1.4 1998/10/26 23:46:18 TOML Exp $
 //
