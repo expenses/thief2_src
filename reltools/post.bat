@@ -220,6 +220,26 @@ rem **************************************************************
 copy r:\prj\thief2\reltools\safedisc\* %_DAILYTHIEFCD2_%
 
 rem **************************************************************
+rem build the dromed portable release
+rem **************************************************************
+
+mkdirs %_DAILYCD_%\editor
+cd %_DAILYCD_%\editor
+copy r:\prj\thief2\release\dromed.exe .
+pkzip missions.zip r:\prj\thief2\levels\shipping\*.mis
+copy r:\prj\thief2\levels\shipping\dark.gam
+mkdir schemas
+copy r:\prj\thief2\art\src\schemas\*.sch schemas
+copy r:\prj\thief2\art\src\schema\base.arc schemas
+copy r:\prj\thief2\art\src\schema\*.spc schemas
+copy r:\prj\thief2\bin\missblat.exe .
+copy r:\prj\thief2\bin\misstrip.exe .
+copy r:\prj\thief2\reltools\dromtools\* .
+mkdir docs
+copy r:\prj\thief2\reltools\dromdocs\* docs
+
+
+rem **************************************************************
 rem build the ilist files
 rem **************************************************************
 
@@ -230,6 +250,8 @@ perl5 r:\prj\thief2\reltools\mkitype.pl r:\prj\thief2\reltools\thief2.ist
 rem **************************************************************
 rem Done!
 rem **************************************************************
+
+
 
 
 :Exit
