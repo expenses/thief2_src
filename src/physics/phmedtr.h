@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/physics/phmedtr.h,v 1.2 1998/08/27 18:21:52 CCAROLLO Exp $
 #pragma once  
 #ifndef __PHMEDTR_H
