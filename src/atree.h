@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/atree.h 1.1 1997/12/02 17:08:27 kate Exp $
 
 #ifndef __ATREE_H
