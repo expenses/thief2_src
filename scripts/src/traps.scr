@@ -1249,6 +1249,110 @@ METHODS:
 END_SCRIPT(TrapDirection)
 
 
+/* TrigRoomObject
+   An object with this script send a TurnOn message when
+   taken to a specific room.  Link the object to the room, with a Route
+   link, to specify where it needs to go.  It'll also get a TurnOff
+   when removed from the room.
+   We intend that this will be used to score victory conditions, by
+   making the object also a Quest Var setting trap.
+   */
+BEGIN_SCRIPT(TrigRoomObject, Room)
+METHODS:
+   METHOD boolean RoomIsDest(object room)
+   {
+      boolean inroom=FALSE;
+      object routeroom=OBJ_NULL;
+      linkset dest=Link.GetAll("Route",self);
+
+      // am I now in any of the rooms I have route links to?
+      while(!inroom && dest.AnyLinksLeft())
+      {
+         object thisroom=dest.Link().To();
+
+         if(Object.InheritsFrom(room,thisroom))
+         {
+            inroom=TRUE;
+            routeroom=thisroom;
+         }
+         dest.NextLink();
+      }
+      return inroom;
+   }
+
+MESSAGES:
+   OnObjRoomTransit()
+   {
+      string msg;
+      boolean wasin=RoomIsDest(message.FromObjId);
+      boolean amin=RoomIsDest(message.ToObjId);
+
+      if(amin!=wasin)
+      {
+         if(amin)
+            msg="TurnOn";
+         else
+            msg="TurnOff";
+         Link.BroadcastOnAllLinks(self,msg,"ControlDevice");
+      }
+      DefaultOnObjRoomTransit();
+   }
+END_SCRIPT(TrigRoomObject)
+
+/* Like TrigRoomObject, except that it treats containment in a player's
+   inventory as being equivalent to reaching the destination.  Good for
+   victory conditions which require the player to deliver an object somewhere,
+   and also want to give him credit as soon as he's carrying it.
+   */
+BEGIN_SCRIPT(TrigRoomDelivery, TrigRoomObject)
+METHODS:
+   METHOD void Turn()
+   {
+      boolean inroom=GetData("InRoom"), wason=GetData("OnState");
+      boolean ininv=FALSE, on=wason;
+      object container=OBJ_NULL;
+
+      if(Link.AnyExist("~Contains",self))
+         container=Link.GetOne("~Contains",self).To();
+      ininv=(container!=object(OBJ_NULL) && Object.InheritsFrom(container,"Avatar"));
+
+      on=(inroom || ininv);
+
+      if(on != wason)
+      {
+         SetData("OnState",on);
+         Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice");
+      }
+   }
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("InRoom"))
+         SetData("InRoom",FALSE);
+      if(!IsDataSet("OnState"))
+         SetData("OnState",FALSE);
+      DefaultOnBeginScript();
+   }
+   OnObjRoomTransit()
+   {
+      string msg;
+      boolean inroom=RoomIsDest(message.ToObjId);
+
+      SetData("InRoom",inroom);
+      Turn();
+      
+      // Don't do this.
+      // DefaultOnObjRoomTransit();
+   }
+   OnContained()
+   {
+      Turn();
+      DefaultOnContained();
+   }
+END_SCRIPT(TrigRoomDelivery)
+
+
+
 /* TrapCapacitor:
 	When it receives a "TurnOn", it relays it, then refuses to relay any more 
 	"TurnOn" or "TurnOff" messages for X seconds.  After X seconds pass, it 
