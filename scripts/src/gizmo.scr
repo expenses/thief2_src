@@ -222,9 +222,15 @@ MESSAGES:
              else
                 Door.OpenDoor(self);
           }
-          // @TODO: Address lock states. Currently causing hang in Thief Gold
-          // if(Property.Possessed(otherdoor,"Locked"))
-          //    Property.CopyFrom(self,"Locked",otherdoor);
+          if(Property.Possessed(otherdoor,"Locked") &&
+             Property.Possessed(self,"Locked"))
+          {
+             boolean otherlock=Property.Get(otherdoor,"Locked");
+             boolean lock=Property.Get(self,"Locked");
+
+             if(lock!=otherlock)
+                Property.CopyFrom(self,"Locked",otherdoor);
+          }
        }
     }
 
