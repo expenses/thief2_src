@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/palmnch/RCS/palmnch.h 1.4 1997/04/22 11:33:33 JAEMZ Exp $
+// $Header: x:/prj/tech/libsrc/palmnch/RCS/palmnch.h 1.5 1998/11/24 10:11:18 jaemz Exp $
 
 #ifndef __FIT_H
 #define __FIT_H
@@ -11,61 +11,61 @@
 
 // First call this with how many colors you want to max out
 // at, default is 12000 if you pass 0 or negative number
-void PlmInit( int max_colors);
+EXTERN void PlmInit( int max_colors);
 
 // Before processing any files, you can call these
 // to set options
-void PlmSetFillColor( int r, int g, int b );
-void PlmSetAlpha( float a );
-void PlmSetBeta( float b );
-void PlmSetGamma( float g );
-void PlmUnsetAlpha( void );
-void PlmUnsetBeta( void );
-void PlmUnsetGamma( void );
-void PlmSetSegaQuantization( void );
-void PlmSetQuantization( int rbits, int gbits, int bbits );
-void PlmSetSuperblackRemapping( bool onoff );
-void PlmSetIpalDepth( int depth );
-void PlmSetNColors( int n );
+EXTERN void PlmSetFillColor( int r, int g, int b );
+EXTERN void PlmSetAlpha( float a );
+EXTERN void PlmSetBeta( float b );
+EXTERN void PlmSetGamma( float g );
+EXTERN void PlmUnsetAlpha( void );
+EXTERN void PlmUnsetBeta( void );
+EXTERN void PlmUnsetGamma( void );
+EXTERN void PlmSetSegaQuantization( void );
+EXTERN void PlmSetQuantization( int rbits, int gbits, int bbits );
+EXTERN void PlmSetSuperblackRemapping( bool onoff );
+EXTERN void PlmSetIpalDepth( int depth );
+EXTERN void PlmSetNColors( int n );
 
 // Call these to put fix and post colors in the palette,
 // before processing images
 
 // Post colors have no influence on the palette
-errtype PlmAddPostColor( int r, int g, int b, int slot );
+EXTERN errtype PlmAddPostColor( int r, int g, int b, int slot );
 
 // Fix colors are fixed in the palette.  This is really
 // the only cool part of this algorithm, using fixed
 // colors you already have.
-errtype PlmAddFixColor( int r, int g, int b, int slot );
+EXTERN errtype PlmAddFixColor( int r, int g, int b, int slot );
 
 // Add a color with a weight
-void PlmAddColor(int r,int g,int b,ulong weight);
+EXTERN void PlmAddColor(int r,int g,int b,ulong weight);
 
 
 // Process image by calling these two, often as you like
-errtype PlmProcessIpwImage( Image *I );
-errtype PlmProcess2dImage( grs_bitmap *bm );
-void PlmSetDefaultWeight( ulong wt );
+EXTERN errtype PlmProcessIpwImage( Image *I );
+EXTERN errtype PlmProcess2dImage( grs_bitmap *bm );
+EXTERN void PlmSetDefaultWeight( ulong wt );
 
 // When you have processed all the files you want,
-errtype PlmCrunch( void );
+EXTERN errtype PlmCrunch( void );
 
 // Calling this resets the cruncher data structures.
-void PlmResetCruncher( void );
+EXTERN void PlmResetCruncher( void );
 
 // After crunching the palette, reap the spoils of wor.
-uchar *PlmGetPal( void );
-ulong *PlmGetPalWeights();
+EXTERN uchar *PlmGetPal( void );
+EXTERN ulong *PlmGetPalWeights();
 
 
-void PlmWriteSimplePal( int fd );
-errtype PlmWriteIpal( int fd );
-errtype PlmRepalIpwImage( Image *old, Image **new, char *fname );
-errtype PlmRepal2dImage( grs_bitmap *old, grs_bitmap *new, char *fname );
+EXTERN void PlmWriteSimplePal( int fd );
+EXTERN errtype PlmWriteIpal( int fd );
+EXTERN errtype PlmRepalIpwImage( Image *old, Image **new_one, char *fname );
+EXTERN errtype PlmRepal2dImage( grs_bitmap *old, grs_bitmap *new_one, char *fname );
 
 // Informational things, call at any time
-ulong PlmNumColorsRead( void );
+EXTERN ulong PlmNumColorsRead( void );
 
 // Error codes
 #define PLM_OK                       (0)
@@ -90,3 +90,8 @@ extern char *IP_ERRORS[];
 #define ip_error(a) ((a<=-1 && a>=-4) ? IP_ERRORS[(-a)-1] : "Unknown IPW error")
 
 #endif /* !__FIT_H */
+
+
+
+
+
