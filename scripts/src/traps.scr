@@ -219,6 +219,19 @@ MESSAGES:
 END_SCRIPT(TrigOBB)
 
 
+// TrigOBB that's only triggered by player
+BEGIN_SCRIPT(TrigPlayerOBB, TrigOBB)
+MESSAGES:
+   OnPhysEnter()
+   {
+      object critter=message.transObj;
+
+      if(Object.InheritsFrom(critter,"Avatar"))
+         DefaultOnPhysEnter();
+   }
+
+END_SCRIPT(TrigPlayerOBB)
+
 // glyphs fire their triggers when a creature collides with
 // their "edge-triggered" physics model.
 // upon firing, they actuate some tweq effects.
@@ -931,6 +944,9 @@ METHODS:
             // remove me from whatever container I might be in.
             Container.Remove(victim);
             Object.Teleport(victim,vector(0,0,0),vector(0,0,0),self);
+
+            // If victim was patrolling, he'd better find a new place to go
+            Link.DestroyMany("AICurrentPatrol",victim,AnyObject);
          }
       }
    }  
