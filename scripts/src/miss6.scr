@@ -18,6 +18,28 @@ METHODS:
     }
   }
 
+  METHOD void ScriptParamClear(object source, string testdata)
+  {
+    linkset splinks = Link.GetAll("ScriptParams",source);
+    object curobj = ScriptParamPropagate(source,testdata);
+    while (curobj != (object)0)
+    {
+      linkset moresplinks = Link.GetAll("ScriptParams",source,curobj);
+      bool any = FALSE;
+      while ((moresplinks.AnyLinksLeft()) && (!any))
+      {
+        link curlink = moresplinks.Link();
+        moresplinks.NextLink();
+        if ((string)curlink.GetData()==testdata)
+        {
+          any = TRUE;
+          Link.Destroy(curlink);
+        }
+      }
+      curobj = ScriptParamPropagate(source,testdata);
+    }
+  }
+
   METHOD object ScriptParamPropagate(object source,string testdata)
   {
     linkset splinks = Link.GetAll("ScriptParams",source);
@@ -34,22 +56,35 @@ METHODS:
     return found;
   }
 
+  METHOD object GetConversationObject()
+  {
+    return ScriptParamPropagate(self,"converobject");
+  }
+
+  METHOD void SetConversationObject(object dest)
+  {
+    ScriptParamClear(self,"converobject");
+    if (dest == (object)0) return;
+    link splink = Link.Create("ScriptParams",self,dest);
+    splink.SetData("converobject");
+  }
+
   METHOD void ConversationCheckStep(integer convstate)
   {
     if ((InConversationRoom()) &&
-	((integer)GetData("ConversationObject")==0) &&
+	(GetConversationObject()==(object)0) &&
 	((integer)GetData("FinishedConversation")<=convstate))
       {
         Debug.MPrint("Allowed to play conversation");
 	string linkinfo = "convobj"+(string)(convstate+1);
-        object convsource = ScriptParamPropagate((integer)GetData("PlayerRoomLocation"),linkinfo);
+        object convsource = ScriptParamPropagate(GetPlayerRoomLocation(),linkinfo);
         if (convsource != (object)0)
           {
 	    convstate = convstate + 1;
             Debug.MPrint("Starting conversation ",convstate," on ",convsource);
             PlayConversation(convsource);
 	    //set the object
-            SetData("ConversationObject",(integer)convsource);
+            SetConversationObject(convsource);
 	    //update the count
 	    SetData("StartedConversation",convstate);
           }
@@ -76,13 +111,14 @@ METHODS:
       {
         Debug.MPrint("Making goal 3 visible.");
         ObjectiveShow(3,TRUE);
+        PostMessage(GetWaxObj(),"heardit");
       }
 
       SetOneShotTimer(self,"DummySounds",1.5);
 
       if (HaveTheKey())
       {
-        PostMessage(KeyObj(),"heardit");
+        PostMessage(GetKeyObj(),"heardit");
       }
     }
   }
@@ -94,7 +130,7 @@ METHODS:
       return FALSE;
     Debug.MPrint("Continuing conversation ",(integer)GetData("StartedConversation")," on ",newspeaker);
     PlayConversation(newspeaker);
-    SetData("ConversationObject",(integer)newspeaker);
+    SetConversationObject(newspeaker);
     return TRUE;
   }
 
@@ -132,7 +168,7 @@ METHODS:
       }
       if (spdata == "keyobj")
       {
-	SetData("TheKeyObj",(integer)cursplink.To());
+	SetKeyObj(cursplink.To());
         string messdata = "eaves" + (string)GetData("PathNumber");
         PostMessage(cursplink.To(),messdata);
         Debug.MPrint("Told key ",cursplink.To()," to set up with ",messdata);
@@ -143,24 +179,41 @@ METHODS:
 
   METHOD boolean InConversationRoom()
   {
-    integer currentroom = (integer)GetData("PlayerRoomLocation");
-    if (Link.AnyExist("ScriptParams",(object)currentroom,(object)currentroom))
+    object currentroom = GetPlayerRoomLocation();
+    if (Link.AnyExist("ScriptParams",currentroom,currentroom))
       {
-        link valuelink = Link.GetOne("ScriptParams",(object)currentroom,(object)currentroom);
+        link valuelink = Link.GetOne("ScriptParams",currentroom,currentroom);
         if ((string)valuelink.GetData() == "convroom")
           return TRUE;
       }
     return FALSE;
   }
 
-  METHOD object KeyObj()
+  METHOD object GetKeyObj()
   {
-    return (object)GetData("TheKeyObj");
+    return ScriptParamPropagate(self,"keyobject");
+  }
+ 
+  METHOD void SetKeyObj(object keyobj)
+  {
+    ScriptParamClear(self,"keyobject");
+    if (keyobj == (object)0) return;
+    link splink = Link.Create("ScriptParams",self,keyobj);
+    splink.SetData("keyobject");
   }
 
-  METHOD object WaxObj()
+
+  METHOD object GetWaxObj()
   {
-    return (object)GetData("HaveWaxObj");
+    return ScriptParamPropagate(self,"waxobject");
+  }
+
+  METHOD void SetWaxObj(object waxobj)
+  {
+    ScriptParamClear(self,"waxobject");
+    if (waxobj == (object)0) return;
+    link splink = Link.Create("ScriptParams",self,waxobj);
+    splink.SetData("waxobject");
   }
 
   METHOD void FollowUpKeySound(int i)
@@ -171,7 +224,7 @@ METHODS:
       if (HaveTheWax())
       {
         object schmname;
-        schmname = ScriptParamPropagate(WaxObj(),"knewwax");
+        schmname = ScriptParamPropagate(GetWaxObj(),"knewwax");
         SetData("HavePlayedKey",3);
         if (schmname != (object)0)
         {
@@ -190,7 +243,7 @@ METHODS:
     {
       Debug.MPrint("I'm following up the have key bit right after picking it up.");
       object schmname;
-      schmname = ScriptParamPropagate(KeyObj(),"getwax");
+      schmname = ScriptParamPropagate(GetKeyObj(),"getwax");
       if (schmname != (object)0)
       {
         Debug.MPrint("Playing the bit where I decide to get an impression.");
@@ -214,9 +267,9 @@ METHODS:
       return; //already done this.
     object schmname;
     if (i==2)
-      schmname = ScriptParamPropagate(KeyObj(),"havekey");
+      schmname = ScriptParamPropagate(GetKeyObj(),"havekey");
     else
-      schmname = ScriptParamPropagate(KeyObj(),"gotkey");
+      schmname = ScriptParamPropagate(GetKeyObj(),"gotkey");
     SetData("PlayedHaveKey",i); //am playing
     if (schmname != (object)0)
     {
@@ -233,7 +286,7 @@ METHODS:
 
   METHOD boolean HaveTheKey()
   {
-    if ((integer)GetData("TheKeyObj")==0)
+    if (GetKeyObj()==object(0))
       return FALSE;
     linkset myinv = Link.GetAll("Contains",self);
     boolean retval = FALSE;
@@ -241,7 +294,7 @@ METHODS:
     {
       link curitem = myinv.Link();
 
-      if (curitem.To() == (object)GetData("TheKeyObj"))
+      if (curitem.To() == GetKeyObj())
         retval = TRUE;
 
       myinv.NextLink();
@@ -257,7 +310,7 @@ METHODS:
     {
       link curitem = myinv.Link();
 
-      if (curitem.To() == (object)GetData("HaveWaxObj"))
+      if (curitem.To() == GetWaxObj())
         retval = TRUE;
 
       myinv.NextLink();
@@ -336,7 +389,7 @@ METHODS:
     {
        if (which == 1)
        {
-         object schmname = ScriptParamPropagate((object)GetData("HaveWaxObj"),"havewax");
+         object schmname = ScriptParamPropagate(GetWaxObj(),"havewax");
 	 Debug.MPrint("Trying to play good think I've got wax schema");
          if (schmname != (object)0)
          {
@@ -349,6 +402,18 @@ METHODS:
     }
   }
 
+  METHOD object GetPlayerRoomLocation()
+  {
+     return ScriptParamPropagate(self,"playroomloc");
+  }
+
+  METHOD void SetPlayerRoomLocation(object roomloc)
+  {
+    ScriptParamClear(self,"playroomloc");
+    if (roomloc == (object)0) return;
+     link splink = Link.Create("ScriptParams",self,roomloc);
+     splink.SetData("playroomloc");
+  }
 
 MESSAGES:
 
@@ -356,14 +421,10 @@ MESSAGES:
   {
     if (message.starting)
       {
-        SetData("PlayerRoomLocation",0); //what room I'm in
         SetData("StartedConversation",0); //last conv started
         SetData("FinishedConversation",0); //last conv finished
-	SetData("ConversationObject",0); //current conv object.
         SetData("PathNumber",0);       //which random path
-        SetData("TheKeyObj",0);       //obj id of real key
         SetData("PlayedHaveKey",0);   //played this vo already.
-        SetData("HaveWaxObj",0); //wax object
         SetData("PlayedWon",0); //played the work here is done schema
         SetData("OughtaDoIt",0);
 	if ((object)self != object("Player"))
@@ -393,8 +454,7 @@ MESSAGES:
 
   OnBeginScript()
   {
-    if (!IsDataSet("PlayerRoomLocation"))
-      SetData("PlayerRoomLocation",0);
+    SetPlayerRoomLocation((object)0);
     DefaultOnBeginScript();
   }
 
@@ -421,12 +481,12 @@ MESSAGES:
   OnSchemaDone()
   {
     Debug.MPrint("Player schema callback from ",message.targetObject," received.  Name: ",message.name);
-    integer convid = (integer)GetData("ConversationObject");
-    if (convid == (integer)message.targetObject)
+    object convid = GetConversationObject();
+    if ((integer)convid ==  (integer)message.targetObject)
       { 
         Debug.MPrint("Finished conversation on ",convid);
         SetData("FinishedConversation",(integer)GetData("StartedConversation"));
-	SetData("ConversationObject",0);
+        SetConversationObject((object)0);
 	ConversationGoalComplete(message.targetObject);
 	if (!ConversationContinue(message.targetObject))
   	  ConversationCheckStep((integer)GetData("StartedConversation"));
@@ -443,7 +503,7 @@ MESSAGES:
   {
     if (MessageIs("gotthekey"))
     {
-      SetData("TheKeyObj",message.from);
+      SetKeyObj(message.from);
       Debug.MPrint("Picked up correct key, ",message.from);
       if ((integer)GetData("PathNumber")!=0)
       {
@@ -453,7 +513,7 @@ MESSAGES:
     }
     if (MessageIs("gotthewax"))
     {
-      SetData("HaveWaxObj",message.from);
+      SetWaxObj(message.from);
       ObjectiveSet(2,kGoalComplete);
       Debug.MPrint("Picked up wax ",message.from);
       if ((integer)GetData("PathNumber")!=0)
@@ -464,7 +524,7 @@ MESSAGES:
     }
     if (MessageIs("lostthewax"))
     {
-      SetData("HaveWaxObj",0);
+      SetWaxObj(0);
       ObjectiveSet(2,kGoalIncomplete);
       Debug.MPrint("Droped the wax ",message.from);
     }
@@ -482,10 +542,10 @@ MESSAGES:
 
   OnObjRoomTransit()
   {
-    if ((integer)GetData("PlayerRoomLocation") != message.ToObjId)
+    if ((integer)GetPlayerRoomLocation() != (integer)message.ToObjId)
     {
       Debug.MPrint("Switching rooms to ",message.ToObjId);
-      SetData("PlayerRoomLocation",message.ToObjId);
+      SetPlayerRoomLocation(message.ToObjId);
     }
     ConversationCheckStep((integer)GetData("StartedConversation"));
     DefaultOnObjRoomTransit();
@@ -589,20 +649,85 @@ BEGIN_SCRIPT(KeyGuy, Room)
 
 METHODS:
  
+
+  METHOD object ScriptParamPropagate(object source,string testdata)
+  {
+    linkset splinks = Link.GetAll("ScriptParams",source);
+    object found = (object)0;
+    while ((splinks.AnyLinksLeft()) && (found==(object)0))
+    {
+      link splinkex = splinks.Link();
+      if ((string)splinkex.GetData() == testdata)
+        {
+	  found = splinkex.To();
+        }
+      splinks.NextLink();
+    }
+    return found;
+  }
+
+  METHOD void ScriptParamClear(object source, string testdata)
+  {
+    linkset splinks = Link.GetAll("ScriptParams",source);
+    object curobj = ScriptParamPropagate(source,testdata);
+    while (curobj != (object)0)
+    {
+      linkset moresplinks = Link.GetAll("ScriptParams",source,curobj);
+      bool any = FALSE;
+      while ((moresplinks.AnyLinksLeft()) && (!any))
+      {
+        link curlink = moresplinks.Link();
+        moresplinks.NextLink();
+        if ((string)curlink.GetData()==testdata)
+        {
+          any = TRUE;
+          Link.Destroy(curlink);
+        }
+      }
+      curobj = ScriptParamPropagate(source,testdata);
+    }
+  }
+
   METHOD void PlayDropMe(object playr)
   {
     Debug.MPrint(self," would be playing dropme safe, but we pulled that.");
   }
 
+  METHOD object GetRightRoom()
+  {
+    return ScriptParamPropagate(self,"keyrightroom");
+  }
+
+  METHOD void SetRightRoom(object rightroom)
+  {
+    ScriptParamClear(self,"keyrightroom");
+    if (rightroom == (object)0) return;
+    link splink = Link.Create("ScriptParams",self,rightroom);
+    splink.SetData("keyrightroom");
+  }
+
+  METHOD object GetCurrentRoom()
+  {
+    return ScriptParamPropagate(self,"keycurroom");
+  }
+
+  METHOD void SetCurrentRoom(object curroom)
+  {
+    ScriptParamClear(self,"keycurroom");
+    if (curroom == (object)0) return;
+    link splink = Link.Create("ScriptParams",self,curroom);
+    splink.SetData("keycurroom");
+  }
+
   METHOD void SetRoomGoal()
   {
-    SetData("RightRoom",GetData("CurrentRoom"));
-    Debug.MPrint("Right room is now ",GetData("CurrentRoom"));
+    SetRightRoom(GetCurrentRoom());
+    Debug.MPrint("Right room is now ",GetRightRoom());
   }
 
   METHOD void CheckRightRoom()
   {
-    if ((GetData("RightRoom")==GetData("CurrentRoom")) &&
+    if ((GetRightRoom()==GetCurrentRoom()) &&
         !(Link.AnyExist("Contains",Object.Named("Player"),self)))
     {
       Quest.Set(GoalStateVarName(3),kGoalComplete,kQuestDataMission);
@@ -675,8 +800,6 @@ MESSAGES:
     if (message.starting)
     {
       SetData("Eavesdropped",0); //haven't eavesdropped yet.
-      SetData("RightRoom",0);  //room where it should end up.
-      SetData("CurrentRoom",0); //current room
       SetData("SaidReturn",0);
     }
     DefaultOnSim();
@@ -684,10 +807,10 @@ MESSAGES:
 
   OnObjRoomTransit()
   {
-    if ((integer)GetData("CurrentRoom") != message.ToObjId)
+    if ((integer)GetCurrentRoom() != (integer)message.ToObjId)
     {
       Debug.MPrint("Key ",self," is now in room ",message.ToObjId);
-      SetData("CurrentRoom",message.ToObjId);
+      SetCurrentRoom(message.ToObjId);
     }
     CheckRightRoom();
     DefaultOnObjRoomTransit();
@@ -755,6 +878,13 @@ MESSAGES:
       PostMessage(message.container,"lostthewax");
 
     DefaultOnContained();
+  }
+
+  OnMessage()
+  {
+     if (MessageIs("heardit"))
+       Property.Set(self,"GameName","Name_WaxBankKey");
+     DefaultOnMessage();
   }
 
 
@@ -884,6 +1014,10 @@ METHODS:
       SetCombType(goodwax);
       Container.Add(goodwax,clink.To());
       object schmname = ScriptParamPropagate(self,"havewax");
+      if (Quest.Get(GoalStateVarName(0))==kGoalComplete)
+      {
+        Property.Set(goodwax,"GameName","Name_WaxBankKey");
+      }
       if (schmname != (object)0)
       {
         Debug.MPrint("Propagating havewax link");
