@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/keyscpt.h,v 1.5 1998/06/25 22:51:05 XEMU Exp $
 #pragma once  
 #ifndef __KEYSCPT_H

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/objscrt.h,v 1.6 1999/11/02 16:30:28 Justin Exp $
 #pragma once  
 #ifndef __OBJSCRT_H
