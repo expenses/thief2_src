@@ -9,8 +9,8 @@ PROJECT = tech
 LIBTARGS = sndutil
 EXETARGS = splice stream oneshot
 
-sndutil_OBJS = streamer rstremer fstremer splicer rsplicer fsplicer imaadpcm \
-					oneshot roneshot foneshot
+sndutil_OBJS = streamer rstremer fstremer mstremer splicer rsplicer fsplicer \
+					imaadpcm oneshot roneshot foneshot
 
 sndutil_HDRS = sndutil.h
 #sndutil_DEFINES = SND_TEST
