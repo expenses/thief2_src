@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.12 2000/02/29 19:48:47 ccarollo Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.13 2000/03/01 07:37:49 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -28,6 +28,58 @@
 
 //////////////////////
 //////////////////////
+
+// Script:	SoundPreload
+// Placed on LoudspeakerRelay object in world.
+
+#ifdef NOT_IN_USE
+BEGIN_SCRIPT (SoundPreload, RootScript)
+
+MESSAGES:
+OnSim()
+{
+   if (message.starting)
+   {
+		// long intro schema
+      Sound.PreLoad("kar1601A");
+		// ramble schemas
+      Sound.PreLoad("kar1602A");
+      Sound.PreLoad("kar1602B");
+      Sound.PreLoad("kar1602C");
+      Sound.PreLoad("kar1602D");
+      Sound.PreLoad("kar1602E");
+      Sound.PreLoad("kar1602F");
+      Sound.PreLoad("kar1602G");
+      Sound.PreLoad("kar1602H");
+      Sound.PreLoad("kar1602I");
+      Sound.PreLoad("kar1602J");
+      Sound.PreLoad("kar1602K");
+      Sound.PreLoad("kar1602L");
+      Sound.PreLoad("kar1602M");
+      Sound.PreLoad("kar1602N");
+      Sound.PreLoad("kar1602O");
+      Sound.PreLoad("kar1602P");
+      Sound.PreLoad("kar1602Q");
+      Sound.PreLoad("kar1602R");
+      Sound.PreLoad("kar1602S");
+      Sound.PreLoad("kar1602T");
+		// attack schemas
+      Sound.PreLoad("kar1603A");
+      Sound.PreLoad("kar1603B");
+      Sound.PreLoad("kar1603C");
+      Sound.PreLoad("kar1603D");
+      Sound.PreLoad("kar1603E");
+      Sound.PreLoad("kar1603F");
+      Sound.PreLoad("kar1603G");
+      Sound.PreLoad("kar1603H");
+      Sound.PreLoad("kar1603I");
+      Sound.PreLoad("kar1603J");
+      Sound.PreLoad("kar1603K");
+   }
+}
+
+END_SCRIPT (SoundPreload)
+#endif NOT_IN_USE
 
 
 // Script:  HealingWaterFont
@@ -1003,46 +1055,7 @@ END_SCRIPT (MachineSlot)
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-//  Script: MachineSlotAutoTrigger
-//
-//  Identical to MachineSlot script, above, except that it broadcasts 
-//  "TurnOn" immediately after physcontact.
-//
-
-BEGIN_SCRIPT(MachineSlotAutoTrigger, MachineSlot)
-
-MESSAGES:
-
-OnPhysContactCreate()
-{
-   // Filter on submodel 0, so we don't get multiple messages for each 
-   // submodel of a contacting model
-   if (message.contactSubmod == 0)
-   {
-		SetOneShotTimer("TriggerTurnOn",0.1);
-      link toMachine = Link.GetOne("ScriptParams", self);
-      PostMessage(toMachine.To(), "Enter", message.contactObj, (integer)toMachine.GetData());
-   }
-
-//   DefaultOnPhysContactCreate();
-}
-
-OnTimer()
-{
-	if (message.name == "TriggerTurnOn")
-	{
-		Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-	}
-	DefaultOnTimer();
-}
-
-END_SCRIPT (MachineSlotAutoTrigger)
-
-
-
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 //
 // Constants  - strings used as parameter to Object.Named()
 
@@ -1230,14 +1243,20 @@ void Transmogrify()
    object newObj = OBJ_NULL;
    object newObj2 = OBJ_NULL;
 
-   if (Object.InheritsFrom(obj1, Object.Named(kSealingPlot)) &&
-       Object.InheritsFrom(obj2, Object.Named(kSealingPlot2)))
+   if (	(Object.InheritsFrom(obj1, Object.Named(kSealingPlot)) &&
+			 Object.InheritsFrom(obj2, Object.Named(kSealingPlot2)))
+			 ||
+			(Object.InheritsFrom(obj2, Object.Named(kSealingPlot)) &&
+			 Object.InheritsFrom(obj1, Object.Named(kSealingPlot2)))		)
    {
       newObj = Object.Create(Object.Named(kFusingPlot));
    }
    else
-   if (Object.InheritsFrom(obj1, Object.Named(kSealingExtra1)) && 
-       Object.InheritsFrom(obj2, Object.Named(kSealingExtra2)))
+   if (	(Object.InheritsFrom(obj1, Object.Named(kSealingExtra1)) && 
+			 Object.InheritsFrom(obj2, Object.Named(kSealingExtra2)))
+			 ||
+			(Object.InheritsFrom(obj2, Object.Named(kSealingExtra1)) && 
+			 Object.InheritsFrom(obj1, Object.Named(kSealingExtra2)))	)
    {
       newObj = Object.Create(Object.Named(kSealingResult));
    }
@@ -1357,6 +1376,8 @@ void Transmogrify()
    if (Object.InheritsFrom(obj, Object.Named(kFusingPlot)))
    {
       Object.Destroy(obj);
+		// mark the objective complete
+		Quest.Set("goal_state_"+string(M16_GOAL_MANUFACTURE),kGoalComplete,kQuestDataMission);
       newObj = Object.Create(Object.Named(kFinalPlot));
    }
 
