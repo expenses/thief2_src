@@ -224,21 +224,60 @@ BEGIN_SCRIPT(ThePagan, Conspirator)
 METHODS:
   METHOD void Bleed(void)
   {
-     // Start "bleeding"
-     ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoActivate);
+     if(!IsDataSet("Bleeding"))
+     {
+        object mawtrol=object("MawPatrol");
+        object conversation=object(0);
 
-     // Uncle!  Call off the attack!
-     Property.Set(self,"AI_Team",kAIT_Neutral);
-     Link.DestroyMany("~AIAttack",self,AnyObject);
+        SetData("Bleeding",TRUE);
+
+        // Start "bleeding"
+        ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoActivate);
+
+        // Uncle!  Call off the attack!
+        Property.Set(self,"AI_Team",kAIT_Neutral);
+        Link.DestroyMany("~AIAttack",self,AnyObject);
+        Link.DestroyMany("~AIAwareness",self,AnyObject);
+
+        // Clean up state of the attackers.  Get rid of alert cap and high
+        // alertness and such, then start the conversation.
+        if(Link.AnyExist("ScriptParams",self))
+        {
+           linkset myfoes=Link.GetAll("ScriptParams",self);
+           while(myfoes.AnyLinksLeft())
+           {
+              object Foe=myfoes.Link().To();
+
+              Object.RemoveMetaProperty(Foe,"M-AlertCapHigh");
+              Object.RemoveMetaProperty(Foe,"M-M8NonHostile");
+              // Alertness should shortly bounce back up if they have high awareness
+              // of the player.  So, we'll try this the easy way. -TJS
+              Property.Set(Foe,"AI_Alertness","Level",kNoAlert);
+              Property.Set(Foe,"AI_Alertness","Peak",kNoAlert);
+
+              if(Link.AnyExist("~AIConversationActor",Foe))
+                 conversation=Link.GetOne("~AIConversationActor",Foe).To();
+              
+              myfoes.NextLink();
+           }
+        }
+
+        if(conversation!=object(0))
+        {
+           // Okay, at least some mechanist is set up for some conversation.  We support
+           // exactly the one that we have planned on having, by firing off the one we
+           // found the link to above.
+           AI.StartConversation(conversation);
+        }
      
-     // @TODO: Set mechanists so they can again be hostile to the player.
-
-     // Start fleeing at this point.  Luckily, we claim we just got
-     // damaged anyway, so we can be ham-fisted about it.
-     Property.CopyFrom(self,"AI_FleeConds","M-OnlyFlee");
-     Link.DestroyMany("AIFleeTo",self,AnyObject);
-     Link.Create("AIFleeTo",self,"MawBounds");
-     Damage.Damage(self,self,1,object("WeaponStim"));
+        // Start fleeing at this point.  Luckily, we claim we just got
+        // damaged anyway, so we can be ham-fisted about it.
+        Property.CopyFrom(self,"AI_FleeConds","M-OnlyFlee");
+        Link.DestroyMany("AIFleeTo",self,AnyObject);
+        if(Object.Exists(mawtrol))
+           Link.Create("AIFleeTo",self,mawtrol);
+        Damage.Damage(self,self,1,object("WeaponStim"));
+     }
   }
 
 MESSAGES:
@@ -311,11 +350,20 @@ MESSAGES:
         SetData("AttackStarted",TRUE);
         // Change in team will help precipitate attack
         Property.Set(self,"AI_Team",kAIT_Bad2);
-        // @TODO: Spring open the doors, alert the mechanists
-        // Start by just sending a TurnOn.  Maybe the rest by just
-        // signalling the mechanists?
+
         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-        SetOneShotTimer(self,"Bleed",10.0);
+        // signal the mechanists
+        if(Link.AnyExist("ScriptParams",self))
+        {
+           linkset myfoes=Link.GetAll("ScriptParams",self);
+           while(myfoes.AnyLinksLeft())
+           {
+              AI.Signal(myfoes.Link().To(),"StartAttack");
+              myfoes.NextLink();
+           }
+        }
+
+        SetOneShotTimer(self,"Bleed",15.0);
         Reply(TRUE);
      }
 
@@ -343,6 +391,17 @@ MESSAGES:
         }
      }
      DefaultOnDamage();
+  }
+  OnContainer()
+  {
+     if(object(message.containee)==object("TheNote") && 
+        message.event==kContainAdd)
+     {
+        Debug.MPrint("Pagan picking up note.");
+        if(Object.Exists(object("CemGateLookback")))
+           Link.Create("AIWatchObj",self,object("CemGateLookback"));
+     }
+     DefaultOnContainer();
   }
   OnTimer()
   {
