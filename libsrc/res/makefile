@@ -21,9 +21,10 @@ LIBPATH = $(RELDIR)
 PROG_TARGETS = resdump respack restest
 LIB_TARGETS = res
 INST_TARGETS = res resdump respack
-EXTRA_TARGETS = lzw.h res.h restypes.h
+EXTRA_TARGET =
 
 RES_OBJS = lzw.obj res.obj resbuild.obj
+RES_HDRS = lzw.h res.h restypes.h
 
 RESDUMP_OBJS	= resdump.obj
 RESDUMP_LIBS	= res.lib lg.lib mprintf.lib
