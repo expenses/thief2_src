@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.14 2000/03/01 22:28:27 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.15 2000/03/02 10:54:47 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -84,18 +84,13 @@ END_SCRIPT (SoundPreload)
 
 // Script:  HealingWaterFont
 
-// identical to same in theif 1, miss 11 (RTC)
+// almost identical to same in thief 1, miss 11 (RTC)
 
 // When frobbed: heals the player, shuts off its own light, and de-charges - cannot be
 // used to heal the player for a while.
 // A certain amount of time later, it recharges, turns its light back on, and
 // is able to heal the player again.
 
-// @TODO:	this script is supposed to inherit from AnimLight but I had some problems
-//				but i had some trouble including the proper files, so for now the relevant
-//				lines are commented out
-
-//BEGIN_SCRIPT(HealingWaterFont, AnimLight)
 BEGIN_SCRIPT(HealingWaterFont, RootScript)
 
 
@@ -106,7 +101,8 @@ METHOD void Heal(object Target)
 {
 	Damage.Damage(Target,self,GetHealAmount(),object("RestoreStim"));
 	SetData("Charged",FALSE);
-//	TurnOff();
+//	turn off light
+	PostMessage(self,"TurnOff");
 	// shut off the particle stream fountain effects
 	if (Link.AnyExist("~ParticleAttachement",self))
 	{
@@ -150,7 +146,8 @@ OnTimer()
 	if (message.name == "Recharged")
 	{
 		SetData("Charged",TRUE);
-//		TurnOn();
+		// turn on light
+		PostMessage(self,"TurnOn");
 		// turn on the particle stream fountain effect
 		if (Link.AnyExist("~ParticleAttachement",self))
 		{
@@ -582,8 +579,6 @@ OnMessage()
 		if (dest == (object)NULL)
 			dest = Object.Named("Player");
 
-//		Debug.MPrint(" destination = ",dest);
-
 		GotoObjLoc(dest, kFast);
 	}
 
@@ -761,7 +756,6 @@ OnMessage()
          {
 	    // get the LoudspeakerRelay object
             object LoudspeakerRelay = Link.GetOne("ControlDevice", self).To();
-            // Debug.MPrint(" LoudspeakerRelay = object ",LoudspeakerRelay);
 
 	    // Play the schema over all objects connected by ControlDevice links to the LoudspeakerRelay
             linkset SpeakerList = Link.GetAll("ControlDevice", LoudspeakerRelay);
@@ -810,7 +804,6 @@ OnMessage()
 					linkset CDs=Link.GetAll("ControlDevice",self);
 					while(CDs.AnyLinksLeft())
 					{
-//						Debug.MPrint(" Adding ",MP," to ",CDs.Link().To());
 						Object.AddMetaProperty (CDs.Link().To(),MP);
 
 						CDs.NextLink();
@@ -843,13 +836,13 @@ BEGIN_SCRIPT (RenewableResource, RootScript)
 
 METHODS:
 // return something on the end of a ScriptParams link
-// or OBJ_NULL if none
+// or (object)0 if none
 object GetResource()
 {
 	if (Link.AnyExist("ScriptParams",self))
 		return Link.GetOne("ScriptParams",self).To();
 	else
-		return OBJ_NULL;
+		return (object)0;
 }
 
 // return value in ScriptTiming property or
@@ -867,22 +860,123 @@ float GetPeriod()
 }
 
 // create a new instance of my resource, add the
-// "TrigWorldFrob" script to it, and
+// "TrigWorldFrob" script to it, 
+// put it at my location, and
 // forge a CD-link from it to me
 void SpawnResource()
 {
+	object new_obj;
 
+	if ((object)GetResource() == (object)0)
+	{
+		Debug.MPrint(" ** WARNING: RenewableResource ",self," has no ScriptParams links.");
+		return;
+	}
+
+	new_obj = Object.BeginCreate(GetResource());
+	Object.EndCreate(new_obj);
+
+	if (!Property.Possessed(new_obj,"Scripts"))
+	{
+		Property.Add(new_obj,"Scripts");
+		Property.Set(new_obj,"Scripts","Script 0","TrigWorldFrob");
+		Property.Set(new_obj,"Scripts","Script 1","");
+		Property.Set(new_obj,"Scripts","Script 2","");
+		Property.Set(new_obj,"Scripts","Script 3","");
+	}
+	else
+	{
+		// find the first blank spot and add my script to it
+		if (Property.Get(new_obj,"Scripts","Script 0") == "")
+			Property.Set(new_obj,"Scripts","Script 0","TrigWorldFrob");
+		else if (Property.Get(new_obj,"Scripts","Script 1") == "")
+			Property.Set(new_obj,"Scripts","Script 1","TrigWorldFrob");
+		else if (Property.Get(new_obj,"Scripts","Script 2") == "")
+			Property.Set(new_obj,"Scripts","Script 2","TrigWorldFrob");
+		else if (Property.Get(new_obj,"Scripts","Script 3") == "")
+			Property.Set(new_obj,"Scripts","Script 3","TrigWorldFrob");
+	}
+
+	Object.Teleport(new_obj,vector(0,0,0),vector(0,0,0),self);
+
+	// if obj is a projectile, remove its physics
+	if (Object.InheritsFrom(new_obj,Object.Named("Projectile")))
+	{
+		if (Property.Possessed(new_obj,"PhysInitVel"))
+		{
+			Property.Remove(new_obj,"PhysInitVel");
+		}
+		if (Property.Possessed(new_obj,"PhysType"))
+		{
+			Property.Remove(new_obj,"PhysType");
+		}
+	}
+
+	// if obj is a grenade, remove its physics
+	if (Object.InheritsFrom(new_obj,Object.Named("Grenadz")))
+	{
+		if (Property.Possessed(new_obj,"PhysType"))
+		{
+			Property.Remove(new_obj,"PhysType");
+		}
+	}
+
+
+	Link.Create("ControlDevice",new_obj,self);
 }
 
 // scan through all outgoing Contains links from
 // the player, check to see if any inherit from my 
 // resource, keep a sum of the stack counts of those
-// that do.  return (sum < X)  where X is the data
-// on the ScriptParams link from me to the resource archetype
+// that do.  return (sum < the data
+// on the ScriptParams link from me to the resource archetype)
 boolean PlayerNeedsResource()
 {
-	return FALSE;
+	int sum=0,x;
+	object inv_item;
+
+	if ((object)GetResource() == (object)0)
+		return FALSE;
+
+	//@NOTE: bad multiplayer assumption
+	linkset Inv=Link.GetAll("Contains",Object.Named("Player"));
+	while(Inv.AnyLinksLeft())
+	{
+		inv_item = Inv.Link().To();
+		if (	(Object.InheritsFrom(inv_item,GetResource())) ||
+				(Object.InheritsFrom(inv_item,CrystalToArrow(GetResource()))) )
+
+		{
+			if (Property.Possessed(inv_item,"StackCount"))
+				x = (int)Property.Get(inv_item,"StackCount");
+			else
+				x=1;
+
+			sum += x;
+		}
+		Inv.NextLink();
+	}
+
+	Debug.MPrint(" Player has ",sum," of resource.");
+	Debug.MPrint(" Respawning if less than ",Link.GetOne("ScriptParams",self).GetData());
+
+	return (sum < (int)Link.GetOne("ScriptParams",self).GetData());
 }
+
+object CrystalToArrow(object crystal)
+{
+	if (Object.InheritsFrom(crystal,Object.Named("WaterCrystal")))
+		return Object.Named("water");
+	else if (Object.InheritsFrom(crystal,Object.Named("FireCrystal")))
+		return Object.Named("firearr");
+	else if (Object.InheritsFrom(crystal,Object.Named("AirCrystal")))
+		return Object.Named("GasArrow");
+	else if (Object.InheritsFrom(crystal,Object.Named("EarthCrystal")))
+		return Object.Named("EarthArrow");
+
+	else return (object)0;
+}
+
 
 MESSAGES:
 OnSim()
@@ -909,6 +1003,8 @@ OnTimer()
 		{
 			SpawnResource();
 		}
+
+		SetOneShotTimer("Ping",GetPeriod());
 	}
 	DefaultOnTimer();
 }
@@ -918,6 +1014,8 @@ OnMessage()
 	if (MessageIs("TurnOn"))
 	{
 		// my resource has been picked up.  snap the CD link from it to me
+		if (Link.AnyExist("ControlDevice",message.from,self))
+			Link.Destroy(Link.GetOne("ControlDevice",message.from,self));
 	}
 	DefaultOnMessage();
 }
