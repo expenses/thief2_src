@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.45 2000/01/24 23:18:23 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.46 2000/01/28 00:32:51 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1395,9 +1395,12 @@ MESSAGES:
         }
         if(Property.Possessed(self,"ScriptTiming"))
            timeout=Property.Get(self,"ScriptTiming");
+        timeout=timeout-1000; // to give time for deactivation sound
+        if(timeout<0) timeout=0;
+
         PotionEffect(Subject(),TRUE);
         // Debug.MPrint(self," setting timer for timeout of ",float(timeout)/1000.0);
-        potiontimer=SetOneShotTimer(self,"EndPotion",float(timeout)/1000.0);
+        potiontimer=SetOneShotTimer(self,"PreEndPotion",float(timeout)/1000.0);
         SetData("PotionTimer",potiontimer);
      }
      DefaultOnMessage();
@@ -1409,7 +1412,18 @@ MESSAGES:
      {
         // Debug.MPrint("Got endpotion message.");
         PotionEffect(Subject(),FALSE);
+        ClearData("PotionTimer");
         Object.Destroy(self);
+     }
+     else if(message.name=="PreEndPotion")
+     {
+        timer_handle potiontimer=SetOneShotTimer(self,"EndPotion",1.0);
+        object imbiber=Subject();
+        boolean is_player = (imbiber == object("Player")); 
+        eEnvSoundLoc loc = is_player ? kEnvSoundAmbient : kEnvSoundAtObjLoc;
+
+        SetData("PotionTimer",potiontimer);
+        Sound.PlayEnvSchema(self,"Event Deactivate",self,imbiber,loc);
      }
      DefaultOnTimer();
   }
