@@ -1643,14 +1643,10 @@ MESSAGES:
 
    OnBeginScript()
    {
-      if(!IsDataSet("Subscribed"))
+      if(Property.Possessed(self,"TrapQVar"))
       {
-         if(Property.Possessed(self,"TrapQVar"))
-         {
-            string qvar=Property.Get(self,"TrapQVar");
-            Quest.SubscribeMsg(self,qvar);
-         }
-         SetData("Subscribed",TRUE);
+         string qvar=Property.Get(self,"TrapQVar");
+         Quest.SubscribeMsg(self,qvar);
       }
       RollNextDigit();
       DefaultOnBeginScript();
