@@ -161,6 +161,7 @@ rem note that different localizations have differnt readme's
 rem **************************************************************
 
 copy r:\prj\thief2\docs\readme\%_country_%\*.wri %_DAILYCD_%
+copy r:\prj\thief2\docs\readme\%_country_%\*.wri %_DAILYTHIEF_%
 
 rem **************************************************************
 rem The urls.  Eidos.url and ets (eidos tech support) are different
