@@ -1,9 +1,12 @@
 #
-# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.2 1995/01/16 14:18:18 buzzard Exp $
+# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.3 1995/01/16 14:20:15 buzzard Exp $
 # $Log: makefile $
-# Revision 1.2  1995/01/16 14:18:18  buzzard
-# build dir
+# Revision 1.3  1995/01/16 14:20:15  buzzard
+# duh
 #
+# Revision 1.2  1995/01/16  14:18:18  buzzard
+# build dir
+# 
 # Revision 1.1  1995/01/16  14:12:08  buzzard
 # Initial revision
 # 
@@ -25,7 +28,6 @@ BUILD_DIR = $(DEV_BASE)\build\prof
 LIB_TARGETS = prof
 INST_TARGETS = prof
 
-# this is kind of bad, since you lose other dependencies
 PROF_OBJS = prof.obj
 PROF_HDRS = prof.h
 
