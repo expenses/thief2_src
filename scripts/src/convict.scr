@@ -16,6 +16,7 @@ enum goaltype {
 BEGIN_SCRIPT(VictoryCheck, VictoryChecker)
 
 METHODS:
+
    // returns the type of the indexed objective.  If that
    // objective doesn't exist, returns kGoalNone
    METHOD integer GoalType(integer objective)
@@ -25,7 +26,27 @@ METHODS:
          return(Quest.Get(qvar));
       else
          return kGoalNone;
-   };
+   }
+
+   METHOD void InitGoals()
+   {
+      integer goal;
+      boolean nokillcheat=DarkGame.ConfigIsDefined("NoKillGoalCheat");
+
+      for(goal=0;goal<=MAX_GOAL;goal++)
+      {
+         if(GoalType(goal)==kGoalSlay &&
+            Quest.Get(string("goal_reverse_")+string(goal)))
+         {
+            // goal to not kill something.  We can cheat past this.
+            // doing so sets the goal inactive.
+            if(nokillcheat)
+            {
+               ObjectiveSet(goal,kGoalInactive);
+            }
+         }
+      }
+   }
 
    // like GoalType, but returns the target of the goal, or
    // obj null if no such goal.
@@ -108,6 +129,16 @@ METHODS:
    }
 
 MESSAGES:
+
+   OnBeginScript()
+   {
+      if(!IsDataSet("GoalInit"))
+      {
+         InitGoals();
+         SetData("GoalInit",TRUE);
+      }
+      DefaultOnBeginScript();
+   }
 
    OnObjRoomTransit()
    {
