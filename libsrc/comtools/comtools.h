@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// $Source: x:/prj/tech/libsrc/comtools/rcs/comtools.h $
+// $Source: x:/prj/tech/libsrc/comtools/RCS/comtools.h $
 // $Author: Johan $
 // $Date: 1999/04/21 17:29:31 $
 // $Revision: 1.55 $
