@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.8 $
-# $Author: dc $
-# $Date: 1997/08/12 06:59:53 $
+# $Revision: 1.9 $
+# $Author: DAVET $
+# $Date: 1997/08/12 14:09:32 $
 #
 # Makefile for Matrix library
 #
@@ -33,37 +33,44 @@ matrix_HDRS = \
 #  they are built from the sed script, which has zany rules
 #  see matdbl.txt in libsrc/matrix
 
-build_double_version:
-        @echo Build double for $(target)
-        @sed -f mxd.sed $(source) > $(target)
+.PATH.sed = $(.PATH.c)
+
+mxd.sed .ALWAYS: 
+        %set fullpath_for_sed_script = $(.TARGET)
+
+.BEFORE: mxd.sed matrixd.h matrixds.h mxsymd.h
+
+build_double_version: 
+        @echo Build double for $(target) (use $(fullpath_for_sed_script))
+        sed -f $(fullpath_for_sed_script) $(source) > $(target,F)
 
 #        @chmod -w $(target)
 
-vecvecd.c: vecvec.c
+vecvecd.c .MISER .NODEFAULT: vecvec.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-matmatd.c: matmat.c
+matmatd.c .MISER .NODEFAULT: matmat.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-matvecd.c: matvec.c
+matvecd.c .MISER .NODEFAULT: matvec.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-vecangd.c: vecang.c
+vecangd.c .MISER .NODEFAULT: vecang.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-matangd.c: matang.c
+matangd.c .MISER .NODEFAULT: matang.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-transd.c: trans.c
+transd.c .MISER .NODEFAULT: trans.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-matrixd.h: matrix.h
+matrixd.h .MISER .NODEFAULT: matrix.h
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-matrixds.h: matrixs.h
+matrixds.h .MISER .NODEFAULT: matrixs.h
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
-mxsymd.h: mxsym.h
+mxsymd.h .MISER .NODEFAULT: mxsym.h
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
 %include $(MRC)\make.rc
