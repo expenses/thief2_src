@@ -3,8 +3,8 @@ SPEW_ON = 1
 WARN_ON = 1
 DBG_ON = 1
 
-PROG_TARGETS =  regtest arraytst gadtest texttest # citadel
-LIB_TARGETS =
+PROG_TARGETS =  regtest arraytst gadtest texttest workgadg
+LIB_TARGETS = ui
 INST_TARGETS =
 
 # The following are groups of objs, not really programs to be compiled
@@ -33,8 +33,20 @@ GADTEST_LIBS = _lg.lib _mprintf.lib _2d.lib _res.lib _kb.lib _mouse.lib
 
 TEXTTEST_OBJS = texttest.obj gadgets.obj region.obj slider.obj \
         textgadg.obj rect.obj pushbutt.obj \
-        event.obj array.obj
+        event.obj array.obj cursors.obj slab.obj
 TEXTTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib kb.lib mouse.lib
+
+WORKGADG_OBJS = workgadg.obj gadgets.obj region.obj cursors.obj slab.obj \
+        bugtrak.obj qboxgadg.obj pushbutt.obj slider.obj butarray.obj \
+        musicai.obj array.obj rect.obj textgadg.obj event.obj
+WORKGADG_LIBS = _lg.lib _mprintf.lib _2d.lib _res.lib _kb.lib _mouse.lib
+
+UI_OBJS = gadgets.obj region.obj cursors.obj event.obj slab.obj \
+        pushbutt.obj butarray.obj qboxgadg.obj textgadg.obj slider.obj \
+        rect.obj array.obj
+UI_HDRS = gadgets.h region.h cursors.h event.h slab.h pushbutt.h \
+        butarray.h qboxgadg.h textgadg.h slider.h rect.h array.h
+UI_LIBS = 
 
 # Libraries
 
