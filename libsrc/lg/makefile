@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
-# $Revision: 1.24 $
-# $Author: jak $
-# $Date: 1994/08/12 17:08:18 $
+# $Revision: 1.25 $
+# $Author: ept $
+# $Date: 1994/11/13 13:22:40 $
 #
 # makefile for lg library.
 #
@@ -21,7 +21,7 @@ INCDIR = $(RELDIR)
 BINDIR = n:\bin
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = $(RELDIR)
-PROG_TARGETS = dbgmakeh dbgtest stacktst
+PROG_TARGETS = dbgmakeh dbgtest stacktst mfreetst
 LIB_TARGETS = lg
 INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
@@ -33,7 +33,7 @@ LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj dbgpp.obj datapath.obj exit.obj \
                 lgsprntf.obj memall.obj memgrow.obj memstat.obj \
                 lgprntf.obj stack.obj oheapwal.obj tmpalloc.obj
 LG_HDRS = lg.h lgalt.h dbg.h dbgpp.h datapath.h memmacro.inc dbgmacro.inc \
-	memall.h memstat.h bugtrak.h lgprntf.h lgsprntf.h tmpalloc.h 
+	memall.h memstat.h bugtrak.h lgprntf.h lgsprntf.h tmpalloc.h
 LG_H2I  = lg.inc memall.inc dbg.inc
 
 DBGMAKEH_SRCS = dbgmakeh.c
@@ -46,6 +46,11 @@ DBGTEST_LIBS = _lg.lib _input.lib _mprintf.lib
 
 STACKTST_OBJS = stacktst.obj
 STACKTST_LIBS = lg.lib mprintf.lib
+
+MFREETST_OBJS = mfreetst.obj
+MFREETST_LIBS = _lg.lib mprintf.lib
+MFREETST_CFLAGS = -d2
+MFREETST_LDFLAGS = debug all
 
 %include $(INIT)\make.rc
 
