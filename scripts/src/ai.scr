@@ -137,29 +137,42 @@ MESSAGES:
 END_SCRIPT(ZombieRegen)
       
 
-/* Down with the iron cross.  Pose creature at sim start so you never
-   see iron-cross posed creatures, even if they've never come out of
-   efficiency.
-   */
-BEGIN_SCRIPT(PoseInit, AI)
+BEGIN_SCRIPT(AllAIScript, RootScript)
 MESSAGES:
    OnSim()
    {
       if(message.starting)
       {
+         /* Down with the iron cross.  Pose creature at sim start so you never
+            see iron-cross posed creatures, even if they've never come out of
+            efficiency.
+            */
          // Don't interfere with existing pose, if any
          if(!Property.Possessed(self,"CretPose"))
          {
             Property.CopyFrom(self,"CretPose","M-StandPose");
          }
-	 Property.Remove(self,"CretPose"); //DAMN YOU!
+         Property.Remove(self,"CretPose"); //DAMN YOU!
       }
       DefaultOnSim();
    }
-END_SCRIPT(PoseInit)
+   OnMessage()
+   {
+      // For use in pseudoscripts that want to randomly continue or not. 
+      if (MessageIs("Randomize"))
+      {
+         int continue_chance = (int)message.data;
+         int r = Data.RandInt(0,100);
+
+         Reply(r <= continue_chance);
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(AllAIScript)
 
 
-BEGIN_SCRIPT(CorpseFrobHack, PoseInit)
+BEGIN_SCRIPT(CorpseFrobHack, AI)
 
 METHODS:
    METHOD void MakeFrobbable(boolean frobbable)
@@ -340,6 +353,12 @@ METHODS:
 
       Property.Set(self,"ModelName",(const char*)model);
    }
+   METHOD void Broadcast(boolean on)
+   {
+      Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice",NULL);
+      // In the future, turrets will handle this message by acquiring the camera's awareness.
+      Link.BroadcastOnAllLinks(self,"CUSIC","ControlDevice",NULL);
+   }
    METHOD void Update(void)
    {
       // Well, this is hard-coded in the AI, so let's hard-code it here...
@@ -395,17 +414,34 @@ METHODS:
          SetOneShotTimer("Update",self,2.0);
    }
 
+   METHOD void SleepMode(boolean asleep)
+   {
+      integer mode=Property.Get(self,"AI_Mode");
+
+      if(asleep)
+      {
+         Property.Set(self,"AI_Alertness","Level",kNoAlert);
+         Link.DestroyMany("AIAwareness",self,AnyObject);
+         Broadcast(FALSE);
+         mode=kAIM_Asleep;
+      }
+      else if(mode==kAIM_Asleep)
+         mode=kAIM_Normal;
+
+      Property.Set(self,"AI_Mode",mode);
+   }
+
 MESSAGES:
    OnAlertness()
    {
       if(message.level==kHighAlert)
       {
-         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         Broadcast(TRUE);
          Update();
       }
       else if(message.oldLevel==kHighAlert)
       {
-         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         Broadcast(FALSE);
       }
       if(!Object.HasMetaProperty(self,"M-AI-Stasis"))
          SetTweqModel(message.level+1);
@@ -417,6 +453,7 @@ MESSAGES:
    OnSlain()
    {
       SetTweqModel(0);
+      Broadcast(FALSE);
       DefaultOnSlain();
    }
    OnMessage()
@@ -425,12 +462,14 @@ MESSAGES:
       {
          if(Object.HasMetaProperty(self,"M-AI-Stasis"))
          {
-            SetTweqModel(1); // as per 0 alertness, since we know we're alert-capped
+            SleepMode(FALSE);
+            SetTweqModel(1); // as per 0 alertness, since we know we're alert-capped when off
             Object.RemoveMetaProperty(self,"M-AI-Stasis");
          }
       }
       else if(MessageIs("TurnOff"))
       {
+         SleepMode(TRUE);
          if(!Object.HasMetaProperty(self,"M-AI-Stasis"))
             Object.AddMetaProperty(self,"M-AI-Stasis");
          SetTweqModel(5);
