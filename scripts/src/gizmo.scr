@@ -550,6 +550,16 @@ BEGIN_SCRIPT(StdController,Physics)
         return ((AnimS & InputMask)!=0);
      }  // end of Method: TweqAnimStateHasVal
 
+MESSAGES:
+   OnBeginScript()
+   {
+      // This really ought to be in application code.
+      if(Property.Possessed(self,"CfgTweqJoints"))
+      {
+         Property.Add(self,"JointPos");
+      }
+      DefaultOnBeginScript();
+   }
 END_SCRIPT(StdController)
 
 // script for object which turns on its tweq when it gets a 
