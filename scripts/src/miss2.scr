@@ -346,6 +346,8 @@ END_SCRIPT(ScoreLesson)
 const integer kM1TipNone=0;
 const integer kM1TipCheckMap=1;
 const integer kM1TipCheckVisGem=2;
+const integer kM1TipVictoryNewgoal=3;
+const integer kM1TipVictoryDonegoal=4;
 
 
 BEGIN_SCRIPT(Training, RootScript)
@@ -455,6 +457,18 @@ BEGIN_SCRIPT(Training, RootScript)
        else if(tip==kM1TipCheckVisGem)
        {
           DoLesson("VisGem","","");
+       }
+       else if(tip==kM1TipVictoryNewgoal)
+       {
+          string DisplayOutput=Data.GetString("PlayHint","NewGoal");
+          DarkUI.TextMessage(DisplayOutput);
+          SetOneShotTimer(self,"TipClear",5.0);
+       }
+       else if(tip==kM1TipVictoryDonegoal)
+       {
+          string DisplayOutput=Data.GetString("PlayHint","DoneGoal");
+          DarkUI.TextMessage(DisplayOutput);
+          SetOneShotTimer(self,"TipClear",5.0);
        }
        else return FALSE;
 
@@ -849,8 +863,21 @@ MESSAGES:
    {
       boolean prompt=TRUE;
 
-      if(!MessageIs("Prompt"))
+      if(MessageIs("Popup"))
+      {
+         // Victory scripts trying to pop up a notification.   
+         // Takes precedence over training text.
+         const char *popup=message.data;
+         prompt=TRUE;
+
+          if(stricmp(popup,"NewGoal")==0)
+            TransientTip(kM1TipVictoryNewgoal);
+         else if(stricmp(popup,"DoneGoal")==0)
+            TransientTip(kM1TipVictoryDonegoal);
+      }
+      else if(!MessageIs("Prompt"))
          prompt=FALSE;
+
       if(prompt)
          Prompt();
       DefaultOnMessage();
@@ -869,6 +896,11 @@ MESSAGES:
       else if(message.name=="TipUnlock")
       {
          ClearData("TipLock");
+         Prompt();
+      }
+      else if(message.name=="TipClear")
+      {
+         TransientTip(kM1TipNone);
          Prompt();
       }
       DefaultOnTimer();

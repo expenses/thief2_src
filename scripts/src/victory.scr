@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.14 2000/02/28 02:13:25 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.15 2000/03/03 17:34:45 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -211,7 +211,7 @@ METHODS:
          {
             if(newval && !oldval)
             {
-               popup=Data.GetString("PlayHint.str","NewGoal");
+               popup="NewGoal";
                schem=Object.Named("new_obj");
                break;
             }
@@ -222,12 +222,21 @@ METHODS:
          {
             if(newval==kGoalComplete && newval!=oldval)
             {
-               popup=Data.GetString("PlayHint.str","DoneGoal");
+               popup="DoneGoal";
                schem=Object.Named("new_obj"); // @TODO: Or something
             }
          }
       }
-      if(popup!="") DarkUI.TextMessage(popup);
+      if(popup!="") 
+      {
+         // Need to make sure these popups don't get superceded by training messages
+         // (or deicsions by the training system to clear the message).  Dirty way
+         // to do this, but we're trying to ship.
+         PostMessage(self,"Popup",(const char *)popup);
+         popup=Data.GetString("PlayHint.str",popup);
+         if(popup!="")
+            DarkUI.TextMessage(popup);
+      }
       if(schem!=object(NULL)) Sound.PlaySchemaAmbient(self,schem);
    }
 
