@@ -14,38 +14,41 @@ LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = . $(RELDIR)
-PROG_TARGETS = hashtest arraytst fnamtest symtest pqtest
+PROG_TARGETS = arraytst fnamtest hashtest msgtest symtest #pqtest
 LIB_TARGETS = dstruct
 HDR_TARGETS =  
 INST_TARGETS = dstruct
 
 DSTRUCT_OBJS = array.obj fname.obj hash.obj hheap.obj lllist.obj llist.obj \
-	rect.obj strall.obj symtab.obj pqueue.obj
-DSTRUCT_HDRS = array.h fname.h hash.h hheap.h llist.h rect.h slist.h \
-	strall.h symtab.h  pqueue.h
+	message.obj pqueue.obj rect.obj strall.obj symtab.obj
+DSTRUCT_HDRS = array.h fname.h hash.h hheap.h llist.h message.h pqueue.h \
+	rect.h slist.h strall.h symtab.h
 
-ARRAYTST_OBJS = arraytst.obj array.obj
-ARRAYTST_LIBS = _lg.lib _mprintf.lib
+ARRAYTST_OBJS = arraytst.obj
+ARRAYTST_LIBS = _lg.lib _mprintf.lib dstruct.lib
 
 FNAMTEST_OBJS = fnamtest.obj
-FNAMTEST_LIBS = lg.lib mprintf.lib dstruct.lib
+FNAMTEST_LIBS = _lg.lib mprintf.lib dstruct.lib
 
-HASHTEST_OBJS = hashtest.obj  hashlex.obj hash.obj
-HASHTEST_LIBS = lg.lib mprintf.lib
+HASHTEST_OBJS = hashtest.obj hashlex.obj
+HASHTEST_LIBS = _lg.lib mprintf.lib dstruct.lib
 
-SYMTEST_OBJS  = symtest.obj
-SYMTEST_LIBS  = lg.lib mprintf.lib fix.lib dstruct.lib
+MSGTEST_OBJS  = msgtest.obj
+MSGTEST_LIBS  = _lg.lib mprintf.lib fix.lib dstruct.lib
 
 PQTEST_OBJS   = pqtest.obj
-PQTEST_LIBS   = lg.lib dstruct.lib mprintf.lib
+PQTEST_LIBS   = _lg.lib dstruct.lib mprintf.lib
+
+SYMTEST_OBJS  = symtest.obj
+SYMTEST_LIBS  = _lg.lib mprintf.lib fix.lib dstruct.lib
+
+!include $(INIT)/make.rc
 
 hashtest.c: hashtest.y 
 	 yacc -D hashtok.h -o hashtest.c hashtest.y
 
 hashlex.c: hashlex.lex hashtok.h 
          lex -o hashlex.c hashlex.lex
-
-!include $(INIT)/make.rc
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
@@ -76,8 +79,12 @@ llist.obj: llist.h malloc.h memall.h memmacro.h string.h types.h
 
 lllist.obj: llist.h types.h
 
-pqtest.obj: dbg.h dbgmacro.h error.h fcntl.h io.h lg.h lgalt.h malloc.h \
-	 memall.h memmacro.h pqueue.h stat.h stdio.h stdlib.h types.h
+message.obj: _dstruct.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h \
+	 memmacro.h message.h stdio.h stdlib.h string.h types.h
+
+msgtest.obj: _dstruct.h conio.h ctype.h dbg.h dbgmacro.h lg.h lgalt.h \
+	 malloc.h memall.h memmacro.h message.h mprintf.h stdio.h stdlib.h \
+	 string.h types.h
 
 pqueue.obj: dbg.h dbgmacro.h error.h io.h lg.h lgalt.h malloc.h memall.h \
 	 memmacro.h pqueue.h stat.h stdio.h string.h types.h
