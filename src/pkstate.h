@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/pkstate.h 1.4 1997/09/18 00:08:51 mahk Exp $
 
 #ifndef __PKSTATE_H
