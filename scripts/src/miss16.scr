@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.4 2000/01/28 02:35:00 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.5 2000/02/21 06:11:29 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -577,3 +577,39 @@ OnTimer()
 }
 
 END_SCRIPT (BotStationBot)
+
+
+// Script:	OnOffFlame
+
+// Synchronizes appearance and dissapearance of flame object
+// with application of fire stim radius propegator on the object.
+
+// TurnOn - flame can be seen, causes damage
+// TurnOff - flame cannot be seen, doesn't cause damamge
+
+BEGIN_SCRIPT (OnOffFlame, RootScript)
+
+MESSAGES:
+
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		Property.Set(self,"HasRefs",TRUE);
+		while (!Object.HasMetaProperty(self, Object.Named("LowPeriodHeatSource")))
+			Object.AddMetaProperty(self, Object.Named("LowPeriodHeatSource"));
+	}
+	else if (MessageIs("TurnOff"))
+	{
+		Property.Set(self,"HasRefs",FALSE);
+		while (Object.HasMetaProperty(self, Object.Named("LowPeriodHeatSource")))
+			Object.RemoveMetaProperty(self, Object.Named("LowPeriodHeatSource"));
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (OnOffFlame)
+
+
+
