@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/ai/aireport.cpp,v 1.6 1998/10/30 00:13:18 dc Exp $
 // AI Related report functions
 
