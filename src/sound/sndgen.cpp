@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/sndgen.cpp,v 1.31 2000/03/05 18:37:46 adurant Exp $
 
 //#define PROFILE_ON
