@@ -1,15 +1,21 @@
+#
 # $RCSFile$
 # $Author: kaboom $
-# $Date: 1992/08/25 08:47:39 $
+# $Date: 1992/09/16 20:05:40 $
 #
 # Makefile for Watcom C/Micosoft ASM
 #
 # $Log: makefile $
-# Revision 1.3  1992/08/25 08:47:39  kaboom
+# Revision 1.4  1992/09/16 20:05:40  kaboom
+# Removed fix.lib from targets.  Added a new target type, HDR_TARGET which
+# is just a set of header files.  Made the fix point library consist of just
+# the fix.h file.
+#
+# Revision 1.3  1992/08/25  08:47:39  kaboom
 # Added INST_TARGETS macro, a list of which targets should be installed when
 # a make install is done.  Executables are copied to $(BIN), libraries are
 # copied to $(LIB) and library headers are copied to $(INC).
-#
+# 
 # Revision 1.2  1992/08/24  17:27:40  kaboom
 # Added RCS keywords and header at top of file.
 # 
@@ -24,10 +30,10 @@ OBJDIR = .\obj
 INCDIR = .\
 
 PROG_TARGETS =
-LIB_TARGETS = fix
+LIB_TARGETS =
+HDR_TARGETS = fix
 INST_TARGETS = fix
 
-FIX_OBJS = fix.obj
 FIX_HDRS = fix.h
 
 WATCOM = p:\w90
@@ -69,11 +75,13 @@ TARGAR  = $(LIB_TARGETS,>.ar)
 
 #.obj.exe:
 
-all .PHONY: $(PROG_TARGETS) $(LIB_TARGETS)
+all .PHONY: $(PROG_TARGETS) $(LIB_TARGETS) $(HDR_TARGETS)
 
 $(PROG_TARGETS) .PHONY: $*.exe
 
-$(LIB_TARGETS) .PHONY: $*.lib
+$(LIB_TARGETS) .PHONY: $*.lib $($*_HDRS)
+
+$(HDR_TARGETS) .PHONY: $($*_HDRS)
 
 $(TARGLNK): makefile
         %do makelnk TARGET=$*
@@ -101,8 +109,12 @@ install .PHONY: $(INST_TARGETS)
         !foreach TARGET $(INST_TARGETS)
           !if '$(PROG_TARGETS,M$(TARGET))'
             $(CP) $(TARGET).exe $(BIN)
-          !else if '$(LIB_TARGETS,M$(TARGET))'
+          !elseif '$(LIB_TARGETS,M$(TARGET))'
             $(CP) $(TARGET).lib $(LIB)
+            !foreach FILE $($(TARGET)_HDRS)
+              $(CP) $(SRCDIR)\$(INCDIR)\$(FILE) $(INC)
+            !end
+          !elseif '$(HDR_TARGETS,M$(TARGET))'
             !foreach FILE $($(TARGET)_HDRS)
               $(CP) $(SRCDIR)\$(INCDIR)\$(FILE) $(INC)
             !end
