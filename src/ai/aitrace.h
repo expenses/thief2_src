@@ -1,0 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Header: r:/prj/cam/src/ai/RCS/aitrace.h 1.1 1998/04/26 18:13:39 TOML Exp $
+//
+//
+//
+
+#ifndef __AITRACE_H
+#define __AITRACE_H
+
+enum eAITraceCategories
+{
+   kAIT_M, // Management
+   kAIT_D, // Decision
+   kAIT_P, // Pathfind
+   kAIT_G, // General
+};
+
+
+#define AITraceMsg(level, category, s)
+#define AITraceMsg1(level, category, s, a)
+#define AITraceMsg2(level, category, s, a, b)
+#define AITraceMsg3(level, category, s, a, b, c)
+#define AITraceMsg4(level, category, s, a, b, c, d)
+#define AITraceMsg5(level, category, s, a, b, c, d, e)
+#define AITraceMsg6(level, category, s, a, b, c, d, e, f)
+#define AITraceMsg7(level, category, s, a, b, c, d, e, f, g)
+#define AITraceMsg8(level, category, s, a, b, c, d, e, f, g, h)
+#define AITraceMsg9(level, category, s, a, b, c, d, e, f, g, h, i)
+
+#endif /* !__AITRACE_H */
