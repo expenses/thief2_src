@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/gadget/RCS/drawelem.h 1.15 1998/08/04 14:09:32 JAEMZ Exp $
 
 #ifndef __DRAWELEM_H
