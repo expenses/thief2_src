@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #define M16_GOAL_LEARN 0
 #define M16_GOAL_MANUFACTURE 1
 #define M16_GOAL_CONNECT 2

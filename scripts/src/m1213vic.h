@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #define M13_LETTER_GOAL 3
 #define M13_CULTIVATOR_GOAL 4
 #define M12_CAGEY_GOAL 11

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #include "phprops.h"
 #include "tfint.h" // for trap flags.
 #include "drkgoalt.h" //for the all complete trap
