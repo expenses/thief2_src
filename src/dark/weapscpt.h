@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/weapscpt.h,v 1.2 1998/06/12 11:57:47 kate Exp $
 #pragma once  
 #ifndef __WEAPSCPT_H
