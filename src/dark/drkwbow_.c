@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkwbow_.c,v 1.6 1998/10/22 00:11:00 dc Exp $
 
 #include <plyablty.h>
