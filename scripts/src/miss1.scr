@@ -422,6 +422,20 @@ BEGIN_SCRIPT(Training, RootScript)
        }
        return FALSE;
     }
+    METHOD boolean ObjContainsAny(object obj, object type)
+    {
+       if(obj!=NO_OBJ && type!=NO_OBJ)
+       {
+          linkset contlinks=Link.GetAll("Contains",obj);
+          while(contlinks.AnyLinksLeft())
+          {
+             if(Object.InheritsFrom(contlinks.Link().To(),type))
+                return TRUE;
+             contlinks.NextLink();
+          }
+       }
+       return FALSE;
+    }
     /* Action is the full description of the action to be attempted (e.g.
        "USE Door to open"), while Key describes only the interface binding
        to be prompted (e.g. the identity of the USE key).
@@ -485,29 +499,65 @@ BEGIN_SCRIPT(Training, RootScript)
         return DoLesson("UsePotionHeal","Use");
       return FALSE;
     }
-    // In general, objects you can pick up are a single lesson.  However,
-    // we have a lesson about keys and loot specifically, to drive these
-    // important cases home. 
-    METHOD boolean TrainPickUpKey (object world, object inv, object weap)
-    {
-       if(Object.InheritsFrom(world,"Key"))
-          return DoLesson("UseKeyTake","Use");
-       return FALSE;
-    }
-    METHOD boolean TrainGetLoot (object world, object inv, object weap)
-    {
-       if(Property.Possessed(world,"Loot"))
-          return DoLesson("UseLootTake","Use");
-       return FALSE;
-    }
-    METHOD boolean TrainPortable (object world, object inv, object weap)
+    METHOD boolean ObjPortable(object world)
     {
        if(Property.Possessed(world,"FrobInfo"))
        {
           integer worldfrob=Property.Get(world,"FrobInfo","World Action");
           if(worldfrob & kFrobMove)
-             return DoLesson("UsePortable","Use");
+          {
+             if(Link.AnyExist("~Contains",world))
+             {
+                object container=Link.GetOne("~Contains",world).To();
+                integer aware=kAIAL_Lowest;
+
+                Debug.MPrint("Checking protability given container ",container);
+
+                if(Property.Possessed(container,"AI"))
+                {
+                   if(Link.AnyExist("AIAwareness",container,self))
+                      aware=Link.GetOne("AIAwareness",container,self).GetData("Level");
+
+                   if(aware==kAIAL_Lowest)
+                      return TRUE;
+                   else
+                      return FALSE;
+                }
+             }
+             return TRUE;
+          }
        }
+       return FALSE;
+    }
+    // @TODO: We don't score the pickpocketing lesson, nor update our
+    // lesson when AI awareness changes.
+    METHOD boolean TrainPickpocket (object world, object inv, object weap)
+    {
+       if(ObjPortable(world) && Link.AnyExist("~Contains",world))
+       {
+          return DoLesson("UsePickpocket","Use");
+       }
+       return FALSE;
+    }
+    // In general, objects you can pick up are a single lesson.  However,
+    // we have a lesson about keys and loot specifically, to drive these
+    // important cases home. 
+    METHOD boolean TrainPickUpKey (object world, object inv, object weap)
+    {
+       if(ObjPortable(world) && Object.InheritsFrom(world,"Key"))
+          return DoLesson("UseKeyTake","Use");
+       return FALSE;
+    }
+    METHOD boolean TrainGetLoot (object world, object inv, object weap)
+    {
+       if(ObjPortable(world) && Property.Possessed(world,"Loot"))
+          return DoLesson("UseLootTake","Use");
+       return FALSE;
+    }
+    METHOD boolean TrainPortable (object world, object inv, object weap)
+    {
+       if(ObjPortable(world))
+          return DoLesson("UsePortable","Use");
        return FALSE;
     }
        
@@ -625,14 +675,14 @@ BEGIN_SCRIPT(Training, RootScript)
             return DoLesson("ReleaseArrow","Attack");
          }
          else
-            return FALSE; // how did we get here anyway?
+            return FALSE; // how did we get here anyway?d
       }
       else
       {
-         // @TODO: This doesn't handle the slim chance that the player _has_
-         // no water arrows.
-         return DoLesson("SelectWaterArrow","ReadyWater");
+         if(ObjContainsAny("Player","water"))
+            return DoLesson("SelectWaterArrow","ReadyWater");
       }
+      return FALSE;
    }
 
    METHOD void Prompt()
@@ -648,6 +698,7 @@ BEGIN_SCRIPT(Training, RootScript)
          TrainHealing(world,inv,weap) ||
          TrainShootTorch(world,inv,weap) ||
          TrainDoor(world,inv,weap) ||
+         TrainPickpocket(world,inv,weap) ||
          TrainPickUpKey(world,inv,weap) ||
          TrainGetLoot(world,inv,weap) ||
          TrainPortable(world,inv,weap) ||
