@@ -21,7 +21,7 @@ CITADEL_OBJS = main.obj init.obj $(XEMU_OBJS) $(DC_OBJS) $(MAHK_OBJS)
 CITADEL_LIBS = $(LG_LIBS) 
 
 REGTEST_OBJS = region.obj rect.obj test.obj
-REGTEST_OBJS = lg.lib mprintf.lib
+REGTEST_LIBS = lg.lib mprintf.lib
 
 ARRAYTST_OBJS = array.obj arraytst.obj
 ARRAYTST_LIBS = lg.lib mprintf.lib
@@ -42,9 +42,13 @@ LG_LIBS	= lg.lib mprintf.lib fix.lib 2d.lib 3d.lib range.lib mouse.lib \
 !include $(INIT)\make.rc
 
 !if !defined(NONET)
-!include makefile.rcs
-!include inc/makefile.rcs
+# !include makefile.rcs
+# !include inc/makefile.rcs
 !endif
+
+blah .PHONY:
+        @echo SRCDIR = $(SRCDIR)
+        @echo LIBPATH = $(LIBPATH)
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
