@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/deepc/render/dpcrloop.cpp,v 1.3 1999/12/15 17:12:31 MAT Exp $
 
 /////////////////////////////////////////////////////////////
