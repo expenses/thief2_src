@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapipth.h 1.3 1998/10/20 23:15:01 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapipth.h,v 1.8 2000/01/05 15:54:20 BFarquha Exp $
 //
 //
 //
@@ -34,23 +34,29 @@ typedef cDynArray<tAIPathCellID> cAICellArray;
 
 IAIPath * AIPathfind(const mxs_vector & fromLocation, tAIPathCellID startCell,
                      const mxs_vector & toLocation,   tAIPathCellID endCell = 0,
-                     tAIPathOkBits OkBits = kAIOK_All, 
+                     tAIPathOkBits OkBits = kAIOK_Walk,
+                     IAIPathfindControl * pControl = NULL);
+
+// It is assumed that this is being called because normal pathfinding failed.
+IAIPath * AIPathfindNear(const mxs_vector & fromLocation, tAIPathCellID startCell,
+                     const mxs_vector & toLocation, float fDist, tAIPathCellID endCell = 0,
+                     tAIPathOkBits OkBits = kAIOK_Walk,
                      IAIPathfindControl * pControl = NULL);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 BOOL AIPathcast(const mxs_vector & startLocation, tAIPathCellID startCell,
-                const mxs_vector & endLocation, 
+                const mxs_vector & endLocation,
                 tAIPathCellID * pEndCell,
                 tAIPathOkBits OkBits = kAIOK_Walk,
                 IAIPathfindControl * pControl = NULL);
 
 ///////////////////////////////////////
 
-inline BOOL AIPathcast(const mxs_vector & startPoint, 
-                       tAIPathCellID startCell, 
-                       const mxs_vector & endPoint, 
-                       tAIPathOkBits OkBits = kAIOK_Walk, 
+inline BOOL AIPathcast(const mxs_vector & startPoint,
+                       tAIPathCellID startCell,
+                       const mxs_vector & endPoint,
+                       tAIPathOkBits OkBits = kAIOK_Walk,
                        IAIPathfindControl * pControl = NULL)
 {
    tAIPathCellID ignored;
@@ -64,7 +70,7 @@ void AISetPathcastIgnoreBlockingOBBs(BOOL);
 ///////////////////////////////////////
 
 BOOL AIIsEdgeVisible(const mxs_vector & startLocation, tAIPathCellID startCell,
-                     const cAIPathEdge & edge, 
+                     const cAIPathEdge & edge,
                      tAIPathOkBits fOkBits = kAIOK_Walk,
                      IAIPathfindControl * pControl = NULL);
 
@@ -73,7 +79,7 @@ BOOL AIIsEdgeVisible(const mxs_vector & startLocation, tAIPathCellID startCell,
 BOOL AICanUseLink(tAIPathCellID from,
                   tAIPathCellID to,
                   tAIPathOkBits LinkOkBits,
-                  tAIPathOkBits AIOkBits, 
+                  tAIPathOkBits AIOkBits,
                   unsigned      PathFlags,
                   IAIPathfindControl * pControl = NULL);
 
@@ -84,18 +90,23 @@ BOOL AICanUseLink(tAIPathCellID from,
 
 DECLARE_INTERFACE_(IAIPathfinder, IAIComponent)
 {
-   STDMETHOD_(IAIPath *, Pathfind)(const mxs_vector & toLocation, 
+   STDMETHOD_(IAIPath *, Pathfind)(const mxs_vector & toLocation,
                                    tAIPathCellID endCell = 0,
-                                   tAIPathOkBits fOkBits = kAIOK_All) PURE;
+                                   tAIPathOkBits fOkBits = kAIOK_Walk) PURE;
 
-   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endLocation, 
+   STDMETHOD_(IAIPath *, PathfindNear)(const mxs_vector & toLocation,
+                                   float fDist,
+                                   tAIPathCellID endCell = 0,
+                                   tAIPathOkBits fOkBits = kAIOK_Walk) PURE;
+
+   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endLocation,
                               tAIPathCellID * pEndCell,
                               tAIPathOkBits OkBits = kAIOK_Walk) PURE;
 
-   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endPoint, 
+   STDMETHOD_(BOOL, Pathcast)(const mxs_vector & endPoint,
                               tAIPathOkBits OkBits = kAIOK_Walk) PURE;
 
-   STDMETHOD_(BOOL, IsEdgeVisible)(const cAIPathEdge & edge, 
+   STDMETHOD_(BOOL, IsEdgeVisible)(const cAIPathEdge & edge,
                                    tAIPathOkBits OkBits = kAIOK_Walk) PURE;
 
    STDMETHOD_(IAIPathfindControl *, AccessControl)() PURE;
@@ -109,9 +120,9 @@ DECLARE_INTERFACE_(IAIPathfinder, IAIComponent)
 DECLARE_INTERFACE_(IAIPathfindControl, IUnknown)
 {
    STDMETHOD_(void, GetRecentCells)(cAICellArray * pResult) PURE;
-   
+
    STDMETHOD_(BOOL, CanPassDoor)(ObjID door) PURE;
-   
+
 
    STDMETHOD_(BOOL, AppCanPass1)(tAIPathCellID from,
                                  tAIPathCellID to) PURE;
@@ -131,7 +142,7 @@ DECLARE_INTERFACE_(IAIPath, IUnknown)
 {
    STDMETHOD_(BOOL, Active)() const PURE;
    STDMETHOD_(void, Clear)() PURE;
-   STDMETHOD_(HRESULT, Advance)() PURE;
+   STDMETHOD_(HRESULT, Advance)(tAIPathOkBits nStressBits) PURE;
    STDMETHOD_(BOOL, Backup)() PURE;
    STDMETHOD_(int,  GetPathEdgeCount)() const PURE;
    STDMETHOD_(void, GetPathEdge)(int edgeIndex, cAIPathEdge *) const PURE; // 0..count-1;
@@ -139,13 +150,20 @@ DECLARE_INTERFACE_(IAIPath, IUnknown)
 
    STDMETHOD_(void, GetFinalDestination)(mxs_vector *pDestination) const PURE;
    STDMETHOD_(BOOL, MoreEdges)() const PURE;
-   STDMETHOD_(BOOL, IsDestVisible)(const cMxsVector &fromPt, tAIPathCellID startCell) const PURE;
+   STDMETHOD_(BOOL, IsDestVisible)(const cMxsVector &fromPt, tAIPathCellID startCell, tAIPathOkBits nStressBits) const PURE;
 
    // returns number looked ahead or back
-   STDMETHOD_(int, UpdateTargetEdge)(const mxs_vector &fromPt, const mxs_angvec & fromFac, tAIPathCellID startCell) PURE;
+   STDMETHOD_(int, UpdateTargetEdge)(const mxs_vector &fromPt, const mxs_angvec & fromFac, tAIPathCellID startCell, tAIPathOkBits nStressBits) PURE;
 
    // Compute the 2d distance to destination
    STDMETHOD_(float, ComputeXYLength)(const mxs_vector &curLoc) const PURE;
+
+   // Label path as using "stress" bits.
+   STDMETHOD_(void, SetStressBits)(tAIPathOkBits nStressBits) PURE;
+
+   STDMETHOD_(tAIPathOkBits, GetStressBits)() PURE;
+
+   STDMETHOD_(BOOL, IsCellInPath)(tAIPathCellID) PURE;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
