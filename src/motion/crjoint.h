@@ -1,8 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/motion/RCS/crjoint.h 1.2 1999/08/26 13:26:28 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/motion/crjoint.h,v 1.3 2000/01/29 13:22:04 adurant Exp $
 //
 // Creature joint accessor header
 //
+#pragma once
 
 #ifndef __CRJOINT_H
 #define __CRJOINT_H

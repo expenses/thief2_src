@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/objcore/RCS/objproxy.h 1.1 1999/04/07 14:38:43 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/objproxy.h,v 1.2 2000/01/29 13:23:57 adurant Exp $
 //
 // Proxy object manager
 //
@@ -12,17 +12,14 @@
 // host objIDs to the local proxies. Conceptually, it is closely related
 // to objsys.
 //
+#pragma once
 
 #ifndef _OBJPROXY_H
 #define _OBJPROXY_H
 
 #include <hashpp.h>
-
-#ifdef TODO_ABSTRACT_OBJECT_NETWORKING
 #include <netprops.h> // for sHostObjID
-#endif
 
-#ifdef TODO_ABSTRACT_OBJECT_NETWORKING
 //////////
 
 class cProxyManager
@@ -41,6 +38,5 @@ private:
 
    cHashByHostObjID *m_pTable;
 };
-#endif
 
 #endif // !_OBJPROXY_H

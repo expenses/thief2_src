@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/linkknow.h 1.1 1999/04/07 14:38:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkknow.h,v 1.2 2000/01/29 13:23:22 adurant Exp $
+#pragma once
 
 #ifndef __LINKKNOW_H
 #define __LINKKNOW_H

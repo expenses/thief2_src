@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/rcs/iobjnet.h 1.6 1999/02/08 12:18:33 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/iobjnet.h,v 1.12 2000/01/29 13:23:07 adurant Exp $
 //
 // Object Networking
 //
@@ -6,13 +6,14 @@
 // Network Manager. It deals with mapping objects between different machines,
 // and keeping track of which machine "owns" which objects.
 //
+#pragma once
 
 #ifndef __IOBJNET_H
 #define __IOBJNET_H
 
 #include <iobjsys.h>
 #include <comtools.h>
-#include <nettype.h>
+#include <nettypes.h>
 
 F_DECLARE_INTERFACE(IObjectNetworking);
 
@@ -26,6 +27,12 @@ DECLARE_INTERFACE_(IObjectNetworking,IUnknown)
    //
    // General-interest methods
    //
+
+   //
+   // Clear out all of the mapping tables. Generally gets called at
+   // database reset time.
+   //
+   STDMETHOD_(void, ClearTables)(THIS) PURE;
 
    //
    // Establish the mapping from a remote ObjID to the local one. External
@@ -47,6 +54,15 @@ DECLARE_INTERFACE_(IObjectNetworking,IUnknown)
                                  NetObjID objIdOnHost) PURE;
 
    //
+   // Delete the proxy. Note that this is quite different from what happens
+   // when you call ObjSys::Delete() on a proxy, which will ask the owning
+   // machine to delete the object. This, instead, deletes only the local
+   // proxy.
+   // Use only if you know what you're doing!
+   //
+   STDMETHOD_(void, ObjDeleteProxy)(THIS_ ObjID proxy) PURE;
+
+   //
    // Is this object a proxy for an object owned on another machine?
    // (False for kLocalOnly objects).
    //
@@ -57,6 +73,11 @@ DECLARE_INTERFACE_(IObjectNetworking,IUnknown)
    // (Also False for kLocalOnly objects).
    //
    STDMETHOD_(BOOL,ObjHostedHere)(THIS_ ObjID obj) PURE;
+
+   //
+   // Is this object local to this machine only, and unknown elsewhere?
+   //
+   STDMETHOD_(BOOL,ObjLocalOnly)(THIS_ ObjID obj) PURE;
 
    //
    // Get the player that hosts this obj.  HostPlayer will be OBJ_NULL for kLocalOnly
@@ -79,17 +100,28 @@ DECLARE_INTERFACE_(IObjectNetworking,IUnknown)
    // Object handoff method. This method tells the object system to
    // take over responsibility for the specified object.
    STDMETHOD_(void,ObjTakeOver)(THIS_ ObjID obj) PURE;
-
+   // This method gives the specified object to the specified player.
+   // Requires that you know the proxy on the other side, so this needs
+   // some setup. Generally only used by the default host.
+   STDMETHOD_(void,ObjGiveTo)(THIS_ 
+                              ObjID obj, 
+                              ObjID newOwner, 
+                              ObjID newObjID) PURE;
+   // This version gives the specified object to the specified player,
+   // and does *not* require you to know the proxy on the other side.
+   // It works in a more phased way. As far as this machine is concerned,
+   // the object has been handed off, and messages will be forwarded
+   // accordingly. However, ownership will not be formally transferred
+   // until the recipient gets the message, takes the object over, and
+   // announces that to everyone else.
    //
-   // These two methods are an unspeakably ugly hack, whose wisdom should
-   // be re-examined once things are working.
-   //
-   // The problem is that scripts, broadly speaking, only run on the host
-   // machine for an object. But there are occasions (such as frobbing a
-   // FrobLocally object) when we specifically want to allow scripts to run
-   // on a client. This method allows you to enable and disable local script
-   // running. It should tightly bracket the relevant ScriptMan calls.
-   STDMETHOD_(void,AllowClientScripts)(THIS_ BOOL bAllow) PURE;
+   // While the object is in the transitional state, ObjHostObjID() will
+   // return OBJ_NULL. If you need to send messages about the object,
+   // therefore, you should use GIDs with the old ownership information.
+   // (That is, this player and the local proxy.)
+   STDMETHOD_(void,ObjGiveWithoutObjID)(THIS_
+                                        ObjID obj,
+                                        ObjID newOwner) PURE;
 
    ////////
    //
@@ -97,16 +129,32 @@ DECLARE_INTERFACE_(IObjectNetworking,IUnknown)
    //
    // These methods are mainly here for use by the Object System itself.
    //
-   STDMETHOD_(void, BroadcastBeginCreate)(THIS_ 
-                                          ObjID exemplar, 
-                                          ObjID obj) PURE;
-   STDMETHOD_(void, BroadcastEndCreate)(THIS_ ObjID obj) PURE;
-   STDMETHOD_(void, BroadcastDestroy)(THIS_ ObjID obj) PURE;
-   STDMETHOD_(BOOL, CreatingProxy)(THIS) PURE;
+   STDMETHOD_(void, StartBeginCreate)(THIS_ 
+                                      ObjID exemplar, 
+                                      ObjID obj) PURE;
+   STDMETHOD_(void, FinishBeginCreate)(THIS_ ObjID obj) PURE;
+   STDMETHOD_(void, StartEndCreate)(THIS_ ObjID obj) PURE;
+   STDMETHOD_(void, FinishEndCreate)(THIS_ ObjID obj) PURE;
+   STDMETHOD_(void, StartDestroy)(THIS_ ObjID obj) PURE;
+   STDMETHOD_(void, FinishDestroy)(THIS_ ObjID obj) PURE;
+   STDMETHOD_(BOOL, HandlingProxy)(THIS) PURE;
+   STDMETHOD_(void, NotifyObjRemapped)(THIS_ 
+                                       ObjID newObjID, 
+                                       ObjID oldObjID) PURE;
+   STDMETHOD_(void, ResolveRemappings)(THIS_
+                                       ulong playerNum,
+                                       ObjID playerID) PURE;
+   STDMETHOD_(void, RequestDestroy)(THIS_ ObjID obj) PURE;
 };
 
 #undef INTERFACE 
 
 EXTERN tResult LGAPI ObjectNetworkingCreate(void);
+
+//////////
+//
+// C-style API, as needed
+#define IObjNet_ObjHostedHere(p, a)     COMCall1(p, ObjHostedHere, a)
+#define IObjNet_ObjIsProxy(p, a)        COMCall1(p, ObjIsProxy, a)
 
 #endif // __IOBJNET_H

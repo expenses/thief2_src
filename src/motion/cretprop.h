@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/cretprop.h 1.10 1998/09/26 13:14:22 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/motion/cretprop.h,v 1.11 2000/01/29 13:22:02 adurant Exp $
+#pragma once
 
 #ifndef __CRETPROP_H
 #define __CRETPROP_H

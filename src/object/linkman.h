@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/linkman.h 1.1 1999/04/07 14:38:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkman.h,v 1.4 2000/01/29 13:23:26 adurant Exp $
+#pragma once
 
 #ifndef __LINKMAN_H
 #define __LINKMAN_H

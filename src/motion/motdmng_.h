@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/motdmng_.h 1.2 1998/07/12 10:34:38 JUSTIN Exp $
+// $Header: r:/t2repos/thief2/src/motion/motdmng_.h,v 1.3 2000/01/29 13:22:15 adurant Exp $
+#pragma once
 
 #ifndef __MOTDMNG__H
 #define __MOTDMNG__H

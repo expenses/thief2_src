@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/motion/RCS/crexp.h 1.1 1998/09/02 09:25:40 JON Exp $
+// $Header: r:/t2repos/thief2/src/motion/crexp.h,v 1.2 2000/01/29 13:22:03 adurant Exp $
 //
 //
+#pragma once
 
 // Exploding creatures
 

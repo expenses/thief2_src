@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/linkstor.h 1.1 1999/04/07 14:38:22 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkstor.h,v 1.6 2000/01/29 13:23:34 adurant Exp $
+#pragma once
 
 #ifndef __LINKSTOR_H
 #define __LINKSTOR_H

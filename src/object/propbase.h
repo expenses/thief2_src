@@ -1,12 +1,11 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propbase.h 1.1 1999/04/07 14:40:20 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/propbase.h,v 1.24 2000/01/29 13:24:15 adurant Exp $
+#pragma once
 
 #ifndef PROPBASE_H
 #define PROPBASE_H
 
 #include <property.h>
-#ifdef TODO_ABSTRACT_OBJECT_NETWORKING
-#include <nettype.h> // for tNetMsgHandlerID
-#endif
+#include <nettypes.h> // for tNetMsgHandlerID
 
 /////////////////////////////////////////////////////////////
 // PROPERTY SYSTEM BASE TYPES
@@ -26,6 +25,12 @@ enum ePropertyFlags_
    kPropertyNoCache   = 0x0020,   // don't use inheritance cache
    kPropertyNoClone   = 0x0040,   // Don't copy this property when "cloning" an object   
    kPropertyNoEdit    = 0x0080,   // Don't show this property in the editor
+   kPropertySendBeginCreate    = 0x0100,  // This property needs to be notified when objects are created 
+   kPropertySendEndCreate      = 0x0200,  // This property needs to be notified when objects are created 
+   kPropertySendLoadObj        = 0x0400,  // This property needs to be notified when objects are loaded 
+
+
+
 };
 
 typedef ulong ePropertyFlags;

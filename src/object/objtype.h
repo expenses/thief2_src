@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/objcore/RCS/objtype.h 1.1 1999/04/07 14:38:44 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/objtype.h,v 1.6 2000/01/29 13:24:08 adurant Exp $
+#pragma once
 
 #ifndef _OBJTYPE_H
 #define _OBJTYPE_H
@@ -8,9 +9,7 @@
 //
 // Object IDs
 //
-typedef long   ObjID;
-typedef ushort HostID;
-
+typedef  int   ObjID;
 #define OBJ_NULL 0
 
 // The root of all archetypes
