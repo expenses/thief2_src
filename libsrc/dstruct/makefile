@@ -14,16 +14,19 @@ LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = . $(RELDIR)
-PROG_TARGETS = hashtest
+PROG_TARGETS = hashtest arraytst
 LIB_TARGETS = dstruct
 HDR_TARGETS =  
 INST_TARGETS = dstruct
 
 DSTRUCT_OBJS = hash.obj lllist.obj llist.obj
-DSTRUCT_HDRS = hash.h llist.h
+DSTRUCT_HDRS = hash.h llist.h array.h
 
 HASHTEST_OBJS = hashtest.obj  hashlex.obj hash.obj
 HASHTEST_LIBS = lg.lib mprintf.lib
+
+ARRAYTST_OBJS = arraytst.obj array.obj
+ARRAYTST_LIBS = _lg.lib _mprintf.lib
 
 hashtest.c: hashtest.y 
 	 yacc -D hashtok.h -o hashtest.c hashtest.y
@@ -35,9 +38,8 @@ hashlex.c: hashlex.lex hashtok.h
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-hash.obj: dbg.h error.h hash.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h stdlib.h string.h types.h
+array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 stdio.h string.h types.h
 
-llist.obj: llist.h malloc.h memall.h string.h types.h
-
-lllist.obj: llist.h types.h
+arraytst.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 stdio.h stdlib.h types.h
