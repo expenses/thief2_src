@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkcmbat.cpp,v 1.26 2000/02/01 16:40:38 adurant Exp $
 
 // For backstab

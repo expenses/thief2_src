@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkmiss.cpp,v 1.5 2000/02/19 12:27:22 toml Exp $
 #include <drkmiss.h>
 #include <filevar.h>
