@@ -866,7 +866,8 @@ METHODS:
       {
          if(!Link.AnyExist("ScriptParams",self,sender))
          {
-            Link.Create("ScriptParams",self,sender);
+            if (sender != (object)0)
+               Link.Create("ScriptParams",self,sender);
          }
       }
       else
