@@ -941,7 +941,7 @@ BEGIN_SCRIPT(NumberButton, StdButton)
             {
                if(texture[place]>='0' && texture[place]<='9')
                {
-                  qvarval=((qvarval*10)+(texture[place]-'0')%100000000);
+                  qvarval=((qvarval*10)+(texture[place]-'0'))%100000000;
                   Quest.Set(qvar,qvarval);
                   return;
                }
@@ -1490,7 +1490,7 @@ METHODS:
             dial=((dial+18)/36)%10; // round to nearest 1/10 revolution.
             digit=(varval/mod)%10;
 
-            Debug.MPrint(self,": ",mod,"'s digit dialed to ",dial,", should be ",digit);
+            // Debug.MPrint(self,": ",mod,"'s digit dialed to ",dial,", should be ",digit);
             
             if(!dialing && (dial!=digit)) // found our first bad digit
             {
