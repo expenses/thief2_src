@@ -1,0 +1,67 @@
+
+// Script file for Thief 2 - Mission 7 - Bank
+
+
+// Script: GuardSummoner
+
+// Upon receipt of a "TurnOn", sends a "ComeARunnin" msg to
+// all CD-linked AI's 
+
+BEGIN_SCRIPT (GuardSummoner, RootScript)
+
+METHODS:
+
+void SummonGuards ()
+{
+	if(Link.AnyExist("ControlDevice",self))
+	{
+		linkset Controls=Link.GetAll("ControlDevice",self);
+
+		while(Controls.AnyLinksLeft())
+		{
+			PostMessage(Controls.Link().To(), "ComeARunnin");
+			Controls.NextLink();
+		}
+	}
+	else
+		Debug.MPrint(" *** Warning: no ControlDevice link exists for object ", self, ".");
+}
+
+
+MESSAGES:
+
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		SummonGuards();
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (GuardSummoner)
+
+
+
+// Script: SummonableGuard
+
+// Upon receipt of a "ComeARunnin" msg, runs to the object
+// the msg came from.
+
+BEGIN_SCRIPT (SummonableGuard, AI)
+
+MESSAGES:
+
+OnMessage()
+{
+	if (MessageIs("ComeARunnin"))
+	{
+		GotoObjLoc(message.from, kFast);
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (SummonableGuard)
+
