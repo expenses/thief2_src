@@ -3,7 +3,7 @@ SPEW_ON = 1
 WARN_ON = 1
 DBG_ON = 1
 
-PROG_TARGETS =  regtest arraytst gadtest # citadel
+PROG_TARGETS =  regtest arraytst gadtest dummy # citadel
 LIB_TARGETS =
 INST_TARGETS =
 
@@ -27,8 +27,11 @@ ARRAYTST_OBJS = array.obj arraytst.obj
 ARRAYTST_LIBS = lg.lib mprintf.lib
 
 GADTEST_OBJS = gadgets.obj rect.obj gadtest.obj region.obj event.obj \
-        array.obj
-GADTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib mouse.lib kb.lib
+        array.obj pushbutt.obj butarray.obj slider.obj
+GADTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib kb.lib mouse.lib
+
+DUMMY_OBJS = dummy.obj
+DUMMY_LIBS = lg.lib mprintf.lib
 
 # Libraries
 
@@ -48,27 +51,39 @@ LG_LIBS	= lg.lib mprintf.lib fix.lib 2d.lib 3d.lib range.lib mouse.lib \
 !endif
 
 blah .PHONY:
+        @echo ROOTSRCDIR = $(ROOTSRCDIR)
         @echo SRCDIR = $(SRCDIR)
         @echo LIBPATH = $(LIBPATH)
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h string.h types.h
-
-gadgets.obj: 2d.h assert.h base.h conio.h dbg.h dos.h error.h fix.h \
-	 gadgets.h grindex.h i86.h lg.h lgalt.h libdbg.h malloc.h math.h \
-	 memall.h mouse.h projdbg.h rect.h region.h stdarg.h stdio.h \
+butarray.obj: 2d.h array.h assert.h base.h butarray.h conio.h datapath.h \
+	 dbg.h dos.h error.h event.h fix.h gadgets.h gfx.h grindex.h i86.h \
+	 lg.h lgalt.h libdbg.h malloc.h math.h memall.h mouse.h projdbg.h \
+	 rect.h region.h res.h resource.h restypes.h stdarg.h stdio.h \
 	 stdlib.h string.h types.h
 
-gadtest.obj: 2d.h assert.h base.h conio.h dbg.h dos.h error.h fix.h \
-	 gadgets.h grindex.h i86.h io.h lg.h lgalt.h libdbg.h malloc.h \
-	 math.h memall.h mprintf.h projdbg.h rect.h region.h stat.h \
-	 stdarg.h stdio.h stdlib.h string.h types.h
-
-rect.obj: assert.h base.h conio.h dos.h i86.h rect.h stdio.h stdlib.h \
+gadgets.obj: 2d.h array.h assert.h base.h conio.h datapath.h dbg.h dos.h \
+	 error.h event.h fix.h gadgets.h gfx.h grindex.h i86.h lg.h lgalt.h \
+	 libdbg.h malloc.h math.h memall.h mouse.h projdbg.h rect.h \
+	 region.h res.h resource.h restypes.h stdarg.h stdio.h stdlib.h \
 	 string.h types.h
 
-region.obj: assert.h base.h conio.h dbg.h dos.h error.h gadgets.h i86.h \
-	 lg.h lgalt.h libdbg.h malloc.h memall.h projdbg.h rect.h region.h \
+gadtest.obj: 2d.h array.h assert.h base.h butarray.h conio.h datapath.h \
+	 dbg.h dos.h error.h event.h fix.h gadgets.h gfx.h grindex.h i86.h \
+	 io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h math.h memall.h \
+	 mouse.h mprintf.h projdbg.h pushbutt.h rect.h region.h res.h \
+	 resource.h restypes.h slider.h stat.h stdarg.h stdio.h stdlib.h \
+	 string.h types.h
+
+pushbutt.obj: 2d.h array.h assert.h base.h conio.h datapath.h dbg.h dos.h \
+	 error.h event.h fix.h gadgets.h grindex.h i86.h lg.h lgalt.h \
+	 libdbg.h malloc.h math.h memall.h mouse.h projdbg.h pushbutt.h \
+	 rect.h region.h res.h resource.h restypes.h stdarg.h stdio.h \
+	 stdlib.h string.h types.h
+
+slider.obj: 2d.h array.h assert.h base.h conio.h datapath.h dbg.h dos.h \
+	 error.h event.h fix.h gadgets.h grindex.h i86.h lg.h lgalt.h \
+	 libdbg.h malloc.h math.h memall.h mouse.h projdbg.h pushbutt.h \
+	 rect.h region.h res.h resource.h restypes.h slider.h stdarg.h \
 	 stdio.h stdlib.h string.h types.h
