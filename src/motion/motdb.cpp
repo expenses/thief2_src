@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/motdb.cpp,v 1.14 1999/12/27 15:24:35 BODISAFA Exp $
 
 #include <motdb.h>
