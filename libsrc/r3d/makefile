@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.3 $
-# $Author: buzzard $
-# $Date: 1996/05/06 00:26:15 $
+# $Revision: 1.4 $
+# $Author: dc $
+# $Date: 1996/05/06 01:13:17 $
 #
 # Makefile for r3d library
 #
@@ -18,11 +18,32 @@ PROJECT = tech
 LIBTARGS = r3d 
 
 r3d_OBJS = \
-prim primconv primface primfunc primmisc primpoly \
-clip clipclip clipglob cliplin clipplan clipproj clipunsc \
-ctext ctxtguts object \
-space view xfrmclip xfrmglob xfrmlin xfrmproj \
-xfrmunsc
+  clip     \
+  clipclip \
+  clipglob \
+  cliplin  \
+  clipplan \
+  clipproj \
+  clipunsc \
+  ctxtguts \
+  ctxtmang \
+  ctxtmult \
+  frame    \
+  init     \
+  object   \
+  prim     \
+  primconv \
+  primface \
+  primfunc \
+  primmisc \
+  primpoly \
+  space    \
+  view     \
+  xfrmclip \
+  xfrmglob \
+  xfrmlin  \
+  xfrmproj \
+  xfrmunsc
 
 r3d_HDRS = r3d.h r3ds.h
 
