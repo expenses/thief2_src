@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkmulti.h,v 1.19 2000/01/31 09:58:06 adurant Exp $
 #pragma once
 
