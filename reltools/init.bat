@@ -27,8 +27,8 @@ set _ZIPDIR_=c:\zips
 rem **************************************************************
 rem we don't want to use the spun off tree, so check X
 rem **************************************************************
-
-map root x:=\\wonderland\tech\
+ 
+rem tech has moved... unlikely to be mapped to spun off now.
 
 rem **************************************************************
 rem  Lets rock and roll!!
