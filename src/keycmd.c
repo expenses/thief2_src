@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/keycmd.c,v 1.25 2000/02/19 12:14:20 toml Exp $
 
 //place to store input binding command vars
