@@ -336,6 +336,13 @@ MESSAGES:
    }
    OnDoorOpening()
    {
+      // Basso doesn't close doors behind himself.  He does this by forgetting
+      // that they weren't open in the first place.
+      if(Link.AnyExist("AIDoor","Basso",self))
+      {
+         link doorlink=Link.GetOne("AIDoor","Basso",self);
+         doorlink.SetData(FALSE);
+      }
       Ping();
       DefaultOnDoorOpening();
    }
