@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiactinv.h 1.7 1999/03/02 17:41:59 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiactinv.h,v 1.8 1999/11/29 12:27:12 BFarquha Exp $
 //
 //
 
@@ -31,7 +31,7 @@ enum eAIInvestStyleFlags
    kAIIS_InitScan   = 0x02,
    kAIIS_EndWander  = 0x04,
    kAIIS_VarSpeed   = 0x08,
-   
+
    kAIAF_All        = 0xffffffff
 };
 
@@ -69,6 +69,12 @@ public:
             float              accuracySq = kAILA_DefaultAccuracy,
             float              accuracyZ  = kAILA_DefaultAccuracyZ);
 
+
+   // Path near object if actually can't path to. Should occur before Set.
+   void SetNearPath(BOOL bPathNear, float fDist);
+
+   void SetCheckPathDist(BOOL bCheck);
+
    //
    // Flags
    //
@@ -82,10 +88,10 @@ public:
                 unsigned maxScanDelay);
    void ResetScan();
    void ForceScan();
-   
+
    BOOL IsScanning() const;
    BOOL ReachedPoint() const;
-   
+
    const mxs_vector & GetDest() const;
 
    float ComputePathDist();
@@ -104,7 +110,7 @@ private:
       kEnRoute,
       kScanEnRoute,
       kScanAtLoc,
-      
+
       kIntMax = 0xffffffff
    };
 
@@ -112,14 +118,35 @@ private:
    cAIMotionAction * m_pMotionAction;
    cAIOrientAction * m_pOrientAction;
    cAIWanderAction * m_pWanderAction;
-   
+
    cAITimer          m_expiration;
    unsigned          m_StyleFlags;
    cAIRandomTimer    m_ScanTimer;
    cAITimer          m_CheckDistTimer;
-   
+
    eState            m_state;
+
+   float fPathNearDist;
+   BOOL m_bDoCheckDist;
 };
+
+///////////////////////////////////////
+
+// Path near object if actually can't path to.
+inline void cAIInvestAction::SetNearPath(BOOL bPathNear, float fDist)
+{
+   if (bPathNear)
+      fPathNearDist = fDist;
+   else
+      fPathNearDist = -1;
+}
+
+
+inline void cAIInvestAction::SetCheckPathDist(BOOL bCheck)
+{
+   m_bDoCheckDist = bCheck;
+}
+
 
 ///////////////////////////////////////
 
