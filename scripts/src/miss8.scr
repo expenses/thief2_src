@@ -167,23 +167,6 @@ END_SCRIPT(Courier)
 BEGIN_SCRIPT(ThePagan, Room)
 
 MESSAGES:
-  OnObjRoomTransit()
-  {
-     object room=message.ToObjId;
-     object endroom=object("endroom");
-
-     Debug.MPrint(self," entering room ",room);
-
-     if(Object.Exists(endroom) && 
-        Object.InheritsFrom(room,endroom))
-     {
-        Object.AddMetaProperty(self,"M-AI-Stasis");
-        Property.Set(self,"RenderAlpha",1.0);
-        PostMessage(self,"PhantomEnd");
-        SetOneShotTimer(self,"TPort",2.0);
-     }
-     DefaultOnCreatureRoomEnter();
-  }
   OnMessage()
   {
      // I want to get the note.  May I?
@@ -203,6 +186,14 @@ MESSAGES:
         else
            Reply(FALSE);
      }
+     else if(MessageIs("PortalFade"))
+     {
+        Object.AddMetaProperty(self,"M-AI-Stasis");
+        Property.Set(self,"RenderAlpha",1.0);
+        PostMessage(self,"PhantomEnd");
+        SetOneShotTimer(self,"TPort",2.0);
+        ActReact.React("freeze_ai",3.0,self,self,1.0);
+     }
      DefaultOnMessage();
   }
   OnTimer()
@@ -216,7 +207,7 @@ MESSAGES:
            Link.AnyExist("Contains",self,note))
         {
            Object.Destroy(note);
-           if(Quest.Get(GoalStateVarName(READ_NOTE_GOAL))!=kGoalComplete)
+           if(Quest.Get(GoalStateVarName(READ_NOTE_GOAL))==kGoalIncomplete)
               Quest.Set(GoalStateVarName(READ_NOTE_GOAL),kGoalFailed);
         }
         Object.Destroy(self);
@@ -224,6 +215,57 @@ MESSAGES:
      DefaultOnTimer();
   }
 END_SCRIPT(ThePagan)
+
+/* The portal at the end of the mission.  Gets rid of the pagan if he runs into it.
+   Ends the mission if the player runs into it.  Maybe the player even wins.  Maybe not.
+   Either way, the mission end should be instantaneous, not delayed.
+   */
+BEGIN_SCRIPT(MawPortal, Physics)
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kEnterExitMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kEnterExitMsg);
+      DefaultOnEndScript();
+   }
+   OnPhysEnter()
+   {
+      object critter=message.transObj;
+
+      if(Object.InheritsFrom(critter,"Avatar"))
+      {
+         integer goal=0;
+         // Make mission end instantaneous
+         // Mission should end in the quest var callbacks that are caused by
+         // setting FOLLOW_NOTE_GOAL complete and any other incomplete goals
+         // failed.
+         Quest.Set("EndingTime",0);
+
+         if(Quest.Get(GoalStateVarName(FOLLOW_NOTE_GOAL))==kGoalIncomplete)
+            Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalComplete);
+         for(goal=0;Quest.Exists(GoalStateVarName(goal));goal++)
+         {
+            // Any other goal that we needed to complete that we haven't yet,
+            // well, we've run out of time.
+            if(!(Quest.Get("GOAL_REVERSE_"+string(goal)) ||
+                 Quest.Get("GOAL_OPTIONAL_"+string(goal))))
+            {
+               if(Quest.Get(GoalStateVarName(goal))==kGoalIncomplete)
+                  Quest.Set(GoalStateVarName(goal),kGoalFailed);
+            }
+         }
+      }
+      else if(Object.InheritsFrom(critter,"Creature"))
+      {
+         PostMessage(critter,"PortalFade");
+      }
+      DefaultOnPhysEnter();
+   }
+
+END_SCRIPT(MawPortal)
 
 // Put on the player to tally up his inventory items (by combine type, as campaign
 // quest variables) so we can grant them back again at the beginning of "Trail of Blood"
