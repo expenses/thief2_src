@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drksloop.cpp,v 1.38 1999/12/22 18:45:25 PATMAC Exp $
 
 #include <lg.h>
