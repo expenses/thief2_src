@@ -2202,3 +2202,38 @@ MESSAGES:
 
 END_SCRIPT(RainSound)
 
+BEGIN_SCRIPT(VisitDecal, RootScript)
+
+METHODS:
+   
+   METHOD void VisitMyDecals()
+   {
+      if (Link.AnyExist("ScriptParams",self,self))
+      {
+         linkset splinkset = Link.GetAll("ScriptParams",self,self);
+         while (splinkset.AnyLinksLeft())
+         {
+            link splink = splinkset.Link();
+            string spdata = (string)splink.GetData();
+            integer page;
+            integer decal;
+            sscanf(spdata,"%d:%d",&page,&decal);
+            DarkGame.SetAutomapLocationVisited(page,decal);
+            splinkset.NextLink();
+         }
+      }
+     
+      
+   }
+
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if (MessageIs("TurnOn"))
+         VisitMyDecals();
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(VisitDecal)
