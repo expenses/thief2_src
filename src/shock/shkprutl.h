@@ -1,4 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkprutl.h 1.1 1998/08/19 15:38:43 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkprutl.h 1.2 1999/11/19 14:53:47 adurant Exp $
+
+This file has been moved to nzprutil.h AMSD
 
 #ifndef __SHKPRUTL_H
 #define __SHKPRUTL_H
