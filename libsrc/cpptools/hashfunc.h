@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/hashfunc.h 1.5 1998/08/13 10:28:22 TOML Exp $
 #ifndef HASHFUNC_H
 #define HASHFUNC_H
