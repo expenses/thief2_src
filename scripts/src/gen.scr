@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.4 1999/07/15 15:59:12 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.5 1999/07/16 09:20:33 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -4813,8 +4813,6 @@ MESSAGES:
 END_SCRIPT(TrapDeadfall)
 
 
-
-
 /* 
    The Quest Var trap performs some operation on a quest variable
    as specified by an "operator" string property.
@@ -4831,6 +4829,10 @@ END_SCRIPT(TrapDeadfall)
    
    =     x=a                  none
    !     x|=a                 x&=(~a)
+   +     x+=a                 x-=a
+   -     x-=a                 x+=a
+   {     x=x<<a (shift left)  x=x>>a (shift right)
+   }     x=x>>a (shift right) x=x<<a (shift left)
 
    Obvious possibilities to be implemented are x+=a, x-=a, etc.
       
@@ -4849,18 +4851,6 @@ MESSAGES:
 
          if(Property.Possessed(self,"TrapQVar"))
             command=Property.Get(self,"TrapQVar");
-         else
-         {
-            // For temporary back-compatibility to previous hacked way
-            // of doing this, try reading the DesignNote instead.  But warn.
-
-            if(!Property.Possessed(self,"DesignNote"))
-               return;
-
-            Debug.MPrint("Note fullwise: Quest var trap ",self,
-                         " using non-kosher property settings.");
-            command=Property.Get(self,"DesignNote");
-         }
          
          // Search to just after any occurance of ':'
          // we take this to be our Qvar name
@@ -4878,16 +4868,34 @@ MESSAGES:
             arg=(arg*10)+(command[ArgInd]-'0');
 
          op=command[0];
-         if(op=='=' && on)            
-            qvarval=arg;
-         else if(op=='!')
+         switch(op)
          {
-            if(on)
-               qvarval|=arg; // set bits in arg
-            else
-               qvarval&=(~arg); // unset bits in arg
+            case '=':
+               if(on) qvarval=arg;
+               break;
+            case '!':
+               if(on)
+                  qvarval|=arg; // set bits in arg
+               else
+                  qvarval&=(~arg); // unset bits in arg
+               break;
+            case '-':
+               on=!on; // and fall through
+            case '+':
+               if(on)
+                  qvarval+=arg;
+               else
+                  qvarval-=arg;
+               break;
+            case '{':
+               on=!on; // and fall through
+            case '}':
+               if(on)
+                  qvarval=qvarval<<arg;
+               else
+                  qvarval=qvarval>>arg;
+               break;
          }
-         // @TODO: And so on for '+', '-', what have you.
 
          Quest.Set(((const char*)command)+NameInd,qvarval);
       }
