@@ -225,15 +225,16 @@ rem **************************************************************
 
 mkdirs %_DAILYCD_%\editor
 cd %_DAILYCD_%\editor
-copy r:\prj\thief2\release\dromread\readme.txt .
+copy r:\prj\thief2\reltools\dromread\readme.txt .
 copy r:\prj\thief2\release\dromed.exe r:\prj\thief2\reltools\dromrel
+copy r:\prj\thief2\release\*.res r:\prj\thief2\reltools\dromrel
 pkzip dromed.zip r:\prj\thief2\reltools\dromrel\*.*
 pkzip missions.zip r:\prj\thief2\levels\shipping\*.mis
 copy r:\prj\thief2\levels\shipping\dark.gam
-mkdir schemas
-copy r:\prj\thief2\art\src\schemas\*.sch schemas
-copy r:\prj\thief2\art\src\schema\base.arc schemas
-copy r:\prj\thief2\art\src\schema\*.spc schemas
+mkdir schema
+copy r:\prj\thief2\art\src\schema\*.sch schema
+copy r:\prj\thief2\art\src\schema\base.arc schema
+copy r:\prj\thief2\art\src\schema\*.spc schema
 copy r:\prj\thief2\bin\missblat.exe .
 copy r:\prj\thief2\bin\misstrip.exe .
 copy r:\prj\thief2\reltools\dromtools\* .
