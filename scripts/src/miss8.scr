@@ -578,5 +578,116 @@ MESSAGES:
             
 END_SCRIPT(StickingPoint)
 
+BEGIN_SCRIPT(PickPocketGoalScript, RootScript)
 
+METHODS:
+   
+   METHOD integer PickPocketTarget()
+   {
+      return (Quest.Get("QPickPocketTarget"+(string)GetData("DiffLevel")));
+   }
+
+   METHOD integer PocketsPicked()
+   {
+      return (Quest.Get("DrSPocketOk"));
+   }
+
+   METHOD boolean IsValidObject(object which)
+   {
+      if ((integer)which <= 0)
+         return FALSE;
+      link contlink = Link.GetOne("~Contains",which);
+      if (((integer)contlink.GetData() != kContainTypeAlt) &&
+          ((integer)contlink.GetData() != kContainTypeBelt))
+         return FALSE;
+      integer propval = 0;
+      propval = ((integer)Property.Get(which,"FrobInfo","World Action"));
+      if (!(propval & kFrobMove))
+      {
+         Debug.MPrint(which," is not frobbable.  Has propval ",propval);
+         return FALSE;
+      }
+      object dstobj = contlink.To();
+      if ((integer)Property.Get(dstobj,"AI_Mode")==kAIM_Dead)
+      {
+         Debug.MPrint(which," was held by knocked out or dead AI ",dstobj);
+         return FALSE;
+      }
+      Debug.MPrint(which," was a valid pickpocket target");
+      return TRUE;
+   }
+
+   METHOD integer PocketsLeft()
+   {
+      integer numleft = 0;
+      linkset contlinks = Link.GetAll("Contains");
+      while (contlinks.AnyLinksLeft())
+      {
+	 if (IsValidObject(contlinks.Link().To()))
+            numleft++;
+         contlinks.NextLink();
+      }
+      return numleft;
+   }
+
+   METHOD void VerifyPickPocket()
+   {
+      integer targ = PickPocketTarget();
+      integer curval = PocketsPicked();
+      integer numleft = PocketsLeft();
+  
+      Debug.MPrint("Currently picked ",curval," pockets.  Want ",targ,".  Have ",numleft," left.");
+      if (curval + numleft < targ)
+      {
+         Debug.MPrint("Ooopsie.  You can't win the pick pocket anymore.\n");
+         Quest.Set("pickpockstat",-1);
+      }
+      if (curval>=targ)
+      {
+         Debug.MPrint("Yay! You're successful\n");
+         Quest.Set("pickpockstat",1);
+      }
+   }
+
+MESSAGES:
+
+   OnDifficulty()
+   {
+      SetData("DiffLevel",message.difficulty);
+      Debug.MPrint("Setting Diff Level to ",message.difficulty);
+      DefaultOnDifficulty();
+   }
+
+   OnSim()
+   {
+      SetOneShotTimer(self,"verifypockets",5.0);
+   }
+
+   OnBeginScript()
+   {
+      if (!IsDataSet("DiffLevel"))
+      {
+         SetData("DiffLevel",(integer)Quest.Get("difficulty"));
+         Debug.MPrint("No diff level found, setting to ",(integer)Quest.Get("difficulty"));
+      }
+      DefaultOnBeginScript();
+   }
+
+   OnContainer()
+   {
+      VerifyPickPocket();
+      DefaultOnContainer();
+   }
+
+   OnTimer()
+   {
+      if (message.name=="verifypockets")
+      {
+         VerifyPickPocket();
+         SetOneShotTimer(self,"verifypockets",5.0);
+      }
+      DefaultOnTimer();
+   }
+
+END_SCRIPT(PickPocketGoalScript)
 
