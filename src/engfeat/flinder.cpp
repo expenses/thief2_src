@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/engfeat/flinder.cpp,v 1.2 1999/04/28 13:49:42 XEMU Exp $
 
