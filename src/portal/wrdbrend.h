@@ -1,10 +1,21 @@
-// $Header: r:/prj/cam/src/portal/RCS/wrdbrend.h 1.3 1998/10/31 08:14:35 buzzard Exp $
+// $Header: r:/prj/cam/src/portal/RCS/wrdbrend.h 1.4 1999/11/01 10:22:57 MAT Exp $
 
 #ifndef __WRDBREND_H
 #define __WRDBREND_H
 
 #ifdef RGB_LIGHTING
+
+#ifdef RGB_888
+typedef struct LightmapEntry {
+   union {
+      uint I;
+      uchar A[4];
+   };
+} LightmapEntry;
+#else
 typedef ushort LightmapEntry;
+#endif
+
 #else
 typedef uchar LightmapEntry;
 #endif
