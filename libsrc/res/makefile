@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/res/RCS/makefile $
 # $Revisiion: $
-# $Author: mahk $
-# $Date: 1996/11/21 17:15:26 $
+# $Author: TOML $
+# $Date: 1996/12/19 10:32:24 $
 
 MAKETOP = $(CWD)
 
@@ -18,7 +18,13 @@ res_OBJS = lzw lzwfd2bf res restypes resfile resacc refacc \
 	resload resmem rescum resbuild resmake resexblk \
         resmisc resarq resthred resagg resguid
 
+%if '$(flav)'=='dbg'
+res_opt_objs = lzw
+%endif
+
 res_HDRS = lzw.h res.h restypes.h resrect.h resguid.h resagg.h
+
+
 
 
 %include  $(MRC)\make.rc
