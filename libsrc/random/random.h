@@ -1,28 +1,26 @@
 /*
  * $Source: x:/prj/tech/libsrc/random/RCS/random.h $
- * $Revision: 1.4 $
- * $Author: JAEMZ $
- * $Date: 1998/07/10 18:06:21 $
+ * $Revision: 1.9 $
+ * $Author: ccarollo $
+ * $Date: 1999/03/16 13:06:38 $
  */
 #ifndef __RANDOM_H
 #define __RANDOM_H
 #pragma once
 
-#define rn1(n) (arandom() % (n))
 #define RANDOM_MAX 0x7FFFFFFF
-#define drand48() (arandom() / (RANDOM_MAX + 1.0))
 
-// Call this first, or you're doomed to get crap.
+// Call this first, or you're doomed to die a horrible death
 EXTERN void RandInit(long seed);
 
-// Returns the RandomInit seed or the last sarandom seed that was set.
-EXTERN unsigned long RandGetSeed(void);
+// Call this if you want to free every last bit of memory.
+EXTERN void RandShutdown(void);
 
 // Only call this if you want, RandomInit does it anyway
 EXTERN void RandSeed(long seed);
 
 // Call this for a good one
-EXTERN long Rand(void);
+EXTERN long RandLong(void);
 
 // Call this for a good float between in the range [0 and 1)
 EXTERN float RandFloat(void);
@@ -30,7 +28,10 @@ EXTERN float RandFloat(void);
 // Returns a normalized random variable,
 // stdev 1, mean 0
 // Not fast, takes log, sqrt, cos, and 2 uniform random variables.
-EXTERN float RandNorm();
+EXTERN float RandNorm(void);
+
+// good one, in the range [0,n)
+EXTERN long RandRangeLong(int n);
 
 
 // These are called Q for Quick, but really they shouldn't be
@@ -42,10 +43,31 @@ EXTERN float RandNorm();
 EXTERN void RandSeedQ(long seed);
 
 // Call this for a quickee
-EXTERN long RandQ(void);
+EXTERN long RandLongQ(void);
 
 // Fast, bad float between [0 and 1)
 EXTERN float RandFloatQ(void);
+
+// fast one, in the range [0,n)
+EXTERN long RandRangeLongQ(int n);
+
+
+#if defined(__cplusplus) && !defined(USE_RANDOM_HELPER_FUNCTIONS)
+
+#include <rng.h>
+extern RNG *gRNGCongruential;
+extern RNG *gRNGFibonacci;
+#define RandLong() (gRNGFibonacci->GetLong())
+#define RandFloat() (gRNGFibonacci->GetFloat())
+#define RandNorm() (gRNGFibonacci->GetNorm())
+#define RandRangeLong(x) (gRNGFibonacci->GetRange(x))
+
+#define RandLongQ() (gRNGCongruential->GetLong())
+#define RandFloatQ() (gRNGCongruential->GetFloat())
+#define RandNormQ() (gRNGCongruential->GetNorm())
+#define RandRangeLongQ(x) (gRNGCongruential->GetRange(x))
+
+#endif // !cplusplus
 
 
 
