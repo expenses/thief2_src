@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/twqscrpt.cpp,v 1.11 1999/05/27 17:25:18 Justin Exp $
 // 
 
