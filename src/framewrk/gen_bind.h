@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/gen_bind.h,v 1.3 1999/01/15 15:09:09 ccarollo Exp $
 
 #ifndef __GEN_BIND_H

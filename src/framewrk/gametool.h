@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/gametool.h,v 1.2 1999/11/02 15:57:40 BODISAFA Exp $
 #pragma once  
 #ifndef __GAMETOOL_H
