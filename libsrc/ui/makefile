@@ -3,7 +3,7 @@ SPEW_ON = 1
 WARN_ON = 1
 DBG_ON = 1
 
-PROG_TARGETS =  regtest arraytst gadtest texttest workgadg
+PROG_TARGETS =  regtest arraytst gadtest texttest workgadg testfont
 LIB_TARGETS = ui
 INST_TARGETS =
 
@@ -32,9 +32,9 @@ GADTEST_OBJS = gadgets.obj rect.obj gadtest.obj region.obj event.obj \
 GADTEST_LIBS = _lg.lib _mprintf.lib _2d.lib _res.lib _kb.lib _mouse.lib
 
 TEXTTEST_OBJS = texttest.obj gadgets.obj region.obj slider.obj \
-        textgadg.obj rect.obj pushbutt.obj \
-        event.obj array.obj cursors.obj slab.obj
-TEXTTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib kb.lib mouse.lib
+        textgadg.obj rect.obj pushbutt.obj monofont.obj \
+        event.obj array.obj cursors.obj slab.obj texttool.obj realfont.obj
+TEXTTEST_LIBS = _2d.lib _res.lib _kb.lib _mouse.lib _mprintf.lib _lg.lib
 
 WORKGADG_OBJS = workgadg.obj gadgets.obj region.obj cursors.obj slab.obj \
         bugtrak.obj qboxgadg.obj pushbutt.obj slider.obj butarray.obj \
@@ -43,10 +43,14 @@ WORKGADG_LIBS = _lg.lib _mprintf.lib _2d.lib _res.lib _kb.lib _mouse.lib
 
 UI_OBJS = gadgets.obj region.obj cursors.obj event.obj slab.obj \
         pushbutt.obj butarray.obj qboxgadg.obj textgadg.obj slider.obj \
-        rect.obj array.obj
+        rect.obj array.obj texttool.obj realfont.obj monofont.obj
 UI_HDRS = gadgets.h region.h cursors.h event.h slab.h pushbutt.h \
-        butarray.h qboxgadg.h textgadg.h slider.h rect.h array.h
+        butarray.h qboxgadg.h textgadg.h slider.h rect.h array.h \
+        texttool.h 
 UI_LIBS = 
+
+TESTFONT_OBJS = testfont.obj 
+TESTFONT_LIBS = 2d.lib mprintf.lib lg.lib
 
 # Libraries
 
@@ -72,40 +76,3 @@ blah .PHONY:
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h string.h types.h
-
-arraytst.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h stdlib.h types.h
-
-cursors.obj: 2d.h assert.h base.h conio.h cursors.h dbg.h dos.h error.h \
-	 fix.h grindex.h i86.h lg.h lgalt.h libdbg.h malloc.h math.h \
-	 memall.h mouse.h rect.h region.h stdarg.h stdio.h stdlib.h \
-	 string.h types.h
-
-event.obj: array.h assert.h base.h conio.h dbg.h dos.h error.h event.h \
-	 i86.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 mouse.h projdbg.h rect.h region.h stdio.h stdlib.h string.h \
-	 types.h
-
-gadtest.obj: 2d.h array.h assert.h base.h butarray.h conio.h cursors.h \
-	 datapath.h dbg.h dos.h error.h event.h fix.h gadgets.h gfx.h \
-	 grindex.h i86.h io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h \
-	 math.h memall.h mouse.h mprintf.h projdbg.h pushbutt.h qboxgadg.h \
-	 rect.h region.h res.h resource.h restypes.h slider.h stat.h \
-	 stdarg.h stdio.h stdlib.h string.h textgadg.h types.h
-
-hottest.obj: dbg.h error.h hash.h hotkey.h kb.h kbcook.h lg.h lgalt.h \
-	 libdbg.h malloc.h memall.h stdio.h stdlib.h types.h
-
-oldgdtst.obj: 2d.h array.h assert.h base.h butarray.h conio.h datapath.h \
-	 dbg.h dos.h error.h event.h fix.h gadgets.h gfx.h grindex.h i86.h \
-	 io.h kb.h kbcook.h lg.h lgalt.h libdbg.h malloc.h math.h memall.h \
-	 mouse.h mprintf.h projdbg.h pushbutt.h rect.h region.h res.h \
-	 resource.h restypes.h slider.h stat.h stdarg.h stdio.h stdlib.h \
-	 string.h textgadg.h types.h
-
-region.obj: array.h assert.h base.h conio.h datapath.h dbg.h dos.h error.h \
-	 event.h gadgets.h i86.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 projdbg.h rect.h region.h res.h resource.h restypes.h stdio.h \
-	 stdlib.h string.h types.h
