@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/texsave.cpp,v 1.4 1998/10/05 17:28:29 mahk Exp $
 // editorlevel file format and save/load code
 
