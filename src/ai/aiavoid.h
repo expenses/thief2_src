@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiavoid.h 1.2 1998/10/25 01:45:36 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiavoid.h,v 1.3 2000/03/25 22:13:01 adurant Exp $
 //
 //
 
@@ -20,6 +20,7 @@ F_DECLARE_INTERFACE(IAIManager);
 
 BOOL AIInitObjectAvoid(IAIManager *);
 BOOL AITermObjectAvoid();
+BOOL AIDBResetObjectAvoid();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
