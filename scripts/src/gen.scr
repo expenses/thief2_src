@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.40 2000/01/21 18:10:00 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.41 2000/01/21 22:04:17 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -714,26 +714,6 @@ METHODS:
    }
 END_SCRIPT(VOSounds)
 
-
-
-BEGIN_SCRIPT(Burplauncher, RootScript)
-
-MESSAGES:
-   // we want all objects in the burp fan to time out simultaneously.
-   OnSlain()
-   {
-      linkset firedset=Link.GetAll("~Firer",self);
-
-      while(firedset.AnyLinksLeft())
-      {
-         object fired=firedset.Link().To();
-
-         Damage.Slay(fired,self);
-         firedset.NextLink();
-      }
-      DefaultOnSlain();
-   }
-END_SCRIPT(Burplauncher)
 
 // situations for returning camera to player
 // this script should be attached to players.
