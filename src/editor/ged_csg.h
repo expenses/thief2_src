@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/editor/RCS/ged_csg.h 1.8 1998/08/27 08:54:21 CCAROLLO Exp $
+// $Header: r:/prj/cam/src/editor/RCS/ged_csg.h 1.9 1999/11/16 13:00:03 henrys Exp $
 
 #ifndef __GED_CSG_H
 #define __GED_CSG_H
@@ -48,7 +48,7 @@ do { gedit_editted = !(b); gedcsg_level_valid = (b); gedcsg_lighting_ok = (b); }
 
 
 // level lighting flags
-EXTERN BOOL gedcsg_light_raycast, gedcsg_light_quad;
+EXTERN BOOL gedcsg_light_objcast, gedcsg_light_raycast, gedcsg_light_quad;
 
 // mostly internal incremental do one light operation
 EXTERN BOOL gedcsg_parse_light_brush(editBrush *us, uchar dynamic);
