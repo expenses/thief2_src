@@ -137,7 +137,25 @@ END_SCRIPT(BlueLightSensor)
 
 
 
-BEGIN_SCRIPT(MrCavador, RootScript)
+BEGIN_SCRIPT(MrCavador, AI)
+
+METHODS:
+  
+   METHOD void SnapWatchLinks()
+   {
+      if (Link.AnyExist("~AIWatchObj",self))
+      {
+         linkset wolinks = Link.GetAll("~AIWatchObj",self);
+         while (wolinks.AnyLinksLeft())
+         {
+            Link.Destroy(wolinks.Link());
+            wolinks.NextLink();
+         }
+      }
+      else
+         Debug.MPrint("No ~AIWatchObj links from ",self);
+   }
+
 MESSAGES:
   
    OnSim()
@@ -151,6 +169,15 @@ MESSAGES:
    {
       Quest.Set(GoalStateVarName(CAVADOR_LIVE_GOAL),kGoalFailed);
       DefaultOnSlain();
+   }
+
+   OnAIModeChange()
+   {  
+      if ((message.mode==kAIM_Dead) && (message.previous_mode != kAIM_Dead))
+      {
+         SnapWatchLinks();
+      }
+      DefaultOnAIModeChange();
    }
 
    OnTimer()
