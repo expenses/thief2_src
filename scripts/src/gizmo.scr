@@ -53,7 +53,8 @@ BEGIN_SCRIPT(StdDoor,Door)
 
          retval=retval+StateTags[Status]+string(", OldOpenState ")+StateTags[OldStatus];
 
-         if(IsDataSet("PlayerFrob"))
+         // @TODO: Magic number.  Hateful headers.
+         if(OldStatus!=4 && IsDataSet("PlayerFrob"))
          {
             retval=retval+", CreatureType Player";
          }
