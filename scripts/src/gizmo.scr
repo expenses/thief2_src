@@ -946,6 +946,26 @@ MESSAGES:
 END_SCRIPT(StdLever)
 
 
+
+
+
+// Posts "ToggleNoSE" msgs instead of TurnOn/TurnOff for
+// PostTweqActivates.  Intended for levers that toggle other
+// levers, but don't want those levers, in turn to have side effects.
+// "LeverNoChain" means lever, no chain reaction.
+BEGIN_SCRIPT(LeverNoChain,StdLever)
+
+METHODS:
+METHOD void PostTweqActivate (integer dir)
+{
+	Link.BroadcastOnAllLinks(self,"ToggleNoSE","ControlDevice",NULL);
+}   
+
+END_SCRIPT(LeverNoChain)
+
+
+
+
 /* Slight variation on the standard lever behavior in
    terms of triggering circumstances. 
    This script sends a "TurnOn" message when the attached object's
