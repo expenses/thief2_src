@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/pt_asm.h 1.6 1996/11/05 18:48:24 buzzard Exp $
+// $Header: r:/t2repos/thief2/src/portal/pt_asm.h,v 1.7 2000/01/29 13:37:36 adurant Exp $
+#pragma once
 
 // accessing functions for all of the assembly stuff, private
 

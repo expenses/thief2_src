@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkammov.h 1.6 1999/02/26 13:32:15 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkammov.h,v 1.7 2000/01/29 13:40:25 adurant Exp $
+#pragma once
 
 #ifndef __SHKAMMO_H
 #define __SHKAMMO_H

@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaiprb.h 1.4 1999/06/06 19:19:21 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaiprb.h,v 1.5 2000/01/29 13:40:18 adurant Exp $
 //
+#pragma once
 
 #ifndef __SHKAIPRB_H
 #define __SHKAIPRB_H

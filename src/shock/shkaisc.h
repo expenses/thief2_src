@@ -1,7 +1,8 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkaisc.h 1.5 1999/05/03 13:03:09 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaisc.h,v 1.6 2000/01/29 13:40:20 adurant Exp $
 //
 // AI script stuff
 //
+#pragma once
 
 #ifndef __SHKAISC_H
 #define __SHKAISC_H
