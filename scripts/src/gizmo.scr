@@ -1359,7 +1359,7 @@ MESSAGES:
          integer act=kTweqDoHalt;
          if(boolean(Property.Get(self,"MovingTerrain","active")))
             act=kTweqDoActivate;
-         ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, act);
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, act);
       }
       DefaultOnBeginScript();
    }
@@ -1405,6 +1405,12 @@ METHODS:
       ActReact.React("tweq_control",1.0,self,0, 
                      kTweqTypeRotate, on?kTweqDoReverse:kTweqDoForward);
       Base::Activate(on);
+   }
+MESSAGES:
+   OnBeginScript()
+   {
+      ;
+      // don't muck with default tweq initialization stuff.
    }
 
 END_SCRIPT(OverheadDoor)
