@@ -148,34 +148,221 @@ END_SCRIPT (TrapDoorLock)
 
 
 
-// Script: LeverNoSETranslator
+// Script: NaggingLever
 
-// Meta trap that converts 
-//		"ToggleNoSE" to TurnOn-or-TurnOff depending on state of device the msg is from.
+// Lever that periodically sends a TurnOn/TurnOff msg correpsonding
+// to its state.
+// The period is 10 seconds unless the player is within 50 feet, in which case the
+// period is 0.1 seconds.  DistToPlayer is calculated every 10 seconds.
 
-// These are interpreted by TrapDoorLock
+// purpose - since the knobs at the time lock in bank control each other
+// and control RequireAll traps, the knobs need to inform the RequireAll traps
+// every time any knob changes state,  the easiest way to do this was to have
+// them inform the traps all the time.
 
-// purpose - use standard TripTrap functionality to 
-// have the TimeLock knobs be controlled by a RequireAllTrap.
+BEGIN_SCRIPT (NaggingLever, RootScript)
 
-BEGIN_SCRIPT (LeverNoSETranslator, RootScript)
+METHODS:
+
+float GetInterval()
+{
+	return (float)GetData("Interval");
+}
+
+// @NOTE: bad multiplayer assumption
+real GetDistToPlayer()
+{
+	vector p1=Object.Position(self);
+	vector p2=Object.Position(Object.Named("Player"));
+	return (real) (p1-p2).Magnitude();
+}
+
 
 MESSAGES:
+OnSim()
+{
+	if (message.starting)
+	{
+		SetData("Interval",10.0);
+		SetOneShotTimer("Ping",GetInterval());
+		SetOneShotTimer("ComputeDistance",0.1);
+	}
+	DefaultOnSim();
+}
+
+OnTimer()
+{
+	if (message.name == "Ping")
+	{
+		
+		if (Property.Get(self,"StTweqJoints","AnimS")==0x02)
+		{
+			Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+		}
+		else if (Property.Get(self,"StTweqJoints","AnimS")==0x00)
+		{
+			Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+		}
+		else
+		{
+			// it must be currently moving, don't broadcast anything
+		}
+
+		SetOneShotTimer("Ping",GetInterval());
+	}
+
+	if (message.name == "ComputeDistance")
+	{
+		if (GetDistToPlayer() < 50.0)
+		{
+			SetData("Interval",0.1);
+		}
+		else
+		{
+			SetData("Interval",10.0);
+		}
+
+		SetOneShotTimer("ComputeDistance",10.0);
+	}
+
+	DefaultOnTimer();
+}
+
+END_SCRIPT (NaggingLever)
+
+
+
+// Script: IveBeenFrobbed
+
+// This is a special-purpose script.  Every time the object
+// is frobbed, it sends a "IveBeenFrobbed" msg, iterpreted by
+// FrobTracker, below.
+// we can't use TurnOns because these objects have NaggingLever, so
+// they send TurnOns all the time
+// purpose: let the player win the puzzle if they frob the knobs enough
+// times, whether or not the puzzle is really solved
+// to avoid frustration
+
+BEGIN_SCRIPT (IveBeenFrobbed, RootScript)
+MESSAGES:
+OnFrobWorldEnd()
+{
+	Link.BroadcastOnAllLinks(self,"IveBeenFrobbed","ControlDevice",NULL);
+	DefaultOnFrobWorldEnd();
+}
+
+END_SCRIPT (IveBeenFrobbed)
+
+
+// Script: FrobTracker
+
+// This is a special-purpose script.  
+// if it receives a magic number (currently 60) of "IveBeenFrobbed"
+// msgs, it broadcasts TurnOns.
+// This is also the script with the easter egg whereby the time lock
+// opens automatically after the level has been played for 8 hours.
+BEGIN_SCRIPT (FrobTracker, RootScript)
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+	{
+		SetData("TimesFrobbed",0);
+		SetOneShotTimer("OpenSesame",28800.0);
+	}
+	DefaultOnSim();
+}
+
 OnMessage()
 {
-	if (MessageIs("ToggleNoSE"))
+	if (MessageIs("IveBeenFrobbed"))
 	{
-		// 2 = reverse (just turned on), 0 = normal (just turned off)
-		if (Property.Get(message.from,"StTweqJoints","AnimS")==0x02)
+		SetData("TimesFrobbed",(int)GetData("TimesFrobbed")+1);
+		if ((int)GetData("TimesFrobbed") == 60)
 			Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-		else
-			Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+	}
+	DefaultOnMessage();
+}
+
+OnTimer()
+{
+	if (message.name == "OpenSesame")
+	{
+		Debug.MPrint(" Open Sesame!");
+		Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+	}
+	DefaultOnTimer();
+}
+
+END_SCRIPT (FrobTracker)
+
+
+
+
+// Script: SmoothRelay
+
+// Only sends TurnOn's, never TurnOff's.
+// Doesn't receive a TurnOn as soon as it receives one.
+// Sends TurnOn's iff it doesn't receive a TurnOff
+// in some specified interval after it receives a TurnOn.
+// purpose:  the RequireAll traps associated with the 
+// NaggingLever script, above, oftens sends TurnOns while
+// levers are moving and then sends a TurnOff when it comes
+// to rest a second later.
+
+BEGIN_SCRIPT (SmoothRelay, RootScript)
+
+METHODS:
+
+float GetInterval()
+{
+	return 0.25;
+}
+
+MESSAGES:
+
+OnSim()
+{
+	if (message.starting)
+		SetData("State","Normal");
+	DefaultOnSim();
+}
+
+OnMessage()
+{
+	// if we get a TurnOn when we're smoothing data, ignore it because we're
+	// just listening for TurnOffs
+	if ( (MessageIs("TurnOn")) && (GetData("State")=="Normal") )
+	{
+//		Debug.MPrint(" Smoothing Data...");
+		SetData("State","SmoothingData");
+		SetOneShotTimer("SmoothOver",GetInterval());
+	}
+	else if ((MessageIs("TurnOff")))
+	{
+//		Debug.MPrint(" ****** REVERTING TO NORMAL.");
+		SetData("State","Normal");
 	}
 
 	DefaultOnMessage();
 }
 
-END_SCRIPT (LeverNoSETranslator)
+OnTimer()
+{
+	if (message.name == "SmoothOver")
+	{
+		// as long as we're still smoothing data and haven't reverted to normal
+		if (GetData("State")=="SmoothingData")
+		{
+//			Debug.MPrint(" SENDING TURNON.");
+			Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+		}
+	}
+	DefaultOnTimer();
+}
+
+END_SCRIPT (SmoothRelay)
+
 
 
 //  @ TODO:	I have 4 scripts which kill different (conceptual) classes of AIs based 
