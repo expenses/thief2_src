@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.13 1999/10/04 17:19:54 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.14 1999/10/05 15:47:49 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -13,7 +13,6 @@
 #include "rendprop.h" // for render types
 #include "dmgprop.h" // for slay results
 #include "ambbase.h" // for ambient hack flags
-#include "phprops.h" // for kCPT_ constants
 
 #include <stdio.h> // for sprintf, because damn, why not. 
 
@@ -1722,12 +1721,23 @@ METHODS:
          return;
       if(start)
       {
+         vector vel;
+
+         // Arrest downward velocity by 50%.  If you'd been at 50%
+         // gravity all along, you'd actually only be at 30% less
+         // velocity at the same depth (a factory of 1/root(2)).
+         // This will then tend to encourage use of the potion in
+         // mid-fall, which sounds like fun. -TJS
+         Physics.GetVelocity(imbiber,vel);
+         if(vel.z<0) vel.z/=2;
+         Physics.SetVelocity(imbiber,vel);
+
          DrkInv.AddSpeedControl("LoGrav",0.5,1.0);
-         Property.Set(imbiber,"PhysAttr","Gravity %",50);
+         Physics.SetGravity(imbiber,0.50);
       }
       else
       {
-         Property.Set(imbiber,"PhysAttr","Gravity %",100);
+         Physics.SetGravity(imbiber,1.00);
          DrkInv.RemoveSpeedControl("LoGrav");
       }
    }
@@ -4268,46 +4278,6 @@ MESSAGES:
    }
 
 END_SCRIPT(CameraAlert)
-
-
-/* Turrets' alertness is controlled by external sensors, such as cameras
-   or other triggers.   When a turret gets a "TurnOn," it goes to high
-   alertness and stays there.  When it gets a "TurnOff," it goes to low
-   alertness and stays _there_.
-   Turrets inherit from TrapRequirement so they can be on so long as
-   _any_ of their sensors have sent them a TurnOn without a matching
-   TurnOff.
-*/
-BEGIN_SCRIPT(TurretAlert, TrapRequirement)
-
-METHODS:
-   METHOD void ClampAlert(integer alert)
-   {
-      Property.Set(self,"AI_AlertCap","Min level",alert);
-      Property.Set(self,"AI_AlertCap","Max level",alert);
-
-      // Placeholder joint animation until we get real turret AI
-      // Assumes we'll use the StdTwoState script for this.
-      PostMessage(self,alert==kHighAlert?"GoForward":"GoBackward");
-   }
-
-MESSAGES:
-   OnMessage()
-   {
-      if(MessageIs("TurnOn"))
-      {
-         ClampAlert(kHighAlert);
-         DefaultOnMessage();
-      }
-      else if(MessageIs("TurnOff"))
-      {
-         DefaultOnMessage();
-         if(!Link.AnyExist("ScriptParams",self))
-            ClampAlert(kNoAlert);
-      }
-   }
-
-END_SCRIPT(TurretAlert)
 
 
 /* QuaffHeal:
