@@ -506,6 +506,22 @@ BEGIN_SCRIPT(Training, RootScript)
        }
        return FALSE;
     }
+
+   METHOD boolean PopulatingControllers(object trigger)
+   {
+      if(!Object.Exists(trigger)) return FALSE;
+
+      linkset habitations=Link.GetAll("~Population",self);
+      while(habitations.AnyLinksLeft())
+      {
+         if(Link.AnyExist("ControlDevice",habitations.Link().To(),trigger))
+            return TRUE;
+         habitations.NextLink();
+      }
+      
+      return FALSE;
+   }
+
     /* How to train flash bombs?  Seems impossible to tell whether AIs
        stand to be affected, which kind of blows.
        */
@@ -647,6 +663,15 @@ BEGIN_SCRIPT(Training, RootScript)
       return FALSE;
    }
 
+   METHOD boolean TrainMantle(object world, object inv, object weap)
+   {
+      if(!PopulatingControllers("MantleTrig"))
+         return FALSE;
+      // Note that we don't plan on ever scoring this lesson.  If you're in among the
+      // crates again we'd rather give you the tip again. 
+      return DoLesson("JumpMantle","Jump");
+   }
+
    METHOD void Prompt()
    {
       object inv=Quest.Get(INV_ID_QVAR);
@@ -671,6 +696,7 @@ BEGIN_SCRIPT(Training, RootScript)
       if(
          (Quest.Get("difficulty") > 0) ||
          TrainHealing(world,inv,weap) ||
+         TrainMantle(world,inv,weap) ||
          TrainDoor(world,inv,weap) ||
          TrainContainer(world,inv,weap) ||
          TrainUseFlash(world,inv,weap) ||
