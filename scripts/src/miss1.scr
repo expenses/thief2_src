@@ -1,4 +1,5 @@
 #include "drkgoalt.h"
+#include "invtype.h"
 
 #define GOAL_ESCAPE 0
 
@@ -85,6 +86,39 @@ END_SCRIPT(AwakeToEscape)
    act on Hard or Expert difficulty.
    */
 
+
+/* This script goes on the player, to track any state changes that will affect
+   our training messages.
+   */
+BEGIN_SCRIPT(TrainPlayer, RootScript)
+
+MESSAGES:
+/*
+   To track the interface state of the player's arrows, we will
+   add a script to them.  We'll do this when the player contains them
+   so that water crystals work correctly and so we have no chance for
+   error.
+   */
+   OnContainer()
+   {
+      if(message.event==kContainAdd || message.event==kContainCombine)
+      {
+         object containee=message.containee;
+         integer invtype=kInvTypeJunk; // by default
+
+         if(Property.Possessed(containee,"InvType"))
+            invtype=Property.Get(containee,"InvType");
+
+         if(invtype==kInvTypeWeapon &&
+            !Object.HasMetaProperty(containee,"M1_TrainWeapon"))
+         {
+            Object.AddMetaProperty(containee,"M1_TrainWeapon");
+         }
+      }
+   }
+END_SCRIPT(TrainPlayer)
+      
+
 /*
   Many of these scripts will have in common the need to display information on
   uses of various key and mouse button commands.  We define a script for them
@@ -93,6 +127,14 @@ END_SCRIPT(AwakeToEscape)
 BEGIN_SCRIPT(KeyPrompter,RootScript)
 
 METHODS:
+
+   /* Action is the full description of the action to be attempted (e.g.
+      "USE Door to open"), while Key describes only the interface binding
+      to be prompted (e.g. the identity of the USE key).
+
+      The quest variable tracking successful completion of the lesson
+      is derived from the name of the Action string by prepending "tr_".
+      */
    METHOD void KeyString(const string ref Action, const string ref Key)
    {
       string DisplayOutput = "";
@@ -191,6 +233,155 @@ MESSAGES:
 END_SCRIPT(TakeLoot)
 
 
+/* The prompter about shooting out the torch does not score
+   each individual "lesson" as it is completed.  Rather, it scores
+   them all when the torch is shot out, since each is a thing about
+   which a novice player may need guidance until the torch is shot out.
+   */
+/*
+   First, track interface state of water arrows.  History will absolve
+   us of keeping all of this in quest variables.  Basically, we can
+   communicate between scripts, and automatically get state change
+   messages because we can subscribe to the quest vars.
+   */
+
+#define WEAP_UI_QVAR "WeapUI"
+#define WEAP_ID_QVAR "WeapID"
+#define kUnready 0
+#define kReady 1
+#define kCocked 2
+
+BEGIN_SCRIPT(TrainWeapon, RootScript)
+MESSAGES:
+   OnFrobInvBegin()
+   {
+      if (message.Abort)
+         // aborting attack
+         Quest.Set(WEAP_UI_QVAR,kReady);
+      else
+         // beginning attack
+         Quest.Set(WEAP_UI_QVAR,kCocked);
+
+      DefaultOnFrobInvBegin();
+   }
+   OnFrobInvEnd()
+   {
+      Quest.Set(WEAP_UI_QVAR,kReady);
+      DefaultOnFrobInvEnd();
+   }
+
+   OnInvSelect()
+   {
+      Quest.Set(WEAP_ID_QVAR,integer(self));
+      Quest.Set(WEAP_UI_QVAR,kReady);
+      DefaultOnInvSelect();
+   }
+
+/* Other arrow scripts seem to count on getting deselect for one weapon
+   before select for another, so we do too.
+   */
+   OnInvDeSelect()
+   {
+      Quest.Set(WEAP_UI_QVAR,kUnready);
+      Quest.Set(WEAP_ID_QVAR,OBJ_NULL);
+      DefaultOnInvDeSelect();
+   }
+
+   OnDestroy()
+   {
+      Quest.Set(WEAP_UI_QVAR,kUnready);
+      Quest.Set(WEAP_ID_QVAR,OBJ_NULL);
+   }
+
+END_SCRIPT(TrainWeapon)
+
+
+
+/* We will assume that notification of player's presence in region where we
+   want to prompt will come from a separate player room trigger.
+
+   Note again, we do not score the player on this lesson ourselves.  When
+   the torch goes out, traps will delete the trap that has this script,
+   and it will clean up.
+   */
+BEGIN_SCRIPT(ShootTorchHere, KeyPrompter)
+METHODS:
+   METHOD void Prompt()
+   {
+      {
+         Debug.MPrint("Might prompt.  On=",GetData("On"));
+         Debug.MPrint("Weapon ObjID=",Quest.Get(WEAP_ID_QVAR));
+         Debug.MPrint("Weapon UI state=",Quest.Get(WEAP_UI_QVAR));
+      }
+
+      object CurrentWeapon=object(Quest.Get(WEAP_ID_QVAR));
+
+      if(GetData("On")==FALSE)
+      {
+         ClearHint();
+         return;
+      }
+      if(!Object.Exists(CurrentWeapon) ||
+         !Object.InheritsFrom(CurrentWeapon,"water"))
+      {
+         KeyString("SelectWaterArrow","ReadyWater");
+      }
+      else
+      {
+         integer weapui=Quest.Get(WEAP_UI_QVAR);
+
+         if(weapui==kReady)
+         {
+            KeyString("PullArrow","Attack");
+         }
+         else if(weapui==kCocked)
+         {
+            KeyString("ReleaseArrow","Attack");
+         }
+      }
+   }
+MESSAGES:
+   OnBeginScript()
+   {
+      Quest.SubscribeMsg(self,WEAP_UI_QVAR);
+      Quest.SubscribeMsg(self,WEAP_ID_QVAR);
+      if(!IsDataSet("On"))
+         SetData("On",FALSE);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      // Do we need to do this?
+      Quest.UnsubscribeMsg(self,WEAP_ID_QVAR);
+      Quest.UnsubscribeMsg(self,WEAP_UI_QVAR);
+   }
+   OnDestroy()
+   {
+      // Just to be tidy.  At least it will call ClearHint();
+      Score("SelectWaterArrow");
+      Score("PullArrow");
+      Score("ReleaseArrow");
+   }
+   OnQuestChange()
+   {
+      Prompt();
+      DefaultOnQuestChange();
+   }
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         SetData("On",TRUE);
+      else if(MessageIs("TurnOff"))
+         SetData("On",FALSE);
+      else
+      {
+         DefaultOnMessage();
+         return;
+      }
+      Prompt();
+      DefaultOnMessage();
+   }
+END_SCRIPT(ShootTorchHere);
 
 
 
