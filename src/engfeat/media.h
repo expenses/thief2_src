@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/media.h,v 1.4 2000/01/29 13:19:47 adurant Exp $
   // used internally for undecided regions
 #pragma once
