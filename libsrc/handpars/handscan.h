@@ -1,8 +1,16 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		HandScan.H		Lexical "hand-scanner" for the "hand-parser"
 //		Rex E. Bradford (REX)
 /*
-* $Header: x:/prj/tech/libsrc/handpars/RCS/handscan.h 1.3 1996/09/29 12:41:09 JAEMZ Exp $
+* $Header: x:/prj/tech/libsrc/handpars/RCS/handscan.h 1.4 1970/01/01 00:00:00 REX Exp $
 * $Log: handscan.h $
+ * Revision 1.4  1970/01/01  00:00:00  REX
+ * Added ifdef cplusplus
+ * 
  * Revision 1.3  1996/09/29  12:41:09  JAEMZ
  * Added doubleval to Token and parse it on the sly
  * 
@@ -23,13 +31,17 @@
  * 
 */
 
-#ifndef HANDSCAN_H
-#define HANDSCAN_H
+#ifndef __HANDSCAN_H
+#define __HANDSCAN_H
 
-#include "types.h"
-#include "fix.h"
-#include "cstream.h"
-#include "symtab.h"
+#include <types.h>
+#include <fix.h>
+#include <cstream.h>
+#include <symtab.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //	Extend base symbol table types
 
@@ -121,6 +133,9 @@ bool ScanSetWsChars(Scanner *pscan, uchar *pws);
 
 bool ScanNextTok(Scanner *pscan, Token *pt);
 
+#ifdef __cplusplus
+};
 #endif
 
-
+#endif
+
