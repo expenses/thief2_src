@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/invtype.h,v 1.3 1999/11/02 16:16:23 adurant Exp $
 #pragma once  
 #ifndef __INVTYPE_H
