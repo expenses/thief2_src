@@ -165,23 +165,41 @@ END_SCRIPT(Courier)
 
 // Script specially for the pagan agent.
 BEGIN_SCRIPT(ThePagan, Room)
-
+METHODS:
+  METHOD object HaveNote()
+  {
+     object note=object("TheNote");
+     if (Object.Exists(note) &&
+         Link.AnyExist("Contains",self,note))
+        return note;
+     return object(0);
+  }
+        
 MESSAGES:
   OnMessage()
   {
+     boolean eek=FALSE;
+
      // I want to get the note.  May I?
      if(MessageIs("WantNote"))
      {
         object note=object("TheNote");
         if(Object.Exists(note))
         {
+           eek=TRUE;
            if(Link.AnyExist("~Contains",note))
            {
-              Debug.MPrint("Eek. Someone else has note.");
               Reply(FALSE);
            }
            else
+           {
+              eek=FALSE;
               Reply(TRUE);
+              // A failsafe.  If the pagan doesn't have the note a short
+              // time from now, he ain't gonna get it, and it's probably because
+              // the player interfered.  End the mission.
+              SetOneShotTimer(self,"CheckGotNote",10.0);
+           }
         }
         else
            Reply(FALSE);
@@ -194,17 +212,28 @@ MESSAGES:
         PostMessage(self,"PhantomEnd");
         SetOneShotTimer(self,"TPort",2.0);
      }
+     else if(MessageIs("NoteGone"))
+     {
+        eek=TRUE;
+     }
+
+     if(eek)
+     {
+        // Give us enough time to see the pagan's little drama.
+        Quest.Set("EndingTime",8);
+        Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+     }
+
      DefaultOnMessage();
   }
   OnTimer()
   {
      if(message.name=="TPort")
      {
+        object note=HaveNote();
         // make sure to destroy note, just to be safe.  This will stop the note
         // from checking for the player getting too far away.
-        object note=object("TheNote");
-        if(Object.Exists(note) &&
-           Link.AnyExist("Contains",self,note))
+        if(note!=object(0))
         {
            Object.Destroy(note);
            if(Quest.Get(GoalStateVarName(READ_NOTE_GOAL))==kGoalIncomplete)
@@ -212,6 +241,12 @@ MESSAGES:
         }
         Object.Destroy(self);
      }
+     else if(message.name=="CheckGotNote")
+     {
+        if(HaveNote()==object(0))
+           Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+     }
+
      DefaultOnTimer();
   }
 END_SCRIPT(ThePagan)
