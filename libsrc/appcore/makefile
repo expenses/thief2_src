@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/appcore/RCS/makefile $
-# $Revision: 1.3 $
+# $Revision: 1.4 $
 # $Author: TOML $
-# $Date: 1996/06/11 14:32:58 $
+# $Date: 1996/10/22 13:16:28 $
 #
 #
 
@@ -18,7 +18,7 @@ LIBTARGS = appcore
 
 EXETARGS =
 
-appcore_OBJS = appcore wappcore defcreat definit defexit
+appcore_OBJS = appcore dappcore wappcore defcreat definit defexit
 
 appcore_HDRS =
 
