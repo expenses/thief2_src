@@ -585,18 +585,17 @@ END_SCRIPT(QuaffHeal)
 
 	===WorkerBot metaprops===
   
-	 "searching"  - alert cap: max = 3, min = 2; don't fidget; don't return-to-origin 
-	 "camera out" - shape::model of "robot with camera out",  vision = average (not NULL like usual)
+	 "searching"  - alert cap: max = 3, min = 2; don't fidget; don't return-to-origin, vision = average,
+                   shape = model of robot with camera out.  Notices bodies.
+	 "camera out" - alert cap: max = 3, min = 1; vision = average, notices bodies.  Shape = model of robot
+                   with camera out.
 
-	A robot can have "camera out" but not be "searching" in the case where it has seen the 
-	player, ramped up to alert 3, and run away.
-	A robot should never be "searching" unless it has "camera out", however.
 
 	===WorkerBot pseudoscripts===
 
 	Alert response 2: 
 	  * ScriptMessage "DoISearch?" to make sure I'm not already searching
-	  * If that passes, add "searching" and "camera out" metaprops
+	  * If that passes, add "searching" metaprop
 	  * ScriptMessage "DoSearch" to trigger script-controlled search behavior
 	  * Some cosmetic stuff, too
 
@@ -611,11 +610,11 @@ END_SCRIPT(QuaffHeal)
 
   -> When prompted by msg "DoSearch" from AlertResponse pseudoscript, the robot
 	  plays searching motions (by sending itself "TurnAround" signals) for 
-	  GetSearchDuration() seconds.  It also gives itself the "searching" and "camera out"
+	  GetSearchDuration() seconds.  It also gives itself the "searching"
 	  metaprop (which it should already have anyway, but just to be safe) 
 
   -> If the robot achieves high alertness, it removes the "searching" metaprop.
-     It retains the "camera out" metaprop.  The default AI fleeing behavior
+     It gains the "camera out" metaprop.  The default AI fleeing behavior
 	  is assumed to take over.
 
   -> If the robot ramps down to low alertness, it removes the "camera out" metaprop.  
@@ -633,8 +632,10 @@ void DoSearch ()
 	// I should already have these metaprop, but just in case I don't
 	while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
 		Object.AddMetaProperty(self,Object.Named("M-WorkBot-Searching"));
-	while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
-		Object.AddMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
+
+   //AMSD removed since we only have Searching XOR Camera
+   //while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+	//	Object.AddMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
 
 	AI.Signal(self,"TurnAround");
 	SetOneShotTimer("DoneSearching",GetSearchDuration());
@@ -643,15 +644,23 @@ void DoSearch ()
 // remove the "searching" metaprop
 void StopSearching ()
 {
-//	Debug.MPrint(" Stop searching");
+	Debug.MPrint(" Stop searching");
 	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
 		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-Searching"));
+}
+
+// add the "camera out" metaprop
+void PullCameraOut ()
+{   
+   Debug.MPrint(" Pull camera out");
+   while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+      Object.AddMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
 }
 
 // remove the "camera out" metaprop
 void PutCameraAway()
 {
-//	Debug.MPrint(" Put camera away");
+	Debug.MPrint(" Put camera away");
 	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
 		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
 }
@@ -720,9 +729,10 @@ OnAlertness()
 	if (message.level == kHighAlert)
 	{
 		// since the "searching" metaprop is about not idling and being capped at 2, remove this 
-		// and let the natural AI take over and flee - but don't remove the robots
-		// "camera out" metaprop
+		// and let the natural AI take over and flee - 
+      // but don't make sure the robot can still see, add his "camera out" metaprop
 		StopSearching();
+      PullCameraOut();
 	}
 	// if you ramp down to or below level 1, when you had been at a higher than 1 alert,
 	// you can put your camera away now
