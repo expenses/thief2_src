@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aialert.h 1.9 1998/10/28 11:51:44 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aialert.h,v 1.10 1999/11/29 12:27:14 BFarquha Exp $
 //
 // Alertness/awareness structures & enums
 //
@@ -11,6 +11,30 @@
 
 #pragma once
 #pragma pack(4)
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// STRUCT: sAIFrustrated
+// yeah, yeah. It's as good a place as any to put this.
+
+
+struct IAIPath;
+
+struct sAIFrustrated
+{
+   sAIFrustrated()
+    : nSourceId(0),
+      nDestId(0)
+   {
+   }
+
+   int nSourceId; // Source of our frustration
+   int nDestId; // If non-0, where we'd like to go when frustrated.
+   IAIPath *pPath; // option path to object defined.
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -24,10 +48,10 @@ struct sAIAlertness
       peak(kAIAL_Lowest)
    {
    }
-   
+
    // Current alertness
    eAIAlertLevel level;
-   
+
    // Current alertness
    eAIAlertLevel peak;
 };
@@ -42,13 +66,13 @@ struct sAIAlertCap
       minRelax(kAIAL_Low)
    {
    }
-   
+
    // Maximum alerness cap
    eAIAlertLevel maxLevel;
 
    // Minimum alerness cap
    eAIAlertLevel minLevel;
-   
+
    // Minimum alerness cap
    eAIAlertLevel minRelax;
 };

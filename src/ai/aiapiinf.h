@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapiinf.h 1.2 1998/09/22 13:48:37 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapiinf.h,v 1.3 1999/11/29 12:27:44 BFarquha Exp $
 //
 //
 //
@@ -23,9 +23,9 @@ typedef unsigned eAISoundConcept;
 
 struct sAIInform
 {
-   sAIInform() : concept(0) {}
+   sAIInform() : concept(0), bUseLocOnly(FALSE) {}
    sAIInform(IInternalAI * pAI, eAISoundConcept concept, ObjID source);
-   
+
    eAISoundConcept concept;
    ObjID           ofWhom;
    eAIAlertLevel   alertValue;
@@ -34,6 +34,8 @@ struct sAIInform
    unsigned        maxPass;
    unsigned        transferDelay;
    unsigned        expiration;
+   BOOL            bUseLocOnly;
+   mxs_vector OriginLoc;
 };
 
 
@@ -49,17 +51,17 @@ IAIInform * AIGetInform(IInternalAI * pAI);
 DECLARE_INTERFACE_(IAIInform, IUnknown)
 {
    //
-   // 
+   //
    //
    STDMETHOD_(BOOL, WantsInforms)() PURE;
-   
+
    //
-   // 
+   //
    //
    STDMETHOD (Post)(const sAIInform *) PURE;
 
    //
-   // 
+   //
    //
    STDMETHOD (Receive)(const sAIInform *) PURE;
 

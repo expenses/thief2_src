@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapiabl.h 1.6 1999/03/02 17:42:12 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapiabl.h,v 1.7 1999/11/29 12:27:30 BFarquha Exp $
 //
 // Specification of the AI ability interface
 //
@@ -38,13 +38,13 @@ DECLARE_INTERFACE_(IAIAbility, IAIActor)
    //
    STDMETHOD_(BOOL, SaveGoal)(ITagFile * pTagFile, cAIGoal * pGoal) PURE;
    STDMETHOD_(BOOL, LoadGoal)(ITagFile * pTagFile, cAIGoal ** ppGoal) PURE;
-   
+
    //
    // Current action list save/load (pTagFile cursor should be prepositioned).
    //
    STDMETHOD_(BOOL, SaveActions)(ITagFile * pTagFile, cAIActions * pActions) PURE;
    STDMETHOD_(BOOL, LoadActions)(ITagFile * pTagFile, cAIActions * pActions) PURE;
-   
+
    //
    // Set/Get whether this is the ability currently running the AI
    //
@@ -61,6 +61,7 @@ DECLARE_INTERFACE_(IAIAbility, IAIActor)
    //
    STDMETHOD (SuggestMode)(sAIModeSuggestion *) PURE;
    STDMETHOD (SuggestGoal)(cAIGoal * pPrevious, cAIGoal ** ppNew) PURE; // Ability should not release pPrevious!
+   STDMETHOD_(BOOL, FinalizeGoal)(cAIGoal *pGoal) PURE;
    STDMETHOD (SuggestActions)(cAIGoal * pGoal, const cAIActions & previous, cAIActions * pNew) PURE;
 
 };
