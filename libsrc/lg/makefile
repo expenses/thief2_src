@@ -1,72 +1,8 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.21 1994/07/08 17:39:28 rex Exp $
-# $Log: makefile $
-# Revision 1.21  1994/07/08 17:39:28  rex
-# Moved to r:
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.22 1994/07/29 01:22:43 dc Exp $
 #
-# Revision 1.20  1994/06/01  17:14:11  junochoe
-# added tmpalloc.c temporary allocation functions
-# 
-# Revision 1.19  1994/02/28  10:53:02  rex
-# Changed kb.lib to input.lib
-# 
-# Revision 1.18  1993/11/03  19:06:12  tjs
-# Dependencies
-# 
-# Revision 1.17  1993/11/03  18:30:29  tjs
-# Added lgsprntf
-# 
-# Revision 1.16  1993/09/30  18:37:28  rex
-# Added memgrow.obj
-# 
-# Revision 1.15  1993/09/13  11:11:17  dfan
-# Add memstack stuff
-# 
-# Revision 1.14  1993/08/11  17:31:47  rex
-# Dependencies
-# 
-# Revision 1.13  1993/08/06  11:00:03  rex
-# Dependencies
-# 
-# Revision 1.12  1993/07/09  09:35:12  rex
-# Dependencies
-# 
-# Revision 1.11  1993/05/01  20:33:02  xemu
-# added bugtrak to the LG library
-# 
-# Revision 1.10  1993/04/22  11:39:53  rex
-# Added kb.lib to test prog libs
-# 
-# Revision 1.9  1993/04/08  10:28:16  rex
-# Added MemStat.C
-# 
-# Revision 1.8  1993/03/24  12:12:37  matt
-# install assembly macros header file
-# 
-# Revision 1.7  1993/03/24  12:02:27  matt
-# More asm header junk
-# 
-# Revision 1.6  1993/03/22  19:10:22  matt
-# Added list of .inc files to be converted from .h files.
-# 
-# Revision 1.5  1993/03/22  18:04:18  rex
-# Fixed plurality of DBGMAKEH_SRCS
-# 
-# Revision 1.4  1993/03/04  18:45:27  rex
-# Removed libdbg.h
-# 
-# Revision 1.3  1993/03/04  11:51:27  rex
-# Added exit.c
-# /
-# 
-# Revision 1.2  1993/01/29  17:31:52  rex
-# *** empty log message ***
-# 
-# Revision 1.1  1993/01/29  09:48:03  rex
-# Initial revision
-# 
 
 DEBUG_ON = 1
 SPEW_ON = 1
@@ -88,12 +24,12 @@ INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
 
 LG_SRCS = bugtrak.c dbg.c dbgcfg.c datapath.c exit.c memall.c memgrow.c \
-		memstat.c stack.c lgsprntf.c tmpalloc.c
+		memstat.c stack.c lgsprntf.c tmpalloc.c oheapwal.asm
 LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj datapath.obj exit.obj memall.obj \
 		memgrow.obj memstat.obj stack.obj lgsprntf.obj \
-                tmpalloc.obj
+                tmpalloc.obj oheapwal.obj
 LG_HDRS = lg.h lgalt.h dbg.h datapath.h memmacro.inc dbgmacro.inc \
-	memall.h memstat.h bugtrak.h lgsprntf.h tmpalloc.h
+	memall.h memstat.h bugtrak.h lgsprntf.h tmpalloc.h 
 LG_H2I  = lg.inc memall.inc dbg.inc
 
 DBGMAKEH_SRCS = dbgmakeh.c
