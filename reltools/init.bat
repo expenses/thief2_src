@@ -11,6 +11,9 @@ set _ALTPATH_=%_PRJDRV_%\prj\thief2
 rem **************************************************************
 rem the drive where the daily will be built (change when testing!)
 
+iff .%DAILYDRV%. != .. then
+set _DAILYDRV_ = %DAILYDRV%
+else
 set  _DAILYDRV_=r:
 
 rem **************************************************************
