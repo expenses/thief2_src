@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		AFILE.H		Generic animation file access
 //		Rex E. Bradford (REX)
 /*

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/hashfast.h 1.7 1999/09/28 18:49:10 JAEMZ Exp $
 
 #ifndef __HASHFAST_H
