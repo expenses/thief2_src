@@ -88,19 +88,19 @@ xcopy /D /s /I %_ARTPATH_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
 
 rem so now we grab the separate thief 2 stuff
 
-rem xcopy /D /s /I thief2\finals\bitmap %_BLDDRV_%\prj\cam\art\finals\bitmap
-xcopy /D /s /I thief2\finals\fam %_BLDDRV_%\prj\cam\art\finals\fam
-xcopy /D /s /I thief2\finals\books %_BLDDRV_%\prj\cam\art\finals\books
-rem xcopy /D /s /I thief2\finals\default %_BLDDRV_%\prj\cam\art\finals\default
-xcopy /D /s /I thief2\finals\editor %_BLDDRV_%\prj\cam\art\finals\editor
-xcopy /D /s /I thief2\finals\intrface %_BLDDRV_%\prj\cam\art\finals\intrface
-xcopy /D /s /I thief2\finals\mesh %_BLDDRV_%\prj\cam\art\finals\mesh
-xcopy /D /s /I thief2\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
-xcopy /D /s /I thief2\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
-xcopy /D /s /I thief2\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
-rem xcopy /D /s /I thief2\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
-xcopy /D /s /I thief2\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
-xcopy /D /s /I thief2\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
+rem xcopy /D /s /I %_ARTPATH2_%\finals\bitmap %_BLDDRV_%\prj\cam\art\finals\bitmap
+xcopy /D /s /I %_ARTPATH2_%\finals\fam %_BLDDRV_%\prj\cam\art\finals\fam
+xcopy /D /s /I %_ARTPATH2_%\finals\books %_BLDDRV_%\prj\cam\art\finals\books
+rem xcopy /D /s /I %_ARTPATH2_%\finals\default %_BLDDRV_%\prj\cam\art\finals\default
+xcopy /D /s /I %_ARTPATH2_%\finals\editor %_BLDDRV_%\prj\cam\art\finals\editor
+xcopy /D /s /I %_ARTPATH2_%\finals\intrface %_BLDDRV_%\prj\cam\art\finals\intrface
+xcopy /D /s /I %_ARTPATH2_%\finals\mesh %_BLDDRV_%\prj\cam\art\finals\mesh
+xcopy /D /s /I %_ARTPATH2_%\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
+xcopy /D /s /I %_ARTPATH2_%\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
+xcopy /D /s /I %_ARTPATH2_%\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
+rem xcopy /D /s /I %_ARTPATH2_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
+xcopy /D /s /I %_ARTPATH2_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
+xcopy /D /s /I %_ARTPATH2_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
 
 
 @echo Copying components Over
