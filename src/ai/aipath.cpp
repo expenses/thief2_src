@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aipath.cpp,v 1.21 2000/02/28 17:27:53 toml Exp $
 //

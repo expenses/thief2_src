@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/ainetman.cpp,v 1.15 2000/02/28 11:30:06 toml Exp $
 //
