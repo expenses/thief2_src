@@ -1,7 +1,7 @@
 #include "convict.scr"
 #include "tweqflgs.h"
 
-#define KEYPATHS 10
+#define KEYPATHS 9
 
 BEGIN_SCRIPT(ListenClosely, VictoryCheck)
 
@@ -15,8 +15,8 @@ METHODS:
       //I'm the callback object, it's the target object.
       if (!Sound.PlaySchema(self,sounds.Link().To(),target))
       {
-	SetOneShotTimer(self,"convtimer",120); //if no schema, make sure we're ok.
-        Debug.MPrint("Couldn't hear sound start, doing timer backup.");
+	Debug.MPrint("Conversation failed to play.  Fail mission.");
+        Quest.Set(GoalStateVarName(0),kGoalFailed,kQuestDataMission);	
       }
       sounds.NextLink();
     }
@@ -73,24 +73,24 @@ METHODS:
     splink.SetData("converobject");
   }
 
-  METHOD void ConversationCheckStep(integer convstate)
+  METHOD void ConversationTryStart()
   {
-    if ((InConversationRoom()) &&
-	(GetConversationObject()==(object)0) &&
-	((integer)GetData("FinishedConversation")<=convstate))
+    //not nearby, ready to actually play stuff, FAIL!
+    if (Quest.Get(GoalStateVarName(0))!=kGoalIncomplete)
+       return; //we've failed or completed, stop.
+    if (InConversationRoom())
       {
+        SetData("StartedConversation",1);
         Debug.MPrint("Allowed to play conversation");
-	string linkinfo = "convobj"+(string)(convstate+1);
+	string linkinfo = "convobj";
         object convsource = ScriptParamPropagate(GetPlayerRoomLocation(),linkinfo);
         if (convsource != (object)0)
           {
-	    convstate = convstate + 1;
-            Debug.MPrint("Starting conversation ",convstate," on ",convsource);
+            Debug.MPrint("Starting conversation");
             PlayConversation(convsource);
 	    //set the object
             SetConversationObject(convsource);
 	    //update the count
-	    SetData("StartedConversation",convstate);
           }
       }
   }
@@ -105,11 +105,14 @@ METHODS:
       Debug.MPrint("Completing conversation goal.  Path is ",qdata);
       SetData("PathNumber",qdata);
 
-      Debug.MPrint("Setting ",GoalVisibleVarName(1)," to 1");
-      Quest.Set(GoalVisibleVarName(1),1,kQuestDataMission);
+      if (Quest.Get(GoalStateVarName(0))==kGoalIncomplete)
+      {
+        Debug.MPrint("Setting ",GoalVisibleVarName(1)," to 1");
+        Quest.Set(GoalVisibleVarName(1),1,kQuestDataMission);
 
-      Debug.MPrint("Setting ",GoalStateVarName(0)," to complete.");
-      Quest.Set(GoalStateVarName(0),kGoalComplete,kQuestDataMission);
+        Debug.MPrint("Setting ",GoalStateVarName(0)," to complete.");
+        Quest.Set(GoalStateVarName(0),kGoalComplete,kQuestDataMission);
+      }
 
       if (HaveTheWax())
       {
@@ -132,7 +135,7 @@ METHODS:
     object newspeaker = ScriptParamPropagate(prevobj,"convcont");
     if (newspeaker == (object)0)
       return FALSE;
-    Debug.MPrint("Continuing conversation ",(integer)GetData("StartedConversation")," on ",newspeaker);
+    Debug.MPrint(newspeaker," found as next part of conversation.  Playing.");
     PlayConversation(newspeaker);
     SetConversationObject(newspeaker);
     return TRUE;
@@ -425,8 +428,7 @@ MESSAGES:
   {
     if (message.starting)
       {
-        SetData("StartedConversation",0); //last conv started
-        SetData("FinishedConversation",0); //last conv finished
+        SetData("StartedConversation",0);
         SetData("PathNumber",0);       //which random path
         SetData("PlayedHaveKey",0);   //played this vo already.
         SetData("PlayedWon",0); //played the work here is done schema
@@ -439,7 +441,7 @@ MESSAGES:
 	  int i = 0;
           if (DarkGame.ConfigGetInt("eaves",i))
 	  {
-            if ((i>0) && (i < 10))
+            if ((i>0) && (i <= KEYPATHS))
             {
               Debug.MPrint("Overriding path selection to ",i);
               SetData("PathNumber",i);
@@ -489,11 +491,10 @@ MESSAGES:
     if ((integer)convid ==  (integer)message.targetObject)
       { 
         Debug.MPrint("Finished conversation on ",convid);
-        SetData("FinishedConversation",(integer)GetData("StartedConversation"));
         SetConversationObject((object)0);
 	ConversationGoalComplete(message.targetObject);
-	if (!ConversationContinue(message.targetObject))
-  	  ConversationCheckStep((integer)GetData("StartedConversation"));
+        Debug.MPrint("Looking for conversation continuation.");
+  	ConversationContinue(message.targetObject);
       }
     if ((integer)GetData("PlayedHaveKey")==1)
       {
@@ -552,7 +553,8 @@ MESSAGES:
       Debug.MPrint("Switching rooms to ",message.ToObjId);
       SetPlayerRoomLocation(message.ToObjId);
     }
-    ConversationCheckStep((integer)GetData("StartedConversation"));
+    if ((integer)GetData("StartedConversation")==0) //only check first time.
+      ConversationTryStart();
     DefaultOnObjRoomTransit();
   }
 
@@ -567,16 +569,6 @@ MESSAGES:
     {
       Debug.MPrint("Dummy sounds 2 timer triggered. 2");
       KeyLogic(2);
-    }
-    if (message.name == "convtimer")
-    {
-      object convobj = GetConversationObject();
-      Debug.MPrint("Schema fail timer called.  Current obj is ",convobj);
-      SetData("FinishedConversation",(integer)GetData("StartedConversation"));
-      SetConversationObject((object)0);
-      ConversationGoalComplete(convobj);
-      if (!ConversationContinue(convobj))
-        ConversationCheckStep((integer)GetData("StartedConversation"));
     }
     DefaultOnTimer();
   }
