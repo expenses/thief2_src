@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.8 $
+# $Revision: 1.9 $
 # $Author: kaboom $
-# $Date: 1993/11/19 03:02:01 $
+# $Date: 1993/12/01 07:35:09 $
 #
 
 DEBUG_ON=1
@@ -10,7 +10,7 @@ DEBUG_ON=1
 COMPILER = watcom
 SRCDIR = n:\project\lib\src\input
 RELDIR = n:\project\lib\release
-BUILD_DIR = N:\project\lib\build\input
+BUILD_DIR = n:\project\lib\build\input
 
 OBJDIR = obj
 BINDIR =
@@ -21,15 +21,17 @@ LIBPATH = . $(RELDIR)
 LIB_TARGETS = input
 INST_TARGETS = input
 
-INPUT_OBJS = mouse.obj  mousedev.obj kbclose.obj kbcstat.obj \
+INPUT_OBJS = \
+        kbbflush.obj kbcstat.obj \
         kbd.obj kbflush.obj kbgen.obj \
         kbgflag.obj kbgstat.obj \
         kbinit.obj \
         kblnext.obj \
-        kbnext.obj kbphnd.obj kbrhnd.obj \
+        kbnext.obj \
         kbsflag.obj kbssig.obj kbsstat.obj \
-        kbstate.obj kbcook.obj kbasctab.obj  joyflat.obj kbbflush.obj
-
+        kbstate.obj kbcook.obj kbasctab.obj \
+        joyflat.obj \
+        mouse.obj  mousedev.obj
 INPUT_HDRS = mouse.h kb.h kbcook.h joystick.h
 
 !include $(INIT)/make.rc
