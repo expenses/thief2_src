@@ -1359,7 +1359,7 @@ MESSAGES:
             vector selfpos=Object.Position(self);
             vector doorpos=Object.Position(thedoor);
 
-            if(((doorpos-selfpos).Magnitude()<20.0) &&
+            if(((doorpos-selfpos).Magnitude()<40.0) &&
                ((selfpos-playerpos).Magnitude()>90.0))
             {
                // Okay, this is a hack.  Basso, like all AIs, is apt
