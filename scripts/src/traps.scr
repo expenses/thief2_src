@@ -1003,24 +1003,32 @@ METHODS:
    {
    }
 
-   METHOD void ParseOperation(boolean ReverseSense) 
+   METHOD boolean VarName(string ref command, string ref qvar)
    {
-      string command, qvar;
-      integer NameInd, ArgInd, arg=0, sign=1, sigfigs=0;
+      integer NameInd;
       
       if(Property.Possessed(self,"TrapQVar"))
          command=Property.Get(self,"TrapQVar");
       else
-         return;
+         return FALSE;
       
       // Search to just after any occurance of ':'
       // we take this to be our Qvar name
       for(NameInd=0;command[NameInd]!=':';NameInd++)
-         if(command[NameInd]==0) return;
+         if(command[NameInd]==0) return FALSE;
       NameInd++;
 
       qvar=(((const char*)command)+NameInd);
+      return TRUE;
+   }
+
+   METHOD void ParseOperation(boolean ReverseSense) 
+   {
+      string command, qvar;
+      integer ArgInd, arg=0, sign=1, sigfigs=0;
       
+      if(!VarName(command,qvar)) return;
+
       // Okay, at this point, our string is at least 1 char long
       // since we found a ':'.  The first char is taken as our
       // opcode, and contiguous digits after the first char
@@ -1094,13 +1102,8 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
       if(reverse) satisfied=!satisfied;
 
       if(!IsDataSet("WasSatisfied"))
-      {
-         // before we subscribe, let's make sure the quest var _exists_, shall we?
-         Quest.Set(qvar,Quest.Get(qvar));
-
-         Quest.SubscribeMsg(self,qvar);
          SetData("WasSatisfied",!satisfied); // So we'll _always send initially
-      }
+
       wassatisfied=GetData("WasSatisfied");
 
       if(satisfied!=wassatisfied)
@@ -1117,6 +1120,10 @@ MESSAGES:
 
    OnBeginScript()
    {
+      string command, qvar;
+
+      if(VarName(command,qvar))
+         Quest.SubscribeMsg(self,qvar);
       ParseOperation(FALSE);
       DefaultOnBeginScript();
    }
