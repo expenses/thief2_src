@@ -150,7 +150,7 @@ MESSAGES:
          // Don't interfere with existing pose, if any
          if(!Property.Possessed(self,"CretPose"))
          {
-            Property.CopyFrom(self,"CretPos","M-StandPose");
+            Property.CopyFrom(self,"CretPose","M-StandPose");
          }
       }
       DefaultOnSim();
