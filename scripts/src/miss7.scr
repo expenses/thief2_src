@@ -20,6 +20,37 @@ OnContainer()
 END_SCRIPT (LootVO)
 
 
+// HackOnConvDone
+// Puts the AI on patrol and AIWatchObj links him to
+// all objects he has ScriptParams links to.
+// All upon receipt of a "ConversationDone" msg.
+BEGIN_SCRIPT (HackOnConvDone, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("ConversationDone"))
+	{
+		Property.Set(self,"AI_Patrol",TRUE);
+
+		if(Link.AnyExist("ScriptParams",self))
+		{
+			linkset SPs=Link.GetAll("ScriptParams",self);
+
+			while(SPs.AnyLinksLeft())
+			{
+				Link.Create("AIWatchObj",self,SPs.Link().To());
+				SPs.NextLink();
+			}
+		}
+	}
+	DefaultOnMessage();
+}
+
+END_SCRIPT (HackOnConvDone)
+
+
+
 
 // Script:	HackTrigSchemaDone
 // Sends a TurnOn X seconds after it gets one, where X
@@ -491,7 +522,6 @@ void CleanUp (object camera)
 	linkset CDs = Link.GetAll("ControlDevice",camera);
 	while(CDs.AnyLinksLeft())
 	{
-		Debug.MPrint(" End of CD link: ",CDs.Link().To());
 		if (Object.InheritsFrom (CDs.Link().To(),Object.Named("Turret")))
 		{
 			Object.Destroy(CDs.Link().To());
@@ -502,7 +532,6 @@ void CleanUp (object camera)
 	linkset tCDs = Link.GetAll("~ControlDevice",camera);
 	while(tCDs.AnyLinksLeft())
 	{
-		Debug.MPrint(" End of ~CD link: ",tCDs.Link().To());
 		if (Object.InheritsFrom (tCDs.Link().To(),Object.Named("Switches")))
 		{
 			Object.Destroy(tCDs.Link().To());
