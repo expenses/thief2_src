@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/txtpnp.c,v 1.48 2000/02/19 13:11:37 toml Exp $
 // Brush Texture PnP gadget
 
