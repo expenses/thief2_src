@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.13 1993/08/06 11:00:03 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.14 1993/08/11 17:31:47 rex Exp $
 # $Log: makefile $
-# Revision 1.13  1993/08/06 11:00:03  rex
+# Revision 1.14  1993/08/11 17:31:47  rex
 # Dependencies
 #
+# Revision 1.13  1993/08/06  11:00:03  rex
+# Dependencies
+# 
 # Revision 1.12  1993/07/09  09:35:12  rex
 # Dependencies
 # 
@@ -106,7 +109,7 @@ dbgtest.obj: conio.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
 exit.obj: dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h memmacro.h \
 	 stdio.h stdlib.h types.h
 
-memall.obj: dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
+memall.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
 	 stdio.h string.h types.h
 
 memstat.obj: dbg.h dbgmacro.h dos.h i86.h lg.h lgalt.h malloc.h memall.h \
