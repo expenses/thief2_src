@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/pt_mem.c,v 1.12 1998/04/06 10:04:10 KEVIN Exp $
 
 // texture map storage management

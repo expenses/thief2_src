@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/pt_asm.h,v 1.6 1996/11/05 18:48:24 buzzard Exp $
 
 // accessing functions for all of the assembly stuff, private

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/pt_clut.h,v 1.2 1996/09/10 18:25:20 buzzard Exp $
 
 #ifndef __PT_CLUT_H
