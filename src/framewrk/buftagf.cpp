@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/buftagf.cpp,v 2.2 2000/03/07 19:56:48 toml Exp $
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
