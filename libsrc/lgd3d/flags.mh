@@ -1,4 +1,6 @@
+%if $(COMP)==w106
 PRECOMP = 1
+%endif
 dev_d3dtest = d3dtest
 dev_lib_flav = dbg
 
