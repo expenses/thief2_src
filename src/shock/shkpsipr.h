@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpsipr.h 1.6 1999/04/27 14:42:27 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpsipr.h,v 1.7 2000/01/31 09:58:49 adurant Exp $
 // Shock psi related properties
+#pragma once
 
 #ifndef __SHKPSIPR_H
 #define __SHKPSIPR_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkrndov.h 1.1 1998/07/29 21:46:23 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkrndov.h,v 1.2 2000/01/31 09:59:04 adurant Exp $
+#pragma once
 
 #ifndef __SHKRNDOV_H
 #define __SHKRNDOV_H

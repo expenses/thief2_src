@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkplcst.h 1.14 1999/05/20 18:05:04 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkplcst.h,v 1.15 2000/01/31 09:58:31 adurant Exp $
+#pragma once
 
 #ifndef __SHKPLCST_H
 #define __SHKPLCST_H

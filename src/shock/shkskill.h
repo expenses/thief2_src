@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkskill.h 1.3 1999/01/02 13:54:00 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkskill.h,v 1.4 2000/01/31 09:59:12 adurant Exp $
+#pragma once
 
 #ifndef __SHKSKILL_H
 #define __SHKSKILL_H

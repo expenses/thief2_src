@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkplayr.h 1.36 1999/05/02 19:15:34 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkplayr.h,v 1.37 2000/01/31 09:58:30 adurant Exp $
+#pragma once
 
 #ifndef __SHKPLAYR_H
 #define __SHKPLAYR_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkradar.h 1.2 1999/02/25 16:21:02 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkradar.h,v 1.3 2000/01/31 09:58:56 adurant Exp $
+#pragma once
 
 #ifndef __SHKRADAR_H
 #define __SHKRADAR_H

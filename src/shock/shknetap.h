@@ -1,10 +1,11 @@
-// $Header: r:/prj/cam/src/shock/RCS/shknetap.h 1.1 1999/10/20 16:45:06 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shknetap.h,v 1.2 2000/01/31 09:58:09 adurant Exp $
 //
 // Shock networking services
 //
 // This module mainly exists to help out the networking code, rather than
 // for Shock per se.
 //
+#pragma once
 
 #ifndef __SHKNETAP_H
 #define __SHKNETAP_H

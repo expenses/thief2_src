@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shktcomp.h 1.1 1999/02/10 19:05:38 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shktcomp.h,v 1.2 2000/01/31 09:59:21 adurant Exp $
+#pragma once
 
 #ifndef __SHKTCOMP_H
 #define __SHKTCOMP_H

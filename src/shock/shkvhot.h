@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkvhot.h 1.4 1999/11/19 14:52:53 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkvhot.h,v 1.5 2000/01/31 09:59:34 adurant Exp $
+#pragma once
 
 This file has been moved to gunvhot.h AMSD
 

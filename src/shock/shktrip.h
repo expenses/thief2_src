@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shktrip.h 1.6 1999/05/27 13:49:25 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shktrip.h,v 1.7 2000/01/31 09:59:28 adurant Exp $
+#pragma once
 
 #ifndef __SHKTRIP_H
 #define __SHKTRIP_H

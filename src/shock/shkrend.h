@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkrend.h 1.5 1999/01/17 17:46:40 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkrend.h,v 1.6 2000/01/31 09:59:00 adurant Exp $
+#pragma once
 
 #ifndef __SHOCKREND_H
 #define __SHOCKREND_H

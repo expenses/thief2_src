@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpfiid.h 1.35 1999/11/19 14:50:01 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpfiid.h,v 1.36 2000/01/31 09:58:26 adurant Exp $
+#pragma once
 
 //
 // GUIDS for property interfaces

@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgunpr.h 1.18 1999/11/19 14:53:55 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkgunpr.h,v 1.19 2000/01/31 09:56:33 adurant Exp $
 // Shock gun related properties
+#pragma once
 
 
 This file has been moved to gunprop.h  AMSD

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shksvbnd.h 1.2 1999/06/06 03:00:51 mahk Exp $
+// $Header: r:/t2repos/thief2/src/shock/shksvbnd.h,v 1.3 2000/01/31 09:59:20 adurant Exp $
+#pragma once
 
 #ifndef __SHKSVBND_H
 #define __SHKSVBND_H

@@ -1,7 +1,8 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkwepsc.h 1.3 1999/04/07 13:43:43 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkwepsc.h,v 1.4 2000/01/31 09:59:35 adurant Exp $
 //
 // psi script stuff
 //
+#pragma once
 
 #ifndef __SHKWEPSC_H
 #define __SHKWEPSC_H

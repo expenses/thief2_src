@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkkeypd.h 1.3 1998/11/23 15:56:37 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkkeypd.h,v 1.4 2000/01/31 09:57:46 adurant Exp $
+#pragma once
 
 #ifndef __SHKKEYPD_H
 #define __SHKKEYPD_H

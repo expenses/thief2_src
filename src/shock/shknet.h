@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shknet.h 1.17 1999/08/05 17:54:52 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shknet.h,v 1.18 2000/01/31 09:58:08 adurant Exp $
+#pragma once
 
 #ifndef _SHKNET_H
 #define _SHKNET_H

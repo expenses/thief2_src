@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shklooko.h 1.2 1998/11/23 15:56:39 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shklooko.h,v 1.3 2000/01/31 09:57:50 adurant Exp $
+#pragma once
 
 #ifndef __SHKLOOK_H
 #define __SHKLOOK_H

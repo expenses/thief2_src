@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkqbind.h 1.1 1999/04/07 22:45:58 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkqbind.h,v 1.2 2000/01/31 09:58:55 adurant Exp $
+#pragma once
 
 #ifndef __SHKQBIND_H
 #define __SHKQBIND_H

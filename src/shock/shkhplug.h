@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkhplug.h 1.2 1999/02/25 22:58:59 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkhplug.h,v 1.3 2000/01/31 09:56:39 adurant Exp $
+#pragma once
 
 #ifndef __SHKHPLUG_H
 #define __SHKHPLUG_H

@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkmelab.h 1.1 1998/08/17 16:50:09 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmelab.h,v 1.2 2000/01/31 09:57:55 adurant Exp $
+#pragma once
 
 #ifndef __SHKMELAB_H
 #define __SHKMELAB_H

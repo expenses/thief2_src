@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkhacks.h 1.2 1999/02/26 19:08:14 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkhacks.h,v 1.3 2000/01/31 09:56:34 adurant Exp $
+#pragma once
 
 #ifndef __SHKHACKS_H
 #define __SHKHACKS_H

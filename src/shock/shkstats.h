@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkstats.h 1.2 1998/11/23 15:57:43 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkstats.h,v 1.3 2000/01/31 09:59:18 adurant Exp $
+#pragma once
 
 #ifndef __SHKSTATS_H
 #define __SHKSTATS_H

@@ -1,6 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkstcst.h 1.3 1999/02/18 10:03:24 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkstcst.h,v 1.4 2000/01/31 09:59:19 adurant Exp $
 //
 // How stats affect game-systemy things
+#pragma once
 
 #ifndef __SHKSTCST_H
 #define __SHKSTCST_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpjbas.h 1.2 1999/11/19 14:53:39 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpjbas.h,v 1.3 2000/01/31 09:58:29 adurant Exp $
+#pragma once
 
 This file has been moved to projbase.h AMSD
 
