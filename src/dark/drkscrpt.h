@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/dark/RCS/drkscrpt.h 1.27 1998/10/20 21:16:59 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkscrpt.h,v 1.31 2000/02/28 18:21:09 adurant Exp $
 //
 // Dark engine specific script stuff
 //
+#pragma once
 
 #ifndef __DRKSCRPT_H
 #define __DRKSCRPT_H
@@ -13,11 +14,16 @@
 #include <engscrpt.h>
 #include <damgscrp.h>
 #include <damgscrs.h>
+
+#include <camscrs.h>
+
 #include <pickscrs.h>
+#include <pickscrm.h>
 #include <repscrpt.h>
 #include <diffscrm.h>
 #include <drkuiscr.h>
 #include <drkscrs.h>
+#include <drkscrm.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -48,11 +54,15 @@ BEGIN_SCRIPT(RootScript, EngineRootScript)
       DAMAGE_MESSAGE_DEFAULTS()
       REPORT_MESSAGE_DEFAULTS()
       DIFFICULTY_MESSAGE_DEFAULTS()
+      PICKSTATECHANGE_MESSAGE_DEFAULTS()
+      DARKGAMEMODECHANGE_MESSAGE_DEFAULTS()
      
    SCRIPT_BEGIN_MESSAGE_MAP()
       DAMAGE_MESSAGE_MAP_ENTRIES()
       REPORT_MESSAGE_MAP_ENTRIES()
       DIFFICULTY_MESSAGE_MAP_ENTRIES()
+      PICKSTATECHANGE_MESSAGE_MAP_ENTRIES()
+      DARKGAMEMODECHANGE_MESSAGE_MAP_ENTRIES()
    SCRIPT_END_MESSAGE_MAP()
 
 
