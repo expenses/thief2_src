@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/physics/phmedtr.cpp,v 1.2 2000/02/19 12:32:17 toml Exp $
 
 #include <phmedtr.h>
