@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.17 $
+# $Revision: 1.18 $
 # $Author: KEVIN $
-# $Date: 1996/12/06 14:32:14 $
+# $Date: 1996/12/06 15:28:49 $
 #
 
 MAKETOP = $(CWD)
@@ -81,13 +81,13 @@ gdtest_LIBS = lg dev2d mprintf
 DEV2D_HDRS = dev2d.h astring.h bitmap.inc cseg.inc dseg.inc gdican.inc
 
 dev2d.h .REREAD :\
-        emode.h grs.h bitmap.h canvas.h screen.h mode.h \
+        emode.h grs.h bitmap.h canvas.h screen.h mode.h alpha.h \
         fill.h clip.h icanvas.h idevice.h grd.h context.h \
         bmftype.h linftype.h pixftype.h \
         gdbm.h gdlin.h gdrect.h gdpix.h grdev.h \
         pal.h pal16.h init.h \
         tluctab.h grmalloc.h grnull.h indexmac.h gr.h \
-        rgb.h \
+        rgb.h blnfcn.h \
         stupid.h
 	$(eko1) $(@,F) \<-- $(?,F)
 	%do comp_h h_pre="\#include \<fix.h\>" h_in="$^" h_out="$(@,F)"
