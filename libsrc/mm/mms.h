@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/mm/RCS/mms.h 1.6 1999/03/01 16:05:24 Zarko Exp $
 
 #ifndef __MMS_H
