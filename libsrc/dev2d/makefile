@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.20 $
-# $Author: TOML $
-# $Date: 1996/12/13 16:02:23 $
+# $Revision: 1.21 $
+# $Author: KEVIN $
+# $Date: 1997/02/07 11:22:14 $
 #
 
 MAKETOP = $(CWD)
@@ -28,7 +28,7 @@ irrupt_OBJS = \
         astring hflip
 
 dev2d_OBJS = \
-        astring bitmap blend gr \
+        astring cstring bitmap blend gr \
         bank canvas mxlatch screen grd \
         grnull grmalloc valloc \
         init svgainit cominit novinit \
