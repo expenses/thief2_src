@@ -1,7 +1,7 @@
 @echo off
 rem ============================================================
 rem
-rem $Header: r:/prj/cam/reltools/RCS/buildscr.bat 1.1 1999/10/05 18:29:33 adurant Exp $
+rem $Header: r:/prj/cam/reltools/RCS/buildscr.bat 1.1 1998/10/14 09:15:36 DAVET Exp $
 rem Script builder
 rem
 rem ============================================================
@@ -42,23 +42,23 @@ rem ------------------------------------------------------------
         set target=%1
     endiff
 
-    set PrjInclude=.;%sb%\cam\src;%sb%\cam\src\ai;%sb%\cam\src\dark;%sb%\cam\src\shock;%sb%\cam\src\physics;s:\prj\cam\src;s:\prj\cam\src\portal;s:\prj\cam\src\ai;s:\prj\cam\src\dark;s:\prj\cam\src\shock;s:\prj\cam\src\physics;%sb%\cam\h;s:\prj\cam\h
+    set PrjInclude=.;%sb%\cam\src;%sb%\cam\src\ai;%sb%\cam\src\dark;%sb%\cam\src\physics;r:\prj\cam\src;r:\prj\cam\src\portal;r:\prj\cam\src\ai;r:\prj\cam\src\dark;r:\prj\cam\src\physics;%sb%\cam\h;r:\prj\cam\h
     set PrjFlags=/FI"drkscrpt.h"
-    set PrjDesignRel=.;%sb%\cam\scripts\src;s:\prj\cam\scripts\src;s:\prj\cam\scripts\rel_h
-    
+    set PrjDesignRel=.;%sb%\cam\scripts\src;r:\prj\cam\scripts\src;r:\prj\cam\scripts\rel_h
+
     iff exist buildscr.cfg then
       set /r buildscr.cfg
     endiff
 
     if not defined Programmer set PrjInclude=%PrjDesignRel%
-    
+
     set path=p:\v42\bin
     iff not defined Programmer then
-       set include=.;%PrjInclude%;p:\v42\include
+       set include=.;%PrjInclude%;p:\v42\include;p:\v42\include\sys
     else
-       set include=.;%PrjInclude%;\prj\tech\h;s:\prj\tech\h;p:\v42\include
+       set include=.;%PrjInclude%;\prj\tech\h;x:\prj\tech\h;p:\v42\include;p:\v42\include\sys
     endiff
-    set lib=s:\prj\tech\lib\WIN32\v42\a611\opt;p:\v42\lib
+    set lib=x:\prj\tech\lib\WIN32\v42\a611\opt;p:\v42\lib
 
     echo %target /Zp1 /FI"scrptimp.h" %PrjFlags% /DSCRIPT /DSCRIPT_MAIN_MODULE /DSTRICT /MT /TP /D_WIN32 /D_WINDLL > buildscr.tmp
     echo /Fe"%@name[%target].osm" >> buildscr.tmp
@@ -72,7 +72,7 @@ rem ------------------------------------------------------------
 
     echo Compiling script...
     cl /nologo @buildscr.tmp > buildscr.tm2
-    n:\bin\win95\grep -i error buildscr.tm2 
+    n:\bin\win95\grep -i error buildscr.tm2
     if exist %@name[%target].err del /q %@name[%target].err
     if errorlevel == 0 n:\bin\win95\grep -i error buildscr.tm2 > %@name[%target].err
     echo Done.
