@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.7 $
+# $Revision: 1.8 $
 # $Author: KEVIN $
-# $Date: 1996/05/07 10:35:21 $
+# $Date: 1996/05/15 16:00:12 $
 #
 
 MAKETOP = $(CWD)
@@ -23,7 +23,7 @@ irrupt_OBJS = \
         fl8fl8 fl8bk8 fl8mx \
         bk8fl8 mxfl8 f16f16 f16fl8 \
         gdbm gdgbm canvas bitmap grnull \
-        astring 
+        astring hflip
 
 dev2d_OBJS = \
         astring bitmap blend gr \
@@ -52,7 +52,7 @@ dev2d_OBJS = \
         genlin genfl8u genf16u genmonou \
         genbmf genfl8 genmono genmx \
         genrsd8 genf16 \
-        lpix \
+        hflip lpix \
         mxcnv mxp8f \
         mxvlinf mxhlinf mxubmf \
         mxpix mxlin mxbm \
