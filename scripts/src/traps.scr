@@ -1437,6 +1437,11 @@ METHODS:
       return ("GOAL_FINAL_"+string(i));
    }
 
+   METHOD string GoalReverseVarName(integer i)
+   {
+      return ("GOAL_REVERSE_"+string(i));
+   }
+
    METHOD void CheckCompleteness()
    {
       //wastrue is whether we used to satisfy this clause
@@ -1453,6 +1458,7 @@ METHODS:
          if ((Quest.Get(GoalVisibleVarName(i)) == 1) &&
              (Quest.Get(GoalStateVarName(i)) != kGoalComplete) &&
              (Quest.Get(GoalStateVarName(i)) != kGoalInactive) &&
+	     (Quest.Get(GoalReverseVarName(i)) != 1) &&
              (Quest.Get(GoalFinalVarName(i)) != 1))
             shouldbetrue = FALSE;
       }
