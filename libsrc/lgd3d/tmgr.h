@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/lgd3d/RCS/tmgr.h 1.18 1998/09/18 16:13:05 KEVIN Exp $
 #ifndef __TMGR_H
 #define __TMGR_H
