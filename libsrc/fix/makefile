@@ -1,3 +1,14 @@
+# $RCSFile$
+# $Author: kaboom $
+# $Date: 1992/08/24 17:27:40 $
+#
+# Makefile for Watcom C/Micosoft ASM
+#
+# $Log: makefile $
+# Revision 1.2  1992/08/24 17:27:40  kaboom
+# Added RCS keywords and header at top of file.
+#
+
 SRC_DIR = n:\project\lib\src\fix
 VPATH =
 VPATH.c = $(SRC_DIR)
