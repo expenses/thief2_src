@@ -1,9 +1,13 @@
 #
-# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.6 1995/01/17 12:54:01 buzzard Exp $
+# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.7 1995/01/17 13:07:05 dfan Exp $
 # $Log: makefile $
-# Revision 1.6  1995/01/17 12:54:01  buzzard
-# fix stack checking
+# Revision 1.7  1995/01/17 13:07:05  dfan
+# Turn off stack checking the right way
+# OBJDIR was set to objo, causing much unanticipated havoc
 #
+# Revision 1.6  1995/01/17  12:54:01  buzzard
+# fix stack checking
+# 
 # Revision 1.5  1995/01/17  11:25:51  buzzard
 # no stack checking
 # 
@@ -26,7 +30,7 @@ DEV_BASE = r:\prj\lib
 COMPILER = watcom
 SRCDIR = $(DEV_BASE)\src\prof
 RELDIR = $(DEV_BASE)\rel
-OBJDIR = objo
+OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
 INCPATH = . $(SRCDIR) $(RELDIR)
@@ -39,7 +43,7 @@ INST_TARGETS = prof
 
 PROF_OBJS = prof.obj
 PROF_HDRS = prof.h
-PROF.C_CFLAGS = -s
+PROF_CFLAGS = -s
 
 !include $(INIT)/make.rc
 
