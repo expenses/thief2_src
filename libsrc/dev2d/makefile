@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.22 $
+# $Revision: 1.23 $
 # $Author: KEVIN $
-# $Date: 1997/02/17 14:50:23 $
+# $Date: 1997/03/11 10:43:16 $
 #
 
 MAKETOP = $(CWD)
@@ -93,7 +93,7 @@ dev2d.h .REREAD :\
         gdbm.h gdlin.h gdrect.h gdpix.h grdev.h \
         pal.h pal16.h init.h \
         tluctab.h grmalloc.h grnull.h indexmac.h gr.h \
-        rgb.h blnfcn.h \
+        rgb.h blnfcn.h rsdcfg.h \
         stupid.h
 	$(eko1) $(@,F) \<-- $(?,F)
 	%do comp_h h_pre=$(dependent_includes) h_in="$^" h_out="$(@,F)"
