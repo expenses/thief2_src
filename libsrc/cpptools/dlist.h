@@ -1,8 +1,13 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/dlist.h $
 // $Author: TOML $
-// $Date: 1998/09/29 11:25:10 $
-// $Revision: 1.8 $
+// $Date: 1970/01/01 00:00:00 $
+// $Revision: 1.9 $
 //
 // (c) Copyright 1996 Tom Leonard. All Rights Reserved. Unlimited license granted to Looking Glass Technologies Inc.
 //
@@ -12,6 +17,8 @@
 
 #include <lgassert.h>
 #include <templexp.h>
+
+#include <dbmem.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -608,6 +615,8 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <undbmem.h>
 
 #endif /* !__DLIST_H */
 
