@@ -2,6 +2,7 @@
 #include "drkgoalt.h"
 
 const int FOLLOW_NOTE_GOAL=0;
+const int READ_NOTE_GOAL=1;
 
 // How often to check for player's distance to scroll
 const float CHECK_FREQ=3.0;
@@ -9,10 +10,19 @@ const float CHECK_FREQ=3.0;
 // Script file for Thief 2 - Mission 8 - Courier
 
 
-
+// @TODO: This whole scheme is not yet robust in the face of Garrett picking
+// up the note.  The following courier doesn't really know what to do.
 BEGIN_SCRIPT(GoalScroll, RootScript)
 
 MESSAGES:
+   OnFrobInvEnd()
+   {
+      if(object(message.Frobber)==object("Player")) // as if it could be otherwise...
+      {
+         Quest.Set(GoalStateVarName(READ_NOTE_GOAL),kGoalComplete);
+      }
+      DefaultOnFrobInvEnd();
+   }
    OnSim()
    {
       if(message.starting)
@@ -54,8 +64,7 @@ MESSAGES:
          vector p2=Object.Position("Player");
          real dist=(p1-p2).Magnitude();
 
-         // @TODO: Do the right thing if note is in garret's inventory.
-         Debug.MPrint("Checking.");
+         // note in Garret's inventory should have his same position, BTW
 
          if(Property.Possessed(self,"scriptTiming"))
             thresh=Property.Get(self,"scriptTiming");
@@ -117,14 +126,23 @@ METHODS:
             if(note!=NULLOBJ)
                Object.RemoveMetaProperty(note,"FrobInert");
             break;
+#ifdef COMBAT_MODE_CHECK
          case kAIM_Combat:
             // Player loses the mission if we currently have the note.
             if(note!=NULLOBJ)
                Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
             break;
+#endif
       }
          
       DefaultOnAIModeChange();
+   }
+   OnHighAlert()
+   {
+      // player loses the mission if we currently have the note.
+      if(TheNote()!=NULLOBJ)
+         Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+      DefaultOnHighAlert();
    }
    OnContainer()
    {
