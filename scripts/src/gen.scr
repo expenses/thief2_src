@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.71 2000/03/15 11:11:00 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.72 2000/03/16 17:42:47 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -2289,8 +2289,21 @@ MESSAGES:
       DefaultOnSlain();
    }
 
-END_SCRIPT(AttackActivate)
+   OnMessage()
+   {
+      if (MessageIs("AbortAttack"))
+      {
+         integer weapon=GetWeap();
 
+         if (weapon<=0)
+            Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
+         else
+            SendMessage(weapon, "TurnOff");
+      }      
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(AttackActivate)
 
 BEGIN_SCRIPT(StickyWebs, Physics)
 
