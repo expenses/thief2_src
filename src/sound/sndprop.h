@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/sndprop.h,v 1.4 2000/01/31 10:02:37 adurant Exp $
 // Properties that go on objects to trigger sounds (schemas)
 #pragma once
