@@ -193,7 +193,7 @@ MESSAGES:
          SetUI(kCocked);
 
       if(Object.InheritsFrom(self,"Flare"))
-         Quest.Set("tr_UseFlareLight",TRUE);
+         Quest.Set("tr_UseFlareLight",TRUE,kQuestDataCampaign);
 
       DefaultOnFrobInvBegin();
    }
@@ -250,10 +250,11 @@ MESSAGES:
 
    OnSlain()
    {
-      if(Object.InheritsFrom(self,"FlashBomb"))
+      if(Object.InheritsFrom(self,"FlashBomb") &&
+         Link.AnyExist("~Firer",self))
       {
-         Quest.Set("tr_DropOrUseFlashBomb",TRUE);
-         Quest.Set("tr_DropFlashBomb",TRUE);
+         Quest.Set("tr_DropOrUseFlashBomb",TRUE,kQuestDataCampaign);
+         Quest.Set("tr_DropFlashBomb",TRUE,kQuestDataCampaign);
       }
       DefaultOnSlain();
    }
@@ -377,9 +378,9 @@ MESSAGES:
          {
             if(state==kDoorOpen || state==kDoorOpening)
                // Closed the door.  Score it.
-               Quest.Set("tr_UseDoorClose",TRUE);
+               Quest.Set("tr_UseDoorClose",TRUE,kQuestDataCampaign);
             else
-               Quest.Set("tr_UseDoorOpen",TRUE);
+               Quest.Set("tr_UseDoorOpen",TRUE,kQuestDataCampaign);
          }
       }
       DefaultOnFrobWorldEnd();
@@ -412,7 +413,7 @@ MESSAGES:
          if(Property.Possessed(self,"TrapQVar"))
          { 
             string qvar=Property.Get(self,"TrapQVar");
-            Quest.Set(qvar,TRUE);
+            Quest.Set(qvar,TRUE,kQuestDataCampaign);
          }
       }
       DefaultOnMessage();
@@ -946,7 +947,7 @@ BEGIN_SCRIPT(Training, RootScript)
    }
    METHOD void Score(const string ref Action)
    {
-      Quest.Set(string("tr_")+Action,TRUE);
+      Quest.Set(string("tr_")+Action,TRUE,kQuestDataCampaign);
       Prompt();
    }
 
