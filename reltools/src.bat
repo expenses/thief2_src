@@ -224,8 +224,8 @@ iff not exist thief.exe then
    echo Failed to build thief.exe (spp)
    grep -i error log.spp
 else 
-   copy thief.exe %_DAILYTHIEF_%\thief.exe
-   copy thief.map %_DAILYDIR_%\thief.map
+   copy thief.exe %_DAILYTHIEF_%\sppthief.exe
+   copy thief.map %_DAILYDIR_%\sppthief.map
    if exist sppthief.exe rm sppthief.exe
    if exist sppthief.map rm sppthief.map
    mv thief.exe sppthief.exe
@@ -262,22 +262,22 @@ s:
 cd \prj\cam\src
 echo make -k build dark THIEF=THIEF FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 make -k build dark  THIEF=THIEF FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.shp
-iff not exist thief.exe then
-   echo Failed to build thief.exe (shp)
+iff not exist thief2.exe then
+   echo Failed to build thief2.exe (shp)
    grep -i error log.shp
 else 
-   copy thief.exe %_DAILYDIR_%\shpthief.exe
-   copy thief.map %_DAILYDIR_%\shpthief.map
+   copy thief2.exe %_DAILYDIR_%\shpthief.exe
+   copy thief2.map %_DAILYDIR_%\shpthief.map
    if exist shpthief.exe rm shpthief.exe
    if exist shpthief.map rm shpthief.exe
-   mv thief.exe shpthief.exe
-   mv thief.map shpthief.map
+   mv thief2.exe shpthief.exe
+   mv thief2.map shpthief.map
 endiff
 
 if .%@lower[%RunOneStep].==.y. goto Exit
 
 rem ******************************************************
-rem flav=shp master=SHIP produces thief.exe. note it renamed
+rem flav=shp master=SHIP produces thief2.exe. note it renamed
 rem ******************************************************
 
 :OptDark
@@ -352,14 +352,8 @@ rem ******************************************************
 :DbgDrom
 s:
 cd \prj\cam\src
-echo make -k build THIEF=THIEF FLAV=dbg MASTER=editor SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
-make -k build THIEF=THIEF FLAV=dbg MASTER=editor SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1 >>log.edb
-
-if exist dbgdrom.exe rm dbgdrom.exe
-if exist dbgdrom.pdb rm dbgdrom.pdb
-
-mv dromed.exe dbgdrom.exe >> log.edb
-mv dromed.pdb dbgdrom.pdb >> log.edb 
+echo make -k build THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
+make -k build THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1 >>log.edb
 
 iff not exist dbgdrom.exe then
    echo Failed to build dbgdrom.exe
