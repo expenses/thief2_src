@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.27 $
+# $Revision: 1.28 $
 # $Author: KEVIN $
-# $Date: 1998/03/13 13:54:35 $
+# $Date: 1998/03/25 15:42:56 $
 #
 
 MAKETOP = $(CWD)
@@ -23,7 +23,7 @@ irrupt_OBJS = \
 POLY_OBJS = \
         grtm permap \
         tmsetup tf \
-        genlm fl8lm fl8pm \
+        genlm fl8lm fl8pm f16pm \
         genfl8l genf16l genrsdtm \
         o88 lo88 co88 r88 t88oc \
         lht816 lh816 dlh816 t816oc \
