@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/propsto_.h,v 1.2 1998/04/13 21:34:11 mahk Exp $
 #pragma once  
 #ifndef __PROPSTO__H
