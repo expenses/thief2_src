@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/plycbllm.cpp,v 1.55 1999/05/15 10:32:31 JON Exp $
 
 #include <plyrbase.h>
