@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/hilight.c,v 1.17 2000/03/24 14:33:19 adurant Exp $
 // brush highlighting system
 

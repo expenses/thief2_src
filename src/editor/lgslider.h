@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #pragma once
 /*
  * $Source: r:/t2repos/thief2/src/editor/lgslider.h,v $
