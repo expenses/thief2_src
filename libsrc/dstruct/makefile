@@ -19,8 +19,8 @@ LIB_TARGETS = dstruct
 HDR_TARGETS =  
 INST_TARGETS = dstruct
 
-DSTRUCT_OBJS = hash.obj
-DSTRUCT_HDRS = hash.h
+DSTRUCT_OBJS = hash.obj lllist.obj llist.obj
+DSTRUCT_HDRS = hash.h llist.h
 
 HASHTEST_OBJS = hashtest.obj  hashlex.obj hash.obj
 HASHTEST_LIBS = lg.lib mprintf.lib
@@ -38,8 +38,6 @@ hashlex.c: hashlex.lex hashtok.h
 hash.obj: dbg.h error.h hash.h lg.h lgalt.h libdbg.h malloc.h memall.h \
 	 stdio.h stdlib.h string.h types.h
 
-hashlex.obj: dbg.h hashtest.h hashtok.h lg.h lgalt.h libdbg.h malloc.h \
-	 memall.h stdio.h stdlib.h string.h types.h
+llist.obj: llist.h malloc.h memall.h string.h types.h
 
-hashtest.obj: dbg.h error.h hash.h hashtest.h lg.h lgalt.h libdbg.h \
-	 malloc.h memall.h mprintf.h stdio.h stdlib.h string.h types.h
+lllist.obj: llist.h types.h
