@@ -94,7 +94,7 @@ rem **************************************************************
 echo Copying files to build tree...
 echo.
 
-perl5 %_DAILYDRV_%\prj\thief2\reltools\cpysrc.pl -targetroot s:
+perl5 %_PRJDRV_%\prj\thief2\reltools\cpysrc.pl -targetroot s:
 
 
 rem until I fix the copy script...
