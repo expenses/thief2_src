@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phscrpt.h 1.17 1999/07/19 17:45:27 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phscrpt.h,v 1.18 1999/12/10 14:45:33 PATMAC Exp $
 //
 
 #ifndef __PHSCRPT_H
@@ -35,6 +35,8 @@ DECLARE_SCRIPT_SERVICE(Physics, 0x141)
    // Velocity
    STDMETHOD(SetVelocity)(object obj, const vector ref vel) PURE; 
    STDMETHOD(GetVelocity)(object obj, vector ref vel) PURE; 
+   STDMETHOD(ControlVelocity)(object obj, const vector ref vel) PURE; 
+   STDMETHOD(StopControlVelocity)(object obj) PURE;
 
    // Gravity
    STDMETHOD(SetGravity)(object obj, float gravity) PURE;
@@ -48,7 +50,7 @@ DECLARE_SCRIPT_SERVICE(Physics, 0x141)
    STDMETHOD_(BOOL, IsOBB)(object obj) PURE;
 
    // Control
-   // Control location/rotation to current value
+   // Control location/rotation/position/velocity to current value
    STDMETHOD(ControlCurrentLocation)(object obj) PURE;
    STDMETHOD(ControlCurrentRotation)(object obj) PURE;
    STDMETHOD(ControlCurrentPosition)(object obj) PURE;
