@@ -90,6 +90,74 @@ MESSAGES:
 END_SCRIPT(SpecialGoals)
 
 
+// Handles all the quest item goals, 'cause why not?
+BEGIN_SCRIPT(M13Goals, RootScript)
+MESSAGES:
+   OnContainer()
+   {
+      // Might as well do victory here, since we're catching this anyway.
+      object inv=message.containee;
+
+      if(message.event!=kContainRemove && Property.Possessed(inv,"CombineType"))
+      {
+         string combine=Property.Get(inv,"CombineType");
+
+         if(combine==string("LCMask"))
+         {
+            integer count=0, diff=0;
+
+            if(Property.Possessed(inv,"StackCount"))
+               count=Property.Get(inv,"StackCount");
+            // Normal goal: get a mask
+            Quest.Set(GoalStateVarName(M13_MASK_GOAL_0),kGoalComplete);
+            // Expert goal: get all masks
+            if(count>=M13_MASK_TOTAL)
+               Quest.Set(GoalStateVarName(M13_MASK_GOAL_2),kGoalComplete);
+         }
+         else if(combine==string("LCMaskSpecial"))
+         {
+            // Okay, we want the stack to have the model of the special mask.
+            // So, remove the existing masks (if any) and then stuff them back
+            // in, after munging combine types appropriately.
+            linkset invlinks=Link.GetAll("Contains",self);
+            object masks;
+            boolean found=FALSE;
+
+            while(invlinks.AnyLinksLeft() && !found)
+            {
+               object thisone=invlinks.Link().To();
+               if(Property.Possessed(thisone,"CombineType") &&
+                  string(Property.Get(thisone,"CombineType"))==string("LCMask"))
+               {
+                  found=TRUE;
+                  masks=thisone;
+               }
+               invlinks.NextLink();
+            }
+            if(found)
+               Container.Remove(masks);
+            Property.Set(inv,"CombineType","LCMask");
+            // Note that this will cause a combine event, thus implicitly recursing.
+            // That should be okay because it will recurse into the above LCMask
+            // combine type case, not the LCMaskSpecial case.
+            if(found)
+               Container.Add(masks,self);
+            // Got special mask, the Hard goal
+            Quest.Set(GoalStateVarName(M13_MASK_GOAL_1),kGoalComplete);
+         }
+         else if(combine==string("Cultivator"))
+         {
+            Quest.Set(GoalStateVarName(M13_CULTIVATOR_GOAL),kGoalComplete);
+            // @TODO: Explanatory VO from Garrett if this goal was not already complete.
+            Quest.Set(GoalStateVarName(M13_LETTER_GOAL),kGoalComplete);
+         }
+      }
+      DefaultOnContainer();
+   }
+
+
+END_SCRIPT(M13Goals)
+
 
 /* Give the player whatever keys and such the quest vars say he got in previous mission. */
 
