@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/prj/cam/src/RCS/aievtgen.h 1.11 1998/01/21 14:34:23 TOML Exp $
 //
