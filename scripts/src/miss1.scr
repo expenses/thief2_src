@@ -991,8 +991,14 @@ MESSAGES:
                         if(IsDoor(object_id) && 
                            !Object.HasMetaProperty(object_id,"M1_TrackDoor"))
                            Object.AddMetaProperty(object_id,"M1_TrackDoor");
-                        else if(!Object.HasMetaProperty(object_id,"M1_TrackWorld"))
-                           Object.AddMetaProperty(object_id,"M1_TrackWorld");
+                        else 
+                        {
+                           if(!Object.HasMetaProperty(object_id,"M1_TrackWorld"))
+                              Object.AddMetaProperty(object_id,"M1_TrackWorld");
+                           if((frobinfo & kFrobMove) &&
+                              (!Object.HasMetaProperty(object_id,"M1_TrackInv")))
+                              Object.AddMetaProperty(object_id,"M1_TrackInv");
+                        }
                      }
                   }
                }
