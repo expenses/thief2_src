@@ -370,7 +370,11 @@ rem The motiondb.bin is kinda important
 copy mschema\motiondb.bin %_DAILYTHIEF_%\motiondb.bin
 
 rem hack to fix scripts (since TG isn't constantly running src)
-xcopy r:\prj\thief2\scripts\osm\*.osm %_DAILYTHIEFCD2_%
+rem get mission scripts
+copy r:\prj\thief2\scripts\osm\miss*.osm %_DAILYTHIEFCD2_%
+copy r:\prj\thief2\scripts\osm\gen.osm %_DAILYTHIEFCD2_%
+copy r:\prj\thief2\scripts\osm\convict.osm %_DAILYTHIEFCD2_%
+copy r:\prj\thief2\scripts\osm\archer.osm %_DAILYTHIEFCD2_%
 
 :done
 set _FINALS_=
