@@ -19,8 +19,8 @@ LIB_TARGETS = dstruct
 HDR_TARGETS =  
 INST_TARGETS = dstruct
 
-DSTRUCT_OBJS = hash.obj lllist.obj llist.obj
-DSTRUCT_HDRS = hash.h llist.h array.h
+DSTRUCT_OBJS = hash.obj hheap.obj lllist.obj llist.obj rect.obj strall.obj
+DSTRUCT_HDRS = array.h hash.h hheap.h llist.h rect.h strall.h
 
 HASHTEST_OBJS = hashtest.obj  hashlex.obj hash.obj
 HASHTEST_LIBS = lg.lib mprintf.lib
@@ -43,3 +43,21 @@ array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
 
 arraytst.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
 	 stdio.h stdlib.h types.h
+
+hash.obj: dbg.h error.h hash.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 stdio.h stdlib.h string.h types.h
+
+hashtest.obj: dbg.h error.h hash.h hashtest.h lg.h lgalt.h libdbg.h \
+	 malloc.h memall.h mprintf.h stdio.h stdlib.h string.h types.h
+
+hheap.obj: dbg.h hheap.h lg.h lgalt.h libdbg.h llist.h malloc.h memall.h \
+	 stdio.h types.h
+
+llist.obj: llist.h malloc.h memall.h string.h types.h
+
+lllist.obj: llist.h types.h
+
+rect.obj: rect.h
+
+strall.obj: dbg.h hheap.h lg.h lgalt.h libdbg.h llist.h malloc.h memall.h \
+	 stdio.h strall.h string.h types.h
