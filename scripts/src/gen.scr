@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.72 2000/03/16 17:42:47 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.73 2000/03/18 19:39:45 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -799,6 +799,13 @@ METHODS:
 
    METHOD void Activate()
    {
+      if (Link.AnyExist("~Contains",self))
+      {
+         SetData("AmContained",1);
+         return; //this really should already be handled, but lets be safe
+      }
+      else
+         SetData("AmContained",0);
       // So, who ever said I was in motion because the player threw me, anyway?
       // Need to check that.
       if(Link.AnyExist("~CulpableFor",self))
@@ -837,7 +844,8 @@ MESSAGES:
 	
     OnPhysFellAsleep()
     {
-       Activate();
+       if ((integer)GetData("AmContained")==0)
+          Activate();
        DefaultOnPhysFellAsleep();
     }
 
@@ -846,7 +854,7 @@ MESSAGES:
       if (message.event==kContainRemove)
 	SetData("AmContained",0);
       else
-        SetData("Amcontained",1);
+        SetData("AmContained",1);
       if(message.event==kContainRemove &&
          Object.InheritsFrom(message.container,"Avatar"))
       {
