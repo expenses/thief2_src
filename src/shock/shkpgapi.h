@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpgapi.h 1.10 1999/05/21 20:01:24 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpgapi.h,v 1.11 2000/01/31 09:58:27 adurant Exp $
+#pragma once
 
 #ifndef __SHKPGAPI_H
 #define __SHKPGAPI_H

@@ -1,8 +1,9 @@
 /////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkparam.h 1.21 1999/06/17 23:54:04 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkparam.h,v 1.22 2000/01/31 09:58:19 adurant Exp $
 //
 // Game parameters
 //
+#pragma once
 
 #ifndef __SHKPARAM_H
 #define __SHKPARAM_H

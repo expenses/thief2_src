@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkver.h 1.1 1999/02/03 17:27:16 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkver.h,v 1.2 2000/01/31 09:59:33 adurant Exp $
+#pragma once
 
 #ifndef __SHKVER_H
 #define __SHKVER_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkhome.h 1.2 1999/02/27 21:59:50 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkhome.h,v 1.3 2000/01/31 09:56:38 adurant Exp $
+#pragma once
 
 #ifndef __SHKHOME_H
 #define __SHKHOME_H

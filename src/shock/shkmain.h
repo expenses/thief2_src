@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkmain.h 1.1 1999/04/03 05:03:36 mahk Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmain.h,v 1.2 2000/01/31 09:57:53 adurant Exp $
+#pragma once
 
 #ifndef __SHKMAIN_H
 #define __SHKMAIN_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shklding.h 1.3 1999/05/31 15:43:29 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shklding.h,v 1.4 2000/01/31 09:57:48 adurant Exp $
+#pragma once
 
 #ifndef __SHKLDING_H
 #define __SHKLDING_H

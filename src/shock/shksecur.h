@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shksecur.h 1.1 1998/11/23 15:50:25 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shksecur.h,v 1.2 2000/01/31 09:59:11 adurant Exp $
+#pragma once
 
 #ifndef __SHKSECUR_H
 #define __SHKSECUR_H

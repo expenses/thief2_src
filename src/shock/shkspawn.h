@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkspawn.h 1.6 1999/03/22 21:29:13 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkspawn.h,v 1.7 2000/01/31 09:59:15 adurant Exp $
+#pragma once
 
 #ifndef __SHKSPAWN_H
 #define __SHKSPAWN_H

@@ -1,7 +1,8 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkscrpt.h 1.101 1999/08/19 16:45:22 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkscrpt.h,v 1.102 2000/01/31 09:59:10 adurant Exp $
 //
 // Shock engine specific script stuff
 //
+#pragma once
 
 #ifndef __SHKSCRPT_H
 #define __SHKSCRPT_H

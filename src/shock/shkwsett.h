@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkwsett.h 1.2 1998/11/23 15:57:59 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkwsett.h,v 1.3 2000/01/31 09:59:37 adurant Exp $
+#pragma once
 
 #ifndef __SHKWSETT_H
 #define __SHKWSETT_H

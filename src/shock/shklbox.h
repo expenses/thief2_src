@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shklbox.h 1.2 1999/01/19 17:21:02 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shklbox.h,v 1.3 2000/01/31 09:57:47 adurant Exp $
+#pragma once
 
 #ifndef __SHKLBOX_H
 #define __SHKLBOX_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkutils.h 1.19 1999/04/08 18:50:40 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkutils.h,v 1.20 2000/01/31 09:59:32 adurant Exp $
+#pragma once
 
 #ifndef __SHKUTILS_H
 #define __SHKUTILS_H

@@ -1,8 +1,9 @@
 ////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkpsipw.h 1.4 1999/04/05 21:30:05 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpsipw.h,v 1.5 2000/01/31 09:58:50 adurant Exp $
 //
 // Psionics system - powers
 //
+#pragma once
 
 #ifndef __SHKPSIPW_H
 #define __SHKPSIPW_H

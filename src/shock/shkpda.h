@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpda.h 1.7 1999/04/30 18:49:02 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpda.h,v 1.8 2000/01/31 09:58:23 adurant Exp $
+#pragma once
 
 #ifndef __SHKPDA_H
 #define __SHKPDA_H

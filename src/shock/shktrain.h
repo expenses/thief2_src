@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shktrain.h 1.1 1998/12/12 17:57:28 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shktrain.h,v 1.2 2000/01/31 09:59:25 adurant Exp $
+#pragma once
 
 #ifndef __SHKTRSTA_H
 #define __SHKTRSTA_H

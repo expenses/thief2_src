@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpatch.h 1.1 1999/08/09 17:36:03 dc Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpatch.h,v 1.2 2000/01/31 09:58:21 adurant Exp $
 // code for doing patch like things to the levels
+#pragma once
 
 #ifndef __SHKPATCH_H
 #define __SHKPATCH_H

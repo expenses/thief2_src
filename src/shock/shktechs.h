@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shktechs.h 1.1 1999/01/02 13:57:03 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shktechs.h,v 1.2 2000/01/31 09:59:23 adurant Exp $
+#pragma once
 
 #ifndef __SHKTECHS_H
 #define __SHKTECHS_H

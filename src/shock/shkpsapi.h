@@ -1,8 +1,9 @@
 /////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkpsapi.h 1.7 1999/05/25 12:14:17 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpsapi.h,v 1.8 2000/01/31 09:58:45 adurant Exp $
 //
 // Psionics system API
 //
+#pragma once
 
 #ifndef __SHKPSAPI_H
 #define __SHKPSAPI_H

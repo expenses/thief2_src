@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkiftul.h 1.3 1999/01/26 22:40:01 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkiftul.h,v 1.4 2000/01/31 09:56:44 adurant Exp $
+#pragma once
 
 #ifndef __SHKIFTUL_H
 #define __SHKIFTUL_H

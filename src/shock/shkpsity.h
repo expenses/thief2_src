@@ -1,8 +1,9 @@
 ////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkpsity.h 1.2 1998/08/30 18:44:23 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpsity.h,v 1.3 2000/01/31 09:58:54 adurant Exp $
 //
 // Psionics system - basic types
 //
+#pragma once
 
 #ifndef __SHKPSITY_H
 #define __SHKPSITY_H

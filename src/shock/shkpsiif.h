@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpsiif.h 1.5 1999/04/07 22:45:52 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpsiif.h,v 1.6 2000/01/31 09:58:48 adurant Exp $
+#pragma once
 
 #ifndef __SHKPSIIF_H
 #define __SHKPSIIF_H

@@ -1,7 +1,8 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkobjsc.h 1.1 1998/08/30 18:42:40 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkobjsc.h,v 1.2 2000/01/31 09:58:12 adurant Exp $
 //
 // Object script stuff
 //
+#pragma once
 
 #ifndef __SHKOBJSC_H
 #define __SHKOBJSC_H

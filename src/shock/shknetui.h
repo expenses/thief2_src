@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shknetui.h 1.1 1999/06/23 21:25:27 mahk Exp $
+// $Header: r:/t2repos/thief2/src/shock/shknetui.h,v 1.2 2000/01/31 09:58:11 adurant Exp $
+#pragma once
 
 #ifndef __SHKNETUI_H
 #define __SHKNETUI_H

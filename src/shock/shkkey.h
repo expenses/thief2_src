@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkkey.h 1.2 1999/02/10 13:08:53 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkkey.h,v 1.3 2000/01/31 09:57:45 adurant Exp $
+#pragma once
 
 #ifndef __SHKKEY_H
 #define __SHKKEY_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkspflg.h 1.1 1998/09/28 21:58:29 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkspflg.h,v 1.2 2000/01/31 09:59:16 adurant Exp $
+#pragma once
 
 #ifndef __SHKSPFLG_H
 #define __SHKSPFLG_H
