@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.12 $
+# $Revision: 1.13 $
 # $Author: KEVIN $
-# $Date: 1997/01/31 13:39:30 $
+# $Date: 1997/02/07 12:25:05 $
 #
 
 MAKETOP = $(CWD)
@@ -44,9 +44,8 @@ G2_OBJS = \
         genlm genlmf genllmf \
         g2poly g2tm g2rot \
         g2circ g2el g2ov g2ring \
-        g2makewr \
-        grwater \
-        lmap permap \
+        g2makewr grwater \
+        lmap permap point \
         raster rastel scale \
         sply tmapd trifan \
         fl8o2ni fl8nni fl8o2wi fl8lo2wi \
@@ -65,7 +64,7 @@ g2.h .REREAD :\
 	grply.h grscale.h init.h \
         buffer.h blnfcn.h \
         water.h \
-        grchkply.h setdrv.h frame.h
+        grchkply.h setdrv.h frame.h point.h
 	$(eko1) $(@,F) \<-- $(?,F)
 	%do comp_h h_pre="\#include \<dev2d.h\>" h_in="$^" h_out="$(@,F)"
 
