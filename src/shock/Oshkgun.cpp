@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/oshkgun.cpp,v 1.47 1999/06/17 23:53:14 XEMU Exp $
 
 #include <shkgnapi.h>
