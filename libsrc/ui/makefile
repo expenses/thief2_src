@@ -43,7 +43,7 @@ LG_LIBS	= lg.lib mprintf.lib fix.lib 2d.lib 3d.lib range.lib mouse.lib \
 
 !if !defined(NONET)
 !include makefile.rcs
-!include ../inc/makefile.rcs
+!include inc/makefile.rcs
 !endif
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
