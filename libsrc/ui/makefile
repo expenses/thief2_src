@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/ui/RCS/makefile $
-# $Revision: 1.27 $
+# $Revision: 1.28 $
 # $Author: mahk $
-# $Date: 1994/07/09 18:56:31 $
+# $Date: 1994/07/09 20:04:14 $
 
 DEBUG_ON = 1
 SPEW_ON = 1
@@ -11,7 +11,7 @@ DBG_ON = 1
 
 COMPILER = watcom
 SRCDIR = r:\prj\lib\src\ui
-RELDIR = r:\prj\lib\release
+RELDIR = r:\prj\lib\rel
 BUILD_DIR = r:\prj\lib\build\ui
 
 OBJDIR = obj
