@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkstats.cpp,v 1.26 2000/02/19 13:26:17 toml Exp $
 
 #include <dev2d.h>
