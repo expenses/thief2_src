@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkgame.h 1.5 1998/11/05 21:09:44 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkgame.h,v 1.6 2000/01/31 09:39:54 adurant Exp $
+#pragma once
 
 #ifndef DRKGAME_H
 #define DRKGAME_H

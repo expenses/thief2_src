@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkchkcd.h 1.1 1998/11/06 00:26:07 DAVET Exp $ 
+// $Header: r:/t2repos/thief2/src/dark/drkchkcd.h,v 1.2 2000/01/31 09:39:52 adurant Exp $ 
+#pragma once
 
 EXTERN BOOL CheckForCD();
 

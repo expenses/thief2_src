@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkinit.h 1.1 1997/06/14 13:30:17 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkinit.h,v 1.2 2000/01/31 09:39:55 adurant Exp $
+#pragma once
 
 #ifndef __DRKINIT_H
 #define __DRKINIT_H
