@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/entrywin/rcs/entrywin.cpp $
 // $Author: TOML $
-// $Date: 1996/06/11 13:48:05 $
-// $Revision: 1.1 $
+// $Date: 1996/07/01 14:05:49 $
+// $Revision: 1.2 $
 //
 //
 // Main entry point for windowed Windows applications
@@ -15,7 +15,10 @@
 
 EXTERN int LGAPI _AppMain(int argc, const char *argv[]);
 
+extern "C"
+{
 int _g_referenceEntryPoint;
+}
 
 int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR pszCmdLine, int fShow)
     {
