@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.25 $
+# $Revision: 1.26 $
 # $Author: KEVIN $
-# $Date: 1998/03/26 12:59:46 $
+# $Date: 1998/03/31 15:13:52 $
 #
 
 MAKETOP = $(CWD)
@@ -51,6 +51,7 @@ dev2d_OBJS = \
         f16fl8 f16mono f16f16 f16rsd8 \
         f16set f16il f16fl8il \
         f16f16c f16f16l \
+        fcolor \
         gdbm gdgbm gdrect gdlin gdpix \
         genbm \
         genlin genfl8u genf16u genmonou \
@@ -93,8 +94,8 @@ dev2d.h .REREAD :\
         gdbm.h gdlin.h gdrect.h gdpix.h grdev.h \
         pal.h gpal.h cpal.h pal16.h init.h \
         tluctab.h grmalloc.h grnull.h indexmac.h gr.h \
-        rgb.h blnfcn.h rsdcfg.h \
-        stupid.h
+        rgb.h blnfcn.h rsdcfg.h fcolor.h \
+        stupid.h 
 	$(eko1) $(@,F) \<-- $(?,F)
 	%do comp_h h_pre=$(dependent_includes) h_in="$^" h_out="$(@,F)"
 
