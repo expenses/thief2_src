@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.39 2000/01/21 15:20:23 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.40 2000/01/21 18:10:00 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -336,13 +336,9 @@ BEGIN_SCRIPT(AnimLight,RootScript)
       }
       OnBeginScript()
       {
-         if(!IsLightOn())
-         {
-            Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
-            if(Property.Possessed(self,"SelfIllum"))
-               Property.Set(self,"SelfIllum",0.0);
-            AmbientHack(FALSE);
-         }
+         // This should just synch particles, tweqs, self illum, and such to
+         // the current state of the AnimLight property.
+         ChangeMode(IsLightOn());
          DefaultOnBeginScript();
       }
       OnTweqComplete()
@@ -436,30 +432,26 @@ END_SCRIPT(DoFlameSource)
 BEGIN_SCRIPT(Extinguishable, AnimLight)
 
    METHODS:
-      METHOD void TurnOn()
+      METHOD void ChangeMode(boolean on)
       {
-         // turn on our TweqModels animation
-         ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoActivate);
-         // Turn on our light
-         Base::TurnOn();
-      }
-      METHOD void TurnOff()
-      {
-         string deadmodel="Newt01"; // default from Thief1 standard torches.
-
-         // turn off our TweqModels animation
-         ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoHalt);
-         // change our model
-         if(Property.Possessed(self,"CfgTweqModels"))
+         // turn on/off our TweqModels animation
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,
+                        on?kTweqDoActivate:kTweqDoHalt);
+         if(!on)
          {
-            string propmodel=Property.Get(self,"CfgTweqModels","Model 5");
-            if(propmodel!=string(""))
-               deadmodel=propmodel;
-         }
+            string deadmodel="Newt01"; // default from Thief1 standard torches.
 
-         Property.Set(self,"ModelName",(const char*)deadmodel);
-         Base::TurnOff();
-      } 
+            // change our model
+            if(Property.Possessed(self,"CfgTweqModels"))
+            {
+               string propmodel=Property.Get(self,"CfgTweqModels","Model 5");
+               if(propmodel!=string(""))
+                  deadmodel=propmodel;
+            }
+            Property.Set(self,"ModelName",(const char*)deadmodel);
+         }
+         Base::ChangeMode(on);
+      }
 
    MESSAGES:
       OnBeginScript()
