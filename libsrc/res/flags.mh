@@ -4,4 +4,6 @@ TRACE_ALL_ALLOCS =
 %include flagsloc.mh
 %endif
 
-ALL_FLAGS = TRACE_ALL_ALLOCS
+TRACE_ALL_ALLOCS = 
+
+ALL_FLAGS = $(TRACE_ALL_ALLOCS)
