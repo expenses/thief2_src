@@ -12,7 +12,7 @@ METHODS:
    {
       integer val=Quest.Get(varname);
 
-      // @TODO: Axing this variable could will invalidate subscriptions.
+      // Axing this variable could will invalidate subscriptions.
       // We should message back to ourselves (knowing that both this script
       // and the victory conditions script are supposed to go on the player
       // object) to make the victory conditions script re-do its subscriptions.
@@ -34,14 +34,13 @@ MESSAGES:
 
          // State of library quest (mask of books read)
          Quest.Set("LibBooks", 0, kQuestDataCampaign);
-         // States of items that carry over in inventory
-         Quest.Set("GotLetter",0,kQuestDataCampaign);
 
          MakeCampaignVar(GoalStateVarName(M13_LETTER_GOAL));
          MakeCampaignVar(GoalVisibleVarName(M13_CULTIVATOR_GOAL));
       }
       DefaultOnBeginScript();
    }
+// @TODO: Tally keys and such in the player's inventory.
 
 END_SCRIPT(SpecialGoals)
 
@@ -178,5 +177,58 @@ MESSAGES:
    }
 
 END_SCRIPT(CrazyClock);
+
+
+/* We want to track which "secrets" the player finds so as to not
+   double-dip.  Each secret should have this script on it to do so,
+   and should have a unique SymName to munge into a quest var name
+   (I'm using ones of the form "Hid1", "Hid2", etc.)
+   */
+BEGIN_SCRIPT(TrackHid, RootScript)
+MESSAGES:
+   OnSim()
+   {
+      // suppose we're going to use the same .osm for miss12 and miss13.
+      // this is the part in miss13 where we would note the previously
+      // found secret.
+      string qvar=string("Hid")+Object.GetName(self);
+
+      if(message.starting)
+      {
+         if(Quest.Get(qvar)!=0)
+         {
+            int statflags=Property.Get(self,"DarkStat");
+
+            statflags=statflags & ~kDarkStatBitHidden;
+            Property.Set(self,"DarkStat",statflags);
+            // we have, I think, already been counted in the count of total
+            // secrets.  So, uncount ourselves.
+            Quest.Set(kDarkStatTotalSecrets,Quest.Get(kDarkStatTotalSecrets)-1);
+         }
+      }
+      DefaultOnSim();
+   }
+   OnEndScript()
+   {
+      if(Property.Possessed(self,"DarkStat"))
+      {
+         int statflags=Property.Get(self,"DarkStat");
+         string qvar=string("Hid")+Object.GetName(self);
+
+         if(Quest.Get(qvar)==0 && !(statflags & kDarkStatBitHidden))
+         {
+            // Look.  We are no longer hidden, but we have not yet noted
+            // that fact in quest variables.
+            Quest.Set(qvar,TRUE,kQuestDataCampaign);
+         }
+      }
+      DefaultOnEndScript();
+   }
+END_SCRIPT(TrackHid)
+
+
+
+
+
 
 
