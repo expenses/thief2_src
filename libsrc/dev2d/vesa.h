@@ -1,12 +1,12 @@
 /*
- * $Source: x:/prj/windex/libsrc/2d/RCS/vesa.h $
- * $Revision: 1.7 $
- * $Author: TOML $
- * $Date: 1996/01/16 14:22:24 $
+ * $Source: s:/prj/tech/libsrc/dev2d/RCS/vesa.h $
+ * $Revision: 1.2 $
+ * $Author: KEVIN $
+ * $Date: 1996/05/20 11:27:57 $
  *
  * Public vesa vbe structures and flags
  *
- * This file is part of the 2d library.
+ * This file is part of the dev2d library.
  *
  */
 
@@ -14,9 +14,8 @@
 #define __VESA_H
 
 #ifdef __cplusplus
-extern "C"  {
+extern "C" {
 #endif
-
 //
 // We begin with the the equates for the VBE functions themselves
 // together with the version number with which each is associated
@@ -184,7 +183,7 @@ typedef struct {
 // Capabilities field flags
 
 #define VBE_8_BIT_DAC         0x000000001 // DAC width can be made 8 bit
-// 2.0 extensions
+// 2.0 extensions 
 #define VBE_NON_VGA           0x000000002 // Controller is non-VGA
 #define VBE_BLANK_RAM_DAC     0x000000004 // Program DAC with blank bit
 
@@ -243,28 +242,27 @@ typedef enum {
 extern short VBE_version;
 extern bool  VBE_modeLinear;
 
-struct _grs_sys_info;
+struct grs_sys_info;
 
-int   VBEInit(struct _grs_sys_info *info);
-void  VBEClose(struct _grs_sys_info *info);
-int   VBESetMode(int mode,int flags);
+int   VBEInit(struct grs_sys_info *info);
 int   VBESetScanLineLength(int w,int *hp);
 int   VBEGetScreenHeight();
-int   VBESetWidth(int w);
-int   VBEGetWidth();
 int   VBEGetRowBytes();
 int   VBESetPaletteDac(int dacWidth);
 int   VBEGetPaletteDac();
 void  VBEForceDefaultDac();
-void  VBEGetPalette(int start,int n,uchar *palData);
-void  VBESetPalette(int start,int n,uchar *palData);
-void  VBESetFocus(int x,int y);
-void  VBEGetFocus(int *xPtr,int *yPtr);
 
+void  vbe_close(struct grs_sys_info *info);
+int   vbe_set_mode(int mode,int flags);
+int   vbe_set_width(int w);
+int   vbe_get_width();
+void  vbe_set_palette(int start,int n,uchar *palData);
+void  vbe_get_palette(int start,int n,uchar *palData);
+void  vbe_set_focus(int x,int y);
+void  vbe_get_focus(int *xPtr,int *yPtr);
 
 #ifdef __cplusplus
 };
 #endif
-
 #endif // __VESA_H
 
