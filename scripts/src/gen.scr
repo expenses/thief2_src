@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.44 2000/01/23 21:26:19 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.45 2000/01/24 23:18:23 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -734,46 +734,27 @@ BEGIN_SCRIPT(CamGrenade, Physics)
 METHODS:
    METHOD void Activate()
    {
-      //will be back when player throws it again
-      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-      // Physics.UnsubscribeMsg(self, kContactMsg);
-
       // So, who ever said I was in motion because the player threw me, anyway?
       // Need to check that.
-      if(IsDataSet("Armed") && boolean(GetData("Armed")) &&
-         Link.AnyExist("~CulpableFor",self))
+      if(Link.AnyExist("~CulpableFor",self))
       {
          if(Object.InheritsFrom(Link.GetOne("~CulpableFor",self).To(),
                                 "Avatar"))
             Camera.DynamicAttach(self);
       }
-      SetData("Armed",FALSE);
    }
 
 MESSAGES:
 
     OnBeginScript()
     {
-       if(!IsDataSet("Armed"))
-          SetData("Armed",FALSE);
-       else if(boolean(GetData("Armed")))
-       {
-          // Physics.SubscribeMsg(self, kContactMsg);
-          Physics.SubscribeMsg(self, kFellAsleepMsg);
-       }
+       Physics.SubscribeMsg(self, kFellAsleepMsg);
        DefaultOnBeginScript();
     }
     OnEndScript()
     {
-       // Physics.UnsubscribeMsg(self, kContactMsg);
        Physics.UnsubscribeMsg(self, kFellAsleepMsg);
        DefaultOnEndScript();
-    }
-	
-    OnFrobWorldEnd()
-    {	
-       //he picked me up, subscribe again
-       DefaultOnFrobWorldEnd();
     }
 	
     OnPhysFellAsleep()
@@ -797,20 +778,6 @@ MESSAGES:
        // Me too.
        BaseOnDestroy();
     }
-
-    OnContained()
-    {
-       if(message.event==kContainRemove &&
-          Object.InheritsFrom(message.container,"Avatar"))
-       {
-          // Player just threw/dropped us
-          // Physics.SubscribeMsg(self, kContactMsg);
-          Physics.SubscribeMsg(self, kFellAsleepMsg);
-          SetData("Armed",TRUE);
-       }
-       DefaultOnContained();
-    }
-
 
 END_SCRIPT(CamGrenade);
 
