@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  *   $Header: r:/t2repos/thief2/libsrc/portold/pt_main.c,v 1.12 1996/12/20 17:53:31 buzzard Exp $
  *
  *  PORTAL texture mappers

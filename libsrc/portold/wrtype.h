@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/wrtype.h,v 1.7 1997/10/06 15:51:47 TOML Exp $
 
 // World Representation Types

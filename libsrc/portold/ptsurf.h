@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/ptsurf.h,v 1.5 1998/04/06 12:42:05 MAT Exp $
 
 #ifndef _PTSURF_H_
