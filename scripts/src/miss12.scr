@@ -697,6 +697,26 @@ END_SCRIPT(LibraryBook)
 
 
 
+BEGIN_SCRIPT(Cultivator, RootScript)
+MESSAGES:
+   OnWorldSelect()
+   {
+      if(Quest.Get(GoalStateVarName(M13_LETTER_GOAL))==kGoalIncomplete)
+      {
+         object vo=object("gar1308");
+         // Gruesome hack to detect whether we're running in English.
+         string blood=Data.GetString("Titles","short_10");
 
+         if(blood!=string("Blood"))
+            vo=object("gar9906");
+
+         if(Object.Exists(vo))
+            Sound.PlayVoiceOver(self,vo);
+         Quest.Set(GoalStateVarName(M13_LETTER_GOAL),kGoalComplete);
+      }
+      DefaultOnWorldSelect();
+   }
+
+END_SCRIPT(Cultivator)
 
 
