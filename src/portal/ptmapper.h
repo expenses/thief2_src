@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/ptmapper.h 1.4 1996/12/19 19:09:30 buzzard Exp $
+// $Header: r:/t2repos/thief2/src/portal/ptmapper.h,v 1.5 2000/01/29 13:37:32 adurant Exp $
+#pragma once
 
 extern void pt_scan_convert(fix x, int *p, fix dx, int count);
 extern void pt_asm_outer_loop(double *uv, uchar *dest, int *xdata, int height);

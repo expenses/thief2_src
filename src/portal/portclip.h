@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/portclip.h 1.7 1997/09/11 22:56:54 buzzard Exp $
+// $Header: r:/t2repos/thief2/src/portal/portclip.h,v 1.8 2000/01/29 13:37:24 adurant Exp $
+#pragma once
 #include <r3ds.h>
 
 #ifndef __PORTCLIP_H

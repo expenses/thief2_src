@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/phlisbas.h 1.1 1999/02/09 09:39:34 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phlisbas.h,v 1.2 2000/01/29 13:32:47 adurant Exp $
+#pragma once
 
 #ifndef __PHLISBAS_H
 #define __PHLISBAS_H

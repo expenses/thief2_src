@@ -1,8 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmoapi.h 1.12 1999/02/11 13:46:14 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmoapi.h,v 1.14 2000/01/29 13:32:50 adurant Exp $
 //
 // Physics motion api
 //
+#pragma once
 
 #ifndef __PHMOAPI_H
 #define __PHMOAPI_H
@@ -64,6 +65,8 @@ EXTERN void PlayerMotionSetOffset(short submod, mxs_vector *offset);
 EXTERN void PlayerMotionGetOffset(short submod, mxs_vector *offset);
 
 EXTERN void PlayerMotionUpdate(mxs_real dt);
+
+EXTERN mxs_vector PlayerGetEyeOffset();
 
 ////////////////////////////////////////////////////////////////////////////////
 

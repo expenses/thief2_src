@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmod.h 1.79 1999/08/05 17:17:19 Justin Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmod.h,v 1.81 2000/01/29 13:32:51 adurant Exp $
 //
 // Physics Models
 //
+#pragma once
 
 #ifndef __PHMOD_H
 #define __PHMOD_H
@@ -29,7 +30,7 @@
 // @Note (toml 08-05-97): This is to get at "Position." At some point,
 //                        portal should expose Postion and Location in a
 //                        separate header so that physics doesn't need to be
-//                        100% dependent on all of wr.h
+//                        100 0ependent on all of wr.h
 
 ///////////////////////////////////////
 
@@ -90,7 +91,7 @@ enum ePhysModelFlags
    kPMF_LowDetail         = 0x00000001,     // i'm a low detail model
    kPMF_Remote            = 0x00000002,     // i'm remote
    kPMF_Inactive          = 0x00000004,     // not current detail level
-   kPMF_Stationary        = 0x00000008,     // not moving, but active 
+   kPMF_Stationary        = 0x00000008,     // not moving, but active
    kPMF_Moved             = 0x00000010,     // moved this frame
    kPMF_Sleeping          = 0x00000040,     // i'm asleep
    kPMF_CollisionChecked  = 0x00000080,     // computed collisions for this object/frame
@@ -115,6 +116,7 @@ enum ePhysModelFlags
    kPMF_Special           = 0x08000000,     // is "special"
    kPMF_FancyGhost        = 0x10000000,     // boo, it's a fancy (ooh la la) ghost
    kPMF_TrueGhost         = 0x20000000,     // a true ghost
+   kPMF_DiskCheck         = 0x40000000,     // Do OBB vs. sphere disk check
 };
 
 ///////////////////////////////////////
@@ -171,7 +173,7 @@ typedef cDListNode <cPhysModel, 0> cPhysModelNode;
 
 typedef cDynArray <sPhysForce>     cPhysForceList;
 
-typedef struct 
+typedef struct
 {
    mxs_real tension;
    mxs_real damping;
@@ -292,8 +294,8 @@ public:
    //
    // Force list updating
    //
-   virtual BOOL ApplyForces(tPhysSubModId subModId, sPhysForce *flist, int nforces, mxs_real dt, 
-                            mxs_vector &start_loc, mxs_vector *end_loc, mxs_vector *force, 
+   virtual BOOL ApplyForces(tPhysSubModId subModId, sPhysForce *flist, int nforces, mxs_real dt,
+                            mxs_vector &start_loc, mxs_vector *end_loc, mxs_vector *force,
                             mxs_real *ctime, BOOL terrain_check, BOOL object_check);
 
    ////////////////////////////////////
@@ -383,7 +385,7 @@ public:
    // Base friction
    //
    mxs_real GetBaseFriction() const;
-   void     SetBaseFriction(mxs_real base_friction);   
+   void     SetBaseFriction(mxs_real base_friction);
 
    ////////////////////////////////////
    //
@@ -502,7 +504,7 @@ public:
 
    void SetFancyGhost(BOOL state);
    BOOL IsFancyGhost() const;
-   
+
    void SetTrueGhost(BOOL state);
    BOOL IsTrueGhost() const;
 
@@ -613,6 +615,10 @@ public:
    BOOL IsSpecial() const;
    void SetSpecial(BOOL state);
 
+   // Special Treating OBB against sphere, where sphere is flatened into disk.
+   BOOL DoDiskCheck();
+   void SetDiskCheck(BOOL state);
+
    ////////////////////////////////////
    //
    // Needs refs updated?
@@ -673,7 +679,7 @@ public:
    cPhysCtrlData * GetControls(tPhysSubModId subModId = -1) const;
 
    ////////////////////////////////////
-   // 
+   //
    // Rotation limits
    //
    void ClearAngleLimits();
@@ -705,9 +711,10 @@ protected:
 
 private:
    friend tHashSetKey cPhysModelTable::GetKey(tHashSetNode) const;
+   void UpdateDiskInfo();
 
    #define AssertSubModIdInRange(subModId) \
-           AssertMsg1((subModId >= 0) && (subModId < m_nSubModels), "Submodel index out of range: %d", subModId);
+           AssertMsg1((subModId >= 0) && (subModId < m_nSubModels), "Submodel index out of range: 0", subModId);
 
    ////////////////////////////////////
 
@@ -729,7 +736,7 @@ private:
    cPhysPos         m_pos;              // Overall model location and facing
    mxs_vector       m_cog;              // Overall model center of gravity (offset from pos)
 
-   mxs_real         m_base_friction;    // Minimum friction value (for flying)   
+   mxs_real         m_base_friction;    // Minimum friction value (for flying)
 
    int              m_medium;
 
@@ -777,6 +784,8 @@ private:
    // For non-rigid bodies
    cDynClassArray<cPhysDynData>  m_pDynamicsData;    // one per submodel, if we're moveable
    cDynClassArray<cPhysCtrlData> m_pControlData;     // one per submodel, if we're controllable
+
+   BOOL bDiskCheck; // We need to set our bits first time we're asked for them
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -899,7 +908,7 @@ inline void cPhysModel::SetSubModOffset(tPhysSubModId subModId, const mxs_vector
 {
 #ifdef PLAYTEST
    if (mx_mag2_vec(&offset) > 10000.0)
-      Warning(("%s has weirded physics offsets\n", ObjWarnName(GetObjID())));
+      Warning((" has weirded physics offsets\n", ObjWarnName(GetObjID())));
 #endif
    mx_copy_vec(&m_Offset[subModId], &offset);
 }
@@ -1028,7 +1037,7 @@ inline BOOL cPhysModel::IsProjectile() const
 inline void cPhysModel::SetFancyGhost(BOOL state)
 {
    SetFlagState(kPMF_FancyGhost, state);
-   if (state) 
+   if (state)
       SetFlagState(kPMF_TrueGhost, FALSE);
 }
 
@@ -1066,7 +1075,7 @@ inline BOOL cPhysModel::IsGhost() const
 
 inline BOOL cPhysModel::IsPressurePlate() const
 {
-   return !!(m_flags & kPMF_PressurePlate);   
+   return !!(m_flags & kPMF_PressurePlate);
 }
 
 ///////////////////////////////////////
@@ -1533,6 +1542,26 @@ inline void cPhysModel::SetPointVsNotSpecial(BOOL state)
    SetFlagState(kPMF_PointVsNotSpecial, state);
 }
 
+
+///////////////////////////////////////
+
+inline BOOL cPhysModel::DoDiskCheck()
+{
+   if (!bDiskCheck)
+      UpdateDiskInfo();
+
+   return !!(m_flags & kPMF_DiskCheck);
+}
+
+///////////////////////////////////////
+
+inline void cPhysModel::SetDiskCheck(BOOL state)
+{
+   bDiskCheck = TRUE;
+   SetFlagState(kPMF_DiskCheck, state);
+}
+
+
 ///////////////////////////////////////
 
 inline BOOL cPhysModel::IsSpecial() const
@@ -1579,7 +1608,7 @@ inline void cPhysModel::AddAttachment()
 
 inline void cPhysModel::RemoveAttachment()
 {
-   AssertMsg1(m_nAttachments > 0, "Number of attachments on obj %d less than zero?\n", ObjID());
+   AssertMsg1(m_nAttachments > 0, "Number of attachments on obj 0 less than zero?\n", ObjID());
 
    m_nAttachments--;
 }

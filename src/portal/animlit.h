@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/animlit.h 1.2 1997/08/05 12:11:18 TOML Exp $
+// $Header: r:/t2repos/thief2/src/portal/animlit.h,v 1.3 2000/01/29 13:37:11 adurant Exp $
+#pragma once
 
 #ifdef __cplusplus
 extern "C"

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/ourobj.h 1.1 1996/11/18 13:55:14 buzzard Exp $
+// $Header: r:/t2repos/thief2/src/portal/ourobj.h,v 1.2 2000/01/29 13:37:17 adurant Exp $
+#pragma once
 
 // App-specific version of objects.h
 // which must be included before defining

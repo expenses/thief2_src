@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmodsph.h 1.16 1999/01/04 16:24:10 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmodsph.h,v 1.17 2000/01/29 13:32:56 adurant Exp $
 //
 // Sphere model
 //
+#pragma once
 
 #ifndef __PHMODSPH_H
 #define __PHMODSPH_H

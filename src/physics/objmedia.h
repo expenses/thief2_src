@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/objmedia.h 1.2 1998/09/29 15:08:44 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/objmedia.h,v 1.3 2000/01/29 13:32:36 adurant Exp $
 //
 // Object media header
 //
+#pragma once
 
 #ifndef __OBJMEDIA_H
 #define __OBJMEDIA_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/portsky.h 1.1 1998/03/03 12:33:34 KEVIN Exp $
+// $Header: r:/t2repos/thief2/src/portal/portsky.h,v 1.2 2000/01/29 13:37:27 adurant Exp $
+#pragma once
 
 #ifndef __PORTSKY_H
 #define __PORTSKY_H
