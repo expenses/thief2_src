@@ -26,7 +26,7 @@ EXTRA_TARGET =
 RES_OBJS = lzw.obj lzwfd2bf.obj res.obj restypes.obj resfile.obj \
 	resacc.obj refacc.obj resload.obj resmem.obj rescum.obj resbuild.obj \
 	resmake.obj resexblk.obj resmisc.obj
-RES_HDRS = lzw.h res.h restypes.h
+RES_HDRS = lzw.h res.h restypes.h resrect.h
 
 RESDUMP_OBJS	= resdump.obj
 RESDUMP_LIBS	= res.lib _lg.lib mprintf.lib
@@ -107,10 +107,6 @@ resmisc.obj objo\resmisc.obj objd\resmisc.obj: datapath.h dbg.h dbgmacro.h lg.h 
 respack.obj objo\respack.obj objd\respack.obj: datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h \
 	 memall.h memmacro.h res.h restypes.h stat.h stdio.h stdlib.h \
 	 string.h types.h
-
-resswap.obj objo\resswap.obj objd\resswap.obj: _res.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h \
-	 lzw.h malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
-	 stdio.h stdlib.h string.h types.h
 
 restest.obj objo\restest.obj objd\restest.obj: _res.h conio.h ctype.h datapath.h dbg.h dbgmacro.h fcntl.h \
 	 io.h lg.h lgalt.h lzw.h malloc.h memall.h memmacro.h mprintf.h \
