@@ -1,5 +1,5 @@
 #include "dmgprop.h" //kslaynormal
-
+#include "aiaware.h"
 
 /* Causes damage done by "HolyStim" (holy water) stimulus to affect
    zombies permanently, while other types of damage will just put the
@@ -315,12 +315,68 @@ METHODS:
 
       Property.Set(self,"ModelName",(const char*)model);
    }
+   METHOD void Update(void)
+   {
+      // Well, this is hard-coded in the AI, so let's hard-code it here...
+      integer AttentionSpan=20; // seconds
+      boolean update=FALSE;
+
+      if(Property.Possessed(self,"AI_Alertness") &&
+         integer(Property.Get(self,"AI_Alertness","Level"))==kHighAlert)
+      {
+         integer time=GetTime();
+         integer contact=time;
+         boolean seeplayer=FALSE;
+
+
+         if(Link.AnyExist("AIAwareness",self))
+         {
+            linkset awarelinks=Link.GetAll("AIAwareness",self);
+
+            while(awarelinks.AnyLinksLeft())
+            {
+               link awarelink=awarelinks.Link();
+
+               if(Object.InheritsFrom(awarelink.To(),"Avatar"))
+               {
+                  contact=awarelink.GetData("Time Last Contact");
+                  // GetTime() is in seconds, while the time here is in milliseconds.
+                  // So, round it down.
+                  contact/=1000;
+
+                  // Oh, what the heck
+                  if(Property.Possessed(self,"ScriptTiming"))
+                  {
+                     AttentionSpan=Property.Get(self,"ScriptTiming");
+                     AttentionSpan=(AttentionSpan+500)/1000;
+                  }
+
+                  // Debug.MPrint("Aware of ",awarelink.To()," at time ",contact,"; currently ",time);
+
+                  if((time-contact)>AttentionSpan)
+                  {
+                     // in an ordinary AI this would lose us a lot of data we
+                     // wanted to keep, but in a dumb camera it's probably OK.
+                     Link.Destroy(awarelink);
+                  }
+                  else
+                     update=TRUE; // still aware of a player.  Check back.
+               }
+               awarelinks.NextLink();
+            }
+         }
+      }
+      if(update)
+         SetOneShotTimer("Update",self,2.0);
+   }
+
 MESSAGES:
    OnAlertness()
    {
       if(message.level==kHighAlert)
       {
          Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         Update();
       }
       else if(message.oldLevel==kHighAlert)
       {
@@ -355,6 +411,12 @@ MESSAGES:
          SetTweqModel(5);
       }
       DefaultOnMessage();
+   }
+   OnTimer()
+   {
+      if(message.name=="Update")
+         Update();
+      DefaultOnTimer();
    }
 
 END_SCRIPT(CameraAlert)
