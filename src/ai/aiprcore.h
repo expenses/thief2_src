@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiprcore.h 1.16 1999/08/05 16:48:02 Justin Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiprcore.h,v 1.22 2000/02/28 19:35:15 bfarquha Exp $
 //
 //
 
@@ -28,6 +28,8 @@ F_DECLARE_INTERFACE(IAIVisionTypeProperty);
 F_DECLARE_INTERFACE(IAIVisCtrlProperty);
 F_DECLARE_INTERFACE(IAIModeProperty);
 F_DECLARE_INTERFACE(IAIAlertSenseMultsProperty);
+F_DECLARE_INTERFACE(IAIFrustratedProperty);
+
 
 typedef struct sAIAlertness      sAIAlertness;
 typedef struct sAIAlertCap       sAIAlertCap;
@@ -38,6 +40,7 @@ typedef struct sAIVisionDesc     sAIVisionDesc;
 typedef struct sAIVisibilityControl sAIVisibilityControl;
 typedef struct sAIVisibilityMods sAIVisibilityMods;
 typedef struct sAIAlertSenseMults sAIAlertSenseMults;
+typedef struct sAIFrustrated     sAIFrustrated;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +51,10 @@ void AITermCoreProps();
 //
 // CONFIGURATION PROPERTIES
 //
+
+#define PROP_AI_TRACK_MEDIUM "AI_TrackM"
+EXTERN IBoolProperty * g_pAITrackMediumProperty;
+
 
 ///////////////////////////////////////
 //
@@ -68,6 +75,37 @@ EXTERN IAIProperty * g_pAIProperty;
 EXTERN IAIEfficiencyProperty * g_pAIEfficiencyProperty;
 
 #define AIGetEfficiency(obj) AIGetProperty(g_pAIEfficiencyProperty, (obj), &g_AIDefaultEfficiency)
+
+
+///////////////////////////////////////
+//
+// Can path across water?
+//
+
+#define PROP_AI_USEWATER "AI_UseWater"
+
+EXTERN IBoolProperty * g_pAICanPathWaterProperty;
+
+
+/////////////////////////////////////////////////////////////////////
+//
+// Is this AI considered "large", and requires a door to be large
+//
+
+#define PROP_AI_AIISLARGE "AI_IsBig"
+EXTERN IBoolProperty *g_pAINeedsLargeDoors;
+#define AINeedsLargeDoors(obj, bVal) (g_pAINeedsLargeDoors->Get(obj, &bVal) && bVal)
+
+
+///////////////////////////////////////
+//
+// Ignores cameras
+//
+
+#define PROP_IGNORES_CAMERAS "AI_IgCam"
+
+EXTERN IBoolProperty * g_pAIIgnoresCamerasProperty;
+
 
 ///////////////////////////////////////
 //
@@ -269,6 +307,22 @@ EXTERN IBoolProperty *g_pAIIsProxyProperty;
 // STATE PROPERTIES (intantiated)
 //
 
+
+#define PROP_AI_FORCE_IMMEDIATE "AI_InfNow"
+
+EXTERN IBoolProperty *g_pAIForceImmediateInform;
+
+
+#define PROP_AI_INFORM_SEEN_FROM "AI_InfFrm"
+
+EXTERN IBoolProperty *g_pAIInformSeenFrom;
+
+
+#define PROP_AI_SMALL_CREATURE "AI_IsSmall"
+
+EXTERN IBoolProperty *g_pAIIsSmallCreatureProp;
+
+
 ///////////////////////////////////////
 //
 // Mode
@@ -279,6 +333,11 @@ EXTERN IBoolProperty *g_pAIIsProxyProperty;
 EXTERN IAIModeProperty * g_pAIModeProperty;
 
 #define AIGetMode(obj) AIGetProperty(g_pAIModeProperty, (obj), kAIM_Normal)
+
+
+#define PROP_AI_IS_FRUSTRATED "AI_Frustrated"
+EXTERN IAIFrustratedProperty *g_pAIFrustratedProperty;
+
 
 ///////////////////////////////////////
 //
@@ -299,7 +358,7 @@ EXTERN sAIAlertCap *   g_pAIDefAlertCap;
 EXTERN sAIAwareDelay * g_pAIDefAwareDelay;
 
 ///////////////////////////////////////
-// 
+//
 // Visibility
 //
 
@@ -342,7 +401,7 @@ DECLARE_PROPERTY_INTERFACE(IAIProperty)
 //
 // STRUCT: sAIEfficiency
 //
-// Describes the threshholds for entering and exiting efficiency modes. 
+// Describes the threshholds for entering and exiting efficiency modes.
 //
 
 struct sAIEfficiency
@@ -376,6 +435,22 @@ DECLARE_PROPERTY_INTERFACE(IAIEfficiencyProperty)
    DECLARE_PROPERTY_PURE();
    DECLARE_PROPERTY_ACCESSORS(sAIEfficiency *);
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Frustrated
+//
+
+#undef INTERFACE
+#define INTERFACE IAIFrustratedProperty
+DECLARE_PROPERTY_INTERFACE(IAIFrustratedProperty)
+{
+   DECLARE_UNKNOWN_PURE();
+   DECLARE_PROPERTY_PURE();
+   DECLARE_PROPERTY_ACCESSORS(sAIFrustrated *);
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
