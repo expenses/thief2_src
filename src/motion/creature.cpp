@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/creature.cpp,v 1.206 2000/03/01 20:17:19 bfarquha Exp $
 /////////
 // ISSUES TO BE RESOLVED
