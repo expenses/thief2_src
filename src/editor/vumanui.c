@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/vumanui.c,v 1.24 2000/02/19 13:13:47 toml Exp $
 
 #include <string.h>
