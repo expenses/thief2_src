@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/propreac.cpp,v 1.12 1999/11/16 12:47:11 porges Exp $
 
 #include <appagg.h>
