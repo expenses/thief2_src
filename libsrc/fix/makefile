@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.14 $
-# $Author: dfan $
-# $Date: 1994/02/16 17:33:37 $
+# $Revision: 1.15 $
+# $Author: lmfeeney $
+# $Date: 1994/06/18 03:50:39 $
 #
 
 COMPILER = watcom
@@ -23,7 +23,7 @@ INST_TARGETS = fix
 
 FIX.C_CFLAGS= -zu -s
 FIX_HDRS = fix.h fix.inc
-FIX_OBJS = fix.obj fixsprnt.obj fix_asm.obj atofix.obj
+FIX_OBJS = fix.obj fix_pow.obj fixsprnt.obj fix_asm.obj atofix.obj
 
 FIXTEST_OBJS = $(FIX_OBJS) fixtest.obj
 
