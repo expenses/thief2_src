@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.6 $
-# $Author: kaboom $
-# $Date: 1993/01/27 17:57:34 $
+# $Revision: 1.7 $
+# $Author: dfan $
+# $Date: 1993/02/15 11:41:14 $
 #
 
 COMPILER = watcom
@@ -16,21 +16,24 @@ LIBPATH = $(RELDIR)
 
 DEBUG_ON = yeah
 
-PROG_TARGETS = fixtest sqrttest
+PROG_TARGETS = fixtest fix24tst #sqrttest
 LIB_TARGETS = fix
 HDR_TARGETS = fix
 INST_TARGETS = fix
 
 FIX_HDRS = fix.h
 FIX_OBJS = fix.obj fix_asm.obj
-FIX_CFLAGS = -d2
 
-FIXTEST_OBJS = fix.obj fix_asm.obj fixtest.obj
-FIXTEST_CFLAGS = -d2
+FIXTEST_OBJS = $(FIX_OBJS) fixtest.obj
 
-SQRTTEST_OBJS = fix.obj fix_asm.obj sqrttest.obj
-SQRTTEST_CFLAGS = -d2
+FIX24TST_OBJS = $(FIX_OBJS) fix24tst.obj
+
+# SQRTTEST_OBJS = $(FIX_OBJS) sqrttest.obj
 
 !include $(INIT)/make.rc
 
-fix.c:	fix.h
+fix.obj: fix.h
+
+fixtest.obj: fix.h
+
+fix24tst.obj: fix.h
