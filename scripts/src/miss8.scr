@@ -86,6 +86,8 @@ MESSAGES:
          if(Property.Possessed(self,"scriptTiming"))
             thresh=Property.Get(self,"scriptTiming");
 
+         // Debug.MPrint("Distance to note is ",dist);
+
          if(dist>thresh)
             Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
 
@@ -258,6 +260,25 @@ METHODS:
               if(Link.AnyExist("~AIConversationActor",Foe))
                  conversation=Link.GetOne("~AIConversationActor",Foe).To();
               
+              // When we're done with conversation, certain characters want to
+              // take up posts and certain characters want to go on patrols.
+              // These are indicated by Route links.
+              if(Link.AnyExist("Route",Foe))
+              {
+                 object marker=Link.GetOne("Route",Foe).To();
+                 if(Link.AnyExist("AIPatrol",marker))
+                 {
+                    Link.DestroyMany("AICurrentPatrol",Foe,AnyObject);
+                    Link.Create("AICurrentPatrol",Foe,marker);
+                    Property.Set(Foe,"AI_Patrol",TRUE);
+                 }
+                 else
+                 {
+                    Property.Set(Foe,"AI_IdleOrgn","Original Location",Object.Position(marker));
+                    Property.Set(Foe,"AI_IdleOrgn","Original Facing",Object.Facing(marker).z);
+                    Property.Set(Foe,"AI_IdlRetOrg",TRUE);
+                 }
+              }
               myfoes.NextLink();
            }
         }
@@ -327,7 +348,7 @@ MESSAGES:
               // A failsafe.  If the pagan doesn't have the note a short
               // time from now, he ain't gonna get it, and it's probably because
               // the player interfered.  End the mission.
-              SetOneShotTimer(self,"CheckGotNote",10.0);
+              SetOneShotTimer(self,"CheckGotNote",30.0);
            }
         }
         else
@@ -341,9 +362,23 @@ MESSAGES:
         PostMessage(self,"PhantomEnd");
         SetOneShotTimer(self,"TPort",2.0);
      }
-     else if(MessageIs("NoteGone") || MessageIs("JigUp"))
+     else if(MessageIs("NoteGone"))
      {
         eek=TRUE;
+     }
+     else if(MessageIs("JigUp"))
+     {
+        // We've found something that should alarm us, but it's not the note
+        // being gone (which should probably alarm us even if the player ran
+        // 99 feet away after doing it, since our hope of getting the note and
+        // acting reasonably for the rest of the mission is gone).
+        // 
+        // In such a case, act out the appropriate shock and alarm, but only if
+        // we're in the player's zone of encounter.  Our heuristic for what
+        // constitutes that zone is thus:
+        if(Object.RenderedThisFrame(self) ||
+           (Object.Position(self)-Object.Position("Player")).Magnitude()<40.0)
+           eek=TRUE;
      }
      else if(MessageIs("StartAttack"))
      {
@@ -365,6 +400,10 @@ MESSAGES:
 
         SetOneShotTimer(self,"Bleed",15.0);
         Reply(TRUE);
+     }
+     else if(MessageIs("HaveIGotNote"))
+     {
+        Reply(Object.Exists(TheNote()));
      }
 
      if(eek)
@@ -397,7 +436,9 @@ MESSAGES:
      if(object(message.containee)==object("TheNote") && 
         message.event==kContainAdd)
      {
-        Debug.MPrint("Pagan picking up note.");
+        // Debug.MPrint("Pagan picking up note.");
+        if(Quest.Get(GoalStateVarName(READ_NOTE_GOAL))==kGoalIncomplete)
+           Quest.Set(GoalStateVarName(READ_NOTE_GOAL),kGoalFailed);
         if(Object.Exists(object("CemGateLookback")))
            Link.Create("AIWatchObj",self,object("CemGateLookback"));
      }
@@ -421,7 +462,15 @@ MESSAGES:
      else if(message.name=="CheckGotNote")
      {
         if(TheNote()==object(0))
+        {
+           // It's a good while after we decided we wanted the note and we haven't
+           // got it.  Rather than stay in what is likely to be a broken mission state,
+           // bail.  HOWEVER, it's just possible that we'll succeed in getting the note
+           // between now and when the mission ends, and we _really_ don't want that, 
+           // because that would be even more idiotic.  So, end the mission right away.
+           Quest.Set("EndingTime",0);
            Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+        }
      }
      else if(message.name=="Bleed")
      {
@@ -485,6 +534,27 @@ BEGIN_SCRIPT(MawPortal, Physics)
 END_SCRIPT(MawPortal)
 
 
+/* Script used on the pagan's lookback point just before getting back to the
+   cemetary.  Unless the player is nearby enough to see our impending puppet
+   show, the pagan should stick to this lookback point like a fly in amber.
+   We expect to know the player's location by getting trigger messages.  ON
+   means he's positioned acceptibly.
+   */
+BEGIN_SCRIPT(StickingPoint, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      object pagan=object("ThePagan");
+
+      if(MessageIs("TurnOff") && Object.Exists(pagan) &&
+         !Link.AnyExist("AIWatchObj",pagan,self))
+         Link.Create("AIWatchObj",pagan,self);
+      else if(MessageIs("TurnOn") && Object.Exists(pagan))
+         Link.DestroyMany("AIWatchObj",pagan,self);
+      DefaultOnMessage();
+   }
+            
+END_SCRIPT(StickingPoint)
 
 
 
