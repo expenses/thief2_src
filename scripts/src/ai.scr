@@ -284,6 +284,25 @@ END_SCRIPT(CorpseFrobHack)
 
 BEGIN_SCRIPT(Corpsed, Physics)
 MESSAGES:
+   OnBeginScript()
+   {
+      /* If we have a non-zero death stage, instantiate down.
+         Fixes bug with damage system killing pre-placed corpses.
+         */
+      integer stage=0;
+      
+      // Seems as though Property.Possessed is returning FALSE if this is on a metaprop.
+      // but it should still default to an interesting non-zero value in that case if
+      // we just add it.
+      // Of course, if Property.Possessed returns TRUE against our expectations, we
+      // should still make sure the property is instantiated.
+      Property.Add(self,"DeathStage");
+      stage=Property.Get(self,"DeathStage");
+      if(stage==0)
+         Property.Remove(self,"DeathStage");
+
+      DefaultOnBeginScript();
+   }
    OnContained()
    {
       if(Object.InheritsFrom(message.container,"Avatar"))
