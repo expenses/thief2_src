@@ -1,7 +1,8 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkexp.h 1.2 1999/04/02 12:06:57 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkexp.h,v 1.3 2000/01/31 09:55:42 adurant Exp $
 //
 // Deal with adding experience points when needed
 //
+#pragma once
 
 #ifndef __SHKEXP_H
 #define __SHKEXP_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/physloop.h 1.4 1998/08/20 13:56:55 mahk Exp $
+// $Header: r:/t2repos/thief2/src/physics/physloop.h,v 1.5 2000/01/31 09:52:15 adurant Exp $
+#pragma once
 #ifndef __PHYSLOOP_H
 #define __PHYSLOOP_H
 

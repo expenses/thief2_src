@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcyber.h 1.1 1998/07/03 16:39:42 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcyber.h,v 1.2 2000/01/31 09:55:33 adurant Exp $
+#pragma once
 
 #ifndef __SHKCYBER_H
 #define __SHKCYBER_H

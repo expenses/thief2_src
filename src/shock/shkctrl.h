@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkctrl.h 1.6 1999/01/21 11:38:45 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkctrl.h,v 1.7 2000/01/31 09:55:29 adurant Exp $
+#pragma once
 
 #ifndef __SHKCTRL_H
 #define __SHKCTRL_H

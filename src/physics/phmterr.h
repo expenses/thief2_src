@@ -1,8 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmterr.h 1.4 1999/07/19 17:45:21 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmterr.h,v 1.5 2000/01/31 09:51:59 adurant Exp $
 //
 // Physics moving terrain header
 //
+#pragma once
 
 #ifndef __PHMTERR_H
 #define __PHMTERR_H

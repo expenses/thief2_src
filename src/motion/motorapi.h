@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/motorapi.h 1.17 1999/04/14 12:42:13 Johan Exp $
+// $Header: r:/t2repos/thief2/src/motion/motorapi.h,v 1.18 2000/01/31 09:51:01 adurant Exp $
+#pragma once
 
 #ifndef __MMOTRAPI_H
 #define __MMOTRAPI_H

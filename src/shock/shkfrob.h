@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkfrob.h 1.9 1999/06/03 19:29:41 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkfrob.h,v 1.10 2000/01/31 09:55:44 adurant Exp $
+#pragma once
 
 #ifndef __SHKFROB_H
 #define __SHKFROB_H

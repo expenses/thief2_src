@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/motschem.h 1.5 1998/06/22 15:24:43 kate Exp $
+// $Header: r:/t2repos/thief2/src/motion/motschem.h,v 1.6 2000/01/31 09:51:03 adurant Exp $
+#pragma once
 
 //
 // This header contains class interface for motion schemas and 
