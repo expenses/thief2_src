@@ -354,8 +354,21 @@ BEGIN_SCRIPT(StdKey,RootScript)
 
         if(keyfit)
         {
-           if(playerfrob) SendMessage(targ,"PlayerToolFrob");
            Key.TryToUseKey(self,targ,kKeyUseDefault);
+
+           if(playerfrob) 
+           {
+              SendMessage(targ,"PlayerToolFrob");
+
+              // This stuff is only actually important in the training scripts,
+              // but this is the only really good place to put it, so
+              // expediency wins.
+              if(Locked.IsLocked(targ))
+                 Quest.Set("tr_UseKeyLock",TRUE);
+              else
+                 Quest.Set("tr_UseKeyUnlock",TRUE);
+           }
+
            // When a key is successfully used, "slay" it.  Mind you,
            // _most_ keys will have a Slay Result property such that
            // this does nothing.  Set the Slay Result normal for
