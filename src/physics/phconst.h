@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phconst.h 1.27 1998/09/05 14:20:36 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phconst.h,v 1.29 2000/02/23 23:57:54 adurant Exp $
 //
 // Collected physics constants
 //
+#pragma once
 
 
 #ifndef __PHCONST_H
@@ -86,6 +87,12 @@ extern int kMaxFrameLen;
 // Period of being squished
 //
 const long kSquishPeriod = 500;
+
+//
+// Maximum velocity at which player head will spring, unless falling.
+//  
+
+EXTERN mxs_real kSpringCapMag;
 
 ///////////////////////////////////////////////////////////////////////////////
 
