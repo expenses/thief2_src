@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/compapis/RCS/movieapi.h $
-// $Author: XEMU $
-// $Date: 1999/06/25 21:14:58 $
+// $Author: MAT $
+// $Date: 1999/11/11 18:09:58 $
 // $Revision: 1.5 $
 //
 // The Movie API is likely to change in the next few months, so the first
@@ -154,11 +154,11 @@ DECLARE_INTERFACE_(IMoviePlayer1, IUnknown)
     //
     STDMETHOD_(eMP1State, GetState)(THIS) PURE;
 
+   //
+   // Specify the list of keys that terminate movie playing
+   //
+   STDMETHOD_(void, SetTermKeys)(THIS_ char *keylist) PURE;
 
-    //
-    // Specify the list of keys that terminate movie playing
-    // 
-    STDMETHOD_(void, SetTermKeys)(THIS_ char *keylist) PURE;
 };
 
 #define IMoviePlayer1_QueryInterface(p, a, b)   COMQueryInterface(p, a, b)
