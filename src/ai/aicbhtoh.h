@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicbhtoh.h 1.32 1999/05/28 17:22:42 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicbhtoh.h,v 1.35 2000/02/24 21:20:11 bfarquha Exp $
 //
 
 #ifndef __AICBHTOH_H
@@ -56,6 +56,7 @@ enum eModeType
       kTypeDamage=(1<<23),
       kTypeOpCode=(1<<24),
       kTypeInterrupt=(1<<25),
+      kTypeTargetHigh=(1<<26) // Kinda hacked. We want an AI to always swing high if you're 2.5 ft to 5 ft above him.
 };
 
 #define kModeBaseMask ((1<<16)-1)
@@ -82,7 +83,8 @@ enum eModeBase
       _kSwingMassive,
       _kSwingSpecial,
       _kTakeDamage,
-      
+      _kFrustrate,
+
       kNumHtoHModes,
       _kHtoHModesIntMax = 0xffffffff            // force it use an int
 };
@@ -90,12 +92,13 @@ enum eModeBase
 enum eMode
 {
    kUndefined     = 0,
-      
+
       kUndecided     = _kUndecided|kTypeMisc|kTypeInterrupt,
       kCircleCW      = _kCircleCW|kTypeMove|kTypeJitter|kTypeRespond,
       kCircleCCW     = _kCircleCCW|kTypeMove|kTypeJitter|kTypeRespond,
       kCharge        = _kCharge|kTypeMove|kTypeInterrupt,
       kChargeUnseen  = _kChargeUnseen|kTypeMove|kTypeInterrupt,
+      kFrustrate     = _kFrustrate|kTypeInterrupt,
       kBackoff       = _kBackoff|kTypeMove,
       kJumpback      = _kJumpback|kTypeJitter|kTypeDefend,  // should this be defend?  should we have "avoid"
       kAdvance       = _kAdvance|kTypeMove,
@@ -108,10 +111,10 @@ enum eMode
       kNoMove        = _kNoMove|kTypeRespond|kTypeInterrupt, // @HACK ai gun
       kSwingQuick    = _kSwingQuick|kTypeAttack,
       kSwingNormal   = _kSwingNormal|kTypeAttack,
-      kSwingMassive  = _kSwingMassive|kTypeAttack,
+      kSwingMassive  = _kSwingMassive|kTypeAttack|kTypeTargetHigh, // @HACK: Massives are assumed to be overhand, so they can hit high.
       kSwingSpecial  = _kSwingSpecial|kTypeAttack,
       kTakeDamage    = _kTakeDamage|kTypeDamage|kTypeOpCode,
-      
+
       kHtoHModesIntMax = 0xffffffff            // force it use an int
 };
 
@@ -151,7 +154,7 @@ typedef struct sHtoHModeSelections
       sModeSelections FailedBackup;
       sModeSelections Cornered;
    };
-   
+
    struct sAttacks
    {
       sModeSelections NormalWhileIdle;
@@ -160,7 +163,7 @@ typedef struct sHtoHModeSelections
       sModeSelections OpponentBlocking;
       sModeSelections OpponentUnarmed;
    };
-   
+
    sResponses responses;
    sAttacks   attacks;
 } sHtoHModeSelections;
@@ -250,7 +253,10 @@ private:
 
    HRESULT SuggestActionsForMode(cAIGoal * pGoal, const cAIActions & previous, cAIActions * pNew);
 
-   virtual eMode ChooseNewAttackMode(ObjID target, const cMxsVector & targetLoc);
+   virtual eMode ChooseNewAttackMode(ObjID target, const cMxsVector & targetLoc, float fZDist);
+
+   // Can't get at player, so what to do?
+   cAIAction *DoFrustration(const cAIActions & previous);
 
    // these are basically helper functions
    void  UpdateOppState(eAIHtoHCombatEvent ev);
@@ -287,6 +293,9 @@ private:
    int        m_lastChargeTime;
    mxs_vector m_lastChargePos;
    tSimTime   m_failedChargePathTime;
+
+   // for knowing about weather or not we should signal to flee.
+   int m_lastFleeTime;
 
    // woo woo, try (and fail) to be less dippy
    int   m_BackoffCount;
