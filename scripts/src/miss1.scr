@@ -1238,3 +1238,36 @@ MESSAGES:
    }
 END_SCRIPT(GatehouseDoor)
 
+
+BEGIN_SCRIPT(JenDoor, Door)
+
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("Done"))
+      {
+         SetData("Done",FALSE);
+      }
+      DefaultOnBeginScript();
+   }
+   OnWorldSelect()
+   {
+      boolean done=FALSE;
+      boolean basso_coming=(Quest.Get(GoalStateVarName(GOAL_SIGNAL))==kGoalComplete);
+
+      if(IsDataSet("Done")) done=GetData("Done");
+
+      if(!(done||basso_coming))
+      {
+         Sound.PlayVoiceOver(self,"gar0112");
+         SetData("Done",TRUE);
+      }
+      DefaultOnWorldSelect();
+   }
+   OnDoorOpening()
+   {
+      SetData("Done",TRUE);
+      DefaultOnDoorOpening();
+   }
+
+END_SCRIPT(JenDoor)
