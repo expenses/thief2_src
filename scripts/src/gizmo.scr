@@ -1345,3 +1345,92 @@ MESSAGES:
    }
 
 END_SCRIPT(Gong)
+
+
+/* Odometer reads out the value of a quest variable.  The object itself has a tweq joint
+   for each digit.  Whenever the quest variable changes, or the odometer finishes a tweq,
+   we find the next wrong digit (if any) and start its tweq.
+   The identity of the quest variable is in the TrapQVar property.
+   */
+BEGIN_SCRIPT(Odometer, RootScript)
+
+METHODS:
+   METHOD void RollNextDigit()
+   {
+      if(!Property.Possessed(self,"TrapQVar"))
+         return;
+      else
+      {
+         string qvar=Property.Get(self,"TrapQVar");
+         integer varval=Quest.Get(qvar);
+         integer place, digit, dial, mod=1;
+         vector jointparams;
+
+         if(! (Property.Possessed(self,"JointPos") && 
+               Property.Possessed(self,"CfgTweqJoints")))
+            return;
+
+         // Debug.MPrint(self," wants to read out ",varval);
+
+         // hard-coded to four joints. kinda sad.
+         for(place=0;place<4;place++)
+         {
+            dial=Property.Get(self,"JointPos",string("Joint ")+string(place+1));
+            dial=((dial+18)/36)%10; // round to nearest 1/10 revolution.
+            digit=(varval/mod)%10;
+
+            // Debug.MPrint(self,": ",mod,"'s digit dialed to ",dial,", should be ",digit);
+            
+            if(dial!=digit)
+            {
+               // Debug.MPrint("Setting ",mod,"'s digit.");
+
+               Property.Set(self,"CfgTweqJoints","Primary Joint",place+1);
+
+               // Argh.  Can't set rate-low-high, since they all have the same name...
+               // Want to leave rate alone, set low and high to lower and higher
+               // of digit*36 and dial*36...
+               
+               // Hence, for now we'll just set the joint positions property.
+               Property.Set(self,"JointPos",string("Joint "+string(place+1)),digit*36);
+               // Recursion would be idiotic if we weren't planning on it taking time to set each
+               // digit.  Callback will replace recursive call.
+               RollNextDigit();               
+            }
+            mod*=10;
+         }
+      }
+   }
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      if(!IsDataSet("Subscribed"))
+      {
+         if(Property.Possessed(self,"TrapQVar"))
+         {
+            string qvar=Property.Get(self,"TrapQVar");
+            Quest.SubscribeMsg(self,qvar);
+         }
+         SetData("Subscribed",TRUE);
+      }
+      RollNextDigit();
+      DefaultOnBeginScript();
+   }
+   OnTweqComplete()
+   {
+      RollNextDigit();
+      DefaultOnTweqComplete();
+   }
+   OnQuestChange()
+   {
+      RollNextDigit();
+      DefaultOnQuestChange();
+   }
+ 
+END_SCRIPT(Odometer)
+
+
+
+
