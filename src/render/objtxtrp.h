@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/objtxtrp.h,v 1.1 1998/08/03 18:58:41 dc Exp $
 // control for doing replacable textures on objects
 
