@@ -107,7 +107,7 @@ mkdirs redist\x86
 
 xcopy /s r:\prj\thief2\reltools\redist redist
 
-copy r:\prj\campatch\reltools\redist\crt\msvcrt40.dll %_DAILYCD_%\thief
+copy r:\prj\thief2\reltools\redist\crt\msvcrt40.dll %_DAILYCD_%\thief
 
 rem **************************************************************
 rem if doing a non english verion, then grab it's version
@@ -181,7 +181,7 @@ rem **************************************************************
 
 %_PRJDRV_%
 
-cd %_PRJPATH_%\install
+cd %_ALTPATH_%\install
 
 make local sb=r:\prj lcode=%_lcode_% COUNTRY=%_country_% INSTALL=%_DAILY_%\cd1
 
