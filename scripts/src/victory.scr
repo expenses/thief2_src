@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.12 2000/02/08 21:36:52 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.13 2000/02/27 13:35:09 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -168,7 +168,8 @@ METHODS:
          // optional.
          for(goal=0; ObjectiveExists(goal);goal++)
          {
-            if(ObjectiveGet(goal)==kGoalIncomplete)
+            if(ObjectiveGet(goal)==kGoalIncomplete &&
+               ObjectiveVisible(goal))
             {
                if(Quest.Get("GOAL_OPTIONAL_"+string(goal)))
                   ObjectiveSet(goal,kGoalInactive);
