@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiwtctyp.h 1.3 1998/07/26 17:45:06 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiwtctyp.h,v 1.5 1999/10/29 19:20:16 henrys Exp $
 //
 // Types used to control watching behaviors
 //
@@ -55,7 +55,7 @@ enum eAIWatchLineReqs
 // The actual link
 //
 
-#define kAIMaxWatchActs 8
+#define kAIMaxWatchActs 16
 #define kAIWatchVersion 1
 
 #define kAIStepsComplete -1
