@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkpsi.cpp,v 1.48 1999/11/19 14:55:58 adurant Exp $
 // general psionics powers
 // for the moment, assumes player not any old AI

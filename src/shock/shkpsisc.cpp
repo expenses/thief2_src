@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkpsisc.cpp,v 1.3 1999/02/21 20:19:20 XEMU Exp $
 
 #include <shkpsisc.h>
