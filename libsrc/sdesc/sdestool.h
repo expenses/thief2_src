@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/sdesc/RCS/sdestool.h 1.5 1998/01/02 14:43:33 mahk Exp $
 #pragma once  
 #ifndef __SDESTOOL_H
