@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.3 2000/01/28 01:23:03 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.4 2000/01/28 02:35:00 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -537,6 +537,35 @@ OnMessage()
 
 	DefaultOnMessage();
 }
+
+// some special commands once the robot gets to where its supposed to go
+// iff there is data on the ScriptParams link
+OnObjActResult()
+{
+	string linkdata = Link.GetOne("~ScriptParams",self).GetData();
+
+	if (linkdata == "")
+	{
+		Debug.MPrint(" I got here.  No data.");
+	}
+	else
+	{
+		object dest = GetLinkedDest();
+		if (dest == (object)NULL)
+			dest = Object.Named("Player");
+
+		if (SuccessfulGoto(dest))
+		{
+			if (linkdata == "patrol")
+			{
+				Property.Set(self,"AI_Patrol",TRUE);
+			}
+		}
+	}
+
+	DefaultOnObjActResult();
+}
+
 
 OnTimer()
 {
