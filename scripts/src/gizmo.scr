@@ -270,11 +270,6 @@ BEGIN_SCRIPT(StdKey,RootScript)
         {
            object schem=Object.Named("pickup_key");
 
-           // all keys coming into player inv must have stack count 
-           // so it'll be clear when they combine.
-           if(!Property.Possessed(self,"StackCount"))
-              Property.Set(self,"StackCount",1);
-
            if(!Property.Possessed(self,"CombineType") &&
               Property.Possessed(self,"KeySrc"))
            {
@@ -286,15 +281,17 @@ BEGIN_SCRIPT(StdKey,RootScript)
               combine=combine+(master?"T":"F");
               combine=combine+string(region)+"i"+string(id);
               
-   // Debug.MPrint("Setting combine type on ",self," to ",combine);
-                                   
               Property.Set(self,"CombineType",(const char*)(combine));
               // Not clear if this is safe to do inside the OnContained handler...
+              // the point is to force the combination now that combine type
+              // has been set.  Since we check for the CombineType property
+              // above, we recurse, but trivially.
               Container.Remove(self);
               Container.Add(self,Object.Named("Player"));
+
+              if(Object.Exists(schem))
+                 Sound.PlaySchemaAmbient(self,schem);
            }
-           if(schem!=object(0))
-              Sound.PlaySchemaAmbient(self,schem);
         }
         DefaultOnContained();
      }
