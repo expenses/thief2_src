@@ -23,7 +23,8 @@ LIB_TARGETS = res
 INST_TARGETS = res resdump respack
 EXTRA_TARGET =
 
-RES_OBJS = lzw.obj res.obj restypes.obj resbuild.obj
+RES_OBJS = lzw.obj res.obj restypes.obj resfile.obj resacc.obj refacc.obj \
+	resload.obj resmem.obj rescum.obj resbuild.obj resmake.obj resexblk.obj
 RES_HDRS = lzw.h res.h restypes.h
 
 RESDUMP_OBJS	= resdump.obj
@@ -46,17 +47,49 @@ RESTEST_LIBS	= res.lib _lg.lib mprintf.lib
 lzw.obj: dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h malloc.h memall.h \
 	 memmacro.h stat.h stdio.h stdlib.h string.h types.h
 
-res.obj: _res.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h lzw.h \
-	 malloc.h memall.h memmacro.h memstat.h res.h restypes.h stat.h \
+refacc.obj: _res.h datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h \
+	 malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
 	 stdio.h stdlib.h string.h types.h
 
-resbuild.obj: _res.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h \
-	 lzw.h malloc.h memall.h memmacro.h res.h restypes.h stat.h stdio.h \
+res.obj: _res.h datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h \
+	 malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
+	 stdio.h stdlib.h string.h types.h
+
+resacc.obj: _res.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h res.h res_.h restypes.h stdio.h stdlib.h \
+	 string.h types.h
+
+resbuild.obj: _res.h datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h \
+	 malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
+	 stdio.h stdlib.h string.h types.h
+
+rescum.obj: _res.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h res.h res_.h restypes.h stdio.h stdlib.h \
+	 string.h types.h
+
+resdump.obj: _res.h datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h res.h res_.h restypes.h stat.h stdio.h \
 	 stdlib.h string.h types.h
 
-resdump.obj: datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h \
-	 memall.h memmacro.h res.h restypes.h stat.h stdio.h stdlib.h \
+resexblk.obj: _res.h datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h \
+	 malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
+	 stdio.h stdlib.h string.h types.h
+
+resfile.obj: _res.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h \
+	 malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
+	 stdio.h stdlib.h string.h types.h
+
+resload.obj: _res.h datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h \
+	 malloc.h memall.h memmacro.h res.h res_.h restypes.h stat.h \
+	 stdio.h stdlib.h types.h
+
+resmake.obj: _res.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h res.h res_.h restypes.h stdio.h stdlib.h \
 	 string.h types.h
+
+resmem.obj: _res.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h memstat.h res.h res_.h restypes.h stdio.h \
+	 stdlib.h types.h
 
 respack.obj: datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h \
 	 memall.h memmacro.h res.h restypes.h stat.h stdio.h stdlib.h \
