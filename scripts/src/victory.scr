@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.11 2000/02/04 10:57:40 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.12 2000/02/08 21:36:52 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -278,7 +278,7 @@ METHODS:
 
          if(goalstate==kGoalComplete)
          {
-            string optqv="GOAL_OPTIONAL"+string(objective);
+            string optqv="GOAL_OPTIONAL_"+string(objective);
             boolean optional=Quest.Get(optqv);
 
             Quest.Set(optqv,TRUE);
