@@ -122,7 +122,7 @@ rem  get the config files and dll's
 
 echo %_PRJPATH_%
 
-copy %_PRJPATH_%\reltools\cfgs\* %_DAILYTHIEF_%
+copy %_PRJPATH_%\reltools\cfgs\* %_DAILYTHIEFCD2_%
 
 rem **************************************************************
 rem  get the resources in the data dirctory  
@@ -369,7 +369,7 @@ copy %_MOVIEPATH_%\%_movielang_%\death.avi %_DAILYTHIEF_%\movies
 
 rem The motiondb.bin is kinda important
 
-copy mschema\motiondb.bin %_DAILYTHIEF_%\motiondb.bin
+copy mschema\motiondb.bin %_DAILYTHIEFCD2_%\motiondb.bin
 
 rem hack to fix scripts (since TG isn't constantly running src)
 rem get mission scripts
