@@ -2,6 +2,78 @@
 // Script file for Thief 2 - Mission 7 - Bank
 
 
+
+// Script: LootVO
+// Plays a particular VO when G first picks up loot
+BEGIN_SCRIPT (LootVO, RootScript)
+
+MESSAGES:
+OnContainer()
+{
+	if ( (GetTime()>0.0) && (Property.Possessed(message.containee,"Loot")) )
+	{
+		Sound.PlayVoiceOver (self, "gar0703");
+	}
+	DefaultOnContainer();
+}
+
+END_SCRIPT (LootVO)
+
+
+
+// Script:	HackTrigSchemaDone
+// Sends a TurnOn X seconds after it gets one, where X
+// is defined by ScriptTiming property
+BEGIN_SCRIPT (HackTrigSchemaDone, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		// delay passing msg for time defined by ScriptTiming property
+		if(Property.Possessed(self,"ScriptTiming"))
+			SetOneShotTimer("TrigNow",(float)Property.Get(self,"ScriptTiming"));
+	}
+
+	DefaultOnMessage();
+}
+
+OnTimer()
+{
+	if (message.name=="TrigNow")
+	{
+		Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+	}
+	DefaultOnTimer();
+}
+
+END_SCRIPT (HackTrigSchemaDone)
+
+
+// Script: DiffBasedKeyDst
+// get diff level, if H or X, 
+// change this lock to use new KeyDst values
+BEGIN_SCRIPT (DiffBasedKeyDst, RootScript)
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+	{
+		int difficulty = Quest.Get("difficulty");
+
+		// HARD and EXPERT
+		if (difficulty >= 1)
+		{
+			Property.Set(self,"KeyDst","LockID",9);
+		}
+	DefaultOnSim();
+	}
+}
+END_SCRIPT (DiffBasedKeyDst)
+
+
+
 // Script: GuardSummoner
 
 // Upon receipt of a "TurnOn", sends a "ComeARunnin" msg to
@@ -308,7 +380,7 @@ END_SCRIPT (FrobTracker)
 // purpose:  the RequireAll traps associated with the 
 // NaggingLever script, above, oftens sends TurnOns while
 // levers are moving and then sends a TurnOff when it comes
-// to rest a second later.
+// to rest less than a second later.
 
 BEGIN_SCRIPT (SmoothRelay, RootScript)
 
@@ -411,12 +483,15 @@ void KillCameras ()
 
 // destroys ~CD-linked switches
 // and CD-linked turrets.
+// any anything ScriptParams links (assumed to be wires and other
+// set dressing associated with the camera).
 // call before destroying camera 
 void CleanUp (object camera)
 {
 	linkset CDs = Link.GetAll("ControlDevice",camera);
 	while(CDs.AnyLinksLeft())
 	{
+		Debug.MPrint(" End of CD link: ",CDs.Link().To());
 		if (Object.InheritsFrom (CDs.Link().To(),Object.Named("Turret")))
 		{
 			Object.Destroy(CDs.Link().To());
@@ -427,12 +502,21 @@ void CleanUp (object camera)
 	linkset tCDs = Link.GetAll("~ControlDevice",camera);
 	while(tCDs.AnyLinksLeft())
 	{
+		Debug.MPrint(" End of ~CD link: ",tCDs.Link().To());
 		if (Object.InheritsFrom (tCDs.Link().To(),Object.Named("Switches")))
 		{
 			Object.Destroy(tCDs.Link().To());
 		}
 		tCDs.NextLink();
 	}
+
+	linkset SPs = Link.GetAll("ScriptParams",camera);
+	while(SPs.AnyLinksLeft())
+	{
+		Object.Destroy(SPs.Link().To());
+		SPs.NextLink();
+	}
+
 }
 
 // returns a value based on mission quest vars,
