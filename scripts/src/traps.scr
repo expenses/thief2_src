@@ -18,8 +18,7 @@ METHODS:
       ; // overload me
    }
 
-MESSAGES:
-   OnMessage()
+   METHOD void HandleMessage(boolean on, object sender)
    {
       integer flags=0;
       boolean invert=FALSE, activated=FALSE;
@@ -29,23 +28,32 @@ MESSAGES:
 
       invert=flags&TRAPF_INVERT;
 
-      if(!Locked.IsLocked(self) && message.from!=self)
+      if(!Locked.IsLocked(self) && sender!=object(self))
       {
-         if(MessageIs("TurnOn") && !(flags & TRAPF_NOON))
+         if(on && !(flags & TRAPF_NOON))
          {
-            Activate(!invert,message.from); activated=TRUE;
+            Activate(!invert,sender); activated=TRUE;
          }
-         else if(MessageIs("TurnOff") && !(flags & TRAPF_NOOFF))
+         else if(!on && !(flags & TRAPF_NOOFF))
          {
-            Activate(invert,message.from); activated=TRUE;
+            Activate(invert,sender); activated=TRUE;
          }
       }
-
-      DefaultOnMessage();
 
       if(activated && flags&TRAPF_ONCE)
          Property.Set(self,"Locked",TRUE);
          // Object.Destroy(self); // dicey. May just want to lock
+   }
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         HandleMessage(TRUE,message.from);
+      else if(MessageIs("TurnOff"))
+         HandleMessage(FALSE,message.from);
+      DefaultOnMessage();
    }
 
 END_SCRIPT(StdTrap)
@@ -1144,7 +1152,7 @@ METHODS:
    {
       integer qvarval=Quest.Get(qvar);
 
-      Debug.MPrint("questvar ",qvar," was ",qvarval);
+      // Debug.MPrint("questvar ",qvar," was ",qvarval);
 
       switch(op)
       {
@@ -1206,53 +1214,6 @@ METHODS:
    }
 
 END_SCRIPT(TrapSetQVar)
-
-
-/* Not really a trap, but has enough code in common with quest var traps
-   and triggers to go in this module.
-
-   Ignores Op.  Looks at the nth digit of the quest variable, where
-   n=arg.  Sets this object's properties to display an appropriate digit 
-   (how? tweq joints?).
-   */
-BEGIN_SCRIPT(QVarDigit, QVarTrapTrigBase)
-
-   /* Process should be called once on begin script to subscribe
-      to variable changes.
-      */
-   METHOD void ProcessOperation(char op, integer arg, integer sigfigs,
-                                string qvar, boolean reverse)
-   {
-      integer qvarval=Quest.Get(qvar);
-      integer mod=1;
-
-      for(;arg>0;arg--) mod*=10;
-
-      if(!IsDataSet("Init"))
-      {
-         Quest.SubscribeMsg(self,qvar);
-         SetData("Init",TRUE);
-      }
-      qvarval=(qvarval/mod)%10;
-      // @TODO: display qvarval.  Perhaps by rotating object's tweq joint
-      // to 36*qvarval degrees?
-   }
-
-MESSAGES:
-
-   OnBeginScript()
-   {
-      ParseOperation(FALSE);
-      DefaultOnBeginScript();
-   }
-   OnQuestChange()
-   {
-      ParseOperation(FALSE);
-      DefaultOnQuestChange();
-   }
-
-END_SCRIPT(QVarDigit)
-
 
 /* TrapDirection is a meta-trap that transduces "TurnOn" and "TurnOff"
    messages into "GoForward" and "GoReverse" messages.
