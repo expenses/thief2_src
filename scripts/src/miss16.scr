@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.2 2000/01/25 06:34:17 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.3 2000/01/28 01:23:03 rsmith Exp $
 //
 
 #include "animlgte.h"
 #include "victory.scr"
 //#include "m16vic.h"  - since this won't be coorperative right now...
 
-// transcript of m16vic.h
+// ... transcript of m16vic.h
 #define M16_GOAL_LEARN 0
 #define M16_GOAL_MANUFACTURE 1
 #define M16_GOAL_CONNECT 2
@@ -28,64 +28,6 @@
 
 //////////////////////
 //////////////////////
-
-// Script:	RobotResponse
-
-// This script goes on an AI (assumed to be a combat robot that starts the mission
-// in ASLEEP state).  When the AI receives a "TurnOn", it goes to Normal state and
-// runs to the ControlDevice-linked marker object.  In other words, the AI springs 
-// to life and runs to a predetermined location which correpsonds to, say, an alarm
-// going off.
-
-BEGIN_SCRIPT (RobotResponse, AI)
-
-METHODS:
-
-object GetDest()
-{
-	return Link.GetOne("ControlDevice",self).To();
-}
-
-MESSAGES:
-
-OnMessage()
-{
-	if (MessageIs("TurnOn"))
-	{
-		Property.Set(self,"AI_Mode",3);
-		GotoObjLoc(GetDest(), kFast);
-	}
-
-	DefaultOnMessage();
-}
-
-END_SCRIPT (RobotResponse)
-
-
-
-// Script:	Microphone
-
-//  If you get to alert 2, go to alert 3 automatically.
-//  Otherwise, same as camera.
-
-BEGIN_SCRIPT (Microphone, AI)
-
-MESSAGES:
-
-OnAlertness()
-{
-	if ( (message.level == kModerateAlert) && (message.oldLevel < kModerateAlert) )
-	{
-		Debug.MPrint(" Mic going from 2 to 3");
-//		Property.Set(self,"AI_Alertness","Level",3);
-		Property.Set(self,"AI_AlertCap","Min level",3);
-	}
-
-	DefaultOnAlertness();
-}
-
-END_SCRIPT (Microphone)
-
 
 
 // Script:  HealingWaterFont
@@ -203,12 +145,9 @@ int CountFlippedAntennas()
 		linkset Switches=Link.GetAll("~ControlDevice",self);
 		while(Switches.AnyLinksLeft())
 		{
-			Debug.MPrint (" Checking switch ",Switches.Link().To() );
-
 			if (StateIsB(Switches.Link().To()))
 			{
 				X++;
-				Debug.MPrint (" Switch ",Switches.Link().To()," is in state B.");
 			}
 
 			Switches.NextLink();
@@ -229,8 +168,6 @@ int CountFlippedAntennas()
 // is in the state that corresponds to position "B"
 boolean StateIsB (object o)
 {
-	Debug.MPrint(" Switch ",o," has AnimS = ",Property.Get(o,"StTweqJoints","AnimS"));
-
 	if (  (Property.Get(o,"StTweqJoints","AnimS")) == (0x00)  )
 	{
 		return TRUE;
@@ -277,9 +214,6 @@ OnMessage()
 	if ( (MessageIs("TurnOn")) || (MessageIs("TurnOff")) )
 	{
 		int X = CountFlippedAntennas();
-
-
-		Debug.MPrint("An antenna has been flipped.  X = ",X,".  NumRequired = ",GetNumRequiredFlips());
 
 		if (X >= GetNumRequiredFlips() )
 		{
@@ -395,13 +329,13 @@ END_SCRIPT (HomingInProgress)
 // Script: Machine
 
 // Other machine scripts inherit from this and overload methods.
+// Or so I claim (I'm not currently using this like that).
 
 BEGIN_SCRIPT(Machine,Physics)
 
 METHODS:
 void Transmogrify (object o)
 {
-	Debug.MPrint(" Transmogrifying object ",o);
 	PostMessage(o,"Transmogrify");
 }
 
@@ -431,8 +365,6 @@ OnPhysCollision()
 	object WhatHitMe = message.collObj;
 	SetData("WhatHitMe",WhatHitMe);
 	bool   fakeout = FALSE;
-
-	Debug.MPrint(self," was hit by ",WhatHitMe);
 
 	if (!Object.Exists(WhatHitMe))
 		fakeout = TRUE;
@@ -468,3 +400,151 @@ OnTimer()
 }
 
 END_SCRIPT(Machine)
+
+
+
+// Script:	BotStationManager
+
+// This script goes on a Marker object and manages a "BotStation" - a place where
+// sleeping robots lurk behind unfrobbable doors in small enclosed rooms, waiting to 
+// rush off to thwart the player in response to being informed by a camera.
+// The BotStation script controls the actions of the door, messages the robots at
+// the correct times, and generally coordinates the experience.
+
+// The behavior is triggered by a "TurnOn" message.
+
+BEGIN_SCRIPT (BotStationManager, AI)
+
+METHODS:
+
+// returns an object that is ScriptParams linked to self
+// and inherits from the passed in object
+object GetSPLinked(object ToMatch)
+{
+	if (Link.AnyExist("ScriptParams",self))
+	{
+		linkset L=Link.GetAll("ScriptParams",self);
+		while(L.AnyLinksLeft())
+		{
+			if (Object.InheritsFrom(L.Link().To(), ToMatch))
+			{
+				return L.Link().To();
+			}
+
+			L.NextLink();
+		}
+	}
+
+	Debug.MPrint(" *** Warning: ",self," cannot find ScriptParams linked to obj that inherits from ",Object.GetName(ToMatch));
+	return (object)NULL;
+}
+
+// sends passed in msg to all ScriptParams linked objects that
+// inherit from passed in object
+void BroadcastToThoseWhoInherit(string msg, object ToMatch)
+{
+	if (Link.AnyExist("ScriptParams",self))
+	{
+		linkset L=Link.GetAll("ScriptParams",self);
+		while(L.AnyLinksLeft())
+		{
+			if (Object.InheritsFrom(L.Link().To(), ToMatch))
+			{
+				PostMessage(L.Link().To(),msg);
+			}
+
+			L.NextLink();
+		}
+	}
+}
+
+
+MESSAGES:
+
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		// open the door
+		object TheDoor = GetSPLinked (Object.Named("Door"));
+		PostMessage(TheDoor,"TurnOn");
+
+		// alert the bots
+		BroadcastToThoseWhoInherit("TurnOn",Object.Named("CombatBot"));
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (BotStationManager)
+
+
+
+
+
+// Script:	BotStationBot
+
+// This script goes on an AI (assumed to be a combat robot) that starts the mission
+// in ASLEEP state as part of a Bot Station (see script BotStationManager, above).
+// When the AI receives a "TurnOn", it goes to Normal state and
+// runs somewhere.  This is either the ControlDevice-linked marker object if one
+// exists or to the player object otherwise.  Furthermore, it clamps itself at alert 3
+// for the time specified by Script::Timing or 1 minute if not set.
+
+// @NOTE: bad assumption for multiplayer
+
+BEGIN_SCRIPT (BotStationBot, AI)
+
+METHODS:
+
+object GetLinkedDest()
+{
+	if (Link.AnyExist("ControlDevice",self))
+		return Link.GetOne("ControlDevice",self).To();
+	else return (object)NULL;
+}
+
+float GetAlertTime()
+{
+	if ((int)Property.Get(self,"ScriptTiming") <= (int)0)
+		return 60.0;
+	else
+		return (float)Property.Get(self,"ScriptTiming");
+}
+
+MESSAGES:
+
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		// wake up
+		Property.Set(self,"AI_Mode",3);
+
+		// clamp at alert 3
+		Property.Set(self,"AI_AlertCap","Min level",3);
+		SetOneShotTimer("DeclampAlert",GetAlertTime());
+
+		// run somewhere
+		object dest = GetLinkedDest();
+		if (dest == (object)NULL)
+			dest = Object.Named("Player");
+
+		Debug.MPrint(" destination = ",dest);
+
+		GotoObjLoc(dest, kFast);
+	}
+
+	DefaultOnMessage();
+}
+
+OnTimer()
+{
+	if (message.name == "DeclampAlert")
+	{
+		Property.Set(self,"AI_AlertCap","Min level",0);
+	}
+	DefaultOnTimer();
+}
+
+END_SCRIPT (BotStationBot)
