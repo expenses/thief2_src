@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/objedit/RCS/proped.h 1.1 1999/04/07 14:39:41 TOML Exp $
+// $Header: r:/t2repos/thief2/src/editor/proped.h,v 1.2 1997/12/05 19:23:37 mahk Exp $
 #pragma once  
 #ifndef __PROPED_H
 #define __PROPED_H
