@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/physbase.h 1.3 1997/06/16 14:50:11 JON Exp $
 
 #ifndef PHYSBASE_H
