@@ -189,10 +189,10 @@ MESSAGES:
      else if(MessageIs("PortalFade"))
      {
         Object.AddMetaProperty(self,"M-AI-Stasis");
+        Object.RemoveMetaProperty(self,"M-DoesPatrol");
         Property.Set(self,"RenderAlpha",1.0);
         PostMessage(self,"PhantomEnd");
         SetOneShotTimer(self,"TPort",2.0);
-        ActReact.React("freeze_ai",3.0,self,self,1.0);
      }
      DefaultOnMessage();
   }
