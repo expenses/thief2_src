@@ -1130,12 +1130,14 @@ END_SCRIPT(TrigQVar)
    non-negative integer argument which us used if the op is a
    binary operator.  Currently-supported ops are:
    
-   Let x be the named quest variable, and a be the argument:
+   Let x be the named quest variable, and a be the argument.
+   rand(a) is a random integer between 0 and a (inclusive).
    
    Op    Effect of TurnOn     Effect of TurnOff
    
-   =     x=a                     none
+   =     x=a                     x=0
    !     x|=a                    x&=(~a)
+   |     x|=a                    x&=(~a)
    +     x+=a                    x-=a
    -     x-=a                    x+=a
    *     x*=a                    x/=a (integer!)
@@ -1144,7 +1146,9 @@ END_SCRIPT(TrigQVar)
    {     x=x<<a (shift left)     x=x>>a (shift right)
    }     x=x>>a (shift right)    x=x<<a (shift left)
    "     x=(x*10)+(a%10)         x=x/10
-      
+   ?     x+=rand(a)              x-=rand(a)
+   d     x+=rand(a-1)+1          x-=rand(a-1)+1
+
 */
 BEGIN_SCRIPT(TrapSetQVar, QVarTrapTrigBase)
 
@@ -1154,13 +1158,14 @@ METHODS:
                                 string qvar, boolean reverse)
    {
       integer qvarval=Quest.Get(qvar);
+      integer arg2=0;
 
       // Debug.MPrint("questvar ",qvar," was ",qvarval);
 
       switch(op)
       {
          case '=':
-            if(!reverse) qvarval=arg;
+            qvarval=reverse?0:arg;
             break;
          case '"':
             if(reverse) 
@@ -1170,18 +1175,26 @@ METHODS:
             qvarval=qvarval%100000000; // only keep 8 digits
             break;
          case '!':
+         case '|':
             if(!reverse)
                qvarval|=arg; // set bits in arg
             else
                qvarval&=(~arg); // unset bits in arg
             break;
+         case 'd':
+            arg-=1;
+            if(arg<0) arg=0;
+            arg2=1; // and fall through.
+         case '?':
+            arg=Data.RandInt(0,arg)+arg2;
+            reverse=!reverse; // and fall through
          case '-':
             reverse=!reverse; // and fall through
          case '+':
-            if(!reverse)
-               qvarval+=arg;
-            else
+            if(reverse)
                qvarval-=arg;
+            else
+               qvarval+=arg;
             break;
          case '%':
             if(!reverse)
@@ -1208,7 +1221,7 @@ METHODS:
             break;
       }      
       Quest.Set(qvar,qvarval);
-      Debug.MPrint("New value = ",qvarval);
+      // Debug.MPrint("New value = ",qvarval);
    }
 
    METHOD void Activate(boolean on, object sender)
