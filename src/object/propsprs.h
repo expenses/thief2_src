@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propsprs.h 1.2 1999/04/21 11:39:18 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/propsprs.h,v 1.4 1998/10/06 10:45:44 CCAROLLO Exp $
 #pragma once  
 #ifndef __PROPSPRS_H
 #define __PROPSPRS_H
@@ -126,18 +126,6 @@ public:
       if (mTable.Lookup(key,&val))
       {
          mOps.Delete(val);    
-         mTable.Delete(key);
-         return S_OK; 
-         
-      }
-      return S_FALSE; 
-   }
-
-   STDMETHOD(Release)(ObjID obj, sDatum* pval)
-   {
-      sKey key = Key(obj); 
-      if (mTable.Lookup(key,pval))
-      {
          mTable.Delete(key);
          return S_OK; 
          
