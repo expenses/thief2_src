@@ -108,6 +108,7 @@ END_SCRIPT (DiffBasedKeyDst)
 // Script:	TheRecording
 
 // Play SoundDescription-linked sound ambiently when object is frobbed
+// identical to script in miss9.scr
 BEGIN_SCRIPT (TheRecording, RootScript)
 MESSAGES:
 OnSim()
@@ -220,11 +221,33 @@ OnTimer()
 	{
 		if ((object)GetData("Dest")!=(object)0)
 		{
-			GotoObjLoc((object)GetData("Dest"), kFast);
+			Debug.MPrint(self," going to ",(object)GetData("Dest"));
+			GotoObjLoc((object)GetData("Dest"), kFast, kHighPriorityAction);
 		}
 	}
 	DefaultOnTimer();
 }
+
+OnObjActResult()
+{
+	object dest = (object)GetData("Dest");
+
+	if (dest !=(object)0)
+	{
+		if (SuccessfulGoto((object)dest))
+		{
+			if (Link.AnyExist("Route",dest))
+			{
+				SetData("Dest",Link.GetOne("Route",dest).To());
+				Debug.MPrint(self," got to ",dest,". Now I'm going to ",(object)GetData("Dest"));
+				GotoObjLoc((object)GetData("Dest"), kFast, kHighPriorityAction);
+			}
+		}
+	}
+
+	DefaultOnObjActResult();
+}
+
 
 END_SCRIPT (SummonableGuard)
 
