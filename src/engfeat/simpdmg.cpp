@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/simpdmg.cpp,v 1.30 2000/02/05 19:37:27 adurant Exp $
 
 #ifndef __SIMPDMG_H
