@@ -17,7 +17,7 @@ LIBPATH = . $(RELDIR)
 PROG_TARGETS = 
 LIB_TARGETS = config
 HDR_TARGETS =  
-INST_TARGETS = 
+INST_TARGETS = config
 
 CONFIG_OBJS = config.obj
 CONFIG_HDRS = config.h
