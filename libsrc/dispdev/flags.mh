@@ -2,6 +2,8 @@ dev_windisp = windisp
 dev_lib_flav = dbg
 dev_obj_flav = dbg
 
+SPEW_DDINFO = 
+
 ##########################
 #
 # The above defaults can be overridden in flagsloc.mh, which is a local
@@ -11,3 +13,5 @@ dev_obj_flav = dbg
 %if %exists(flagsloc.mh)
 %include flagsloc.mh
 %endif
+
+ALL_FLAGS = $(SPEW_DDINFO)
