@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/entrydll/RCS/entrydll.h 1.2 1997/09/09 16:10:09 DAVET Exp $
 
 ////////////////////////////////////////////////////////////////////////
