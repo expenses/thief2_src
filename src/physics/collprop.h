@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/collprop.h 1.8 1998/10/07 09:54:23 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/collprop.h,v 1.9 2000/01/29 13:32:33 adurant Exp $
+#pragma once
 
 //
 // Collision property header

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/phlistn_.h 1.2 1999/04/07 13:38:57 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phlistn_.h,v 1.3 2000/01/29 13:32:48 adurant Exp $
+#pragma once
 
 #ifndef __PHLISTEN_H
 #define __PHLISTEN_H

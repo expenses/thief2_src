@@ -1,11 +1,11 @@
-// $Header: r:/prj/cam/src/portal/RCS/port.h 1.48 1999/12/01 09:21:49 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/port.h,v 1.51 2000/01/29 13:37:20 adurant Exp $
 //   Interface to portal
+#pragma once
 
 #ifndef _PORT_H_
 #define _PORT_H_
 
 #include <r3ds.h>
-#include <wrlimit.h>
 #include <wrtype.h>
 #include <wrfunc.h>
 #include <wrdb.h>
@@ -175,7 +175,24 @@ extern int portal_ambient_light_level;
 EXTERN void portal_set_normalized_color(int rm, int gm, int bm);
 EXTERN void portal_convert_hsb_to_rgb(int *rp, int *gp, int *bp, float hue, float saturation);
 EXTERN void portal_shine_omni_light(int light_index, Location *loc, 
-                                        uchar lighting_type);
+                                    uchar lighting_type);
+
+  // length of raycasts used to see if something is in sunlight
+#define kPortalSunlightCastLength 1000.0
+
+  // The length of this vector is the brightness of the sunlight.
+EXTERN mxs_vector portal_sunlight;
+
+  // This actually faces the opposite direction from portal_sunlight.
+EXTERN mxs_vector portal_sunlight_norm;
+
+  // apply a light source which has parallel rays rather than being
+  // a point source
+EXTERN int portal_shine_sunlight(const mxs_vector *pDirection,
+                                 float fBrightness, int light_index,
+                                 uchar perm);
+
+EXTERN BOOL portal_loc_has_sunlight(Location *point_being_lit);
 
 
 //////                                 World Rep

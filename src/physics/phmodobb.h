@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmodobb.h 1.13 1999/01/04 16:21:41 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmodobb.h,v 1.15 2000/01/29 13:32:54 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __PHMODOBB_H
 #define __PHMODOBB_H
@@ -114,6 +115,17 @@ public:
    void SetClimbableSides(int sides);
    int  GetClimbableSides() const;
 
+
+
+   ////////////////////////////////////
+   //
+   // Pore size
+   //
+   void SetPoreSize(mxs_real poresize);
+   mxs_real  GetPoreSize() const;
+
+
+
 #ifndef SHIP
 
    virtual long InternalSize() const;
@@ -128,6 +140,7 @@ private:
    BOOL m_EdgeTrigger;
 
    int m_ClimbableSides;
+   mxs_real m_PoreSize;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,6 +222,22 @@ inline int cPhysOBBModel::GetClimbableSides() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+
+inline void cPhysOBBModel::SetPoreSize(mxs_real poresize)
+{
+   m_PoreSize = poresize;
+}
+
+////////////////////////////////////////
+
+inline mxs_real cPhysOBBModel::GetPoreSize() const
+{
+   return m_PoreSize;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 #pragma pack()
 

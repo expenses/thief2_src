@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmsg.h 1.6 1998/07/21 18:59:55 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmsg.h,v 1.7 2000/01/29 13:33:00 adurant Exp $
 //
+#pragma once
 
 #ifndef __PHMSG_H
 #define __PHMSG_H

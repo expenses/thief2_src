@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/ptsurf.h 1.5 1998/04/06 12:42:05 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/ptsurf.h,v 1.6 2000/01/29 13:37:33 adurant Exp $
+#pragma once
 
 #ifndef _PTSURF_H_
 #define _PTSURF_H_

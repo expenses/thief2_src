@@ -1,8 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmotion.h 1.3 1998/06/16 18:44:54 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmotion.h,v 1.4 2000/01/29 13:32:59 adurant Exp $
 //
 // Physics motion class header
 //
+#pragma once
 
 #ifndef __PHMOTION_H
 #define __PHMOTION_H

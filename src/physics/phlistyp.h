@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/physics/RCS/phlistyp.h 1.1 1999/02/09 09:40:09 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phlistyp.h,v 1.2 2000/01/29 13:32:49 adurant Exp $
+#pragma once
 
 #ifndef __PHLISTYP_H
 #define __PHLISTYP_H

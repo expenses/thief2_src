@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phflist.h 1.8 1998/10/26 23:51:44 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phflist.h,v 1.9 2000/01/29 13:32:46 adurant Exp $
 //
 // Physics force-list related functions
 //
+#pragma once
 
 #ifndef __PHFLIST_H
 #define __PHFLIST_H

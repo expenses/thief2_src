@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/portal/RCS/portal_.h 1.10 1999/12/01 09:22:44 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/portal_.h,v 1.11 2000/01/29 13:37:23 adurant Exp $
+#pragma once
 
 #ifndef __PORTAL__H
 #define __PORTAL__H
