@@ -7,13 +7,25 @@ PROJECT = tech
 %include $(MRC)\init.rc
 
 LIBTARGS = sndutil
-EXETARGS = 
+EXETARGS = splice stream
 
 #sndutil_OBJS = streamer splicer timelog
-sndutil_OBJS = streamer splicer
+sndutil_OBJS = streamer rstremer splicer rsplicer
 
 sndutil_HDRS = sndutil.h
 #sndutil_DEFINES = SND_TEST
+
+splice_OBJS = splcmain splicer fsplicer utilmain
+splice_LIBS = lg mprintf range res \
+                cpptools comtools compapis appcore templgen sound dsound wail32
+splice_COMPILER_LIBS = uuid winmm
+
+stream_OBJS = strmmain streamer fstremer utilmain
+stream_LIBS = lg mprintf range res \
+                cpptools comtools compapis appcore templgen sound dsound wail32
+stream_COMPILER_LIBS = uuid winmm
+
+
 
 %include $(MRC)\make.rc
 
