@@ -26,7 +26,7 @@ unset /q cflags precomp lcache
 rem ******************************************************
 
 echo Setting environment...
-call r:\prj\cam\reltools\init.bat
+call r:\prj\thief2\reltools\init.bat
 echo    _PRJDRV_ = %_PRJDRV_
 echo    _PRJPATH_ = %_PRJPATH_
 echo    _DAILYDRV_ = %_DAILYDRV_
@@ -46,8 +46,8 @@ rem **************************************************************
 rem remap S: to the copied prjdir 
 rem **************************************************************
 
-echos Mapping %_DAILYDRV_%\PRJ\CAM\DAILY to s: 
-map root s:=%_DAILYDRV_%\PRJ\CAM\DAILY
+echos Mapping %_DAILY_% to s: 
+map root s:=%_DAILY_%
 echo.
 
 rem ******************************************************
@@ -70,7 +70,6 @@ Valid resume points are:
    DbsDark
    DbgDrom
    Dromed
-   InstallList
 endtext
 
    input Resume where? %%WhereResume
@@ -95,21 +94,21 @@ rem **************************************************************
 echo Copying files to build tree...
 echo.
 
-perl5 %_DAILYDRV_%\prj\cam\reltools\cpysrc.pl -targetroot %_DAILYDRV_%\prj\cam\daily
+perl5 %_DAILYDRV_%\prj\thief2\reltools\cpysrc.pl -targetroot s:\
 
 
 rem until I fix the copy script...
-copy x:\prj\tech\h\dbgmacro.h  r:\prj\cam\daily\prj\tech\h\dbgmacro.h
-copy x:\prj\tech\h\memmacro.h  r:\prj\cam\daily\prj\tech\h\memmacro.h
-copy r:\prj\cam\src\propraw.h  r:\prj\cam\daily\prj\cam\src\propraw.h
+copy x:\prj\tech\h\dbgmacro.h  s:\prj\tech\h\dbgmacro.h
+copy x:\prj\tech\h\memmacro.h  s:\prj\tech\h\memmacro.h
+copy r:\prj\cam\src\propraw.h  s:\prj\cam\src\propraw.h
 
 
 rem ****************************************************
 rem grab the specific .cfg files both to release and to the dailythief
 rem ****************************************************
 
-copy %_PRJPATH_%\src\dark.cfg  %_DAILYTHIEF_%\dark.cfg      >>r:\prj\cam\reltools\copy.log
-copy %_PRJPATH_%\src\cam.cfg  %_DAILYTHIEF_%\cam.cfg      >>r:\prj\cam\reltools\copy.log
+copy %_PRJPATH_%\src\dark.cfg  %_DAILYTHIEF_%\dark.cfg      >>r:\prj\thief2\reltools\copy.log
+copy %_PRJPATH_%\src\cam.cfg  %_DAILYTHIEF_%\cam.cfg      >>r:\prj\thief2\reltools\copy.log
 
 rem ****************************************************
 rem Hey, new feature! keybinding.  Take the current english one 
@@ -117,10 +116,10 @@ rem from src and put it in reltools\bnd\eng.  post.bat will copy lang specific
 rem ones from reltools\bnd to the CD. 
 rem ****************************************************
 
-copy %_PRJPATH_%\src\dark.bnd   r:\prj\cam\reltools\bnd\eng\dark.bnd    >> r:\prj\cam\reltools\copy.log
-copy %_PRJPATH_%\src\quake.bnd  r:\prj\cam\reltools\bnd\eng\quake.bnd   >> r:\prj\cam\reltools\copy.log
-copy %_PRJPATH_%\src\unreal.bnd r:\prj\cam\reltools\bnd\eng\unreal.bnd  >> r:\prj\cam\reltools\copy.log
-copy %_PRJPATH_%\src\cfg????.bnd r:\prj\cam\reltools\bnd\eng\saves  >> r:\prj\cam\reltools\copy.log
+copy %_PRJPATH_%\src\dark.bnd   r:\prj\thief2\reltools\bnd\eng\dark.bnd    >> r:\prj\thief2\reltools\copy.log
+copy %_PRJPATH_%\src\quake.bnd  r:\prj\thief2\reltools\bnd\eng\quake.bnd   >> r:\prj\thief2\reltools\copy.log
+copy %_PRJPATH_%\src\unreal.bnd r:\prj\thief2\reltools\bnd\eng\unreal.bnd  >> r:\prj\thief2\reltools\copy.log
+copy %_PRJPATH_%\src\cfg????.bnd r:\prj\thief2\reltools\bnd\eng\saves  >> r:\prj\thief2\reltools\copy.log
 
 rem ****************************************************
 rem now populate the \prj\cam\scripts\rel_h with all the .h files
@@ -283,21 +282,20 @@ if .%@lower[%RunOneStep].==.y. goto Exit
 goto ShpDark
 :Scripts
 s:
-cd \prj\cam\scripts\osm
+cd \prj\thief2\scripts\osm
 rm *.osm
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss01 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss02 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss03 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss04 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss05 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss06 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss07 /o >> log.scr
 call r:\prj\cam\reltools\buildscr.bat ..\src\miss09 /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\gen /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\victory /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\miss1 /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\miss4 /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\convict /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\miss7 /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\traps /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\evidence /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\gizmo /o >> log.scr
+call r:\prj\cam\reltools\buildscr.bat ..\src\archer /o >> log.scr
 call r:\prj\cam\reltools\buildscr.bat ..\src\miss10 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss11 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss12 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss13 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss14 /o >> log.scr
 copy *.osm %_DAILYTHIEF_%\*.*
 
 if .%@lower[%RunOneStep].==.y. goto Exit
@@ -391,8 +389,6 @@ rem ******************************************************
 
 :SKUP
 
-echo ** NOT BUILDING EDITOR **
-goto InstallList
 
 rem ****************************************************** 
 rem dromed.exe  (but name changed to be dbgdrom.exe
@@ -450,12 +446,6 @@ rem make the list of files to install
 rem note that this is done in both src and content cause one might
 rem finish first! 
 rem **************************************************************
-
-:InstallList
-s:
-cd %_DAILYTHIEF_%
-
-perl5 r:\prj\cam\reltools\mkitype.pl 
 
 :Exit
 
