@@ -1,5 +1,6 @@
 #include "phprops.h"
 #include "tfint.h" // for trap flags.
+#include "drkgoalt.h" //for the all complete trap
 
 /* Traps in general derive from this script and in so doing get the following
    basic infrastructure:
@@ -1359,6 +1360,100 @@ METHODS:
 
 END_SCRIPT(TrapSetQVar)
 
+/* TrapNonFinalComplete sends a TurnOn when all visible non-final goals
+   are complete.  It sends a TurnOff if this gets invalidated.
+*/
+
+BEGIN_SCRIPT(TrapNonFinalComplete, StdTrap)
+
+METHODS:
+   
+   METHOD void SubscribeGoalChanges()
+   {
+      //assume <=20 quest vars
+      int i;
+      for (i = 0; i < 20; i++)
+      {
+         Quest.SubscribeMsg(self,GoalVisibleVarName(i));
+         Quest.SubscribeMsg(self,GoalStateVarName(i));
+      }
+   }
+
+   METHOD void UnsubscribeGoalChanges()
+   {
+      //assume <=20 quest vars
+      int i;
+      for (i = 0; i < 20; i++)
+      {
+         Quest.UnsubscribeMsg(self,GoalVisibleVarName(i));
+         Quest.UnsubscribeMsg(self,GoalStateVarName(i));
+      }
+   }
+
+   METHOD string GoalFinalVarName(integer i)
+   {
+      return ("GOAL_FINAL_"+string(i));
+   }
+
+   METHOD void CheckCompleteness()
+   {
+      //wastrue is whether we used to satisfy this clause
+      boolean wastrue = (boolean)GetData("HaveFired");
+      //shouldbetrue is whether we now satisfy this clause
+      boolean shouldbetrue = TRUE;
+      int i;
+      for (i = 0; i < 20; i++)
+      {
+         //if there is a visible, nonfinal goal that is neither complete
+         //nor inactive (meaning it is incomplete or failed), then we have
+         //not completed all visible, non-final goals, and so the clause
+         //won't be satisifed
+         if ((Quest.Get(GoalVisibleVarName(i)) == 1) &&
+             (Quest.Get(GoalStateVarName(i)) != kGoalComplete) &&
+             (Quest.Get(GoalStateVarName(i)) != kGoalInactive) &&
+             (Quest.Get(GoalFinalVarName(i)) != 1))
+            shouldbetrue = FALSE;
+      }
+      if (wastrue != shouldbetrue)
+      {
+         Debug.MPrint("Was ",wastrue," is now: ",shouldbetrue);
+         if (shouldbetrue)
+         {
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+            SetData("HaveFired",1);
+         }
+         else
+         {
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+            SetData("HaveFired",0);
+         }
+      }
+   }
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      if (!IsDataSet("HaveFired"))
+         SetData("HaveFired",0);
+      SubscribeGoalChanges();
+      DefaultOnBeginScript();
+   }
+
+   OnQuestChange()
+   {
+      CheckCompleteness();
+      DefaultOnQuestChange();
+   }
+
+   OnEndScript()
+   {
+      UnsubscribeGoalChanges();
+      DefaultOnEndScript();
+   }
+
+END_SCRIPT(TrapNonFinalComplete)
+
 /* TrapDirection is a meta-trap that transduces "TurnOn" and "TurnOff"
    messages into "GoForward" and "GoReverse" messages.
    @TODO: What would really be preferable would be a general transducer
@@ -1375,7 +1470,6 @@ METHODS:
       Link.BroadcastOnAllLinks(self,on?"GoForward":"GoReverse","ControlDevice",NULL);
    }
 END_SCRIPT(TrapDirection)
-
 
 /* TrigRoomObject
    An object with this script send a TurnOn message when
