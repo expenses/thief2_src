@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/portal/RCS/wrdbrend.h 1.4 1999/11/01 10:22:57 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/wrdbrend.h,v 1.5 2000/01/29 13:37:42 adurant Exp $
+#pragma once
 
 #ifndef __WRDBREND_H
 #define __WRDBREND_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkblood.h 1.1 1999/04/14 08:30:39 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkblood.h,v 1.2 2000/01/29 13:40:30 adurant Exp $
+#pragma once
 
 #ifndef __SHKBLOOD_H
 #define __SHKBLOOD_H

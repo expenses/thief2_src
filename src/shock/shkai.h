@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkai.h 1.4 1998/08/20 16:04:00 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkai.h,v 1.5 2000/01/29 13:40:14 adurant Exp $
+#pragma once
 
 #ifndef __SHKAI_H
 #define __SHKAI_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcmobj.h 1.1 1999/02/09 09:45:22 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcmobj.h,v 1.2 2000/01/29 13:40:39 adurant Exp $
+#pragma once
 
 #ifndef __SHKCMOBJ_H
 #define __SHKCMOBJ_H

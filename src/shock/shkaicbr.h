@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkaicbr.h 1.2 1999/04/16 17:06:42 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaicbr.h,v 1.3 2000/01/29 13:40:15 adurant Exp $
+#pragma once
 
 #ifndef __SHKAICBR_H
 #define __SHKAICBR_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkarmor.h 1.2 1998/08/13 09:38:58 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkarmor.h,v 1.3 2000/01/29 13:40:28 adurant Exp $
+#pragma once
 
 #ifndef __SHKARMOR__H
 #define __SHKARMOR__H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcont.h 1.6 1998/12/08 00:07:45 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcont.h,v 1.7 2000/01/29 13:40:42 adurant Exp $
+#pragma once
 
 #ifndef __SHKCONT_H
 #define __SHKCONT_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/wrcast_.h 1.2 1997/08/19 10:20:52 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/wrcast_.h,v 1.3 2000/01/29 13:37:40 adurant Exp $
+#pragma once
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
    wrcast_.h

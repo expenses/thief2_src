@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/wrtype.h 1.7 1997/10/06 15:51:47 TOML Exp $
+// $Header: r:/t2repos/thief2/src/portal/wrtype.h,v 1.8 2000/01/29 13:37:46 adurant Exp $
+#pragma once
 
 // World Representation Types
 

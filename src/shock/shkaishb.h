@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaishb.h 1.2 1999/03/31 18:51:50 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaishb.h,v 1.3 2000/01/29 13:40:21 adurant Exp $
 //
+#pragma once
 
 #ifndef __SHKAISHB_H
 #define __SHKAISHB_H

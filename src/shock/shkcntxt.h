@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkcntxt.h 1.2 1998/12/03 18:19:34 JUSTIN Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkcntxt.h,v 1.3 2000/01/29 13:40:40 adurant Exp $
+#pragma once
 
 #ifndef __SHKCNTXT_H
 #define __SHKCNTXT_H

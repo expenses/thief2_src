@@ -1,8 +1,9 @@
 /////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaiutl.h 1.1 1999/04/11 11:09:45 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaiutl.h,v 1.2 2000/01/29 13:40:23 adurant Exp $
 //
 // Shock AI Utilities
 //
+#pragma once
 
 #ifndef __SHKAIUTL_H
 #define __SHKAIUTL_H

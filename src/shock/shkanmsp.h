@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkanmsp.h 1.3 1998/07/12 10:42:08 JUSTIN Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkanmsp.h,v 1.4 2000/01/29 13:40:27 adurant Exp $
+#pragma once
 
 #ifndef __SHKANMSP_H
 #define __SHKANMSP_H
