@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sound/RCS/lgsound.h $
-// $Author: mwhite $
-// $Date: 1999/01/06 15:37:57 $
-// $Revision: 1.31 $
+// $Author: PATMAC $
+// $Date: 1999/12/06 13:32:43 $
+// $Revision: 1.32 $
 //
 // (c) 1996 Looking Glass Technologies Inc.
 // Pat McElhatton (from JohnB)
@@ -79,6 +79,7 @@ typedef enum {
    kSndFlagLooped       = 4,        // sample is looping
    kSndFlagStream       = 8,        // sample is a stream
    kSndFlagAudible      = 16,       // sample is audible (has a low-level channel)
+   kSndFlagHWBuffer     = 32,       // sample has a HW buffer assigned to it
    // the following flags are very short-term - generally are only set during a
    //  single callback
    kSndFlagFadeStop     = 256,      // sample has stopped due to a fade
@@ -385,13 +386,15 @@ DECLARE_INTERFACE_(ISndMixer, IUnknown)
    STDMETHOD_(int32,    Get3DPositionVolume)(THIS_ sSndVector *pSrcPos) PURE;
    STDMETHOD_(void,     Get3DPositionPanVolume)(THIS_ sSndVector *pSrcPos, int32 *pPan, int32 *pVol) PURE;
    STDMETHOD_(void,     Set3DDeferMode)(THIS_ BOOL deferOn) PURE;
-   STDMETHOD_(void, 	   FreeHWChannelCount)(THIS_ int32 *pHWChans, int32 *p3DHWChans) PURE;
+	STDMETHOD_(void, 	   FreeHWChannelCount)(THIS_ int32 *pHWChans, int32 *p3DHWChans) PURE;
    STDMETHOD_(int32,    Init3DReverb)(THIS) PURE;
    STDMETHOD_(void,     Shutdown3DReverb)(THIS) PURE;
    STDMETHOD_(BOOL,     Have3DReverb)(THIS) PURE;
    STDMETHOD_(BOOL,     CanDo3DReverb)(THIS) PURE;
    STDMETHOD_(BOOL,     Set3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings) PURE;
    STDMETHOD_(BOOL,     Get3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings) PURE;
+   STDMETHOD_(BOOL,     Have3DOcclusion)(THIS) PURE;
+   STDMETHOD_(int32,    Kludge)(THIS_ int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct ) PURE;
 };
 
 #define ISndMixer_Init(p, a, b, c)						COMCall3(p, Init, a, b, c)
@@ -442,6 +445,8 @@ DECLARE_INTERFACE_(ISndMixer, IUnknown)
 #define ISndMixer_CanDo3DReverb(p)                 COMCall0(p)
 #define ISndMixer_Set3DReverbSettings(p, a)        COMCall1(p, Set3DReverbSettings, a)
 #define ISndMixer_Get3DReverbSettings(p, a)        COMCall1(p, Get3DReverbSettings, a)
+#define ISndMixer_Have3DOcclusion(p)               COMCall0(p)
+#define ISndMixer_Kludge(p, a, b, c)               COMCall3(p, Kludge, a, b, c)
 
 #undef INTERFACE
 #define INTERFACE ISndSample
@@ -526,6 +531,8 @@ DECLARE_INTERFACE_(ISndSample, IUnknown)
    STDMETHOD_(void,     Set3DMethod)(THIS_ eSnd3DMethod method) PURE;
    STDMETHOD_(eSnd3DMethod, Get3DMethod)(THIS) PURE;
    STDMETHOD_(void,     Set3DReverbMix)(THIS_ float mix) PURE;
+   STDMETHOD_(void,     Set3DOcclusion)(THIS_ int32 occlusionMillibels) PURE;
+   STDMETHOD_(int32,    Kludge)(THIS_ int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct ) PURE;
 };
 
 #define	ISndSample_Play(p) 						COMCall0(p, Play)
@@ -608,6 +615,7 @@ DECLARE_INTERFACE_(ISndSample, IUnknown)
 #define ISndSample_Set3DMethod(p, a)         COMCall1(p, Set3DMethod, a)
 #define ISndSample_Get3DMethod(p)            COMCall0(p, Get3DMethod)
 #define ISndSample_Set3DReverbMix(p, a)      COMCall1(p, Set3DReverbMix, a)
+#define ISndMixer_Kludge(p, a, b, c)               COMCall3(p, Kludge, a, b, c)
 
 //
 // get header info from WAVE or VOC sound file image
