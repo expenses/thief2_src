@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/brrend.h,v 1.11 2000/01/29 13:11:18 adurant Exp $
 // brush rendering controls
 #pragma once
