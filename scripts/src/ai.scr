@@ -489,6 +489,19 @@ MESSAGES:
 END_SCRIPT(CameraAlert)
 
 
+// Script: CameraAlert2
+// This poorly-named script derives from CameraAlert and overrides the behavior
+// whereby Cameras send "TurnOff" OnSlain.  Otherwise identical.
+BEGIN_SCRIPT (CameraAlert2, CameraAlert)
+   OnSlain()
+   {
+      SetTweqModel(0);
+//      Broadcast(FALSE);
+//      DefaultOnSlain();
+   }
+END_SCRIPT (CameraAlert2)
+
+
 /* QuaffHeal:
 Prompt AI to use a healing potion, if he has one and has lost
 hit points.
