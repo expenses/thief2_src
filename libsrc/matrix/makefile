@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.12 $
-# $Author: dc $
-# $Date: 1997/08/12 19:27:49 $
+# $Revision: 1.13 $
+# $Author: DAVET $
+# $Date: 1997/08/13 11:07:09 $
 #
 # Makefile for Matrix library
 #
@@ -38,7 +38,9 @@ matrix_HDRS = \
 mxd.sed .ALWAYS: 
         @%set fullpath_for_sed_script = $(.TARGET)
 
+%if ($(LGFIRSTTARGET,lc) != 'install') 
 .BEFORE: mxd.sed matrixd.h matrixds.h mxsymd.h
+%endif
 
 build_double_version: 
         @echo Building double version of $(source)
