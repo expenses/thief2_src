@@ -1,13 +1,26 @@
 #include "invtype.h"
 #include "drkgoalt.h"
 
-#define FOLLOW_NOTE_GOAL 0
+const int FOLLOW_NOTE_GOAL=0;
+
+// How often to check for player's distance to scroll
+const float CHECK_FREQ=3.0;
 
 // Script file for Thief 2 - Mission 8 - Courier
+
+
 
 BEGIN_SCRIPT(GoalScroll, RootScript)
 
 MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         SetOneShotTimer("DistCheck",CHECK_FREQ);
+      }
+      DefaultOnSim();
+   }
    OnContained()
    {
       if(message.event==kContainRemove)
@@ -32,7 +45,28 @@ MESSAGES:
       }
       DefaultOnContained();
    }
+   OnTimer()
+   {
+      if(message.name=="DistCheck")
+      {
+         integer thresh=100;
+         vector p1=Object.Position(self);
+         vector p2=Object.Position("Player");
+         real dist=(p1-p2).Magnitude();
 
+         // @TODO: Do the right thing if note is in garret's inventory.
+         Debug.MPrint("Checking.");
+
+         if(Property.Possessed(self,"scriptTiming"))
+            thresh=Property.Get(self,"scriptTiming");
+
+         if(dist>thresh)
+            Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+
+         SetOneShotTimer("DistCheck",CHECK_FREQ);
+      }
+      DefaultOnTimer();
+   }
 END_SCRIPT(GoalScroll)
 
 
