@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/r3app.c,v 1.9 2000/02/19 13:16:29 toml Exp $
 
 #include <aggmemb.h>
