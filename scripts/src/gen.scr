@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.8 1999/07/31 12:33:22 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.9 1999/08/03 20:18:42 rsmith Exp $
 //
 
 #include "frobscrt.h"
@@ -5287,3 +5287,185 @@ MESSAGES:
    }
 END_SCRIPT(QuaffHeal)
 
+
+
+/* WorkerRobot:
+
+  Upon receiving "DoISearch?" msg, it returns F if the robot already has either of
+  the metaprops "M-WorkBot-Searching" or "M-WorkBot-CameraOut" or T otherwise.
+  When prompted by msg "DoSearch" from AlertResponse pseudoscript, the robot
+  gives itself the "M-WorkBot-Searching" metaprop and plays searching motions
+  (defined by GetSearchMotion()) for GetSearchDuration() seconds.
+  If the robot achieves high alertness, it removes the searching metaprop.
+  If the robot ramps down to low alertness, it prompts the SignalResponse
+  pseudoscript to put the robots camera away.
+
+*/
+BEGIN_SCRIPT (WorkerRobot, AI)
+
+METHODS:
+void DoSearch ()
+{
+	while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
+		Object.AddMetaProperty(self,Object.Named("M-WorkBot-Searching"));
+
+	AI.SetScriptFlags(self, kMotionOff);  // disallow new motions
+	Puppet.PlayMotion(self,GetSearchMotion());
+	SetOneShotTimer("DoneSearching",GetSearchDuration());
+}
+void StopSearching ()
+{
+	AI.SetScriptFlags(self, 0x00); 		// Allow new motions again 
+
+	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
+		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-Searching"));
+}
+string GetSearchMotion ()
+{
+	return "BH111210";  // turn 90 deg to left
+}
+float GetSearchDuration ()
+{
+	return 15.0;
+}
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("DoISearch?"))
+	{
+		// reply F if I have either of these metaprops and T otherwise
+		Reply (	!(	(Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching"))) ||
+					(Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))	)	);
+	}
+	else if (MessageIs("DoSearch"))
+	{
+		DoSearch();
+	}
+	DefaultOnMessage();
+}
+OnMotionEnd()
+{
+	if (	(message.MotionName == GetSearchMotion()) && 
+			(Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching"))) )
+	{
+		SetOneShotTimer ("TurnNow",1.0);
+	}
+	DefaultOnMotionEnd();
+}
+OnTimer()
+{
+	if (	(message.name == "DoneSearching") && 
+			(Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching"))) )
+	{
+		StopSearching ();
+		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+		{
+			AI.Signal(self, "PutCameraAway");
+		}
+	}
+	else if (message.name == "TurnNow")
+	{
+		Puppet.PlayMotion(self,GetSearchMotion());
+	}
+	DefaultOnTimer();
+}
+OnAlertness()
+{
+	if (message.level == kHighAlert)
+	{
+		StopSearching();
+	}
+	else if ( (message.level == kLowAlert) && (message.oldLevel > kLowAlert) )
+	{
+		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+		{
+			AI.Signal(self, "PutCameraAway");
+		}
+	}
+	DefaultOnAlertness();
+}
+
+END_SCRIPT (WorkerRobot)
+
+
+
+/* TrapCapacitor:
+	When it receives a "TurnOn", it relays it, then refuses to relay any more 
+	"TurnOn" or "TurnOff" messages for X seconds.  After X seconds pass, it 
+	relays the most recently received "TurnOn"/"TurnOff" message, if any.
+
+	X is defined by the data hanging off a ScriptParams link from the object
+	to itself, or 30.0 by default if that data does not exist.
+*/
+
+BEGIN_SCRIPT (TrapCapacitor, RootScript)
+
+States
+{
+	Uncharged,
+	Charged
+};
+
+METHODS:
+float GetCapacitorTime ()
+{
+	float delay=30.0;
+
+	if (Link.AnyExist("ScriptParams",self,self))
+		delay = (float)Link.GetOne("ScriptParams",self,self).GetData();
+
+	return delay;
+}
+
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+		SetState(Uncharged);
+	DefaultOnSim();
+}
+
+OnMessage()
+{
+	if(!Locked.IsLocked(self))
+	{
+		if (StateIs((int)Charged))
+		{
+			if ( (MessageIs("TurnOn")) || (MessageIs("TurnOff")) )
+				SetData("LastMsg",message.message);
+		}
+		else if (StateIs((int)Uncharged))
+		{
+			if (MessageIs("TurnOn"))
+			{
+				SetState(Charged);
+				Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+				SetOneShotTimer("Decharge",GetCapacitorTime());
+				SetData("LastMsg","NONE");
+			}
+			else if (MessageIs("TurnOff"))
+			{
+				Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+			}
+		}
+	}
+	DefaultOnMessage();
+}
+
+OnTimer()
+{
+	if (message.name == "Decharge")
+	{
+		SetState(Uncharged);
+
+		if (GetData("LastMsg") != "NONE")
+		{
+			Link.BroadcastOnAllLinks(self,GetData("LastMsg"),"ControlDevice",NULL);
+		}
+	}
+
+	DefaultOnTimer();
+}
+
+END_SCRIPT (TrapCapacitor)
