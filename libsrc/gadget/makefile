@@ -1,5 +1,5 @@
 #
-# $Header: r:/t2repos/thief2/libsrc/gadget/makefile,v 1.9 1998/07/02 13:21:21 PATMAC Exp $
+# $Header: x:/prj/tech/libsrc/gadget/RCS/makefile 1.9 1998/07/02 13:21:21 PATMAC Exp $
 
 MAKETOP = $(CWD)
 
