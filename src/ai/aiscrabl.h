@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiscrabl.h 1.11 1999/06/10 10:35:03 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiscrabl.h,v 1.12 2000/01/04 19:29:19 BFarquha Exp $
 //
 //
 //
@@ -40,7 +40,7 @@ public:
 
    // Find the script ability for an AI -- does not up reference
    static cAIBasicScript * AccessBasicScript(ObjID id);
-   
+
    // Standard component methods
    STDMETHOD_(const char *, GetName)();
    STDMETHOD_(void, Init)();
@@ -50,17 +50,21 @@ public:
    STDMETHOD_(BOOL, Load)(ITagFile *);
    STDMETHOD_(BOOL, SaveGoal)(ITagFile * pTagFile, cAIGoal * pGoal);
    STDMETHOD_(BOOL, LoadGoal)(ITagFile * pTagFile, cAIGoal ** ppGoal);
-   
+
    // Notifications
    STDMETHOD_(void, OnActionProgress)(IAIAction * pAction);
    STDMETHOD_(void, OnAlertness)(ObjID source,
-                                 eAIAwareLevel previous, 
+                                 eAIAwareLevel previous,
+                                 eAIAwareLevel current,
+                                 const sAIAlertness * pRaw);
+   STDMETHOD_(void, OnHighAlert)(ObjID source,
+                                 eAIAwareLevel previous,
                                  eAIAwareLevel current,
                                  const sAIAlertness * pRaw);
    STDMETHOD_(void, OnSignal)(const sAISignal *);
    STDMETHOD_(void, OnGoalChange)(const cAIGoal * pPrevious, const cAIGoal * pGoal);
    STDMETHOD_(void, OnActionChange)(IAIAction * pPrevious, IAIAction * pAction);
-   STDMETHOD_(void, OnModeChange)(eAIMode prev, eAIMode mode); 
+   STDMETHOD_(void, OnModeChange)(eAIMode prev, eAIMode mode);
 
 
    // Update the status of the current goal
@@ -73,28 +77,28 @@ public:
    //
    // Script goal commands
    //
-   BOOL GotoObjLoc(ObjID              objIdTarget, 
-                   eAISpeed           speed, 
-                   eAIPriority        priority, 
+   BOOL GotoObjLoc(ObjID              objIdTarget,
+                   eAISpeed           speed,
+                   eAIPriority        priority,
                    const cMultiParm & dataToSendOnReach);
 
-   BOOL FrobObj(ObjID              objIdTarget, 
-                ObjID              objIdWith, 
-                eAIPriority        priority, 
+   BOOL FrobObj(ObjID              objIdTarget,
+                ObjID              objIdWith,
+                eAIPriority        priority,
                 const cMultiParm & dataToSendOnReach);
 
    BOOL PlayMotion(const char *name);
-   
+
 private:
 
    void DispacthMotionEnd() {}
-   
+
    // Goal pending from script goal commands
    cAIGoal *          m_pPendingGoal;
    cMultiParm * const m_pPendingData;
    cMultiParm * const m_pCurrentData;
    cStr               m_Motion;
-   
+
    enum
    {
       kTransitionGoal = kBaseFirstAvailFlag,

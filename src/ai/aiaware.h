@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiaware.h 1.8 1998/11/05 16:18:02 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiaware.h,v 1.9 2000/01/04 19:28:50 BFarquha Exp $
 //
 //
 //
@@ -43,20 +43,20 @@ enum eAIAwarenessFlags
 
    // Could have LOS if had 360 vision
    kAIAF_CanRaycast   =   0x04,
-   
+
    // Have line of sight
    kAIAF_HaveLOS      =   0x08,
-   
+
    // Blind to the object
    kAIAF_Blind        =   0x10,
-   
+
    // Deaf to the object
    kAIAF_Deaf         =   0x20,
 
    kAIAF_Highest      =   0x40,
 
    kAIAF_FirstHand    =   0x80,
-   
+
    kAIAF_Freshened    = 0x0100
 };
 
@@ -104,10 +104,10 @@ struct sAIAwareDelay
 {
    unsigned toTwo;
    unsigned toThree;
-   
+
    unsigned twoReuse;
    unsigned threeReuse;
-   
+
    unsigned ignoreRange;
 };
 
@@ -124,7 +124,7 @@ struct sAIAwareness
    {
       memset(this, 0, sizeof(*this));
    }
-   
+
    eAIAwareLevel DecLev()
    {
       return (eAIAwareLevel)(--(*((int *)&level)));
@@ -134,26 +134,26 @@ struct sAIAwareness
    {
       return (eAIAwareLevel)(++(*((int *)&level)));
    }
-   
+
    BOOL ValidLastPos() const
    {
-      return !(lastPos.x == FLT_MAX && lastPos.y == FLT_MAX && lastPos.z == FLT_MAX); 
+      return !(lastPos.x == FLT_MAX && lastPos.y == FLT_MAX && lastPos.z == FLT_MAX);
    }
-   
+
    ulong TimeSinceContact() const
    {
       return AIGetTime() - lastContact;
    }
-   
+
    // Of what the awareness pertains
-   ObjID         object; 
-   
+   ObjID         object;
+
    // Flags
    unsigned      flags;
 
    // Current awareness
    eAIAwareLevel level;
-   
+
    // Highest awareness of object
    eAIAwareLevel peak;
 
@@ -162,26 +162,28 @@ struct sAIAwareness
 
    // Time of last contact
    int           lastContact;
-   
+
    // Location of last contact
    mxs_vector    lastPos;
 
    // Level of last pulse
    eAIAwareLevel lastPulse;
-   
+
    // Vision cone, if any, that is the source of the awareness
    int           sourceCone;
-   
+
    // Vision management data
    ulong         updateTime;
    ulong         LOSTime;
-   
+
    LinkID        linkID;
-   
+
    // True last contact (ignoring forced freshness)
    int           trueLastContact;
    int           freshness;
-   
+
+   // Set first time going to high alert.
+   BOOL          bDidHighAlert;
 };
 
 ///////////////////////////////////////
