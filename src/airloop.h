@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/airloop.h 1.2 1997/01/21 21:27:32 CNORDEN Exp $
 #ifndef __AIRLOOP_H
 #define __AIRLOOP_H
