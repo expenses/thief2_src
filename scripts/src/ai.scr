@@ -1283,3 +1283,40 @@ BEGIN_SCRIPT(NoPingBack, AI)
       DefaultOnAIModeChange();
    }
 END_SCRIPT(NoPingBack)
+
+/* Script so that turret cannonballs don't need to arc to work properly
+*/
+
+BEGIN_SCRIPT(ReGravitize, Physics)
+
+   OnBeginScript()
+   {
+     if (!IsDataSet("Gravitized"))
+       SetData("Gravitized",0);
+     if ((integer)GetData("Gravitized")==0)
+       SetOneShotTimer("GiveMeGravity",0.3);
+     Physics.SubscribeMsg(self,kCollisionMsg);
+     DefaultOnBeginScript();
+   }
+
+   OnEndScript()
+   {
+     Physics.UnsubscribeMsg(self,kCollisionMsg);
+     DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+     Property.Set(self,"PhysAttr","Gravity %",66.0); 
+     SetData("Gravitized",1);
+     DefaultOnPhysCollision();
+   }
+
+   OnTimer()
+   {
+     if (message.name == "GiveMeGravity")
+       Property.Set(self,"PhysAttr","Gravity %",66.0);
+     DefaultOnTimer();
+   }
+
+END_SCRIPT(ReGravitize);
