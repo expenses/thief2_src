@@ -91,7 +91,7 @@ METHODS:
             integer specialgoal=GoalLoot(goal,"specials");
             integer onespecial=GoalLoot(goal,"special");
             if(onespecial>0)
-               specialgoal=specialgoal&(1<<onespecial);
+               specialgoal=specialgoal|(1<<(onespecial-1));
 
             ObjectiveScore(goal,loot_total>=GoalLoot(goal,"loot") &&
                                 goldval>=GoalLoot(goal,"gold") &&
