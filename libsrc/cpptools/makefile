@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/cpptools/RCS/makefile $
-# $Revision: 1.15 $
-# $Author: TOML $
-# $Date: 1996/11/06 17:42:12 $
+# $Revision: 1.16 $
+# $Author: mahk $
+# $Date: 1996/12/30 22:20:11 $
 #
 #
 
@@ -18,13 +18,34 @@ LIBTARGS = cpptools
 
 EXETARGS =
 
+SPEC_EXETARGS = hashtest
+
 cpptools_OBJS = delmlist dynfunc filepath filespec fnamutil splitpat str \
-                ptrset hashset dlist dynarray relocptr pdynarr
+                ptrset hashset dlist dynarray relocptr pdynarr hashpp
 
 cpptools_HDRS = delmlist.h dynfunc.h filekind.h filepath.h filespec.h  \
                 fnamutil.h splitpat.h str.h hashset.h hshsttem.h dlist.h \
                 dlisttem.h templexp.h ptrset.h dynarray.h relocptr.h \
-                hshstimp.h pdynarr.h fixedque.h
+                hshstimp.h pdynarr.h fixedque.h hashpp.h hshpptem.h \
+                hashfunc.h
+
+
+#########################################
+# HASHPP TEST HARNESS
+#
+
+hashtest_OBJS = hashlex hashtest
+hashtest_LIBS = $(TECH_LIBS)
+
+# All peoples love yacc and lex!
+
+hashtok.h hashtest.cc: hashtest.y
+    yacc -l -D hashtok.h -o hashtest.cc $(.source)
+
+hashlex.c: hashlex.lex hashtok.h
+         lex -l -o $(.target) $(.source)
+
+
 
 
 %include $(MRC)\make.rc
