@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/fvaredit.cpp,v 1.3 2000/02/19 13:10:40 toml Exp $
 
 #include <appagg.h>
