@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/objedit/RCS/iobjed.h 1.1 1999/04/07 14:39:39 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/iobjed.h,v 1.4 1997/12/04 15:03:49 mahk Exp $
 #pragma once  
 #ifndef __IOBJED_H
 #define __IOBJED_H
@@ -6,7 +6,6 @@
 #include <comtools.h>
 #include <objtype.h>
 #include <objedtyp.h>
-#include <otreetyp.h>
 
 //
 // Object Editor Interface
@@ -53,7 +52,6 @@ DECLARE_INTERFACE_(IObjEditor,IUnknown)
 
 F_DECLARE_INTERFACE(IEditTrait); 
 F_DECLARE_INTERFACE(IProperty);
-F_DECLARE_INTERFACE(IRelation);
 
 #define INTERFACE IObjEditors
 DECLARE_INTERFACE_(IObjEditors,IUnknown)
@@ -79,35 +77,11 @@ DECLARE_INTERFACE_(IObjEditors,IUnknown)
    STDMETHOD_(IObjEditor*,Create)(THIS_ sObjEditorDesc* desc, ObjID obj) PURE;
 
 #define IObjEditors_Create(p, a, b)       COMCall2(p, Create, a, b) 
-
-   // Make a trait out of a relation, and add it.  You probably want to do this
-   // With the relation's inverse, as well 
-   STDMETHOD_(IEditTrait*, AddRelation)(THIS_ IRelation* rel) PURE;
-
-   // Register a factory that makes edittraits from properties that 
-   // conform to a particular interface.  It will be used by 
-   // AddProperty.
-   STDMETHOD(AddPropertyTraitFactory)(THIS_ REFIID iid, EditTraitPropFactory factory) PURE; 
-
-   // Edit an object hierarchy in a modal dialog
-   // optionally, try to start focused on an object 
-   STDMETHOD(EditObjTree)(THIS_ const sObjTreeEditorDesc* desc, ObjID obj DEFAULT_TO(0)) PURE; 
-
 }; 
 
 #undef INTERFACE 
 
-// create the IObjEditors for an editor exe
-EXTERN void ObjEditorsRealCreate(void); 
-// create an empty IObjEditors
-EXTERN void ObjEditorsNullCreate(void); 
-
-#ifdef EDITOR
-#define ObjEditorsCreate ObjEditorsRealCreate
-#else
-#define ObjEditorsCreate ObjEditorsNullCreate
-#endif 
-
+EXTERN void ObjEditorsCreate(void); 
 
 #endif // __IOBJED_H
 
