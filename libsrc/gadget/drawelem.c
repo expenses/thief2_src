@@ -1,5 +1,5 @@
 
-// $Header: x:/prj/tech/libsrc/gadget/RCS/drawelem.c 1.15 1998/02/03 16:37:47 mahk Exp $
+// $Header: r:/t2repos/thief2/libsrc/gadget/drawelem.c,v 1.16 1998/07/20 22:45:43 mahk Exp $
 
 #include <drawelem.h>
 #include <2d.h>
@@ -333,7 +333,10 @@ void ElementDrawBitmap(DrawElement *d, DrawElemState state, short x, short y, sh
    switch(d->draw_type)
    {
       case DRAWTYPE_BITMAP:
-         draw_me = (grs_bitmap *)d->draw_data;
+         if (state == dsDEPRESSED && d->draw_data2)
+            draw_me = (grs_bitmap*)d->draw_data2; 
+         else
+            draw_me = (grs_bitmap *)d->draw_data;
          break;
       case DRAWTYPE_BITMAPOFFSET:
       {
