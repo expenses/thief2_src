@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.29 1999/12/30 14:56:03 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.30 2000/01/05 14:08:08 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -13,6 +13,7 @@
 #include "rendprop.h" // for render types
 #include "dmgprop.h" // for slay results
 #include "ambbase.h" // for ambient hack flags
+#include "tfint.h" // for trap flags
 
 #include <stdio.h> // for sprintf, because damn, why not. 
 
@@ -54,6 +55,20 @@ METHODS:
       if(Property.Possessed(self,"book"))
       {
          string bookname=Property.Get(self,"book");
+
+         // we are so wacky.  We will code the possibility of qvar-dependent
+         // books straight into the core legible script.
+         if(Property.Possessed(self,"TrapQVar"))
+         {
+            string qvar=Property.Get(self,"TrapQVar");
+            integer index=Quest.Get(qvar);
+            // use sprintf to adhere to usual naming convention for books.
+            char buf[64];
+
+            sprintf(buf,"%s%02d",(const char*)bookname,index);
+            bookname=string(buf);
+         }
+
          if(Property.Possessed(self,"bookart"))
          {
             string bookart=Property.Get(self,"bookart");
