@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.2 $
+# $Revision: 1.3 $
 # $Author: KEVIN $
-# $Date: 1996/04/26 10:44:56 $
+# $Date: 1996/05/20 10:43:13 $
 #
 
 MAKETOP = $(CWD)
@@ -21,7 +21,7 @@ irrupt_OBJS = \
 
 G2_OBJS = \
         blend \
-        init svgainit cominit \
+        init svgainit \
         setdrv g2d calcd \
         chkply chkedges chkedgeb \
         clplin clip2d \
@@ -31,6 +31,9 @@ G2_OBJS = \
         fl8lin fl8ulf fl8l \
         fl8lm fl8lmf fl8llmf \
         fl8fl8l fl8fl8ll \
+        f16cnv \
+        f16sf f16usf f16s \
+        f16llmf f16lmf f16lm f16fl8ll \
         gencnv \
         gensf genusf gens \
         genline \
@@ -63,9 +66,3 @@ g2.h .REREAD :\
 	%do comp_h h_pre="\#include \<dev2d.h\>" h_in="$^" h_out="$(@,F)"
 
 %include $(MRC)\make.rc
-
-# this rule generates foo.c files from foo.tbl
-%.c .MISER .NODEFAULT: %.tbl
-        @%setenv INCLUDE=$(IPATH)        
-	$(eko1) $(@,F) \<-- nonexistent
-        @tblmunge $(<,F) $(MAKETOP)\$(@,F)
