@@ -16,12 +16,14 @@ sndutil_HDRS = sndutil.h
 
 splice_OBJS = splcmain utilmain
 splice_LIBS = lg mprintf range res \
-                cpptools comtools compapis appcore templgen sound dsound wail32 sndutil
+                cpptools comtools compapis appcore templgen sound dsound \
+                wail32 sndutil
 splice_COMPILER_LIBS = uuid winmm
 
 stream_OBJS = strmmain utilmain
 stream_LIBS = lg mprintf range res \
-                cpptools comtools compapis appcore templgen sound dsound wail32
+                cpptools comtools compapis appcore templgen sound dsound \
+                wail32 sndutil
 stream_COMPILER_LIBS = uuid winmm
 
 
