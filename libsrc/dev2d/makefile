@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.16 $
+# $Revision: 1.17 $
 # $Author: KEVIN $
-# $Date: 1996/09/26 15:20:53 $
+# $Date: 1996/12/06 14:32:14 $
 #
 
 MAKETOP = $(CWD)
@@ -15,6 +15,8 @@ PROJECT = tech
 
 LIBTARGS = dev2d
 
+dev_gdtest = gdtest
+dev_lib_flav = dbg
 SPEC_EXETARGS = gdtest
 
 irrupt_OBJS = \
