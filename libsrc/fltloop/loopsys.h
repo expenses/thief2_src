@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/fltloop/RCS/loopsys.h 1.2 1999/05/04 18:04:44 darrenl Exp $
+// $Header: x:/prj/tech/libsrc/fltloop/RCS/loopsys.h 1.3 1999/09/28 11:22:51 darrenl Exp $
 
 #pragma once
 #ifndef __LOOPSYS_H
@@ -104,7 +104,7 @@ extern void loopsys_pop();
 // Push a loopmode onto the stack to be executed upon exiting
 // the current loop mode
 
-extern void loopsys_bury(cLoopMode* mode);
+extern void loopsys_bury(cLoopMode* mode,ulong how=0);
 
 
 
