@@ -11,7 +11,7 @@ EXETARGS = sndtest
 
 sound_OBJS = sndfmt sample mixer lgsndid fade
 
-sound_HDRS = lgsound.h lgsndid.h
+sound_HDRS = lgsound.h lgsndid.h sndfmt.h
 #sound_DEFINES = SND_TEST
 
 sndtest_OBJS = sndtest
