@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
-# $Revision: 2.14 $
+# $Revision: 2.15 $
 # $Author: TOML $
-# $Date: 1997/01/20 15:24:11 $
+# $Date: 1997/01/29 17:53:12 $
 #
 
 MAKETOP = $(CWD)
@@ -16,13 +16,13 @@ LIBTARGS = lg
 lg_OBJS = bugtrak datapath dbg dbgcfg dbgpp exit lgprntf lgsprntf \
     memall memgrow memstat oheapwal stack tmpalloc lglog lgassert \
     stktrace pool poolimp breakkey hashfns thrdtool appagg codewrit \
-    dpathdir memreq
+    dpathdir memreq crc32
 
 lg_HDRS = bugtrak.h datapath.h dbg.h dbgmacro.inc dbgpp.h lg.h \
 	lgalt.h lgprntf.h lgsprntf.h memall.h memmacro.inc memstat.h \
 	tmpalloc.h lg.inc memall.inc dbg.inc lglog.h lglocmsg.h lgassert.h \
 	stktrace.h pool.h poolimp.h breakkey.h hashfns.h thrdtool.h \
-	codewrit.h memreq.h
+	codewrit.h memreq.h crc32.h
 
 # can't do
 # h2i_files = lg.inc memall.inc dbg.inc
