@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: matt $
-# $Date: 1993/03/29 15:54:24 $
+# $Date: 1993/03/29 15:58:44 $
 #
 
 
@@ -37,4 +37,5 @@ JOYTEST_LIBS = joystick.lib
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
+joytest.obj: joystick.h stdio.h stdlib.h types.h
 
