@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/contag8r.cpp,v 1.17 1998/10/22 15:06:45 CCAROLLO Exp $
 #include <appagg.h>
 

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/dumbprox.cpp,v 1.2 1998/06/22 02:49:06 dc Exp $
 // really dumb prox system for use for now
 

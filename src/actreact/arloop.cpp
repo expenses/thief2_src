@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/arloop.cpp,v 1.10 1998/10/05 17:19:57 mahk Exp $
 
 #include <comtools.h>

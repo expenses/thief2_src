@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/stimsrc.cpp,v 1.17 1998/11/02 02:57:12 mahk Exp $
 
 #include <appagg.h>
