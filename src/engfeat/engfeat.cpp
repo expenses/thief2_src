@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/engfeat.cpp,v 1.75 2000/01/24 12:08:42 adurant Exp $
 
 //#define PROFILE_ON
