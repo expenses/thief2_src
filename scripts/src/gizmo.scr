@@ -963,20 +963,33 @@ BEGIN_SCRIPT(NumberButton, StdButton)
          if(Property.Possessed(self,"OTxtRepr0") && 
             Property.Possessed(self,"TrapQVar"))
          {
-            integer place=0;
+            integer place=0, digit=-1;
             string texture=Property.Get(self,"OTxtRepr0");
             string qvar=Property.Get(self,"TrapQVar");
             integer qvarval=Quest.Get(qvar);
 
+            /* scan for the first digit encoded in texture name.
+               We want the digit from the file name, not some directory 
+               name like txt116, so we start over if we hit a slash.
+               Note we don't actually start at the end or anything, 
+               since that would take a pass through the string just to
+               see how long it was anyway.  Each digit we find supercedes
+               any previously found, instead.
+               */
+
             for(;texture[place];place++)
             {
-               if(texture[place]>='0' && texture[place]<='9')
-               {
-                  qvarval=((qvarval*10)+(texture[place]-'0'))%100000000;
-                  Quest.Set(qvar,qvarval);
-                  return;
-               }
+               if(digit<0 && texture[place]>='0' && texture[place]<='9')
+                  digit=texture[place]-'0';
+               else if(texture[place]=='/' || texture[place]=='\\')
+                  digit=-1;
             }
+            if(digit>=0) // found valid digit.
+            {
+               qvarval=((qvarval*10)+digit)%100000000;
+               Quest.Set(qvar,qvarval);
+            }
+            return;
          }
       }
 END_SCRIPT(NumberButton)
@@ -1492,7 +1505,7 @@ METHODS:
       {
          string qvar=Property.Get(self,"TrapQVar");
          integer varval=Quest.Get(qvar);
-         integer place, digit, dial, mod=1;
+         integer place, digit, dial, mod=1, error=0;
          vector jointparams;
          boolean dialing=FALSE, reverse=FALSE;
 
@@ -1518,14 +1531,17 @@ METHODS:
             // by default, leave this dial as is
             jointrange.y=dial; jointrange.z=dial;
 
-            dial=((dial+18)/36)%10; // round to nearest 1/10 revolution.
-            digit=(varval/mod)%10;
+            digit=((varval/mod)%10);
 
-            // Debug.MPrint(self,": ",mod,"'s digit dialed to ",dial,", should be ",digit);
-            
-            if(!dialing && (dial!=digit)) // found our first bad digit
+            error=digit*36; // rotation dial should be at
+            error=(360+dial-error)%360; // actual rotation error on 0-360 scale.
+            if(error>180) error=360-error; // mod 360 absolute value, don't ya know.
+
+            // check dial correctness to within 8 degrees (1/4 face rotation) to
+            // ensure legibility.
+            if(!dialing && (error>8)) // found our first bad digit
             {
-               integer low=dial*36, high=digit*36;
+               integer low=dial, high=digit*36;
 
                if(low>high)
                {
