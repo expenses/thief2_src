@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.17 $
+# $Revision: 1.18 $
 # $Author: JAEMZ $
-# $Date: 1997/10/07 00:49:53 $
+# $Date: 1997/10/07 15:31:05 $
 #
 # Makefile for Matrix library
 #
@@ -21,7 +21,7 @@ LIBTARGS = matrix
 
 matrix_OBJS = \
         vecvec vec2 matmat matvec vecang matang trans transasm dmat \
-        vec2 vecvecd matmatd matvecd vecangd matangd transd 
+        vec2d vecvecd matmatd matvecd vecangd matangd transd 
 
 matrix_HDRS = \
         matrix.h matrixs.h dmat.h dmats.h mxsym.h mxang.h mxcvrt.h \
