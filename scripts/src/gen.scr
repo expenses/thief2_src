@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.38 2000/01/21 14:44:05 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.39 2000/01/21 15:20:23 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1147,7 +1147,9 @@ END_SCRIPT(MossSpore)
 // The number is determined from the StackCount property of the
 // crystal itself.  The type of arrow is currently determined by
 // a total hack.  I'd write it a bit more elegantly but I expect
-// to rip it out shortly anyway.  @TODO: Change this.
+// to rip it out shortly anyway.  @TODO: Change this.  (Har har.
+// goes to show you how many of these sorts of things get
+// changed, ever.)
 BEGIN_SCRIPT(Crystal, RootScript)
 
 METHODS:
@@ -2548,8 +2550,10 @@ MESSAGES:
       object MyContainer=Beneficiary();
       linkset MyContents=Link.GetAll("Contains",self);
 
-      if(MyContainer!=object(0))
+      if(MyContainer!=object(0) && Link.AnyExist("Contains",self))
       {
+         linkset MyContents=Link.GetAll("Contains",self);
+         
          while(MyContents.AnyLinksLeft())
          {
             object Goodies=MyContents.Link().To();
@@ -2565,15 +2569,16 @@ MESSAGES:
          // after the intial pass.  Lord knows how safe destrying objects is
          // during that initial link iteration when Cleared() could be having
          // arbitrary other side-effects.  -TJS
-         MyContents=Link.GetAll("Contains",self);
-         while(MyContents.AnyLinksLeft())
+         if(Link.AnyExist("Contains",self))
          {
-            Object.Destroy(MyContents.Link().To());
-            MyContents.NextLink();
+            MyContents=Link.GetAll("Contains",self);
+            while(MyContents.AnyLinksLeft())
+            {
+               Object.Destroy(MyContents.Link().To());
+               MyContents.NextLink();
+            }
          }
       }
-      else
-         Debug.MPrint("Sorrow: invalid beneficiary of object ",self);
       Object.Destroy(self);
       DefaultOnBeginScript();
    }
