@@ -905,3 +905,265 @@ MESSAGES:
   }
 
 END_SCRIPT(ShutUpYerDead)
+
+BEGIN_SCRIPT(SuspiciousReactions, AI)
+
+//ugh, this is getting ugly.  Sigh.  AMSD
+
+METHODS:
+  
+   //We have a semaphore "DoingSuspicious" for not stomping over ourselves,
+   //but new suspicious objects can grab our attention if they are high
+   //priority.
+
+   //RunOtherLinked is really the heart of the ugliness.
+
+   //Basically, we look through our suspicious links for others of the 
+   //same type.  Why, I don't know if there's a good reason anymore, but
+   //it originally had the faint hope of extensibility.  Anyway.
+   //So we go through links of the same type.  If they are still suspicious,
+   //we act on them.  If we don't find any such objects, we check the queue,
+   //which holds one other type (door or gaslight), and clear the queue and
+   //check that type.   So we should be able to basically react to all
+   //things that require more complex reactions (gaslights, doors).  If 
+   //a third things needs a more complex reaction, this function is probably
+   //better scrapped and rewritten.
+
+ 
+   METHOD void RunOtherLinked(ObjID suspobj,string susptype)
+   {
+     linkset susplinks = Link.GetAll("AISuspiciousLink",self);
+ 
+     Debug.MPrint("Running Other Linked");  
+
+     while ((susplinks.AnyLinksLeft()) && (GetData("DoingSuspicious")==0))
+     { //links left, and semaphore not blocking us.
+       link cursusplink = susplinks.Link();
+       if (cursusplink.To()!=(object)suspobj) //don't do ourselves again
+       {
+         if (Property.Possessed(cursusplink.To(),"SuspObj")) //make sure
+         {
+           if (((string)Property.Get(cursusplink.To(),"SuspObj","Suspicious Type")==susptype) && //verify same type
+               ((boolean)Property.Get(cursusplink.To(),"SuspObj","Is Suspicious")==TRUE))
+           {
+             Debug.MPrint("Found another.  Object: ",cursusplink.To());
+             TypeParser(cursusplink.To(),susptype); //it is the same type
+           }
+	   else
+             if ((((string)Property.Get(cursusplink.To(),"SuspObj","Suspicious Type"))!=susptype) &&
+                 ((boolean)Property.Get(cursusplink.To(),"SuspObj","Is Suspicious")==TRUE))  //different type, queue it up
+		if ((string)GetData("SuspiciousQueueType")=="NULL")
+                {
+                  if ((string)Property.Get(cursusplink.To(),"SuspObj","Suspicious Type")==(string)"door")
+		    SetData("SuspiciousQueueType","door");
+                  if ((string)Property.Get(cursusplink.To(),"SuspObj","Suspicious Type")==(string)"gaslight")
+                    SetData("SuspiciousQueueType","gaslight");
+                }
+         }
+       }
+       susplinks.NextLink();
+     } //end while
+
+     if ((string)GetData("SuspiciousQueueType")!="NULL")
+     {
+       string thedata = (string)GetData("SuspiciousQueueType");
+       SetData("SuspiciousQueueType","NULL");
+       RunOtherLinked(suspobj,thedata);  //suspobj isn't quite right but ok.
+     }
+
+   }
+
+   METHOD void TypeParser(ObjID suspobj, string susptype)
+   {
+     Debug.MPrint("Type Parsers parsing ",suspobj,", ",susptype,".");
+     if (susptype=="torch")
+       TorchCall(suspobj);
+     if (susptype=="gaslight")
+       GasLightCall(suspobj);
+     if (susptype=="missingloot")
+       LootCall(suspobj);
+     if (susptype=="door")
+       DoorCall(suspobj);
+     if (susptype=="Generic")
+       GenericParser(suspobj);
+   }
+
+   METHOD void GenericParser(ObjID suspobj)
+   {
+     Debug.MPrint("Generic parser called");
+     //HACK: We know they are called windows.  So sue me.
+     if (Object.InheritsFrom((object)suspobj,Object.Named("Windows")))
+       GlassCall(suspobj);
+     if (Object.InheritsFrom((object)suspobj,Object.Named("RopeArrowRope")))
+       RopeCall(suspobj);
+   }
+
+   METHOD void TorchCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running torch reaction");
+     //All we do here is say something.  And the pseudoscript has
+     //handled that.  So we're done.  Also, the torch is low priority,
+     //so we have a semaphore check to abort early.  Not that aborting
+     //early currently means anything, but we should check.
+//taking check out so that we can search for gas lights or doors
+ //    if ((integer)GetData("DoingSuspicious")!=0)
+       RunOtherLinked(suspobj,"gaslight");
+ 
+   }
+
+   METHOD void GasLightCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running gas light reaction");
+     if ((integer)GetData("DoingSuspicious")!=0)
+     {
+       if ((integer)GetData("DoingSuspicious")!=1) //not currently doing gaslight
+	 SetData("SuspiciousQueueType","gaslight");
+       return;
+     }
+     SetData("DoingSuspicious",1);  //semaphore for a gaslight
+     SetData("CurrentObj",suspobj);
+     //Our plan here is to walk over to the light, then frob it, then
+     //unset our semaphore, and look for the next suspicious thing.
+     if (!GotoObjLoc(suspobj,kNormalSpeed,kNormalPriorityAction,"gogaslight"))
+     {
+        Debug.MPrint(self," failed suspicious Goto reaction to ",suspobj," (gaslight?)");
+	SetData("DoingSuspicious",0);
+        SetData("CurrentObj",0);
+	//don't runotherlinked, because we don't want to loop back and
+	//forth.  Let this just be a failure case.
+     }
+   }
+
+   METHOD void ContinueGasLight(ObjID suspobj)
+   {
+     Debug.MPrint(self," continuing Gas Light check on ",suspobj);
+     //ok, now we went to it.  Frob it.
+     FrobObj(suspobj);
+     SetData("DoingSuspicious",0);
+     SetData("CurrentObj",0);
+     RunOtherLinked(suspobj,"gaslight");
+   }
+
+   METHOD void RopeCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running rope reaction");
+     //Our plan here is just to say something.  So we're done.  
+     //The rope is low priority, so we have a semaphore check to abort
+     //early.  Not that aborting early currently means anything, but we
+     //should check anyway.
+       RunOtherLinked(suspobj,"gaslight");
+//     if ((integer)GetData("DoingSuspicious")!=0)
+//       return;
+   }
+
+   METHOD void DoorCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running door reaction");
+     if ((integer)GetData("DoingSuspicious")!=0)
+     {
+       if ((integer)GetData("DoingSuspicious")!=2) //not currently doing door
+	 SetData("SuspiciousQueueType","door");
+       return;
+     }
+     SetData("DoingSuspicious",2);  //semaphore for doing a door 
+     SetData("CurrentObj",suspobj);
+     //Our plan here is to walk over to the door and frob it to open/close
+     //it.  If we can lock it(we have the key), we will.  Then we reset
+     //our semaphore and look for more.
+     //Of course we have a semaphore problem here.  How do I decide between
+     //the gaslights and the doors?  If I'm doing one and I start doing
+     //the other, I lose the fact that I was working on gaslights...
+     if (!GotoObjLoc(suspobj,kNormalSpeed,kNormalPriorityAction,"godoor"))
+     {
+        Debug.MPrint(self," failed suspicious Goto reaction to ",suspobj," (door?)");
+	SetData("DoingSuspicious",0);
+        SetData("CurrentObj",0);
+	//don't runotherlinked, because we don't want to loop back and
+	//forth.  Let this just be a failure case.
+     }
+   }
+
+   METHOD void ContinueDoor(ObjID suspobj)
+   {
+     Debug.MPrint(self," continuing Door check on ",suspobj);
+     //ok, now we went to it.  Frob it.
+     FrobObj(suspobj);
+     SetData("DoingSuspicious",0);
+     SetData("CurrentObj",0);
+     RunOtherLinked(suspobj,"door");
+   }
+
+
+   METHOD void GlassCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running glass reaction");
+     //We've already said something, now we need to go to Alert 2.
+     SetMinimumAlert(kModerateAlert); //go to alert 2
+     SetOneShotTimer(self,"removeminimum",5.0);
+     RunOtherLinked(suspobj,"gaslight");
+   }
+
+   METHOD void LootCall(ObjID suspobj)
+   {     
+     Debug.MPrint("Running loot reaction");
+     //We've already said something, now we need to go to Alert 2.
+     SetMinimumAlert(kModerateAlert); //go to alert 2
+     SetOneShotTimer(self,"removeminimum",5.0);
+     RunOtherLinked(suspobj,"gaslight");
+   }
+
+MESSAGES:
+
+   OnSim()
+   {
+     if (message.starting)
+     {
+       Debug.MPrint("Sim starting ",self," suspicious reaction.");
+       SetData("DoingSuspicious",0);
+       SetData("CurrentObj",0);
+       SetData("SuspiciousQueueType","NULL"); //assumes only 2 semaphore types
+     }
+     DefaultOnSim();
+   }
+
+   OnMessage()
+   {
+     if (MessageIs("Suspicious"))
+     {
+       Debug.MPrint(self," got suspicious message ",message.data,", ",message.data2,".");
+       TypeParser((ObjID)message.data,(string)message.data2);
+     }
+     DefaultOnMessage();
+   }
+
+   OnObjActResult()
+   {
+     if (((string)message.data == "gogaslight") && 
+         ((integer)GetData("DoingSuspicious")==1) &&
+         ((integer)GetData("CurrentObj")!=0))  //make sure 
+     {
+       ContinueGasLight((ObjID)GetData("CurrentObj"));
+     }
+
+     if (((string)message.data == "godoor") && 
+         ((integer)GetData("DoingSuspicious")==2) &&
+         ((integer)GetData("CurrentObj")!=0))  //make sure 
+     {
+       ContinueDoor((ObjID)GetData("CurrentObj"));
+     }
+
+     DefaultOnObjActResult();
+   }
+
+   OnTimer()
+   {
+     if (message.name=="removeminimum")
+       SetMinimumAlert(kLowAlert); //not zero again
+     DefaultOnTimer();
+   }
+
+END_SCRIPT(SuspiciousReactions);
+
+
+
+
