@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/aiprop.h 1.11 1998/03/26 13:51:32 mahk Exp $
 
 #ifndef __AIPROP_H
