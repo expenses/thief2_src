@@ -1,8 +1,8 @@
 # $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.8 1995/10/06 13:38:55 buzzard Exp $
 # $Log: makefile $
-# Revision 1.8  1995/10/06 13:38:55  buzzard
+# Revision 1.8  1995/10/06  13:38:55  buzzard
 # new build system somehow didn't get checked in?
-#
+# 
 
 MAKETOP = $(CWD)
 
