@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		B2OPCODE.H		BABL2 Opcode list
 //		Rex E. Bradford (REX)
 /*
