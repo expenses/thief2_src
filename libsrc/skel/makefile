@@ -1,20 +1,23 @@
 #
 # $Source: x:/prj/tech/libsrc/skel/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: jaemz $
-# $Date: 1994/04/21 13:27:16 $
+# $Date: 1994/06/10 13:54:43 $
 #
 # Makefile for Skel library
 #
 # $Log: makefile $
-# Revision 1.1  1994/04/21 13:27:16  jaemz
-# Initial revision
+# Revision 1.2  1994/06/10 13:54:43  jaemz
+# updated for new setup
 #
+# Revision 1.1  1994/04/21  13:27:16  jaemz
+# Initial revision
+# 
 #
 
 COMPILER = watcom
 SRCDIR = n:\project\lib\src\skel
-RELDIR = n:\project\lib\release
+RELDIR = r:\prj\lib\rel
 OBJDIR = objo
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
