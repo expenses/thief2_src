@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Source: x:/prj/tech/libsrc/entrywin/rcs/entrywin.cpp $
+// $Source: x:/prj/tech/winsrc/entrywin/RCS/entrywin.cpp $
 // $Author: TOML $
-// $Date: 1996/10/21 09:35:22 $
-// $Revision: 1.3 $
+// $Date: 1996/12/12 15:44:01 $
+// $Revision: 1.4 $
 //
 //
 // Main entry point for windowed Windows applications
@@ -21,7 +21,7 @@ int _g_referenceEntryPoint = 0;
 }
 
 int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR pszCmdLine, int fShow)
-    {
+{
     // Turn Windows command line into classic arguments    @TBD (toml 04-24-96):  won't do quoted arguments correctly
     int argc = 1;
     const char *argv[32];
@@ -33,6 +33,6 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR pszCmdLine, int fShow
 
     return _AppMain(argc, argv);
 
-    }
+}
 
 #endif
