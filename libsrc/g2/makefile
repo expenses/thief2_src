@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.28 $
+# $Revision: 1.29 $
 # $Author: KEVIN $
-# $Date: 1998/03/25 15:42:56 $
+# $Date: 1998/04/09 09:59:55 $
 #
 
 MAKETOP = $(CWD)
@@ -23,9 +23,10 @@ irrupt_OBJS = \
 POLY_OBJS = \
         grtm permap \
         tmsetup tf \
-        genlm fl8lm fl8pm f16pm \
+        genlm fl8lm fl8pm f16lm f16pm \
         genfl8l genf16l genrsdtm \
         o88 lo88 co88 r88 t88oc \
+        lo816 \
         lht816 lh816 dlh816 t816oc \
         golftmap shadtmap drytmap shadhack area \
         trigrad trirast \
@@ -42,7 +43,8 @@ LINE_OBJS = clplin fl8lin fl8l genline
 # all inner loops (assembly and c)
 INNER_LOOP_OBJS = \
         gen8il gen16il \
-        o88il o88bil lo88il co88il n88il 
+        o88il o88bil lo88il co88il n88il \
+        lo816il
 
 PTMAP_OBJS = \
         ptmap ptmapper ptfloat ptmap_8 ptmap_n ptpersp ptlinear \
@@ -51,7 +53,8 @@ PTMAP_OBJS = \
 # function tables compiled from .tbl's
 TABLE_OBJS = gencnv fl8cnv f16cnv \
         genlmf genllmf gensf genusf \
-        fl8ulf fl8lmf fl8llmf fl8sf fl8usf
+        fl8ulf fl8lmf fl8llmf fl8sf fl8usf \
+        f16llmf
 
 # miscellaneous primitives, initialization code, and global data
 MISC_OBJS = blend init svgainit setdrv g2d g2makewr \
