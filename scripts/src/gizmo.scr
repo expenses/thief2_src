@@ -1446,6 +1446,73 @@ METHODS:
    {
       SeekPoint(FindPoint(!on));
    }
+
+   // Traces TPath links to figure out how to get to the specified points starting
+   // with one of the nearby points that leads to it.  
+   METHOD object TraceToPointDest(object dest,object safety)
+   {
+      if(Link.AnyExist("~TPath",dest))
+      {
+         vector destpos=Object.Position(dest);
+         vector mypos=Object.Position(self);
+         float proportion=-1.0;
+         float error=10000.0;
+         object todest=Link.GetOne("~TPath",dest).To();
+         vector todestpos=Object.Position(todest);
+
+         if((destpos-mypos).Magnitude()<0.5)
+         {
+            // quite near some point
+            return dest;
+         }
+         else if((todestpos-mypos).Magnitude()<0.5)
+            // Yeah, this checks most points twice, but what the hell.
+            return dest;
+         else
+         {
+            vector leg=destpos-todestpos;
+            vector myleg=mypos-todestpos;
+            float dot=(leg.x*myleg.x)+(leg.y*myleg.y)+(leg.z*myleg.z);
+            vector projection=leg;
+
+            proportion=(dot/leg.MagSquared());
+            projection*=proportion;
+            error=(projection-myleg).Magnitude();
+
+            Debug.MPrint("On leg from ",todest," to ",dest);
+            Debug.MPrint("Proportion is ",proportion," along leg, error ",error);
+         }
+
+         if(proportion>=0.0 && proportion<=1.0 && error<0.5)
+         {
+            // along the way between two points.
+            return dest;
+         }
+         else
+         {
+            // chasing ahead of the points we're considering, to catch cycles.
+            if(Link.AnyExist("~TPath",safety))
+            {
+               safety=Link.GetOne("~TPath",safety).To();
+               if(Link.AnyExist("~TPath",safety))
+                  safety=Link.GetOne("~TPath",safety).To();
+            }                  
+            if(safety!=todest)
+               return TraceToPointDest(todest,safety);
+         }
+      }
+      return(self);
+   }
+
+   METHOD void TraceToPoint(object dest)
+   {
+      if(Link.AnyExist("~TPath",dest))
+      {
+         object tracepoint=TraceToPointDest(dest,Link.GetOne("~TPath",dest).To());
+         Debug.MPrint("Sending to point ",tracepoint);
+         SeekPoint(tracepoint);
+      }
+   }
          
 MESSAGES:
 
@@ -1483,7 +1550,7 @@ MESSAGES:
       }
       else if(MessageIs("Call"))
       {
-         SeekPoint(message.from);
+         TraceToPoint(message.from);
       }
       DefaultOnMessage();
    }
@@ -1551,6 +1618,7 @@ MESSAGES:
    OnWaypointReached()
    {
       Property.Set(message.moving_terrain,"MovingTerrain","active",FALSE);
+      SendMessage(message.moving_terrain,"Stopping");
       DefaultOnWaypointReached();
    }
 END_SCRIPT(StopHere)
