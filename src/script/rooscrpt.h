@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/rooscrpt.h,v 1.4 1999/04/13 19:02:43 Justin Exp $
 // 
 
