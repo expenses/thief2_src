@@ -621,6 +621,48 @@ METHODS:
    }
 END_SCRIPT(TrapRelay)
 
+/* Like a Relay Trap, but waits a certain amount of time before passing
+   on the message.  If another message is received before the time passes,
+   the previous message is never delivered. */
+
+BEGIN_SCRIPT(TrapTimedRelay, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
+   {
+      float time_delay=1.0;
+      string msg=on?"TimedTurnOn":"TimedTurnOff";
+      
+      if(Property.Possessed(self,"ScriptTiming"))
+         time_delay=(float)Property.Get(self,"ScriptTiming")/1000.0;
+      
+      if ((integer)GetData("MessageTimer")!=0)
+         KillTimer((integer)GetData("MessageTimer"));
+       
+      integer thandle = SetOneShotTimer(self,msg,time_delay,NULL);
+      SetData("MessageTimer",thandle);
+
+   }
+
+MESSAGES:
+  
+   OnBeginScript()
+   {
+      if (!IsDataSet("MessageTimer"))
+         SetData("MessageTimer",0);
+      DefaultOnBeginScript();
+   }
+
+   OnTimer()
+   {
+      if (message.name == "TimedTurnOn")
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      if (message.name == "TimedTurnOff")
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      DefaultOnTimer();
+   }
+
+END_SCRIPT(TrapTimedRelay)
+
 
 /* Like a Relay trap, but a certain amount of time after relaying any
    message, it will relay the opposite message (if no new messages have
