@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/oldasfx.c,v 1.47 2000/02/19 12:14:26 toml Exp $
 // remedial sound system for DromEd/Dark/AIR/So on
 
