@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.1 1999/10/06 11:34:56 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.2 1999/11/18 13:59:46 TJS Exp $
 //
 
 /* Creates watch links to this object when it gets created.
@@ -127,6 +127,17 @@ MESSAGES:
    {
       Insecure();
       DefaultOnDoorOpen();
+   }
+   OnFrobWorldEnd()
+   {
+      object frobber=message.Frobber;
+
+      if(Property.Possessed(frobber,"AI"))
+      {
+         Debug.MPrint("Hey! AI ",frobber," frobbing secure door ",self,"!");
+      }
+
+      DefaultOnFrobWorldEnd();
    }
 END_SCRIPT(SecureDoor)
 
