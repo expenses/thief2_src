@@ -1,8 +1,8 @@
 /*
- * $Source: x:/prj/tech/libsrc/gadget/RCS/uibutton.c $
- * $Revision: 1.16 $
+ * $Source: r:/t2repos/thief2/libsrc/gadget/uibutton.c,v $
+ * $Revision: 1.17 $
  * $Author: mahk $
- * $Date: 1998/02/26 17:00:04 $
+ * $Date: 1998/08/19 13:56:50 $
  *
  */
 
@@ -611,17 +611,19 @@ errtype ButtonListInit(Region* parent, ButtonList* list, int z, int n, Rect rvec
 {
    errtype err;
    int id;
-   Rect listrect = rvec[0];
+   Rect listrect;
 
    int i;
 
    list->statevec = Malloc(sizeof(list->statevec[0])*n);
 
-   list->statevec[0] = dsNORMAL;
-   for (i = 1; i < n; i++)
+   for (i = 0; i < n; i++)
    {
       list->statevec[i] = dsNORMAL;
-      RECT_UNION(&listrect,&rvec[i],&listrect);
+      if (i == 0)
+         listrect = rvec[i];
+      else
+         RECT_UNION(&listrect,&rvec[i],&listrect);
    }
  
    LGadCreateBoxInternal(&list->gadg.box,parent,listrect.ul.x,listrect.ul.y,
