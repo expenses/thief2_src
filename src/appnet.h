@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/appnet.h 1.3 1996/10/27 20:52:50 buzzard Exp $
 
 // application specific network stuff for per frame code

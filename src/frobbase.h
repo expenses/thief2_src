@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/frobbase.h 1.1 1997/07/27 22:41:15 dc Exp $
 // internal definitions
 

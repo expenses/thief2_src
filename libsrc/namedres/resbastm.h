@@ -1,6 +1,11 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //////////////////////////////////////////////////////////////////////////
 //
-// $Header: x:/prj/tech/libsrc/namedres/RCS/resbastm.h 1.10 1999/03/18 13:43:27 mwhite Exp $
+// $Header: x:/prj/tech/libsrc/namedres/RCS/resbastm.h 1.13 1970/01/01 00:00:00 TOML Exp $
 //
 // Standard no-frills Resource implementation template.
 //
@@ -40,7 +45,11 @@
 
 #include <resutil.h>
 
+#include <resthred.h>
+
+#include <allocapi.h>
 #include <resbase.h>
+#include <dbmem.h>
 
 #undef INTERFACE
 
@@ -52,6 +61,8 @@
 RES_BASE_TEMPLATE
 STDMETHODIMP RES_BASE::QueryInterface(REFIID id, void **ppI)
 {
+   AUTO_RES_THREAD_LOCK();
+   
    *ppI = NULL;
 
    if (IsEqualGUID(id, IID_IRes))
@@ -116,7 +127,7 @@ RES_BASE::cResourceBase(IStore *pStore,
    IResMan *pResMan;
    pResMan = AppGetObj(IResMan);
    AssertMsg(pResMan, "No Resource Manager for a resource!");
-   if (FAILED(pResMan->QueryInterface(IID_IResManHelper, 
+   if (FAILED(pResMan->QueryInterface(IID_IResManHelper,
                                       (void **) &m_pResMan))) {
       CriticalMsg("Resource Manager does not implement IResManHelper!");
    }
@@ -167,13 +178,13 @@ RES_BASE::~cResourceBase()
 
    if (m_pName)
    {
-      Free (m_pName);
+      free (m_pName);
       m_pName = 0;
    }
 
    if (m_pExt)
    {
-      Free (m_pExt);
+      free (m_pExt);
       m_pExt = 0;
    }
 
@@ -185,6 +196,7 @@ RES_BASE::~cResourceBase()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(IResType *) RES_BASE::GetType()
 {
+   AUTO_RES_THREAD_LOCK();
    m_pType->AddRef();
    return m_pType;
 }
@@ -203,6 +215,7 @@ STDMETHODIMP_(char **) RES_BASE::GetTranslatableTypes(int *pnTypes)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void *) RES_BASE::Lock()
 {
+   AUTO_RES_THREAD_LOCK();
    if (m_pAssignedData) {
       m_nAssignedCount++;
       return m_pAssignedData;
@@ -216,6 +229,7 @@ STDMETHODIMP_(void *) RES_BASE::Lock()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::Unlock()
 {
+   AUTO_RES_THREAD_LOCK();
    if (m_pAssignedData) {
       m_nAssignedCount--;
    } else {
@@ -228,6 +242,7 @@ STDMETHODIMP_(void) RES_BASE::Unlock()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(unsigned) RES_BASE::GetLockCount()
 {
+   AUTO_RES_THREAD_LOCK();
    if (m_pAssignedData) {
       return m_nAssignedCount;
    }
@@ -239,6 +254,7 @@ STDMETHODIMP_(unsigned) RES_BASE::GetLockCount()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(BOOL) RES_BASE::Drop()
 {
+   AUTO_RES_THREAD_LOCK();
    if (m_pAssignedData) {
       return (m_nAssignedCount == 0);
    } else {
@@ -251,6 +267,7 @@ STDMETHODIMP_(BOOL) RES_BASE::Drop()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(long) RES_BASE::GetSize()
 {
+   AUTO_RES_THREAD_LOCK();
    AssertMsg(!m_pAssignedData, "Can't GetSize for an assigned resource!");
    return m_pResMan->GetResourceSize(this);
 }
@@ -260,6 +277,7 @@ STDMETHODIMP_(long) RES_BASE::GetSize()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void *) RES_BASE::Extract(void *pBuf)
 {
+   AUTO_RES_THREAD_LOCK();
    AssertMsg(!m_pAssignedData, "Can't Extract an assigned resource!");
    return m_pResMan->ExtractResource(this, pBuf);
 }
@@ -267,12 +285,14 @@ STDMETHODIMP_(void *) RES_BASE::Extract(void *pBuf)
 ///////////////////////////////////////
 
 RES_BASE_TEMPLATE
-STDMETHODIMP_(void *) RES_BASE::LoadData(ulong * pSize, 
+STDMETHODIMP_(void *) RES_BASE::LoadData(ulong * pSize,
                                          ulong * pTimestamp,
                                          IResMemOverride * pResMem)
 {
    if (!pResMem)
       return 0;
+
+   AUTO_RES_THREAD_LOCK();
 
    AssertMsg(!m_pAssignedData, "Can't load into an assigned resource!");
 
@@ -291,7 +311,9 @@ STDMETHODIMP_(void *) RES_BASE::LoadData(ulong * pSize,
    if (pTimestamp)
       *pTimestamp = pStream->LastModified();
 
+   LGALLOC_PUSH_CREDIT();
    pData = pResMem->ResMalloc(nSize);
+   LGALLOC_POP_CREDIT();
 
    pStream->Read(nSize, (char *) (pData));
    pStream->Close();
@@ -307,6 +329,7 @@ STDMETHODIMP_(BOOL) RES_BASE::FreeData(void *pData,
                                        ulong /* nSize */,
                                        IResMemOverride *pResMem)
 {
+   AUTO_RES_THREAD_LOCK();
    // In the basic resource, we simply free the memory...
    pResMem->ResFree(pData);
    return TRUE;
@@ -335,6 +358,7 @@ STDMETHODIMP_(void *) RES_BASE::LoadTranslation
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void *) RES_BASE::PreLoad()
 {
+   AUTO_RES_THREAD_LOCK();
    void *pData = m_pResMan->LockResource(this);
    m_pResMan->UnlockResource(this);
    return pData;
@@ -363,9 +387,9 @@ STDMETHODIMP_(void *) RES_BASE::PreLoad()
 // and of course.. tape drives!).
 //
 RES_BASE_TEMPLATE
-STDMETHODIMP_(int) 
-RES_BASE::ExtractPartial(const long nStart, 
-                         const long nEnd, 
+STDMETHODIMP_(int)
+RES_BASE::ExtractPartial(const long nStart,
+                         const long nEnd,
                          void *pBuf)
 {
    void *pData;
@@ -373,6 +397,8 @@ RES_BASE::ExtractPartial(const long nStart,
    int nNumToRead;
    if (!pBuf)
       return 0;
+
+   AUTO_RES_THREAD_LOCK();
 
    // First try to find data if already loaded, else, load file.
    pData = m_pResMan->FindResource(this, &nSize);
@@ -394,12 +420,12 @@ RES_BASE::ExtractPartial(const long nStart,
       IStoreStream *pStream;
 
       pStream = OpenStream();
-      AssertMsg1(pStream, 
-                 "Unable to open stream: %s", 
+      AssertMsg1(pStream,
+                 "Unable to open stream: %s",
                  GetName());
       if (!pStream)
          return 0;
-   
+
       nNumToRead = pStream->ReadAbs(nStart, nEnd, (char *) pBuf);
 
       pStream->Close();
@@ -432,15 +458,17 @@ RES_BASE::ExtractPartial(const long nStart,
 
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::ExtractBlocks
-  (void *pBuf, 
-   const long nSize, 
-   tResBlockCallback Callback, 
+  (void *pBuf,
+   const long nSize,
+   tResBlockCallback Callback,
    void *pCallbackData)
 {
    IStoreStream *pStream;
 
    if (!Callback)
       return;
+
+   AUTO_RES_THREAD_LOCK();
 
    pStream = OpenStream();
    AssertMsg1(pStream, "Unable to open stream: %s", GetName());
@@ -464,6 +492,7 @@ STDMETHODIMP_(void) RES_BASE::ExtractBlocks
 RES_BASE_TEMPLATE
 STDMETHODIMP_(IStoreStream *) RES_BASE::OpenStream()
 {
+   AUTO_RES_THREAD_LOCK();
    if (!m_pStore) {
       return NULL;
    }
@@ -482,6 +511,8 @@ STDMETHODIMP_(IStoreStream *) RES_BASE::OpenStream()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(BOOL) RES_BASE::SetStore(IStore * pNewStorage)
 {
+   AUTO_RES_THREAD_LOCK();
+
    if (!m_pStore || m_bAllowStorageReset)
    {
       if (m_pStore) {
@@ -505,6 +536,8 @@ STDMETHODIMP_(BOOL) RES_BASE::SetStore(IStore * pNewStorage)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(IStore *) RES_BASE::GetStore()
 {
+   AUTO_RES_THREAD_LOCK();
+
    if (m_pStore)
    {
       m_pStore->AddRef();
@@ -519,6 +552,7 @@ STDMETHODIMP_(IStore *) RES_BASE::GetStore()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::AllowStorageReset(BOOL bAllow)
 {
+   AUTO_RES_THREAD_LOCK();
    m_bAllowStorageReset = bAllow;
 }
 
@@ -529,6 +563,7 @@ STDMETHODIMP_(void) RES_BASE::AllowStorageReset(BOOL bAllow)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::SetName(const char *pNewName)
 {
+   AUTO_RES_THREAD_LOCK();
    if (!pNewName || m_pName)
       // No name, or already have one. Can't set it again.
       return;
@@ -537,10 +572,10 @@ STDMETHODIMP_(void) RES_BASE::SetName(const char *pNewName)
    cStr Ext;
    cFileSpec fileSpec (pNewName);
    fileSpec.GetFileExtension(Ext);
-   m_pExt = (char *) Malloc(strlen(Ext) + 1);
+   m_pExt = (char *) malloc(strlen(Ext) + 1);
    strcpy(m_pExt, Ext);
    fileSpec.GetFileRoot(Root);
-   m_pName = (char *) Malloc(strlen(Root) + 1);
+   m_pName = (char *) malloc(strlen(Root) + 1);
    strcpy(m_pName, Root);
 }
 
@@ -549,6 +584,7 @@ STDMETHODIMP_(void) RES_BASE::SetName(const char *pNewName)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(const char *) RES_BASE::GetName()
 {
+   AUTO_RES_THREAD_LOCK();
    return m_pName ? m_pName : "";
 }
 
@@ -558,6 +594,8 @@ RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::GetStreamName(BOOL bFullpath, char **ppPathname)
 {
    int nLen;
+
+   AUTO_RES_THREAD_LOCK();
 
    if (!m_pStore || !m_pName) {
       *ppPathname = NULL;
@@ -575,7 +613,7 @@ STDMETHODIMP_(void) RES_BASE::GetStreamName(BOOL bFullpath, char **ppPathname)
    nLen = strlen(pStorePath) + strlen(m_pName) + strlen(m_pExt) + 1;
 
    // Create and fill the string
-   *ppPathname = (char *) Malloc(nLen);
+   *ppPathname = (char *) malloc(nLen);
    strcpy(*ppPathname, pStorePath);
    strcat(*ppPathname, m_pName);
    strcat(*ppPathname, m_pExt);
@@ -586,6 +624,7 @@ STDMETHODIMP_(void) RES_BASE::GetStreamName(BOOL bFullpath, char **ppPathname)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::SetCanonStore (IStore *pCanonStore)
 {
+   AUTO_RES_THREAD_LOCK();
    SafeRelease(m_pCanonStore);
    m_pCanonStore = pCanonStore;
    if (pCanonStore) {
@@ -598,6 +637,7 @@ STDMETHODIMP_(void) RES_BASE::SetCanonStore (IStore *pCanonStore)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(IStore *) RES_BASE::GetCanonStore()
 {
+   AUTO_RES_THREAD_LOCK();
    m_pCanonStore->AddRef();
    return m_pCanonStore;
 }
@@ -607,6 +647,7 @@ STDMETHODIMP_(IStore *) RES_BASE::GetCanonStore()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::GetCanonPath(char **ppPath)
 {
+   AUTO_RES_THREAD_LOCK();
    if (m_pCanonStore) {
       m_pCanonStore->GetCanonPath(ppPath);
    } else {
@@ -619,11 +660,12 @@ STDMETHODIMP_(void) RES_BASE::GetCanonPath(char **ppPath)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::GetVariant(char **ppVariantPath)
 {
+   AUTO_RES_THREAD_LOCK();
    if (!m_pStore || !m_pCanonStore) {
-      *ppVariantPath = (char *) Malloc(1);
+      *ppVariantPath = (char *) malloc(1);
       **ppVariantPath = '\0';
    } else {
-      ComputeAnchoredPath(m_pCanonStore->GetFullPathName(), 
+      ComputeAnchoredPath(m_pCanonStore->GetFullPathName(),
                           m_pStore->GetFullPathName(),
                           ppVariantPath);
    }
@@ -634,6 +676,7 @@ STDMETHODIMP_(void) RES_BASE::GetVariant(char **ppVariantPath)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::GetCanonPathName(char **ppPathname)
 {
+   AUTO_RES_THREAD_LOCK();
    // Default in case something goes wrong:
    *ppPathname = NULL;
 
@@ -657,11 +700,11 @@ STDMETHODIMP_(void) RES_BASE::GetCanonPathName(char **ppPathname)
    nLen = strlen(pCanonPath) + strlen(m_pName) + 1;
 
    // Create and fill the string
-   *ppPathname = (char *) Malloc(nLen);
+   *ppPathname = (char *) malloc(nLen);
    strcpy(*ppPathname, pCanonPath);
    strcat(*ppPathname, m_pName);
 
-   Free(pCanonPath);
+   free(pCanonPath);
 }
 
 ///////////////////////////////////////
@@ -676,8 +719,8 @@ STDMETHODIMP_(BOOL) RES_BASE::AsyncLock(const int nPriority)
 
 RES_BASE_TEMPLATE
 STDMETHODIMP_(BOOL) RES_BASE::AsyncExtract
-  (const int nPriority, 
-   void *pBuf, 
+  (const int nPriority,
+   void *pBuf,
    const long bufSize)
 {
    return m_pResMan->AsyncExtract(this, nPriority, pBuf, bufSize);
@@ -720,6 +763,7 @@ STDMETHODIMP RES_BASE::GetAsyncResult(void **ppResult)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::SetAppData(DWORD AppData)
 {
+   AUTO_RES_THREAD_LOCK();
    m_AppData = AppData;
 }
 
@@ -728,6 +772,7 @@ STDMETHODIMP_(void) RES_BASE::SetAppData(DWORD AppData)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(DWORD) RES_BASE::GetAppData()
 {
+   AUTO_RES_THREAD_LOCK();
    return m_AppData;
 }
 
@@ -736,6 +781,7 @@ STDMETHODIMP_(DWORD) RES_BASE::GetAppData()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::SetManData(DWORD ManData)
 {
+   AUTO_RES_THREAD_LOCK();
    m_ManData = ManData;
 }
 
@@ -744,6 +790,7 @@ STDMETHODIMP_(void) RES_BASE::SetManData(DWORD ManData)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(DWORD) RES_BASE::GetManData()
 {
+   AUTO_RES_THREAD_LOCK();
    return m_ManData;
 }
 
@@ -752,6 +799,7 @@ STDMETHODIMP_(DWORD) RES_BASE::GetManData()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void *) RES_BASE::DataPeek()
 {
+   AUTO_RES_THREAD_LOCK();
    long dummy;
 
    if (m_pAssignedData) {
@@ -766,6 +814,7 @@ STDMETHODIMP_(void *) RES_BASE::DataPeek()
 RES_BASE_TEMPLATE
 STDMETHODIMP_(void) RES_BASE::SetData(void *pNewData)
 {
+   AUTO_RES_THREAD_LOCK();
    if (!Drop()) {
       // It's locked, so we can't drop it
       CriticalMsg("Trying to SetData on a Locked Resource!");
@@ -780,6 +829,7 @@ STDMETHODIMP_(void) RES_BASE::SetData(void *pNewData)
 RES_BASE_TEMPLATE
 STDMETHODIMP_(BOOL) RES_BASE::HasSetData()
 {
+   AUTO_RES_THREAD_LOCK();
    if (m_pAssignedData) {
       return TRUE;
    } else {
@@ -788,6 +838,6 @@ STDMETHODIMP_(BOOL) RES_BASE::HasSetData()
 }
 
 //////////////////////////////////////////////////////////////////////////
-
+#include <undbmem.h>
 #endif // !WAT110
 #endif // !__RESBASTM_H
