@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/mmanuver.h 1.8 1998/10/13 13:14:20 KATE Exp $
+// $Header: r:/t2repos/thief2/src/motion/mmanuver.h,v 1.9 2000/01/31 09:50:13 adurant Exp $
+#pragma once
 
 #ifndef __MMANUVER_H
 #define __MMANUVER_H

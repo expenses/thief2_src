@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/mcoord.h 1.17 1998/10/13 13:12:49 KATE Exp $
+// $Header: r:/t2repos/thief2/src/motion/mcoord.h,v 1.18 2000/01/31 09:50:09 adurant Exp $
+#pragma once
 
 #ifndef __MCOORD_H
 #define __MCOORD_H
