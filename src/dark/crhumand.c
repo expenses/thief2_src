@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/crhumand.c,v 1.14 2000/02/14 22:15:29 adurant Exp $
 // XXX this could really a DLL.  just contains humanoid-specific data
 

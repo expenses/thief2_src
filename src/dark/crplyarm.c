@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/crplyarm.c,v 1.11 1998/10/23 01:49:13 CCAROLLO Exp $
 // XXX this could really a DLL.  just contains humanoid-specific data
 
