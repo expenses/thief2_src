@@ -9,8 +9,8 @@ WARN_ON = 1
 SPEW_ON = 1
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\res
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\res
+RELDIR = r:\prj\lib\release
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
