@@ -1483,10 +1483,12 @@ float GetCapacitorTime ()
 {
 	float delay=30.0;
 
-	if (Link.AnyExist("ScriptParams",self,self))
-		delay = (float)Link.GetOne("ScriptParams",self,self).GetData();
+   if (Link.AnyExist("ScriptParams",self,self))
+	  delay = (float)Link.GetOne("ScriptParams",self,self).GetData();
+   else if(Property.Possessed(self,"ScriptTiming"))
+	  delay = (float)Property.Get(self,"ScriptTiming");
 
-	return delay;
+	 return delay;
 }
 
 METHOD void Activate(boolean on, object sender)
@@ -1571,3 +1573,15 @@ METHODS:
 
 END_SCRIPT(TurretAlert)
 
+
+
+/* TrapLocker locks and unlocks the object 
+   the script is on in response to "TurnOn" and "TurnOff"
+   messages, respectively.  */
+BEGIN_SCRIPT(TrapLocker, StdTrap)
+METHODS:
+METHOD void Activate(boolean on, object sender)
+{
+  Property.Set(self,"Locked",on);
+}
+END_SCRIPT(TrapLocker)
