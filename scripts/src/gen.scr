@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.36 2000/01/20 11:24:28 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.37 2000/01/20 22:57:35 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -2523,11 +2523,14 @@ MESSAGES:
                Container.Remove(Goodies);
                Container.Add(Goodies,MyContainer);
             }
+            else
+               Object.Destroy(Goodies);
             MyContents.NextLink();
          }
       }
       else
          Debug.MPrint("Sorrow: invalid beneficiary of object ",self);
+      Object.Destroy(self);
       DefaultOnBeginScript();
    }
 
