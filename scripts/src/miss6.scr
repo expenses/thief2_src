@@ -1,5 +1,7 @@
 #include "drkgoalt.h"
 
+#define KEYPATHS 10
+
 BEGIN_SCRIPT(ListenClosely, Room)
 
 METHODS:
@@ -59,6 +61,8 @@ METHODS:
     {
       link splink = Link.GetOne("ScriptParams",checkobj,checkobj);
       integer qdata = (integer)splink.GetData();
+      Debug.MPrint("Completing conversation goal.  Path is ",qdata);
+      SetData("PathNumber",qdata);
       Quest.Set(GoalStateVarName(0),kGoalComplete,kQuestDataMission);
     }
   }
@@ -72,6 +76,48 @@ METHODS:
     PlayConversation(newspeaker);
     SetData("ConversationObject",(integer)newspeaker);
     return TRUE;
+  }
+
+  METHOD void FixSelfLink(object whichone)
+  {
+    Debug.MPrint("Setting self link info on ",whichone);
+    if (Link.AnyExist("ScriptParams",whichone,whichone))
+    {
+      link splink = Link.GetOne("ScriptParams",whichone,whichone);
+      splink.SetData(GetData("PathNumber"));
+    }
+    else
+    {
+      Debug.MPrint("Danger, ",whichone," had no self ScriptParams link!");
+    }
+  }
+
+  METHOD void SetupLocation()
+  {
+    Debug.MPrint("Setting up location.");
+    linkset splinks = Link.GetAll("ScriptParams",self);
+    while (splinks.AnyLinksLeft())
+    {
+      link cursplink = splinks.Link();
+      string spdata = (string)cursplink.GetData();
+      if (spdata == "convtrig")
+      {
+        FixSelfLink(cursplink.To());
+      }
+      if (spdata == "soundset")
+      {
+        string messdata = "eaves" + (string)GetData("PathNumber");
+        PostMessage(cursplink.To(),messdata);
+        Debug.MPrint("Told sound guy ",cursplink.To()," to set up with ",messdata);
+      }
+      if (spdata == "keyobj")
+      {
+        string messdata = "eaves" + (string)GetData("PathNumber");
+        PostMessage(cursplink.To(),messdata);
+        Debug.MPrint("Told key ",cursplink.To()," to set up with ",messdata);
+      }
+      splinks.NextLink();
+    }
   }
 
   METHOD boolean InConversationRoom()
@@ -96,6 +142,17 @@ MESSAGES:
         SetData("StartedConversation",0); //last conv started
         SetData("FinishedConversation",0); //last conv finished
 	SetData("ConversationObject",0); //current conv object.
+        SetData("PathNumber",0);
+	if ((object)self != object("Player"))
+        {
+	  SetData("PathNumber",Data.RandInt(1,KEYPATHS)); //which key we're 
+                                                          //using.
+ 	  SetupLocation(); //setup the location, if we are the starting
+			   //point.  This allows all sorts of wholesome
+			   //linky goodness.
+	  string pathnum = "Pathnum" + (string)GetData("PathNumber");
+	  Debug.MPrint("Picked path ",GetData("PathNumber")," on ",self);
+        }
       }
     DefaultOnSim();
   }
@@ -137,6 +194,59 @@ MESSAGES:
 END_SCRIPT(ListenClosely)
 
 
+
+
+BEGIN_SCRIPT(SoundGuy, RootScript)
+
+METHODS:
+ 
+  METHOD void DoSoundSetup(int i)
+  {
+    Debug.MPrint(self," running sound setup on path ",i);
+  }
+
+MESSAGES:
+
+  OnMessage()
+  {
+    int i;
+    for (i = 1;i<=KEYPATHS;i++)
+    {
+      string teststr = "eaves" + (string)i;
+      if (MessageIs(teststr))
+        DoSoundSetup(i);
+    }
+  }
+
+END_SCRIPT(SoundGuy)
+
+
+
+
+
+BEGIN_SCRIPT(KeyGuy, RootScript)
+
+METHODS:
+ 
+  METHOD void DoKeySetup(int i)
+  {
+    Debug.MPrint(self," running key setup on path ",i);
+  }
+
+MESSAGES:
+ 
+  OnMessage()
+  {
+    int i;
+    for (i = 1;i<=KEYPATHS;i++)
+    {
+      string teststr = "eaves" + (string)i;
+      if (MessageIs(teststr))
+        DoKeySetup(i);
+    }
+  }
+
+END_SCRIPT(KeyGuy)
 
 
 
