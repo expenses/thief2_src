@@ -49,18 +49,22 @@ METHODS:
 
 MESSAGES:
 
-   OnBeginScript()
+   OnSim()
    {
-      // Create quest vars, if not already there, and subscribe to changes
-      Quest.Set(PICK_ID_QVAR, kObjNull);
-      Quest.SubscribeMsg(self, PICK_ID_QVAR);
+      if (message.starting)
+      {
+         // Create quest vars, if not already there, and subscribe to changes
+         Quest.Set(PICK_ID_QVAR, kObjNull);
+         Quest.SubscribeMsg(self, PICK_ID_QVAR);
 
-      // Initialize our data
-      SetData("CurPickObj", kObjNull);
-      SetData("CurActive", TRUE);
-      SetData("CurSelected", FALSE);
+         // Initialize our data
+         SetData("CurPickObj", kObjNull);
+         SetData("CurActive", TRUE);
+         SetData("CurSelected", FALSE);
 
-      DefaultOnBeginScript();
+      }
+
+      DefaultOnSim();
    }
 
    OnQuestChange()
