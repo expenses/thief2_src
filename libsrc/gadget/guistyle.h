@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/guistyle.h 1.1 1996/07/30 19:22:58 mahk Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/guistyle.h,v 1.1 1996/07/30 19:22:58 mahk Exp $
 
 #ifndef __GUISTYLE_H
 #define __GUISTYLE_H

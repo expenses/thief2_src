@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadtext.c 1.4 1997/02/20 17:31:04 mahk Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/gadtext.c,v 1.4 1997/02/20 17:31:04 mahk Exp $
 
 #include <string.h>
 

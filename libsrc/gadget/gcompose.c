@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gcompose.c 1.9 1998/04/09 14:06:24 mahk Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/gcompose.c,v 1.9 1998/04/09 14:06:24 mahk Exp $
 
 #include <string.h>
 

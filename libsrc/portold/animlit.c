@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/animlit.c,v 1.2 1997/06/14 06:00:23 MAT Exp $
 ///////////////////////////////////////////////////////////////
 // animated lighting--now, with lightmaps!
