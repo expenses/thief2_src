@@ -1,9 +1,17 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		HandPars.H	The non-yacc-based "hand parser"
 //						"HandParse: The parser for the rest of us"
 //		Rex E. Bradford (REX)
 /*
-* $Header: r:/prj/lib/src/handpars/rcs/handpars.h 1.6 1994/03/11 15:52:50 rex Exp $
+* $Header: x:/prj/tech/libsrc/handpars/RCS/handpars.h 1.7 1970/01/01 00:00:00 REX Exp $
 * $Log: handpars.h $
+ * Revision 1.7  1970/01/01  00:00:00  REX
+ * Added ifdef cplusplus
+ * 
  * Revision 1.6  1994/03/11  15:52:50  rex
  * Oops
  * 
@@ -39,6 +47,10 @@
 #include <symtab.h>
 #include <handscan.h>
 #include <llist.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //	A parser structure is small enough to carry around, or put
 //	in static or stack storage.  Roughly 150 bytes.  A lot more
@@ -126,6 +138,10 @@ void ParseSprintfToken(char *buff, Token tok);
 #define PARSTD_EXIT		0x00002000L		// "EXIT"
 
 #define PARSTD_ALL		0x000FFFFFL		// high 12 bits reserved for C hdrs!
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif
 
