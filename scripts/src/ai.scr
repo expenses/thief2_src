@@ -100,7 +100,7 @@ MESSAGES:
          permanent=0.5;
 
       if(culprit!=object(0) &&
-         Object.InheritsFrom(culprit,"Hammerite"))
+         Object.InheritsFrom(culprit,"Mechanist"))
          permanent=1.0;
        
       if(Property.Possessed(self,"MAX_HP"))
