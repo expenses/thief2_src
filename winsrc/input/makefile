@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.10 $
-# $Author: TOML $
-# $Date: 1996/09/24 11:47:21 $
+# $Revision: 2.11 $
+# $Author: mahk $
+# $Date: 1996/10/14 19:23:35 $
 #
 
 MAKETOP = $(CWD)
@@ -34,9 +34,9 @@ test_LIBS = input
 #        kbsys kbdev kbcook defehand joywin
 
 input_OBJS = \
- 	joystick kbstart kbshut kbasctab mousesys \
+	     joystick kbstart kbshut kbasctab mousesys \
         kbsys kbdev kbcook kbwin defehand joywin hatcal fanjoy \
-        recinput
+        recinput inpinit inpguid
 
 input_LIBS = compapis recorder mprintf
 
@@ -47,7 +47,7 @@ input_LIBS = compapis recorder mprintf
 #	kbnext kbphnd kbqueue kbrhnd kbsflag kbshut kbssig kbsstat \
 #	kbstart kbstate leds mouse mousedev
 
-input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h
+input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h inpinit.h
 
 # fix this, want right h2i args
 
