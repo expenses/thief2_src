@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////////////////////////////
 //
 // $Header: x:/prj/tech/libsrc/namedres/rcs/resistr.h 1.1 1998/07/23 11:57:44 JUSTIN Exp $
