@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/oracle_.h,v 1.1 1996/10/21 21:41:11 buzzard Exp $
 
 // INTERFACE
