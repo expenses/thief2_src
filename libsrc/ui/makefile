@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/ui/RCS/makefile $
-# $Revision: 1.24 $
-# $Author: mahk $
-# $Date: 1994/02/07 16:15:27 $
+# $Revision: 1.25 $
+# $Author: jak $
+# $Date: 1994/03/02 18:40:49 $
 
 DEBUG_ON = 1
 SPEW_ON = 1
@@ -38,7 +38,7 @@ UI_HDRS = gadgets.h region.h cursors.h event.h slab.h pushbutt.h \
 
 UITEST_OBJS = uitest.obj
 UITEST_LIBS = _lg.lib _2d.lib _input.lib _res.lib _fix.lib \
-        _mprintf.lib _dstruct.lib ui.lib
+        _mprintf.lib _dstruct.lib ui.lib _fault.lib
 
 !include $(INIT)/make.rc
 
@@ -187,8 +187,8 @@ tngtextg.obj: 2d.h 2dres.h _ui.h datapath.h dbg.h dbgmacro.h error.h \
 	 tngslidr.h tngtextg.h types.h
 
 uitest.obj: 2d.h 2dres.h _dstruct.h array.h butarray.h ctype.h cursors.h \
-	 data\gamescr.h datapath.h dbg.h dbgmacro.h error.h event.h fix.h \
-	 gadgets.h hash.h hotkey.h io.h kb.h kbcook.h keydefs.h lg.h \
+	 data\gamescr.h datapath.h dbg.h dbgmacro.h error.h event.h fault.h \
+	 fix.h gadgets.h hash.h hotkey.h io.h kb.h kbcook.h keydefs.h lg.h \
 	 lgalt.h malloc.h memall.h memmacro.h menu.h mouse.h mprintf.h \
 	 plain.h pushbutt.h qboxgadg.h rect.h region.h res.h restypes.h \
 	 slab.h slider.h slist.h stat.h stdio.h stdlib.h string.h \
