@@ -2,6 +2,7 @@
 #include "invtype.h"
 
 #define GOAL_ESCAPE 0
+#define GOAL_SIGNAL 1
 
 #define WEAP_UI_QVAR "WeapUI"
 #define WEAP_ID_QVAR "WeapID"
@@ -892,7 +893,6 @@ MESSAGES:
    OnFrobInvEnd()
    {
       object signaltarget;
-      integer distancetotarget;
       if(Link.AnyExist("ScriptParams",self))
       {
          linkset allparamlinks = Link.GetAll("ScriptParams",self);
@@ -903,7 +903,10 @@ MESSAGES:
             object target = (object)currentparamlink.To();
             Debug.MPrint("Attempting to signal ",target);
             if (WithinRange(target,sigdistance))
+            {
+               Quest.Set(GoalStateVarName(GOAL_SIGNAL),kGoalComplete);
                AI.Signal(target,"WhistleBlown");
+            }
             else
                Debug.MPrint("Out of range");
             allparamlinks.NextLink();
