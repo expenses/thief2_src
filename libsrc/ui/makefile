@@ -54,16 +54,21 @@ blah .PHONY:
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
 array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 memasm.h stdio.h string.h types.h
+	 stdio.h string.h types.h
 
 gadgets.obj: 2d.h assert.h base.h conio.h dbg.h dos.h error.h fix.h \
 	 gadgets.h grindex.h i86.h lg.h lgalt.h libdbg.h malloc.h math.h \
-	 memall.h memasm.h projdbg.h rect.h region.h stdarg.h stdio.h \
+	 memall.h mouse.h projdbg.h rect.h region.h stdarg.h stdio.h \
 	 stdlib.h string.h types.h
+
+gadtest.obj: 2d.h assert.h base.h conio.h dbg.h dos.h error.h fix.h \
+	 gadgets.h grindex.h i86.h io.h lg.h lgalt.h libdbg.h malloc.h \
+	 math.h memall.h mprintf.h projdbg.h rect.h region.h stat.h \
+	 stdarg.h stdio.h stdlib.h string.h types.h
 
 rect.obj: assert.h base.h conio.h dos.h i86.h rect.h stdio.h stdlib.h \
 	 string.h types.h
 
-region.obj: assert.h base.h conio.h dbg.h dos.h error.h i86.h lg.h lgalt.h \
-	 libdbg.h malloc.h memall.h memasm.h projdbg.h rect.h region.h \
+region.obj: assert.h base.h conio.h dbg.h dos.h error.h gadgets.h i86.h \
+	 lg.h lgalt.h libdbg.h malloc.h memall.h projdbg.h rect.h region.h \
 	 stdio.h stdlib.h string.h types.h
