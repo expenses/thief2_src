@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.60 2000/02/14 17:51:31 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.61 2000/02/15 14:36:30 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -1082,9 +1082,10 @@ END_SCRIPT(ActiveFlashMine)
 BEGIN_SCRIPT(MossLump, Physics)
 MESSAGES:
 
-
    OnBeginScript()
    {
+     if (!IsDataSet("HaveMossed"))
+       SetData("HaveMossed",0);
      Physics.SubscribeMsg(self, kFellAsleepMsg);
      DefaultOnBeginScript();
    }
@@ -1101,23 +1102,28 @@ MESSAGES:
    // do for mines.
    OnPhysFellAsleep()
    {
-      object launcher=Object.Create("Mosslauncher");
-      Object.Teleport(launcher,vector(0,0,0),vector(0,0,0),self);
+      if ((integer)GetData("HaveMossed")==0)
+      {
+        SetData("HaveMossed",1);
+        object launcher=Object.Create("Mosslauncher");
+        Object.Teleport(launcher,vector(0,0,0),vector(0,0,0),self);
 
-      // Our own tweq emit property determines what the launcher will
-      // launch.  Difference is, we turn its tweq _on_.
-      Property.CopyFrom(launcher,"CfgTweqEmit",self);
-      Property.CopyFrom(launcher,"StTweqEmit",self);
-      ActReact.React("tweq_control",1.0,launcher,0,kTweqTypeEmitter,kTweqDoActivate); 
-      SetOneShotTimer(self,"KillMyPhys",0.1);
-      DefaultOnPhysFellAsleep();
+        // Our own tweq emit property determines what the launcher will
+        // launch.  Difference is, we turn its tweq _on_.
+        Property.CopyFrom(launcher,"CfgTweqEmit",self);
+        Property.CopyFrom(launcher,"StTweqEmit",self);
+        ActReact.React("tweq_control",1.0,launcher,0,kTweqTypeEmitter,kTweqDoActivate); 
+        Property.Set(self,"PhysType","Remove On Sleep",TRUE);
+	Physics.SetVelocity(self,vector(0,0,-2)); //try to resleep me;
+	DefaultOnPhysFellAsleep();
+      }
    }
   
    OnTimer()
    {
-      if (message.name == "KillMyPhys")
+      if (message.name == "ReSleepMe")
 	{
-	  Property.Remove(self,"PhysType");
+          Object.Teleport(self,vector(0,0,0.1),vector(0,0,0),self); //hack to sleep it again.
 	}
       DefaultOnTimer();
    }
