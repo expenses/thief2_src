@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.26 1999/12/16 20:01:34 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.27 1999/12/17 15:55:02 PATMAC Exp $
 //
 
 #include "frobscrt.h"
@@ -3457,7 +3457,7 @@ MESSAGES:
       DefaultOnEndScript();
    }
 
-   // when an object contacts us, set their velocity to ???
+   // when an object contacts us, set their velocity to that of conveyor belt
    OnPhysContactCreate()
    {
       vector convVel;
@@ -3468,14 +3468,25 @@ MESSAGES:
       if ( Object.Exists(WhatTouchedMe) ) {
          if ( Physics.HasPhysics(WhatTouchedMe) ) {
             convFacing = Object.Facing( self );
-            speed = 5.0;   // replace this with property
+            // hack - use the x component of the conveyor belt velocity as the
+            //    speed of the belt itself
+            if ( Property.Possessed( self, "ConveyorVel" ) ) {
+               convVel = Property.Get( self, "ConveyorVel" );
+               speed = convVel.x;
+            } else {
+               speed = 5.0;  // default conveyor belt speed
+            }
             // only pay attention to belt rotation around z axis (for now)
             convVel.x = speed * cos( convFacing.z / degreesPerRadian );
             convVel.y = speed * sin( convFacing.z / degreesPerRadian );
             convVel.z = 0.0;
-            //Debug.MPrint("move obj ", WhatTouchedMe, " ", convVel.x, ",", convVel.y, ",", convVel.z);
-            //Debug.MPrint("facing obj ", WhatTouchedMe, " ", convFacing.x, ",", convFacing.y, ",", convFacing.z);
-            Physics.ControlVelocity( WhatTouchedMe, convVel );
+            if ( WhatTouchedMe == Object.Named("Player") ) {
+               // object is an AI, or the player
+               Property.Set( WhatTouchedMe, "ConveyorVel", convVel);
+            } else {
+               // inanimate objects
+               Physics.ControlVelocity( WhatTouchedMe, convVel );
+            }
          }
       }
       DefaultOnPhysContactCreate();
@@ -3485,9 +3496,16 @@ MESSAGES:
    OnPhysContactDestroy()
    {
       object WhatTouchedMe = message.contactObj;
+
       if ( Object.Exists(WhatTouchedMe) ) {
          if ( Physics.HasPhysics(WhatTouchedMe) ) {
-            Physics.StopControlVelocity( WhatTouchedMe );
+            if ( WhatTouchedMe == Object.Named("Player") ) {
+               // object is an AI, or the player 
+               Property.Remove( WhatTouchedMe, "ConveyorVel" );
+            } else {
+               // inanimate objects
+               Physics.StopControlVelocity( WhatTouchedMe );
+            }
          }
       }
       DefaultOnPhysContactDestroy();
