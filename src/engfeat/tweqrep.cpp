@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/tweqrep.cpp,v 1.1 1998/08/16 22:53:29 dc Exp $
 // tweq system report functions
 
