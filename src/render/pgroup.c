@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/pgroup.c,v 1.38 1998/10/31 14:31:34 CCAROLLO Exp $
 
 #include <stdlib.h>
