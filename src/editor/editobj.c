@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/editobj.c,v 1.106 1998/10/12 00:59:01 dc Exp $
 // editor object code
 // specifically for render/creation
