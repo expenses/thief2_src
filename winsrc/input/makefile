@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.9 $
-# $Author: kaboom $
-# $Date: 1993/12/01 07:35:09 $
+# $Revision: 1.10 $
+# $Author: jak $
+# $Date: 1994/01/20 13:39:36 $
 #
 
 DEBUG_ON=1
@@ -20,6 +20,7 @@ INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = . $(RELDIR)
 LIB_TARGETS = input
 INST_TARGETS = input
+PROG_TARGETS = joytest
 
 INPUT_OBJS = \
         kbbflush.obj kbcstat.obj \
@@ -30,9 +31,14 @@ INPUT_OBJS = \
         kbnext.obj \
         kbsflag.obj kbssig.obj kbsstat.obj \
         kbstate.obj kbcook.obj kbasctab.obj \
-        joyflat.obj \
+        joyflat.obj joystick.obj ngpjoy.obj basjoy.obj \
         mouse.obj  mousedev.obj
 INPUT_HDRS = mouse.h kb.h kbcook.h joystick.h
+
+DBG_ON = 1
+
+JOYTEST_OBJS = joytest.obj
+JOYTEST_LIBS = _input.lib _lg.lib _mprintf.lib
 
 !include $(INIT)/make.rc
 
