@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/sdesc/RCS/sdesbase.h 1.13 1999/04/21 14:39:45 JAEMZ Exp $
 
 #ifndef SDESBASE_H
