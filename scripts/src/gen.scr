@@ -1,5 +1,5 @@
-/////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.41 2000/01/21 22:04:17 TJS Exp $
+////////////////////////////////////////////////////////////////////////////
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.42 2000/01/22 16:50:32 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -2510,49 +2510,52 @@ METHODS:
          return Link.GetOne("~Contains",self).To();
       return object(0);
    }
-   // Override if you want to apply further criterea to which objects
+   // Overload if you want to apply further criterea to which objects
    // should be bestowed.
-   METHOD boolean Cleared(object obj)
+   METHOD boolean Clear(object obj)
    {
       return TRUE;
    }
-MESSAGES:
-   OnBeginScript()
+   METHOD void CleanUp()
+   {
+      Object.Destroy(self);
+   }
+   METHOD void Unload()
    {
       object MyContainer=Beneficiary();
       linkset MyContents=Link.GetAll("Contains",self);
+      
+      if(MyContainer==object(0))
+         return;
 
-      if(MyContainer!=object(0) && Link.AnyExist("Contains",self))
+      if(Link.AnyExist("Contains",self))
       {
          linkset MyContents=Link.GetAll("Contains",self);
          
          while(MyContents.AnyLinksLeft())
          {
             object Goodies=MyContents.Link().To();
+            
+            Container.Remove(Goodies);
+            Container.Add(Goodies,MyContainer);
 
-            if(Cleared(Goodies))
-            {
-               Container.Remove(Goodies);
-               Container.Add(Goodies,MyContainer);
-            }
+            Debug.MPrint(self," adding ",Goodies," to ",MyContainer);
+
+            Clear(Goodies);
+
             MyContents.NextLink();
          }
-         // Probably safer to remove the undistributed contents of the container
-         // after the intial pass.  Lord knows how safe destrying objects is
-         // during that initial link iteration when Cleared() could be having
-         // arbitrary other side-effects.  -TJS
-         if(Link.AnyExist("Contains",self))
-         {
-            MyContents=Link.GetAll("Contains",self);
-            while(MyContents.AnyLinksLeft())
-            {
-               Object.Destroy(MyContents.Link().To());
-               MyContents.NextLink();
-            }
-         }
       }
-      Object.Destroy(self);
-      DefaultOnBeginScript();
+      CleanUp();
+   }
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         Unload();
+      }
+      DefaultOnSim();
    }
 
 END_SCRIPT (LoadoutBox)
@@ -2565,7 +2568,10 @@ BEGIN_SCRIPT(LoadoutCache, LoadoutBox)
 METHODS:
    METHOD object Beneficiary()
    {
-      object retval=Object.Named("Player");
+      object retval=Base::Beneficiary();
+
+      if(retval==object(0))
+         retval=Object.Named("Player");
       if(retval==object(0))
       {
          // No player?  What about a player factory?
