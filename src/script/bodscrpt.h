@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/bodscrpt.h,v 1.4 1998/04/07 13:58:06 CCAROLLO Exp $
 #pragma once  
 #ifndef __BODSCRPT_H

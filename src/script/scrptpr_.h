@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/scrptpr_.h,v 1.3 2000/02/22 20:01:46 toml Exp $
 #pragma once  
 #ifndef __SCRPTPR__H
