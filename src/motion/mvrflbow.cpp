@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/mvrflbow.cpp,v 1.8 1998/05/13 13:00:55 kate Exp $
 
 #include <mmanuver.h>
