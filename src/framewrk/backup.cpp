@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/backup.cpp,v 1.11 1998/09/28 13:25:03 CMONTER Exp $ 
 #include <backup.h>
 #include <io.h>
