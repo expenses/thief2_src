@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.11 $
+# $Revision: 1.12 $
 # $Author: KEVIN $
-# $Date: 1996/12/11 09:10:46 $
+# $Date: 1997/01/31 13:39:30 $
 #
 
 MAKETOP = $(CWD)
@@ -24,7 +24,7 @@ G2_OBJS = \
         init svgainit \
         setdrv g2d calcd \
         chkply chkedges chkedgeb \
-        clplin clip2d \
+        clplin clip clip2d \
         fl8cnv \
         fl8sf fl8usf fl8s \
         fl8fl8s fl8il \
@@ -46,7 +46,7 @@ G2_OBJS = \
         g2circ g2el g2ov g2ring \
         g2makewr \
         grwater \
-        lmap \
+        lmap permap \
         raster rastel scale \
         sply tmapd trifan \
         fl8o2ni fl8nni fl8o2wi fl8lo2wi \
