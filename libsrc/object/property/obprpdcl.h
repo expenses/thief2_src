@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/object/property/RCS/obprpdcl.h 1.1 1999/04/07 14:40:19 TOML Exp $
 //

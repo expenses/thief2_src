@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/hsrc/RCS/log2.h 1.1 1999/03/09 14:03:21 JAEMZ Exp $
 
 // Log2 and approximations.
