@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/skilltab.cpp,v 1.28 1998/02/23 14:07:51 kate Exp $
 //
 // XXX how to deal with alignment issues?  Guess I should pad structures
