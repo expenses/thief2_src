@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.5 1999/07/16 09:20:33 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.6 1999/07/16 14:47:31 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -3305,7 +3305,35 @@ MESSAGES:
 END_SCRIPT(CameraAlert)
 
 
+/* Turrets' alertness is controlled by external sensors, such as cameras
+   or other triggers.   When a turret gets a "TurnOn," it goes to high
+   alertness and stays there.  When it gets a "TurnOff," it goes to low
+   alertness and stays _there_.
+*/
+BEGIN_SCRIPT(TurretAlert, RootScript)
 
+METHODS:
+   METHOD void ClampAlert(integer alert)
+   {
+      Property.Set(self,"AI_AlertCap","Min level",alert);
+      Property.Set(self,"AI_AlertCap","Max level",alert);
+   }
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         ClampAlert(kHighAlert);
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         ClampAlert(kNoAlert);
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(TurretAlert)
 // Behaviors of the fire elemental's particle group to reflect
 // AI state and such.
 BEGIN_SCRIPT(FireElemSparx, StdParticleGroup)
