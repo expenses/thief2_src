@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/md/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: JAEMZ $
-# $Date: 1996/07/23 12:42:46 $
+# $Date: 1996/07/26 10:45:15 $
 #
 # Makefile for MD library
 #
@@ -17,7 +17,7 @@ PROJECT = tech
 
 LIBTARGS = md
 
-md_OBJS = render debug
+md_OBJS = render debug light
 
 md_HDRS= md.h mds.h mdd.h
 
