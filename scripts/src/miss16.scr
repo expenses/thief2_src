@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.17 2000/03/04 18:45:06 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.18 2000/03/05 14:35:26 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -80,6 +80,7 @@ OnSim()
 
 END_SCRIPT (SoundPreload)
 #endif NOT_IN_USE
+
 
 // Script: Karras
 
@@ -679,6 +680,127 @@ OnMessage()
 END_SCRIPT (OnOffFlame)
 
 
+// constants used by LoudspeakerRelay
+#define kSchemaNone     "None"
+#define kSchemaAttack   "Attack"
+#define kSchemaRamble   "Ramble"
+#define kSchemaIntro    "Intro"
+#define kSchemaOther    "Other"
+// Script: LoudspeakerRelay
+
+// Permits only 1 schema to play at a time on the loudspeakers.
+// Allows "attack" schemas to pre-empt other kinds of schemas.  No other
+// pre-emption is allowed.
+
+BEGIN_SCRIPT(LoudspeakerRelay, RootScript)
+
+METHODS:
+
+// returns a string based on seeing which object the passed-in object
+// is linked to (see constants, above):
+//  KarrasAttack object = kSchemaAttack string
+//  KarrasRamble object = kSchemaRamble string
+//  KarrasIntro object  = kSchemaIntro string
+//  none of the above   = kSchemaOther string
+string ClassifySchema(object schema)
+{
+	if (Link.AnyExist("ScriptParams",Object.Named("KarrasAttack"),schema))
+		return kSchemaAttack;
+	else if (Link.AnyExist("ScriptParams",Object.Named("KarrasRamble"),schema))
+		return kSchemaRamble;
+	else if (Link.AnyExist("ScriptParams",Object.Named("KarrasIntro"),schema))
+		return kSchemaIntro;
+	else
+		return kSchemaOther;
+}
+
+MESSAGES:
+
+OnSim()
+{
+	if (message.starting)
+	{
+		SetData("CurrentSchema",kSchemaNone);
+	}
+	DefaultOnSim();
+}
+
+OnMessage()
+{
+	if (MessageIs("PlaySchema"))
+	{
+		object schema=(object)message.data;
+
+		if (!Object.Exists(schema))
+		{
+			Debug.MPrint(" *** WARNING: Requested schema obj ",schema," does not exist!");
+			return;
+		}
+
+		Debug.MPrint(" Schema ",message.data," requested. Current schema = ",GetData("CurrentSchema"));
+
+		// check for collisions
+		if (GetData("CurrentSchema") != kSchemaNone)
+		{
+			Debug.MPrint(" A different schema is playing.  I'll preempt it if I can.");
+			if ( (ClassifySchema(schema) == kSchemaAttack) && (GetData("CurrentSchema") != kSchemaAttack) )
+			{
+				// halt the old schemas on all the speakers
+				Debug.MPrint(" Pre-empting current schema...");
+				{
+					linkset SpeakerList = Link.GetAll("ControlDevice", self);		
+					while (SpeakerList.AnyLinksLeft())
+					{
+						Sound.HaltSchema(SpeakerList.Link().To());
+						SpeakerList.NextLink();
+					}
+				}
+			}
+			else
+			{
+				// disallow preemption
+				Debug.MPrint(" New schema is of type ",(ClassifySchema(schema))," and current one is of type ",(GetData("CurrentSchema")),". Pre-emption not allowed." );
+				return;
+			}
+		}
+
+		//@NOTE: I have to do this horrible thing because the compiler can't convert from string variable to
+		// multiparm, it only takes string constants
+		string schema_type = ClassifySchema(schema);
+		if (schema_type == kSchemaAttack)
+			SetData("CurrentSchema",kSchemaAttack);
+		else if (schema_type == kSchemaRamble)
+			SetData("CurrentSchema",kSchemaRamble);
+		else if (schema_type == kSchemaIntro)
+			SetData("CurrentSchema",kSchemaIntro);
+		else if (schema_type == kSchemaOther)
+			SetData("CurrentSchema",kSchemaOther);
+
+		Debug.MPrint(" Schema is of type ",ClassifySchema(schema)," and CurrentSchema = ", GetData("CurrentSchema"));
+
+		// Play the schema over all objects connected by ControlDevice links 
+		linkset SpeakerList = Link.GetAll("ControlDevice", self);		
+		while (SpeakerList.AnyLinksLeft())
+		{
+			// play the schema on the loudspeaker obj, send the callback msg to me
+			Sound.PlaySchema(self, schema, SpeakerList.Link().To());
+			SpeakerList.NextLink();
+		}
+	}
+	DefaultOnMessage();
+}
+
+OnSchemaDone()
+{
+	Debug.MPrint(" Got SchemaDone from ",message.targetObject);
+	SetData("CurrentSchema",kSchemaNone);
+	DefaultOnSchemaDone();
+}
+
+END_SCRIPT(LoudspeakerRelay)
+
+
+
 // Script: BroadcastSchemaListNoRep
 
 // Randomly selects a schema from its ScriptParam links and plays it from each object connected
@@ -774,16 +896,10 @@ OnMessage()
 
          if (Link.AnyExist("ControlDevice", self))
          {
-	    // get the LoudspeakerRelay object
-            object LoudspeakerRelay = Link.GetOne("ControlDevice", self).To();
-
-	    // Play the schema over all objects connected by ControlDevice links to the LoudspeakerRelay
-            linkset SpeakerList = Link.GetAll("ControlDevice", LoudspeakerRelay);
-            while (SpeakerList.AnyLinksLeft())
-            {
-               Sound.PlaySchema(SpeakerList.Link().To(), PlayList.Link().To(), SpeakerList.Link().To());
-               SpeakerList.NextLink();
-            }
+				// get the LoudspeakerRelay object
+				object LoudspeakerRelay = Link.GetOne("ControlDevice", self).To();
+				// tell it to play the schema we've selected
+				PostMessage(LoudspeakerRelay,"PlaySchema",PlayList.Link().To());
          }
          else
             Debug.MPrint(" *** WARNING: ",self," not CD-linked to a LoudspeakerRelay");
