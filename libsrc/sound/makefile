@@ -7,7 +7,7 @@ PROJECT = tech
 %include $(MRC)\init.rc
 
 LIBTARGS = sound
-EXETARGS = sndtest miditest
+EXETARGS = sndtest miditest testsnd1
 
 #sound_OBJS = sndfmt sample mixer lgsndid fade midiplay dsnddynf waildynf timelog
 sound_OBJS = sndfmt sample mixer lgsndid fade midiplay dsnddynf waildynf
@@ -22,6 +22,16 @@ sndtest_OBJS = sndtest
 sndtest_LIBS = sound winmm
 sndtest_COMPILER_LIBS = uuid
 sndtest_RC = sndtest
+
+#GSG_LIBS    = $(GSG_COMMON_LIBS) cpptools comtools compapis appcore \
+#              templgen lg winshell windisp sound
+#LG_LIBS    = 3d adjud dstruct fault fix gfile input lg mprintf range res \
+#             rnd timer palette dev2d font g2
+
+testsnd1_OBJS = testsnd1
+testsnd1_LIBS = lg mprintf range res \
+                cpptools comtools compapis appcore templgen sound dsound wail32
+testsnd1_COMPILER_LIBS = uuid winmm
 
 %include $(MRC)\make.rc
 
