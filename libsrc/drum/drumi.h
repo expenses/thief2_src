@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/drum/RCS/drumi.h 1.1 1996/05/21 16:26:40 TOML Exp $
 // internal drum system prototypes and data for internal library routines
 
