@@ -69,46 +69,6 @@ END_SCRIPT (SummonableGuard)
 
 // Script: TattleTale
 
-// Upon alert level 3, run to the ControlDevice linked object.
-// since the desired behavior upon arrival is finicky, this script
-// now also signals the basement combatbots, therefore it is specific
-// to workerbots in the basement
-
-BEGIN_SCRIPT (TattleTale, AI)
-
-METHODS:
-object GetDest()
-{
-	return (object)Link.GetOne("ControlDevice",self).To();
-}
-
-MESSAGES:
-
-OnAlertness()
-{
-	if (message.level == kHighAlert)
-	{
-		GotoObjLoc(GetDest(),kFast,kHighPriorityAction);		
-	}
-
-	DefaultOnAlertness();
-}
-
-OnObjActResult()
-{
-	if (SuccessfulGoto(GetDest()))
-	{
-		AI.Signal(Object.Named("BaseGuardBot1"),"WakeUp");
-		AI.Signal(Object.Named("BaseGuardBot2"),"WakeUp");
-	}
-
-	DefaultOnObjActResult();
-}
-
-
-END_SCRIPT (TattleTale)
-
-
 // DoorTranslator
 
 // Meta trap that converts 
@@ -164,3 +124,119 @@ OnMessage()
 
 END_SCRIPT (TrapDoorLock)
 
+
+
+// Script:		CameraKiller
+
+// Runs through outgoing ControlDevice links (presumed to be
+// connected to cameras) and destroys at random.  It destroys an
+// amount of the cameras, based on quest vars that are read according
+// to diff:
+//  Normal	cam_kill_n
+//  Hard		cam_kill_h
+//  Expert	cam_kill_x
+
+// also cleans up after the camera by destroying ~CD-linked switches
+// and CD-linked turrets (it leaves any CD-linked lights or doors)
+
+BEGIN_SCRIPT (CameraKiller, RootScript)
+
+METHODS:
+
+// the primary method, called on sim start
+void KillCameras ()
+{
+	int rand_max,i,j,current_victim;
+
+	int num_victims = GetNumVictims();
+
+	for (i=0; i<num_victims; i++)
+	{
+		rand_max = CountLinks(Link.GetAll("ControlDevice",self));
+		current_victim = Data.RandInt(1,rand_max);
+
+		linkset Victims = Link.GetAll("ControlDevice",self);
+		for (j=0; j< (current_victim-1) ; j++)
+			Victims.NextLink();
+
+		CleanUp(Victims.Link().To());
+		Object.Destroy(Victims.Link().To());
+	}  // num_victims for loop
+}
+
+
+// destroys ~CD-linked switches
+// and CD-linked turrets.
+// call before destroying camera 
+void CleanUp (object camera)
+{
+	linkset CDs = Link.GetAll("ControlDevice",camera);
+	while(CDs.AnyLinksLeft())
+	{
+		if (Object.InheritsFrom (CDs.Link().To(),Object.Named("Turret")))
+		{
+			Object.Destroy(CDs.Link().To());
+		}
+		CDs.NextLink();
+	}
+
+	linkset tCDs = Link.GetAll("~ControlDevice",camera);
+	while(tCDs.AnyLinksLeft())
+	{
+		if (Object.InheritsFrom (tCDs.Link().To(),Object.Named("Switches")))
+		{
+			Object.Destroy(tCDs.Link().To());
+		}
+		tCDs.NextLink();
+	}
+}
+
+// returns a value based on mission quest vars,
+// reads the appropriate one per diff
+int GetNumVictims()
+{
+	int num;
+
+	int difficulty = Quest.Get("difficulty");
+
+	// EXPERT
+	if (difficulty == 2)
+	{
+		num = Quest.Get("cam_kill_x");
+	}
+	// HARD
+	else if (difficulty == 1)
+	{
+		num = Quest.Get("cam_kill_h");
+	}
+	// NORMAL
+	else // if (difficulty == 0)  - best to return something
+	{
+		num = Quest.Get("cam_kill_n");
+	}
+
+	Debug.MPrint(" Killing ",num," cameras.");
+	return num;
+}
+
+// returns # links in passed-in linkset
+int CountLinks(linkset tocount)
+{
+	int N=0;
+	while(tocount.AnyLinksLeft())
+	{
+		N++;
+		tocount.NextLink();
+	}
+	return N;
+}
+
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+		KillCameras();
+	DefaultOnSim();
+}
+
+END_SCRIPT (CameraKiller)
