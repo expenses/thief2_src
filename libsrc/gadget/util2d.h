@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/gadget/RCS/util2d.h 1.9 1998/08/04 14:09:51 JAEMZ Exp $
 
 #ifndef __UTIL2D_H
