@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.17 $
+# $Revision: 1.18 $
 # $Author: KEVIN $
-# $Date: 1997/03/12 12:29:29 $
+# $Date: 1997/05/01 15:40:25 $
 #
 
 MAKETOP = $(CWD)
@@ -49,11 +49,12 @@ G2_OBJS = \
         raster rastel scale \
         sply tmapd trifan \
         fl8o2ni fl8nni fl8o2wi fl8lo2wi \
-        trigrad trirast plyshell \
+        trigrad trirast \
         golftmap shadtmap drytmap lht816 lh816 dlh816 \
         cc816 scshell \
         shadhack \
-        o2w88i area
+        o2w88i area \
+        o88 o88il tf
 
 G2_HDRS= g2.h icanvas.inc
 
