@@ -211,7 +211,64 @@ MESSAGES:
    }
 END_SCRIPT(SpecialGoals)
 
+BEGIN_SCRIPT(AlarmRadius, RootScript)
 
+METHODS:
+
+    METHOD boolean CheckRadius()
+    {
+       integer validradius = 75;
+       vector mypos = Object.Position(self);
+       if ((object)Object.Named("Player")==(object)0)
+          return FALSE;
+       vector playpos = Object.Position(Object.Named("Player"));
+       vector deltapos = mypos-playpos;
+       return (deltapos.Magnitude()<validradius);
+    }
+
+MESSAGES:
+
+    OnBeginScript()
+    {
+       if (!IsDataSet("GotTurnOn"))
+          SetData("GotTurnOn",0);
+       if (!IsDataSet("AmTurnedOn"))
+          SetData("AmTurnedOn",0);
+       DefaultOnBeginScript();
+    }
+
+    OnMessage()
+    {
+       if (MessageIs("TurnOn"))
+       {
+          if (!((integer)GetData("GotTurnOn")==1))
+             SetOneShotTimer(self,"radcheck",0.5);
+          SetData("GotTurnOn",1);
+          SetData("AmTurnedOn",1);
+       }
+       if (MessageIs("TurnOff"))
+       {
+          SetData("AmTurnedOn",0);
+       }
+       DefaultOnMessage();
+    }
+
+    OnTimer()
+    {
+       if (message.name == "radcheck")
+       {
+          boolean inrad = CheckRadius();
+          boolean amon = ((integer)GetData("AmTurnedOn")==1);
+          if ((inrad) && (!amon))
+             SendMessage(self,"TurnOn");
+          if ((!inrad) && (amon))
+             SendMessage(self,"TurnOff");
+          SetOneShotTimer(self,"radcheck",1.0);
+       }
+       DefaultOnTimer();       
+    }
+
+END_SCRIPT(AlarmRadius)
 
 
 
