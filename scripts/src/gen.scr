@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.34 2000/01/17 19:01:22 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.35 2000/01/20 11:08:23 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -3077,6 +3077,20 @@ METHODS:
          MakeFrobbable(TRUE); // No AI, assume it's okay
    }
 
+   METHOD object GetCarriedObj(object myself)
+   {
+       object candidate = myself;
+       linkset contlinks = Link.GetAll("Contains",myself);
+       while (contlinks.AnyLinksLeft())
+       {
+           link curlink = contlinks.Link();
+           if ((integer)curlink.GetData() < 0)  //external carry
+               candidate = curlink.To();
+           contlinks.NextLink();
+       }
+       return candidate;       
+   }
+
 MESSAGES:
    OnBeginScript()
    {
@@ -3097,6 +3111,21 @@ MESSAGES:
       // Otherwise, stay how you were 
          
       DefaultOnAIModeChange(); 
+   }
+
+   OnFrobWorldEnd()
+   {
+       if (DarkGame.BindingGetFloat("auto_search") != 0.0)
+       {
+           Debug.MPrint("Performing Loot And Lug");
+           object carriedobj = GetCarriedObj(self);
+	   if (carriedobj != object(self))
+	   {
+	       Container.Add(carriedobj,message.Frobber);
+	       Reply(FALSE);
+           }       
+       }
+       DefaultOnFrobWorldBegin();
    }
 
    OnSlain()
