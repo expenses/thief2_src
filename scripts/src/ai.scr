@@ -604,7 +604,7 @@ void PutCameraAway()
 // return search duration in seconds (see DoSearch, above)
 float GetSearchDuration ()
 {
-	return 16.0;
+	return 17.0;
 }
 
 MESSAGES:
@@ -627,7 +627,7 @@ OnMessage()
 		// call back from pseudoscript at the termination of one "TurnAround" event
 		// if we are still "searching", then start another
 		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
-			SetOneShotTimer ("TurnNow",1.0);
+			AI.Signal(self,"TurnAround");
 	}
 	else if (MessageIs("test"))
 	{
@@ -658,11 +658,6 @@ OnTimer()
 			PutCameraAway ();*/
 	}
 
-	else if (message.name == "TurnNow")
-	{
-		// do another "TurnAround" iteration
-		AI.Signal(self,"TurnAround");
-	}
 	DefaultOnTimer();
 }
 OnAlertness()
