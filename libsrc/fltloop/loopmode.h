@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/fltloop/RCS/loopmode.h 1.4 1999/08/20 04:13:16 mwhite Exp $
 
 #pragma once
