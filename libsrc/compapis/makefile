@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/compapis/RCS/makefile $
-# $Revision: 1.6 $
+# $Revision: 1.7 $
 # $Author: TOML $
-# $Date: 1996/07/01 16:03:26 $
+# $Date: 1996/07/17 11:35:01 $
 #
 # Makefile for compapis ibrary
 #
@@ -17,10 +17,10 @@ PROJECT = tech
 
 LIBTARGS = compapis
 
-compapis_OBJS = genguid1 lguuid
+compapis_OBJS = genguid1
 
 compapis_HDRS = appagg.h appapi.h appguid.h dispapi.h dispguid.h gshelapi.h \
-                gshlguid.h indevapi.h indvguid.h wappapi.h wappguid.h lguuid.h \
+                gshlguid.h indevapi.h indvguid.h wappapi.h wappguid.h \
                 pumpenum.h loopguid.h loopapi.h looptype.h
 
 
