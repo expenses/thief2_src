@@ -1,39 +1,22 @@
 #
 # $Source: x:/prj/tech/libsrc/mprintf/RCS/makefile $
-# $Revision: 1.4 $
-# $Author: kaboom $
-# $Date: 1994/08/10 20:19:05 $
+# $Revision: 2.1 $
+# $Author: JON $
+# $Date: 1995/10/02 20:07:19 $
 #
 
-COMPILER = watcom
-SRCDIR = r:\prj\lib\src\mprintf
-RELDIR = r:\prj\lib\rel
-BUILD_DIR = r:\prj\lib\build\mprintf
-DEBUG_ON = 1
+MAKETOP = $(CWD)
 
-OBJDIR = objd
-BINDIR =
-LIBDIR = $(RELDIR)
-INCDIR = $(RELDIR)
-INCPATH = . $(SRCDIR) $(RELDIR)
-LIBPATH = . $(RELDIR)
-PROG_TARGETS = mtest
-LIB_TARGETS = mprintf
-HDR_TARGETS =
-INST_TARGETS = mprintf
+PROJECT = tech
 
-MPRINTF_OBJS = mprintf.obj
-MPRINTF_HDRS = mprintf.h
+%include $(MRC)\env.rc
 
-MTEST_OBJS = mtest.obj
-MTEST_LIBS = mprintf.lib lg.lib
+%include $(MRC)\init.rc
 
-%include $(INIT)\make.rc
+LIBTARGS = mprintf
 
-### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
+mprintf_OBJS = mprintf
+mprintf_HDRS = mprintf.h
 
-mprintf.obj: conio.h dos.h fcntl.h i86.h io.h mprintf.h stat.h stdarg.h \
-	 stdio.h string.h types.h
+%include $(MRC)\make.rc
 
-mtest.obj: ctype.h fcntl.h io.h mprintf.h stat.h stdarg.h stdio.h stdlib.h \
-	 string.h time.h types.h
