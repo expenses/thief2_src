@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 rem ******************************************************
 
 if .%_4ver%.==.. goto StartUnder4Dos
