@@ -109,7 +109,7 @@ MESSAGES:
          if(Property.Possessed(containee,"InvType"))
             invtype=Property.Get(containee,"InvType");
 
-         if(invtype==kInvTypeWeapon &&
+         if(invtype!=kInvTypeJunk &&
             !Object.HasMetaProperty(containee,"M1_TrainWeapon"))
          {
             Object.AddMetaProperty(containee,"M1_TrainWeapon");
@@ -144,15 +144,15 @@ METHODS:
 
       if(!done)
       {
-         if (DarkUI.IsCommandBound(Command))
+         if (Key!="" && DarkUI.IsCommandBound(Command))
          {
             /* Build string of the form (e.g.) "USE = Mouse2" */
             DisplayOutput = Data.GetString("PlayAct",Key) + " = " 
                           + DarkUI.DescribeKeyBinding(Command);
-            /* Tack string descriptive of action in question on front */
-            DisplayOutput = Data.GetString("PlayHint",Action)
-                          + DisplayOutput;
          }
+         /* Tack string descriptive of action in question on front */
+         DisplayOutput = Data.GetString("PlayHint",Action)
+                          + DisplayOutput;
          DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
       }
       else
@@ -247,33 +247,67 @@ END_SCRIPT(TakeLoot)
 
 #define WEAP_UI_QVAR "WeapUI"
 #define WEAP_ID_QVAR "WeapID"
+#define INV_UI_QVAR "InvUI"
+#define INV_ID_QVAR "InvID"
 #define kUnready 0
 #define kReady 1
 #define kCocked 2
 
 BEGIN_SCRIPT(TrainWeapon, RootScript)
+
+METHODS:
+   METHOD integer InvType()
+   {
+      integer type=kInvTypeJunk;
+
+      if(Property.Possessed(self,"InvType"))
+         type=Property.Get(self,"InvType");
+      return(type);
+   }
+   METHOD void SetUI(integer state)
+   {
+      integer type=InvType();
+
+      if(type==kInvTypeWeapon)
+         Quest.Set(WEAP_UI_QVAR,state);
+      else if(type==kInvTypeItem)
+         Quest.Set(INV_UI_QVAR,state);
+   }
+   METHOD void SetID(object obj)
+   {
+      integer type=InvType();
+
+      if(type==kInvTypeWeapon)
+         Quest.Set(WEAP_ID_QVAR,obj);
+      else if(type==kInvTypeItem)
+         Quest.Set(INV_ID_QVAR,obj);
+   }
 MESSAGES:
    OnFrobInvBegin()
    {
       if (message.Abort)
          // aborting attack
-         Quest.Set(WEAP_UI_QVAR,kReady);
-      else
+         SetUI(kReady);
+      else if(InvType()==kInvTypeWeapon)
          // beginning attack
-         Quest.Set(WEAP_UI_QVAR,kCocked);
+         SetUI(kCocked);
 
       DefaultOnFrobInvBegin();
    }
    OnFrobInvEnd()
    {
-      Quest.Set(WEAP_UI_QVAR,kReady);
+      SetUI(kReady);
       DefaultOnFrobInvEnd();
    }
-
+   OnFrobToolEnd()
+   {
+      SetUI(kReady);
+      DefaultOnFrobToolEnd();
+   }
    OnInvSelect()
    {
-      Quest.Set(WEAP_ID_QVAR,integer(self));
-      Quest.Set(WEAP_UI_QVAR,kReady);
+      SetID(self);
+      SetUI(kReady);
       DefaultOnInvSelect();
    }
 
@@ -282,15 +316,16 @@ MESSAGES:
    */
    OnInvDeSelect()
    {
-      Quest.Set(WEAP_UI_QVAR,kUnready);
-      Quest.Set(WEAP_ID_QVAR,OBJ_NULL);
+      SetUI(kUnready);
+      SetID(OBJ_NULL);
       DefaultOnInvDeSelect();
    }
 
    OnDestroy()
    {
-      Quest.Set(WEAP_UI_QVAR,kUnready);
-      Quest.Set(WEAP_ID_QVAR,OBJ_NULL);
+      SetUI(kUnready);
+      SetID(OBJ_NULL);
+      BaseOnDestroy();
    }
 
 END_SCRIPT(TrainWeapon)
@@ -324,6 +359,8 @@ METHODS:
       if(!Object.Exists(CurrentWeapon) ||
          !Object.InheritsFrom(CurrentWeapon,"water"))
       {
+         // @TODO: Really, only prompt player if he actually had got
+         // water arrows.
          KeyString("SelectWaterArrow","ReadyWater");
       }
       else
@@ -383,6 +420,94 @@ MESSAGES:
    }
 END_SCRIPT(ShootTorchHere);
 
+/* Script for locked doors in the first area.  Need to prompt player to use key. */
+BEGIN_SCRIPT(TrainLockedDoors,KeyPrompter)
+METHODS:
+   METHOD void Prompt()
+   {
+      {
+         Debug.MPrint("Might prompt.  On=",GetData("On"));
+         Debug.MPrint("Inventory ObjID=",Quest.Get(INV_ID_QVAR));
+         Debug.MPrint("Inventory UI state=",Quest.Get(INV_UI_QVAR));
+      }
+
+      object CurrentItem=object(Quest.Get(INV_ID_QVAR));
+
+      if(GetData("On")==FALSE)
+      {
+         ClearHint();
+         return;
+      }
+      if(Object.Exists(CurrentItem) &&
+         Key.TryToUseKey(CurrentItem,self,kKeyUseCheck))
+      {
+         integer invui=Quest.Get(WEAP_UI_QVAR);
+
+         // Well, we'd love to know whether the tool was zipped to the
+         // center of the screen or not.  Luckily it's all on the same
+         // USE key, so let's just write our way around it.
+         KeyString("UseKeyUnlock","Use");
+      }
+      else
+      {
+         // only prompt player to cycle inventory if he's actually got 
+         // the key in his inventory.  Of course, _all_ of this is brutally
+         // single-player specific.
+         linkset invlinks=Link.GetAll("Contains",object("Player"));
+
+         while(invlinks.AnyLinksLeft())
+         {
+            if(Key.TryToUseKey(invlinks.Link().To(),self,kKeyUseCheck))
+            {
+               KeyString("SelectKey","CycleInventory");
+               return;
+            }
+            invlinks.NextLink();
+         }
+         KeyString("GoFindKey","");
+      }
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Quest.SubscribeMsg(self,INV_UI_QVAR);
+      Quest.SubscribeMsg(self,INV_ID_QVAR);
+      if(!IsDataSet("On"))
+         SetData("On",FALSE);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      // Do we need to do this?
+      Quest.UnsubscribeMsg(self,INV_ID_QVAR);
+      Quest.UnsubscribeMsg(self,INV_UI_QVAR);
+   }
+   OnWorldSelect()
+   {
+      SetData("On",TRUE);
+      Prompt();
+      DefaultOnWorldSelect();
+   }
+   OnWorldDeSelect()
+   {
+      ClearHint();
+      SetData("On",FALSE);
+      DefaultOnWorldDeSelect();
+   }
+   OnQuestChange()
+   {
+      Prompt();
+      DefaultOnQuestChange();
+   }
+   OnNowUnlocked()
+   {
+      Score("SelectKey");
+      Score("UseKeyUnlock");
+      Score("UseKeyCenter");
+      DefaultOnNowUnlocked();
+   }
+END_SCRIPT(TrainLockedDoors)
 
 
 
