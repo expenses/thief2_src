@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.5 1999/12/16 18:26:15 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.6 2000/01/02 22:06:38 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -323,6 +323,17 @@ MESSAGES:
             diffsettings=Object.Named("M-GarrettDiffExpert");
          Object.AddMetaProperty(self,diffsettings);
 
+         if(DarkGame.ConfigIsDefined("HitPointBonus"))
+         {
+            integer hpbonus=0;
+            integer hp=Property.Get(self,"HitPoints");
+            integer maxhp=Property.Get(self,"MAX_HP");
+
+            DarkGame.ConfigGetInt("HitPointBonus",hpbonus);
+
+            Property.Set(self,"HitPoints",hpbonus+hp);
+            Property.Set(self,"MAX_HP",hpbonus+maxhp);
+         }
          Property.Add(self,"AirSupply");
       }
       DefaultOnEndScript();
