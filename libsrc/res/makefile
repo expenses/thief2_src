@@ -43,42 +43,28 @@ RESTEST_LIBS	= res.lib _lg.lib mprintf.lib
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-lzw.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h _network.h \
-	 _parse.h _res.h _sound.h _testlib.h _ui.h dbg.h dbgmacro.h io.h \
-	 lg.h lgalt.h libdbg.h lzw.h malloc.h memall.h memmacro.h stat.h \
+lzw.obj: dbg.h dbgmacro.h io.h lg.h lgalt.h lzw.h malloc.h memall.h \
+	 memmacro.h stat.h stdio.h stdlib.h string.h types.h
+
+res.obj: _res.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h lzw.h \
+	 malloc.h memall.h memmacro.h memstat.h res.h restypes.h stat.h \
 	 stdio.h stdlib.h string.h types.h
 
-res.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h _network.h \
-	 _parse.h _res.h _sound.h _testlib.h _ui.h datapath.h dbg.h \
-	 dbgmacro.h fcntl.h io.h lg.h lgalt.h libdbg.h lzw.h malloc.h \
-	 memall.h memmacro.h memstat.h res.h restypes.h stat.h stdio.h \
+resbuild.obj: _res.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h \
+	 lzw.h malloc.h memall.h memmacro.h res.h restypes.h stat.h stdio.h \
 	 stdlib.h string.h types.h
 
-resbuild.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h \
-	 _network.h _parse.h _res.h _sound.h _testlib.h _ui.h datapath.h \
-	 dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h libdbg.h lzw.h malloc.h \
+resdump.obj: datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h \
 	 memall.h memmacro.h res.h restypes.h stat.h stdio.h stdlib.h \
 	 string.h types.h
 
-resdump.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h \
-	 _network.h _parse.h _res.h _sound.h _testlib.h _ui.h datapath.h \
-	 dbg.h dbgmacro.h io.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 memmacro.h res.h restypes.h stat.h stdio.h stdlib.h string.h \
-	 types.h
+respack.obj: datapath.h dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h res.h restypes.h stat.h stdio.h stdlib.h \
+	 string.h types.h
 
-respack.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h \
-	 _network.h _parse.h _res.h _sound.h _testlib.h _ui.h datapath.h \
-	 dbg.h dbgmacro.h io.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 memmacro.h res.h restypes.h stat.h stdio.h stdlib.h string.h \
-	 types.h
+restest.obj: _res.h conio.h ctype.h datapath.h dbg.h dbgmacro.h fcntl.h \
+	 io.h lg.h lgalt.h lzw.h malloc.h memall.h memmacro.h mprintf.h \
+	 res.h restypes.h stat.h stdio.h stdlib.h string.h types.h
 
-restest.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h \
-	 _network.h _parse.h _res.h _sound.h _testlib.h _ui.h conio.h \
-	 ctype.h datapath.h dbg.h dbgmacro.h fcntl.h io.h lg.h lgalt.h \
-	 libdbg.h lzw.h malloc.h memall.h memmacro.h mprintf.h res.h \
-	 restypes.h stat.h stdio.h stdlib.h string.h types.h
-
-restypes.obj: _2d.h _3d.h _babl2.h _dstruct.h _edms.h _lg.h _mouse.h \
-	 _network.h _parse.h _res.h _sound.h _testlib.h _ui.h datapath.h \
-	 dbg.h dbgmacro.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+restypes.obj: datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h \
 	 memmacro.h res.h restypes.h stdio.h stdlib.h types.h
