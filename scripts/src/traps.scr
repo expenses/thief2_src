@@ -1011,15 +1011,15 @@ BEGIN_SCRIPT(QVarTrapTrigBase, RootScript)
 METHODS:
 
    // Overload me.
-   METHOD void ProcessOperation(char op, integer arg, string qvar,
-                                boolean reverse)
+   METHOD void ProcessOperation(char op, integer arg, integer sigfigs, 
+                                string qvar, boolean reverse)
    {
    }
 
    METHOD void ParseOperation(boolean ReverseSense) 
    {
       string command, qvar;
-      integer NameInd, ArgInd, arg=0, sign=1;
+      integer NameInd, ArgInd, arg=0, sign=1, sigfigs=0;
       
       if(Property.Possessed(self,"TrapQVar"))
          command=Property.Get(self,"TrapQVar");
@@ -1046,10 +1046,13 @@ METHODS:
          ArgInd=2; sign=-1;
       }            
       for(ArgInd=1;(command[ArgInd]>='0' && command[ArgInd]<='9');ArgInd++)
+      {
          arg=(arg*10)+(command[ArgInd]-'0');
+         sigfigs++;
+      }
       arg*=sign;
 
-      ProcessOperation(command[0],arg,qvar,ReverseSense);
+      ProcessOperation(command[0],arg,sigfigs,qvar,ReverseSense);
    }
 
 END_SCRIPT(QVarTrapTrigBase)
@@ -1067,11 +1070,14 @@ END_SCRIPT(QVarTrapTrigBase)
    comparison to apply to the quest var of the given name, compared
    to the integer value in the argument.
 
-   The comparator can be '>' '<' or '='.  For the time being, assume
+   The comparator can be '>' '<' '=' or '"'.  For the time being, assume
    we're going to implement a Shock-style trap flags property with
    a "reverse sense" flag, so we'll then be able to reverse the
    sense of the _trigger_ for <=, >=, and !=.
 
+   The comparator " requires some explanation.  It works just like =
+   except that only the digits actually supplied in the argument are
+   considered.  A value of 5199 satisfies "199 but not =199.
  */
 BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
 
@@ -1079,21 +1085,23 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
       to variable changes and send initial TurnOn/TurnOff consistent
       with quest variable value.
       */
-   METHOD void ProcessOperation(char op, integer arg, string qvar, 
-                                boolean reverse)
+   METHOD void ProcessOperation(char op, integer arg, integer sigfigs,
+                                string qvar, boolean reverse)
    {
       integer qvarval=Quest.Get(qvar);
+      integer mod=1;
       boolean satisfied=FALSE, wassatisfied;
+
+      for(;sigfigs>0;sigfigs--) mod*=10;
 
       switch(op)
       {
          case '=': satisfied=(qvarval==arg); break;
+         case '"': satisfied=((qvarval%mod)==arg); break;
          case '>': satisfied=(qvarval>arg); break;
          case '<': satisfied=(qvarval<arg); break;
       }
       if(reverse) satisfied=!satisfied;
-
-      Debug.MPrint("Comparator satisfied? ",satisfied);
 
       if(!IsDataSet("WasSatisfied"))
       {
@@ -1104,7 +1112,6 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
 
       if(satisfied!=wassatisfied)
       {
-         Debug.MPrint("sending message");
          if(satisfied)
             Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
          else
@@ -1127,6 +1134,8 @@ MESSAGES:
    }
 
 END_SCRIPT(TrigQVar)
+
+
 /* 
    The Quest Var trap performs some operation on a quest variable
    as specified by an "operator" string property.
@@ -1141,32 +1150,40 @@ END_SCRIPT(TrigQVar)
    
    Op    Effect of TurnOn     Effect of TurnOff
    
-   =     x=a                  none
-   !     x|=a                 x&=(~a)
-   +     x+=a                 x-=a
-   -     x-=a                 x+=a
-   *     x*=a                 x/=a (integer!)
-   /     x/=a (integer!)      x*=a
-   %     x=x mod a            x*=a
-   {     x=x<<a (shift left)  x=x>>a (shift right)
-   }     x=x>>a (shift right) x=x<<a (shift left)
-
-   Obvious possibilities to be implemented are x+=a, x-=a, etc.
+   =     x=a                     none
+   !     x|=a                    x&=(~a)
+   +     x+=a                    x-=a
+   -     x-=a                    x+=a
+   *     x*=a                    x/=a (integer!)
+   /     x/=a (integer!)         x*=a
+   %     x=x mod a               x*=a
+   {     x=x<<a (shift left)     x=x>>a (shift right)
+   }     x=x>>a (shift right)    x=x<<a (shift left)
+   "     x=(x*10)+(a%10)         x=x/10
       
 */
 BEGIN_SCRIPT(TrapSetQVar, QVarTrapTrigBase)
 
 METHODS:
 
-   METHOD void ProcessOperation(char op, integer arg, string qvar, 
-                                boolean reverse)
+   METHOD void ProcessOperation(char op, integer arg, integer sigfigs,
+                                string qvar, boolean reverse)
    {
       integer qvarval=Quest.Get(qvar);
+
+      Debug.MPrint("questvar ",qvar," was ",qvarval);
 
       switch(op)
       {
          case '=':
             if(!reverse) qvarval=arg;
+            break;
+         case '"':
+            if(reverse) 
+               qvarval/=10;
+            else
+               qvarval=(qvarval*10)+(arg%10); // stuff tens digit
+            qvarval=qvarval%100000000; // only keep 8 digits
             break;
          case '!':
             if(!reverse)
@@ -1206,14 +1223,14 @@ METHODS:
                qvarval=qvarval>>arg;
             break;
       }      
-
       Quest.Set(qvar,qvarval);
+      Debug.MPrint("New value = ",qvarval);
    }
 
 MESSAGES:
    OnMessage()
    {
-      if(MessageIs("TurnOn"))
+      if(MessageIs("TurnOn") || MessageIs("Parse"))
          ParseOperation(FALSE);
       else if(MessageIs("TurnOff"))
          ParseOperation(TRUE);
@@ -1222,6 +1239,51 @@ MESSAGES:
 
 END_SCRIPT(TrapSetQVar)
 
+
+/* Not really a trap, but has enough code in common with quest var traps
+   and triggers to go in this module.
+
+   Ignores Op.  Looks at the nth digit of the quest variable, where
+   n=arg.  Sets this object's model name properties o a display an
+   appropriate digit (how? tweq joints?).
+   */
+BEGIN_SCRIPT(QVarDigit, QVarTrapTrigBase)
+
+   /* Process should be called once on begin script to subscribe
+      to variable changes.
+      */
+   METHOD void ProcessOperation(char op, integer arg, integer sigfigs,
+                                string qvar, boolean reverse)
+   {
+      integer qvarval=Quest.Get(qvar);
+      integer mod=1;
+
+      for(;arg>0;arg--) mod*=10;
+
+      if(!IsDataSet("Init"))
+      {
+         Quest.SubscribeMsg(self,qvar);
+         SetData("Init",TRUE);
+      }
+      qvarval=(qvarval/mod)%10;
+      // @TODO: display qvarval.  Perhaps by rotating object's tweq joint
+      // to 36*qvarval degrees?
+   }
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      ParseOperation(FALSE);
+      DefaultOnBeginScript();
+   }
+   OnQuestChange()
+   {
+      ParseOperation(FALSE);
+      DefaultOnQuestChange();
+   }
+
+END_SCRIPT(QVarDigit)
 
 
 
