@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.15 $
+# $Revision: 1.16 $
 # $Author: JAEMZ $
-# $Date: 1996/06/06 19:00:26 $
+# $Date: 1996/06/06 19:05:55 $
 #
 # Makefile for r3d library
 #
@@ -17,10 +17,11 @@ PROJECT = tech
 
 LIBTARGS = r3d 
 
-EXETARGS = r3dtest1
-
-r3dtest1_LIBS = r3d 2d lg matrix mprintf
-r3dtest1_OBJS = testcore test1
+# These only work under dos, so it breaks under windows, they should
+# be in a test directory instead
+# EXETARGS = r3dtest1
+# r3dtest1_LIBS = r3d 2d lg matrix mprintf
+# r3dtest1_OBJS = testcore test1
 
 r3d_OBJS = \
   block    \
