@@ -41,7 +41,10 @@ METHODS:
       if(type==kInvTypeWeapon)
          Quest.Set(WEAP_UI_QVAR,state);
       else
+      {
          Quest.Set(INV_UI_QVAR,state);
+         Debug.MPrint("Setting state of ",self," to ",state);
+      }
    }
    METHOD void SetID(object obj)
    {
@@ -71,6 +74,11 @@ MESSAGES:
    {
       SetUI(kReady);
       DefaultOnFrobInvEnd();
+   }
+   OnFrobToolBegin()
+   {
+      SetUI(kCocked);
+      DefaultOnFrobToolBegin();
    }
    OnFrobToolEnd()
    {
@@ -245,13 +253,21 @@ MESSAGES:
          {
             if(Object.InheritsFrom(self,"Door"))
             {
+               Debug.MPrint("Was a door, marking lesson done");
                Quest.Set("tr_LockpickDoor",TRUE,kQuestDataCampaign);
                Quest.Set("tr_SelectPickDoor",TRUE,kQuestDataCampaign);
             }
             else if(Object.InheritsFrom(self,"Container"))
             {
+               Debug.MPrint("Was a container, marking lesson done");
                Quest.Set("tr_LockpickChest",TRUE,kQuestDataCampaign);
                Quest.Set("tr_SelectPickChest",TRUE,kQuestDataCampaign);
+            }
+            else if(Object.InheritsFrom(self,"Lockbox"))
+            {
+               Debug.MPrint("Was a lockbox, marking lesson done");
+               Quest.Set("tr_LockpickBox",TRUE,kQuestDataCampaign);
+               Quest.Set("tr_SelectPickBox",TRUE,kQuestDataCampaign);
             }
          }
       }
@@ -269,8 +285,10 @@ MESSAGES:
          if(Object.InheritsFrom(frobr,"Avatar")) // frobbed by player
          {
             if(state==kDoorOpen || state==kDoorOpening)
+            {
                // Closed the door.  Score it.
                Quest.Set("tr_UseDoorClose",TRUE,kQuestDataCampaign);
+            }
             else
                Quest.Set("tr_UseDoorOpen",TRUE,kQuestDataCampaign);
          }
@@ -582,6 +600,37 @@ BEGIN_SCRIPT(Training, RootScript)
           return FALSE;
        }
     }
+
+    METHOD boolean HasLockBox(object door)
+    {
+       boolean hasbox = FALSE;
+       if (Link.AnyExist("Lock",door))
+       {
+          linkset locklinks = Link.GetAll("Lock",door);
+          while (locklinks.AnyLinksLeft())
+          {
+             link curlock = locklinks.Link();
+             object posbox = curlock.To();
+             //it's a lockbox, and it's locked
+             if ((Object.InheritsFrom(posbox,"LockBox")) &&
+                 (Property.Possessed(posbox,"Locked")) &&
+                 ((integer)Property.Get(posbox,"Locked")==1))
+                hasbox = TRUE;
+             locklinks.NextLink();
+          }
+       }
+       return hasbox;
+    }
+
+    METHOD boolean HasController(object door)
+    {
+       if (Link.AnyExist("~ControlDevice",door))
+       {
+          return TRUE;
+       }
+       return FALSE;
+    }
+
     /* How the heck do we do the map lesson?
        What about the light gem lesson?  Do we just score it complete N
        seconds after putting it up?
@@ -621,8 +670,44 @@ BEGIN_SCRIPT(Training, RootScript)
              // Oh, Jesus, now we have to check if there even _is_ a key.
              if(IsKeyFrom("Key",world))
                 return DoLesson("GoFindKey","");
+             else if (HasLockBox(world))
+                return DoLesson("LockBoxLock","");
+             else if (HasController(world))
+                return DoLesson("LockControl","");
              else
-                return DoLesson("NoKeyDoor","");
+                return FALSE;
+          }
+       }
+    }
+
+    METHOD boolean TrainLockedLockbox (object world, object inv, object weap)
+    {
+       boolean keyfit=Key.TryToUseKey(inv,world,kKeyUseCheck);
+
+       if(keyfit)
+       {
+          // @TODO: Check whether key is in frob position
+          return DoLesson("UseKeyUnlock","Use");
+       }
+       else
+       {
+          linkset invlinks=Link.GetAll("Contains",self);
+          while(!keyfit && invlinks.AnyLinksLeft())
+          {
+             keyfit=Key.TryToUseKey(invlinks.Link().To(),world,kKeyUseCheck);
+             invlinks.NextLink();
+          }
+          if(keyfit) // some key in inventory fits
+          {
+             return DoLesson("SelectKey","CycleInventory","Countercycle");
+          }
+          else
+          {
+             // Oh, Jesus, now we have to check if there even _is_ a key.
+             if(IsKeyFrom("Key",world))
+                return DoLesson("GoFindKeyBox","");
+             else
+                return FALSE;
           }
        }
     }
@@ -640,7 +725,9 @@ BEGIN_SCRIPT(Training, RootScript)
          
          Debug.MPrint(world," is a door, state ",state);
          
-         if(Locked.IsLocked(world) && TrainLockedDoor(world, inv, weap))
+         if(Locked.IsLocked(world) && 
+            (state == kDoorClosed) &&
+            TrainLockedDoor(world, inv, weap))
             return TRUE;
          if(IsTool(inv))
          {
@@ -664,6 +751,7 @@ BEGIN_SCRIPT(Training, RootScript)
       }
       return FALSE;
    }
+
    METHOD boolean TrainContainer(object world, object inv, object weap)
    {
       if(Object.InheritsFrom(world,"Container") &&
@@ -675,6 +763,38 @@ BEGIN_SCRIPT(Training, RootScript)
             return DoLesson("SelectPickChest","CycleInventory","Countercycle");
       }
       return FALSE;
+   }
+
+   METHOD boolean TrainLockbox(object world, object inv, object weap)
+   {
+      if(Object.InheritsFrom(world,"Lockbox") &&
+         Locked.IsLocked(world))
+      {
+         if (Property.Possessed(world,"PickCfg"))
+         {
+            if(Object.InheritsFrom(inv,"Lockpick"))
+               return DoLesson("LockpickBox","Use");
+            else
+               return DoLesson("SelectPickBox","CycleInventory","Countercycle");
+         }
+         else
+         {
+            return TrainLockedLockbox(world,inv,weap);
+         }
+      }
+      return FALSE;
+   }
+
+   METHOD boolean TrainLever(object world, object inv, object weap)
+   {
+      if (!((integer)Property.Get(world,"FrobInfo","World Action") & kFrobScript))
+         return FALSE;
+      if (Object.InheritsFrom(world,"Buttons"))
+         return DoLesson("UseButton","Use");
+      else if (Object.InheritsFrom(world,"Levers"))
+         return DoLesson("UseLever","Use");
+      else
+         return FALSE;
    }
 
    METHOD boolean TrainMantle(object world, object inv, object weap)
@@ -713,6 +833,8 @@ BEGIN_SCRIPT(Training, RootScript)
          TrainMantle(world,inv,weap) ||
          TrainDoor(world,inv,weap) ||
          TrainContainer(world,inv,weap) ||
+         TrainLockbox(world,inv,weap) ||
+         TrainLever(world,inv,weap) ||
          TrainUseFlash(world,inv,weap) ||
          TrainUseFlare(world,inv,weap))
       {
