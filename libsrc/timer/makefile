@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/timer/RCS/makefile $
-# $Revision: 2.3 $
+# $Revision: 2.4 $
 # $Author: TOML $
-# $Date: 1996/04/08 16:55:22 $
+# $Date: 1996/10/16 16:08:03 $
 #
 
 MAKETOP = $(CWD)
@@ -17,11 +17,21 @@ LIBTARGS = timer
 
 irrupt_OBJS = tmrt
 
-timer_OBJS = tmact tmadd tmclose tmd \
-             tmdeact tmfast tminit tmphnd \
-             tmrate tmrem tmsden tmrt \
-             tmsfreq tmsper tmftab tmlibt tmail \
+tmact.asm       tmd.asm         tminit.asm      tmrem.asm       tmsfreq.asm
+tmadd.asm       tmdeact.asm     tmphnd.asm      tmsden.asm      tmsper.asm
+tmclose.asm     tmfast.asm      tmrate.asm
+
+timer_OBJS = \
+             \
+             tmrt \
+             tmftab tmlibt tmail \
              tmwin32
+
+#
+# Removed, will need to reintegrate for DOS (toml 10-14-96)
+#
+# tmact tmd tmadd tmclose tmdeact tmfast tminit tmphnd
+# tmrate tmrem tmsden tmsfreq tmsper
 
 timer_HDRS = timer.h tminit.h
 
