@@ -155,10 +155,10 @@ rem **************************************************************
 rem the bnd files!  
 rem **************************************************************
 
-copy r:\prj\thief2\reltools\bnd\%_lcode_%\dark.bnd %_DAILYTHIEF_%
+copy r:\prj\thief2\reltools\bnd\%_lcode_%\dark.bnd %_DAILYTHIEFCD2_%
 
-mkdirs %_DAILYTHIEF_%\saves
-copy r:\prj\thief2\reltools\bnd\%_lcode_%\saves\cfg????.bnd %_DAILYTHIEF_%\saves
+mkdirs %_DAILYTHIEFCD2_%\saves
+copy r:\prj\thief2\reltools\bnd\%_lcode_%\saves\cfg????.bnd %_DAILYTHIEFCD2_%\saves
 
 rem **************************************************************
 rem 3dfx drivers  
