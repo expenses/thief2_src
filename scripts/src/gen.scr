@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.57 2000/02/11 11:17:12 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.58 2000/02/11 17:43:28 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -962,7 +962,7 @@ BEGIN_SCRIPT(ActiveMine,Physics)
       linkset triggers=Link.GetAll("~ControlDevice",self);
       for(;triggers.AnyLinksLeft();triggers.NextLink())
       {
-	 Debug.MPrint("Slaying mine ",self,", deleting bounds ",triggers.Link().To());
+         Debug.MPrint("Slaying mine ",self,", deleting bounds ",triggers.Link().To());
          Object.Destroy(triggers.Link().To());
       }
    }
@@ -1018,14 +1018,20 @@ MESSAGES:
    }
    OnPhysFellAsleep()
 	{
-	  //now we subscribe to collision and unsubscribe to sleep so that
-	  //this doesn't trigger again.
-	  Physics.SubscribeMsg(self, kCollisionMsg);   
-	  Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-	  vector z = vector(0,0,0);
-	  object bounds=Object.Create("MineBounds");
-          Object.Teleport(bounds,z,z,self);
-          Link.Create("ControlDevice",bounds,self);      
+      Physics.SubscribeMsg(self, kCollisionMsg);   
+      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+      if(!Link.AnyExist("~ControlDevice",self))
+      {
+         //now we subscribe to collision and unsubscribe to sleep so that
+         //this doesn't trigger again.
+         vector z = vector(0,0,0);
+         vector pos = Object.Position(self);
+         object bounds=Object.Create("MineBounds");
+
+         Object.Teleport(bounds,pos,z);
+         Link.Create("ControlDevice",bounds,self);   
+      }
+      DefaultOnPhysFellAsleep();
 	}
    OnPhysCollision()
    {
@@ -1033,36 +1039,36 @@ MESSAGES:
       object WhatHitMe = message.collObj;
       bool   fakeout = FALSE;
       if (Object.Exists(WhatHitMe))
-	{
-	  vector selfvel(0,0,0);
-	  vector hitmevel(0,0,0);
-	  if (Physics.HasPhysics(self))
+      {
+         vector selfvel(0,0,0);
+         vector hitmevel(0,0,0);
+         if (Physics.HasPhysics(self))
             Physics.GetVelocity(self,selfvel);
-	  if (Physics.HasPhysics(WhatHitMe))
-	    Physics.GetVelocity(WhatHitMe,hitmevel);
-	  //make sure that I don't trigger myself, and make sure that
-	  //at least one of us is actually moving and this isn't some 
-	  //wierd spoof collision...
-	  if ((Link.AnyExist("ControlDevice",self,WhatHitMe)) ||
-	      ( (selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0))))
-	    fakeout = TRUE;
-	} 
+         if (Physics.HasPhysics(WhatHitMe))
+            Physics.GetVelocity(WhatHitMe,hitmevel);
+         //make sure that I don't trigger myself, and make sure that
+         //at least one of us is actually moving and this isn't some 
+         //wierd spoof collision...
+         if ((Link.AnyExist("ControlDevice",self,WhatHitMe)) ||
+             ( (selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0))))
+            fakeout = TRUE;
+      } 
       if (!fakeout)
-        Reply(kPM_Slay);
+         Reply(kPM_Slay);
       DefaultOnPhysCollision();
    }
    OnPickStateChange()
    {
       if (message.currentstate == 7)
-	{
-	   PostMessage(self,"TurnOn");
-	   Debug.MPrint("You've set off the mine! ",self," is going to blow.");
-	}
+      {
+         PostMessage(self,"TurnOn");
+         Debug.MPrint("You've set off the mine! ",self," is going to blow.");
+      }
       if (message.currentstate == 8)
-	{
-	   Debug.MPrint("Mine disarmed.\n");
-	   Disarm();
-	}
+      {
+         Debug.MPrint("Mine disarmed.\n");
+         Disarm();
+      }
       DefaultOnPickStateChange();
    }
    OnMessage()
@@ -1103,7 +1109,6 @@ MESSAGES:
       DefaultOnSlain();
    }
 END_SCRIPT(ActiveFlashMine)
-
 
 
 // Script: MossLump
