@@ -1,6 +1,8 @@
 #include "invtype.h"
 #include "drkgoalt.h"
 
+#include "tally.scr"
+
 const int FOLLOW_NOTE_GOAL=0;
 const int READ_NOTE_GOAL=1;
 
@@ -20,6 +22,7 @@ MESSAGES:
       if(object(message.Frobber)==object("Player")) // as if it could be otherwise...
       {
          Quest.Set(GoalStateVarName(READ_NOTE_GOAL),kGoalComplete);
+         SetOneShotTimer(self,"ReadNoteVO",0.1);
       }
       DefaultOnFrobInvEnd();
    }
@@ -56,6 +59,11 @@ MESSAGES:
       }
       DefaultOnContained();
    }
+   OnWorldSelect()
+   {
+      Sound.PlayVoiceOver(self,"gar0802");
+      DefaultOnWorldSelect();
+   }
    OnTimer()
    {
       if(message.name=="DistCheck")
@@ -75,6 +83,10 @@ MESSAGES:
 
          SetOneShotTimer(self,"DistCheck",CHECK_FREQ);
       }
+      else if(message.name=="ReadNoteVO")
+      {
+         Sound.PlayVoiceOver(self,"gar0804");
+      }
       DefaultOnTimer();
    }
 END_SCRIPT(GoalScroll)
@@ -86,18 +98,6 @@ END_SCRIPT(GoalScroll)
    */
 BEGIN_SCRIPT(Courier, AI)
 METHODS:
-   METHOD void StartStakeoutTimers()
-   {
-      linkset SPlinkx=Link.GetAll("ScriptParams",self);
-
-      while(SPlinkx.AnyLinksLeft())
-      {
-         link thislink=SPlinkx.Link();
-         integer timing=thislink.GetData();
-         SetOneShotTimer(thislink.To(),"TurnOn",float(timing)/1000.0);
-         SPlinkx.NextLink();
-      }
-   }
    METHOD object TheNote()
    {
       if(Link.AnyExist("Contains",self))
@@ -164,7 +164,30 @@ METHODS:
 
          Reply(r <= stop_chance);
       }
-      else if(MessageIs("Stakeout"))
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(Courier)
+
+
+BEGIN_SCRIPT(Moseley, RootScript)
+METHODS:
+   METHOD void StartStakeoutTimers()
+   {
+      linkset SPlinkx=Link.GetAll("ScriptParams",self);
+
+      while(SPlinkx.AnyLinksLeft())
+      {
+         link thislink=SPlinkx.Link();
+         integer timing=thislink.GetData();
+         SetOneShotTimer(thislink.To(),"TurnOn",float(timing)/1000.0);
+         SPlinkx.NextLink();
+      }
+   }
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("Stakeout"))
       {
          StartStakeoutTimers();
          Reply(TRUE);
@@ -172,9 +195,7 @@ METHODS:
       DefaultOnMessage();
    }
 
-END_SCRIPT(Courier)
-
-
+END_SCRIPT(Moseley)
 
 // Script specially for the pagan agent.
 BEGIN_SCRIPT(ThePagan, Room)
@@ -316,51 +337,3 @@ BEGIN_SCRIPT(MawPortal, Physics)
    }
 
 END_SCRIPT(MawPortal)
-
-// Put on the player to tally up his inventory items (by combine type, as campaign
-// quest variables) so we can grant them back again at the beginning of "Trail of Blood"
-BEGIN_SCRIPT(PlayerTally, RootScript)
-METHODS:
-   METHOD void TallyCombine(object obj)
-   {
-      string combine="";
-      integer count=0;
-
-      if(Property.Possessed(obj,"CombineType"))
-         combine=Property.Get(obj,"CombineType");
-      else
-         return;
-
-      Debug.MPrint("Tallying combine type ",combine);
-
-      if(Property.Possessed(obj,"StackCount"))
-         count=Property.Get(obj,"StackCount");
-      else
-         // receiving script takes care of not actually giving a stack count to a
-         // that shouldn't have one.
-         count=1;
-
-      if(count!=0)
-         Quest.Set(string("CarryInv")+combine,count,kQuestDataCampaign);
-   }
-MESSAGES:
-   OnSim()
-   {
-      Debug.MPrint("On sim.");
-      if(!message.starting)
-      {
-         linkset contains=Link.GetAll("Contains",self);
-
-         while(contains.AnyLinksLeft())
-         {
-            object obj=contains.Link().To();
-            // what the heck.  tally up every damn thing we're carrying
-            TallyCombine(obj);
-            contains.NextLink();
-         }
-      }
-      DefaultOnSim();
-   }
-
-END_SCRIPT(PlayerTally)
-
