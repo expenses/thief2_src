@@ -617,6 +617,26 @@ BEGIN_SCRIPT(StdController,Physics)
 
   METHODS:
 
+     METHOD void Broadcast(boolean on)
+     {
+         integer trapflags=0;
+         
+         if(Property.Possessed(self,"TrapFlags"))
+            trapflags=Property.Get(self,"TrapFlags");
+
+         if((on && !(trapflags & TRAPF_NOON)) ||
+            (!on && !(trapflags & TRAPF_NOOFF)))
+         {
+            if(trapflags & TRAPF_INVERT)
+               on=!on;
+            Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice",NULL);
+            if(on) DarkGame.FoundObject(self);
+         }
+         if(trapflags & TRAPF_ONCE)
+            Property.Set(self,"Locked",TRUE);
+     }
+
+
      /* TODO: In the future (when we all drive electric cars)
         there should be a better way of detecting this. */
      METHOD boolean TweqAnimStateHasVal(object obj, int InputMask)
@@ -831,11 +851,10 @@ METHODS:
       // script and override the method.
       if (dir==kTweqDirReverse) 
          // the lever is going from down to up, send TurnOff
-         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         Broadcast(FALSE);
       else if (dir==kTweqDirForward) {
          // the lever is going from up to down, send TurnOn
-         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-         DarkGame.FoundObject(self);
+         Broadcast(TRUE);
       }   
    }
 
@@ -889,7 +908,7 @@ METHODS:
       // @TODO: Get rid of magic numbers.
       if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
       {
-         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         Broadcast(FALSE);
       }
    }  // end of method PreTweqActivate
 
@@ -902,8 +921,7 @@ METHODS:
       // established.
       if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
       {
-         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-         DarkGame.FoundObject(self);
+         Broadcast(TRUE);
       }
    } // end of method PostTweqActivate
 
@@ -1013,7 +1031,7 @@ METHODS:
    METHOD void ButtonPush()
    {
       Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
-      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      Broadcast(TRUE);
       // bounce the button
       ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
       DarkGame.FoundObject(self);
