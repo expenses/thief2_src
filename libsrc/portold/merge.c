@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/merge.c,v 1.14 1998/01/29 16:40:16 buzzard Exp $
 
 // Portal database optimizer

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/oracle.c,v 1.1 1996/10/21 21:43:00 buzzard Exp $
 
 // Oracle: can answer any question in O(1) time.
