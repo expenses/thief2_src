@@ -56,8 +56,8 @@ MESSAGES:
                route=Data.RandInt(1,3);
             Quest.Set(qvar,route);
             Quest.Set("CavRouteInit",TRUE);
-            SetOneShotTimer(self,"Go",0.0);
          }
+	 SetOneShotTimer(self,"Go",0.0);
       }
       DefaultOnSim();
    }
