@@ -1366,10 +1366,6 @@ METHODS:
    {
       Property.Set(self,"AI_AlertCap","Min level",alert);
       Property.Set(self,"AI_AlertCap","Max level",alert);
-
-      // Placeholder joint animation until we get real turret AI
-      // Assumes we'll use the StdTwoState script for this.
-      PostMessage(self,alert==kHighAlert?"GoForward":"GoBackward");
    }
 
    METHOD void Activate(boolean on, object sender)
@@ -1382,7 +1378,7 @@ METHODS:
       else
       {
          Base::Activate(on,sender);
-         if(!Link.AnyExist("ScriptParams",self))
+         if(!Link.AnyExist("ScriptParams",self)) 
             ClampAlert(kNoAlert);
       }
    }
