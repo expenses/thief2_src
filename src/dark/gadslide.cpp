@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: r:/t2repos/thief2/src/dark/gadslide.cpp,v $
  * $Revision: 1.7 $
  * $Author: toml $

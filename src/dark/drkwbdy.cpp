@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkwbdy.cpp,v 1.5 1998/10/10 11:38:48 CCAROLLO Exp $
 
 #include <drkwbdy.h>
