@@ -2036,6 +2036,11 @@ MESSAGES:
    {
       if(message.name=="Tock")
       {
+         if (IsDataSet("TockTimer"))
+         {
+            timer_handle oldtock = GetData("TockTimer");
+            KillTimer(oldtock);
+         }
          timer_handle tock=SetOneShotTimer(self,"Tock",60.0);
          SetData("TockTimer",tock);
 
