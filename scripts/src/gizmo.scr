@@ -1,3 +1,6 @@
+
+#include "tfint.h" //trapflags
+
 /* ====== StdDoor ======
 script for basic door behavior.  The door opens, closes, or changes
 direction of motion when frobbed, and can respond to "TurnOn" and
