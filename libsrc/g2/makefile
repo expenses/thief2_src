@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.4 $
+# $Revision: 1.5 $
 # $Author: KEVIN $
-# $Date: 1996/06/11 14:44:41 $
+# $Date: 1996/08/07 13:44:30 $
 #
 
 MAKETOP = $(CWD)
@@ -37,7 +37,7 @@ G2_OBJS = \
         gencnv \
         gensf genusf gens \
         genline \
-        genfl8s genrsds \
+        genfl8s genrsds genrsdtm \
         genfl8l genf16l \
         genil gensil genlil \
         genply gensply \
