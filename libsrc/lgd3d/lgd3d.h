@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/lgd3d/RCS/lgd3d.h 1.56 1999/06/03 10:51:10 Zarko Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: x:/prj/tech/libsrc/lgd3d/RCS/lgd3d.h 1.59 1970/01/01 00:00:00 Zarko Exp $
 
 #ifndef __LGD3D_H
 #define __LGD3D_H
@@ -47,56 +52,52 @@ extern int lgd3d_enumerate_devices_capable_of( ulong flags );
 
 // Capabilities that can be requested:
 
-#define LGD3DF_SPEW                     0x00000002L
+#define LGD3DF_SPEW                    0x00000002L
 
 //depth buffer:
-#define LGD3DF_ZBUFFER                  0x00000001L // Z-buffer 
-#define LGD3DF_WBUFFER                  0x00000004L // W-buffer 
-#define LGD3DF_DEPTH_BUFFER_REQUIRED	0x00000008L // the 
-                                                        // selected (Z_ or W-) depth buffer REQUIRED!
+#define LGD3DF_ZBUFFER                 0x00000001L // Z-buffer 
+#define LGD3DF_WBUFFER                 0x00000004L // W-buffer 
+#define LGD3DF_DEPTH_BUFFER_REQUIRED   0x00000008L // the 
+// selected (Z_ or W-) depth buffer REQUIRED!
 //fog:
-#define LGD3DF_TABLE_FOG                0x00000010L // table based pixel fog
-#define LGD3DF_VERTEX_FOG               0x00000020L 
+#define LGD3DF_TABLE_FOG               0x00000010L // table based pixel fog
+#define LGD3DF_VERTEX_FOG              0x00000020L 
 
 //dithering
-#define LGD3DF_DITHER                   0x00000040L // use dithering 
+#define LGD3DF_DITHER                  0x00000040L // use dithering 
 
 //antialiasing
-#define LGD3DF_ANTIALIAS				0x00000080L // use (sort independent) antialiasing 
+#define LGD3DF_ANTIALIAS				   0x00000080L // use (sort independent) antialiasing 
 
-#define LGD3DF_MULTI_TEXTURING          0x00000100L // we support ONLY two sets of textures and
+#define LGD3DF_MULTI_TEXTURING         0x00000100L // we support ONLY two sets of textures and
 // and texture coordinates
 
-#define LGD3DF_MODULATEALPHA			0x00000200L // we want to use modulate alpha for single texture mode
+#define LGD3DF_MODULATEALPHA			   0x00000200L // we want to use modulate alpha for single texture mode
 #define LGD3DF_BLENDDIFFUSE				0x00000400L // we want to use blend diffuse for single texture mode
 
 #define LGD3DF_MULTITEXTURE_COLOR		0x00000800L // we want to use color light maps for single or multi texture mode
 #define LGD3DF_MULTITEXTURE_ALPHA		0x00001000L // we want to use alpha light maps for single or multi texture mode
 
-#define LGD3DF_DO_WINDOWED              0x00002000L
+#define LGD3DF_DO_WINDOWED             0x00002000L
 
-
+#define LGD3DF_MT_BLENDDIFFUSE         0x00004000L // we want to use alpha light maps for single or multi texture mode
 
 // Supported capabilities: (returned by the enumeration)
 
 //depth buffer
-#define LGD3DF_CAN_DO_ZBUFFER					0x00010000L
-#define LGD3DF_CAN_DO_WBUFFER					0x00040000L // W-buffer 
+#define LGD3DF_CAN_DO_ZBUFFER				0x00010000L
+#define LGD3DF_CAN_DO_WBUFFER				0x00040000L // W-buffer 
 //fog:
-#define LGD3DF_CAN_DO_TABLE_FOG					0x00080000L // table based pixel fog
-#define LGD3DF_CAN_DO_VERTEX_FOG				0x00100000L // vertex fog
+#define LGD3DF_CAN_DO_TABLE_FOG			0x00080000L // table based pixel fog
+#define LGD3DF_CAN_DO_VERTEX_FOG			0x00100000L // vertex fog
 //dithering
-#define LGD3DF_CAN_DO_DITHER					0x00200000L // can dither
-#define LGD3DF_CAN_DO_ANTIALIAS					0x00400000L // can use (sort independent) antialiasing 
+#define LGD3DF_CAN_DO_DITHER				0x00200000L // can dither
+#define LGD3DF_CAN_DO_ANTIALIAS			0x00400000L // can use (sort independent) antialiasing 
 
-#define LGD3DF_CAN_DO_SINGLE_PASS_MT			0x02000000L // we can do single pass double texturing
-#define LGD3DF_CAN_DO_WINDOWED                  0x04000000L // we can play the game in lil' window
+#define LGD3DF_CAN_DO_SINGLE_PASS_MT	0x02000000L // we can do single pass double texturing
+#define LGD3DF_CAN_DO_WINDOWED         0x04000000L // we can play the game in lil' window
 
-//to be continued...
-
-//NEW: "Gone with the slipstream"
-// extern void lgd3d_pop_render_states(void);
-// extern void lgd3d_push_render_states(void);
+#define LGD3DF_CAN_DO_ITERATE_ALPHA    0x08000000L // can do Gouraud interpolation between vetices alpha color
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -213,6 +214,8 @@ extern int lgd3d_is_dithering_on( void );
 extern void lgd3d_set_antialiasing( int bOn );
 extern int lgd3d_is_antialiasing_on( void );
 
+extern BOOL lgd3d_enable_specular( BOOL bUseIt );
+
 //fog
 extern void lgd3d_set_fog_level(float fog_level);     // 0.0 <= fog_level <= 1.0
 extern void lgd3d_set_fog_color(int r, int g, int b); // 0..255
@@ -220,6 +223,20 @@ extern void lgd3d_set_fog_enable(BOOL enable);
 extern void lgd3d_set_fog_density(float density);
 extern int lgd3d_is_fog_on( void );
 
+//  linear table fog
+ 
+// returns the previous setting
+extern int lgd3d_use_linear_table_fog( int bUseIt );
+
+// fogginess:     (end)____
+//               /
+//  _____(start)/
+
+// start and end are floats in "W-coordiantes", that is, in the [ z_near , z_far ].
+extern void lgd3d_set_fog_start_end( float fStart, float fEnd );   //please, check that  z_near <= fStart < fEnd <= z_far
+
+// set the distance at which we should have full fog (results vary for different video cards)
+extern void lgd3d_set_linear_fog_distance( float fDistance );  //please, check that  fStart <= fDistance <= fEnd 
 
 //Textures:
 
@@ -356,10 +373,11 @@ extern void lgd3d_release_indexed_primitives( void );
 extern void lgd3d_set_texture_map_method( ulong flag );
 
 //2 levels texturing:
-#define LGD3D_MULTITEXTURE_COLOR       0L  //default
-#define LGD3D_MULTITEXTURE_ALPHA       1L  
+#define LGD3D_MULTITEXTURE_COLOR             0L  //default
+#define LGD3D_MULTITEXTURE_ALPHA             1L  
+#define LGD3D_MULTITEXTURE_BLEND_TEX_ALPHA   2L  
 
-#define LGD3D_MULTITEXTURE_NO_STATES   2L
+#define LGD3D_MULTITEXTURE_NO_STATES         3L
 
 extern void lgd3d_set_light_map_method( ulong flag ); //from the above
 
@@ -376,6 +394,8 @@ extern int lgd3d_TrifanMTD( int n, r3s_point **ppl, LGD3D_tex_coord **pptc );
 extern int lgd3d_LitTrifanMTD( int n, r3s_point **ppl, LGD3D_tex_coord **pptc );
 extern int lgd3d_RGBlitTrifanMTD( int n, r3s_point **ppl, LGD3D_tex_coord **pptc );
 extern int lgd3d_RGBAlitTrifanMTD( int n, r3s_point **ppl, LGD3D_tex_coord **pptc );
+extern int lgd3d_RGBAFoglitTrifanMTD( int n, r3s_point **ppl, LGD3D_tex_coord **pptc );
+extern int lgd3d_DiffuseSpecularMTD( int n, r3s_point **ppl, LGD3D_tex_coord **pptc );
 
 extern int lgd3d_g2UTrifanMTD( int n, g2s_point **vpl, LGD3D_tex_coord **vptc );
 extern int lgd3d_g2TrifanMTD( int n, g2s_point **vpl, LGD3D_tex_coord **vptc );
