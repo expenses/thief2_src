@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.23 $
-# $Author: KEVIN $
-# $Date: 1997/03/11 10:43:16 $
+# $Revision: 1.24 $
+# $Author: JAEMZ $
+# $Date: 1998/01/27 16:50:14 $
 #
 
 MAKETOP = $(CWD)
@@ -64,7 +64,7 @@ dev2d_OBJS = \
         mxpix8 mxhlin mxvlin \
         mxfl8 \
         nulcnv \
-        pal pal16 ipal gpal \
+        pal pal16 ipal gpal cpal \
         rsdcvt rsdunpck rsdblt8 rsdblt16 \
         smode stastk \
         tluctab \
@@ -91,7 +91,7 @@ dev2d.h .REREAD :\
         fill.h clip.h icanvas.h idevice.h grd.h context.h \
         bmftype.h linftype.h pixftype.h \
         gdbm.h gdlin.h gdrect.h gdpix.h grdev.h \
-        pal.h pal16.h init.h \
+        pal.h gpal.h cpal.h pal16.h init.h \
         tluctab.h grmalloc.h grnull.h indexmac.h gr.h \
         rgb.h blnfcn.h rsdcfg.h \
         stupid.h
