@@ -880,13 +880,7 @@ METHODS:
       }
       else
       {
-         linkset tally=Link.GetAll("ScriptParams",self,sender);
-
-         while(tally.AnyLinksLeft())
-         {
-            Link.Destroy(tally.Link());
-            tally.NextLink();
-         }
+         Link.DestroyMany("ScriptParams",self,sender);
       }
    }
 END_SCRIPT(TrapRequirement)
