@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/simloop.c,v 1.4 2000/02/19 13:27:46 toml Exp $
 
 #include <lg.h>
