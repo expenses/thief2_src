@@ -1,11 +1,11 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.11 $
-# $Author: rex $
-# $Date: 1993/11/11 13:51:41 $
+# $Revision: 1.12 $
+# $Author: dfan $
+# $Date: 1993/11/30 13:02:29 $
 #
 
-COMPILER = watcom95
+COMPILER = watcom
 SRCDIR = n:\project\lib\src\fix
 RELDIR = n:\project\lib\release
 OBJDIR = obj
@@ -16,7 +16,7 @@ LIBPATH = $(RELDIR)
 
 DEBUG_ON = yeah
 
-PROG_TARGETS = fixtest fix24tst fmaketab trigerr #sqrttest
+PROG_TARGETS = fixtest fix24tst fmaketab trigerr fixovtst #sqrttest
 LIB_TARGETS = fix
 HDR_TARGETS = fix
 INST_TARGETS = fix
@@ -27,6 +27,9 @@ FIX_OBJS = fix.obj fixsprnt.obj fix_asm.obj atofix.obj
 FIXTEST_OBJS = $(FIX_OBJS) fixtest.obj
 
 FIX24TST_OBJS = $(FIX_OBJS) fix24tst.obj
+
+FIXOVTST_OBJS = $(FIX_OBJS) fixovtst.obj
+FIXOVTST_LIBS = _lg.lib _mprintf.lib
 
 FMAKETAB_OBJS = fmaketab.obj
 
@@ -44,6 +47,7 @@ fix.obj: fix.h trigtab.h
 fixtest.obj: fix.h
 
 fix24tst.obj: fix.h
+
 ### OPUS MKMF:  Do not remove this line!  Generated dependencies follow.
 
 atofix.obj: fix.h stdio.h stdlib.h types.h
