@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/r3d3/RCS/r3d3s.h $
  * $Revision: 1.3 $
  * $Author: JAEMZ $
