@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.26 $
+# $Revision: 1.27 $
 # $Author: KEVIN $
-# $Date: 1997/10/01 13:33:28 $
+# $Date: 1997/10/03 13:03:30 $
 #
 # Makefile for r3d library
 #
@@ -43,6 +43,7 @@ r3d_OBJS = \
   primd3d  \
   primface \
   primfunc \
+  primg2   \
   primmisc \
   primnull \
   primpoly \
