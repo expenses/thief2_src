@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: r:/prj/lib/src/div0/rcs/div0.h $
  * $Revision: 1.2 $
  * $Author: matt $
