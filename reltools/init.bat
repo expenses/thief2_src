@@ -12,9 +12,10 @@ rem **************************************************************
 rem the drive where the daily will be built (change when testing!)
 
 iff .%DAILYDRV%. != .. then
-set _DAILYDRV_ = %DAILYDRV%
+set _DAILYDRV_=%DAILYDRV%
 else
 set  _DAILYDRV_=r:
+endiff
 
 rem **************************************************************
 rem set the names of the daily, the daily\cd, the daily\cd\thief
