@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phcontct.h 1.15 1999/01/18 16:03:15 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phcontct.h,v 1.17 2000/02/22 20:01:09 toml Exp $
 //
 // Physics contact links
 //
@@ -13,6 +13,7 @@
 // Object links:
 //    implemented the same way, we keep two records to make it bidirectional
 //
+#pragma once
 
 #ifndef __PHCONTCT_H
 #define __PHCONTCT_H
@@ -24,6 +25,7 @@
 #include <phsubmod.h>
 #include <phterr.h>
 #include <phystyp2.h>
+#include <dbmem.h>
 
 #pragma pack(4)
 
@@ -363,6 +365,8 @@ inline cPhysObjContactLinks::cPhysObjContactLinks(void)
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma pack()
+
+#include <undbmem.h>
 
 #endif /* !__PHCONTCT_H */
 

@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/prophash.h 1.2 1999/04/21 11:38:47 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/prophash.h,v 1.10 2000/02/22 20:00:46 toml Exp $
+#pragma once
 
 #ifndef PROPHASH_H
 #define PROPHASH_H
@@ -6,7 +7,6 @@
 #include <dataops_.h>
 #include <propbase.h>
 #include <hashpp.h>
-
 
 ////////////////////////////////////////////////////////////
 //
@@ -16,6 +16,9 @@
 
 #define DEFAULT_TABLE_SIZE 3
 
+#define USE_HASHPP
+#ifdef USE_HASHPP 
+
 class cPropertyHashTable : public cHashTable<ObjID,sDatum,cHashFunctions>
 {
 public:
@@ -24,6 +27,136 @@ public:
    {} 
 }; 
 
+#else 
+#include <hashset.h>
+#include <hshsttem.h>
+
+#include <dbmem.h>
+
+//
+// Adapter between hashset and hashtable
+//
+
+struct sPropHashRecord 
+{
+   ObjID obj;
+   sDatum dat; 
+
+   sPropHashRecord(ObjID o = 0, sDatum d = sDatum())
+      : obj(o),dat(d)
+   {
+   }
+}; 
+
+typedef cHashSet<sPropHashRecord*,ObjID,cHashFunctions> cPropHashSetBase; 
+
+
+class cPropertyHashTable : public cPropHashSetBase
+{
+protected:
+   typedef sPropHashRecord sRecord; 
+   typedef cPropHashSetBase cParent; 
+
+public:
+   cPropertyHashTable() 
+      : cParent(DEFAULT_TABLE_SIZE)
+   {} 
+
+   ~cPropertyHashTable()
+   {
+      tHashSetHandle hnd; 
+      sRecord* rec; 
+      for (rec = GetFirst(hnd); rec != NULL; rec = GetNext(hnd))
+         delete rec; 
+   }
+
+   void Clear(int size = DEFAULT_TABLE_SIZE)
+   {
+      SetEmpty(); 
+      Resize(size); 
+   }
+
+   BOOL Lookup(ObjID obj, sDatum* val) const 
+   {
+      sRecord* rec = Search(obj); 
+      if (rec)
+      {
+         *val = rec->dat; 
+         return TRUE; 
+      }
+      return FALSE; 
+   }
+
+   void Insert(ObjID obj, sDatum val)
+   {
+      sRecord* rec = new sRecord(obj,val); 
+      cParent::Insert(rec); 
+   }
+
+   void Set(ObjID obj, sDatum val)
+   {
+      sRecord* rec = Search(obj);
+      if (rec)
+         rec->dat = val; 
+      else 
+         Insert(obj,val);
+   }
+
+   void Delete(ObjID obj)
+   {
+      sRecord* rec = Search(obj); 
+      if (rec)
+      {
+         Remove(rec);
+         delete rec; 
+      }
+   }
+
+   BOOL HasKey(ObjID obj) const 
+   {
+      return Search(obj) != NULL; 
+   }
+
+   class cIter
+   {
+      tHashSetHandle mHnd; 
+      sRecord* mpRec; 
+      const cPropertyHashTable* mpTable; 
+
+   public:
+      cIter(const cPropertyHashTable* tbl) : mpTable(tbl) { mpRec = tbl->GetFirst(mHnd); }; 
+
+      cIter(const cIter& iter) 
+         : mpTable(iter.mpTable), mHnd(iter.mHnd), mpRec(iter.mpRec)
+      { };
+
+      cIter() : mpRec(NULL),mpTable(NULL) { }; 
+
+      
+
+
+      BOOL Done() const { return mpRec == NULL; }; 
+      void Next() { mpRec = mpTable->GetNext(mHnd); }; 
+      ObjID Key() const { return mpRec->obj; }; 
+      sDatum Value() const { return mpRec->dat; }; 
+      
+   }; 
+
+   cIter Iter() const { return cIter(this); }; 
+   tHashSetKey GetKey(tHashSetNode p) const
+   {
+      return (tHashSetKey)((sRecord*)p)->obj;
+   }
+
+
+}; 
+
+#include <undbmem.h>
+
+#endif 
+
+
+#undef USE_HASHPP
 
 
 template <class OPS> 
@@ -56,7 +189,7 @@ public:
       if (!mTable.Lookup(obj,&val))
       {
          val = mOps.New(); 
-         mTable.Set(obj,val); 
+         mTable.Insert(obj,val); 
       }
 
       return val; 
@@ -68,17 +201,6 @@ public:
       if (mTable.Lookup(obj,&val))
       {
          mOps.Delete(val);    
-         mTable.Delete(obj);
-         return S_OK; 
-         
-      }
-      return S_FALSE; 
-   }
-
-   STDMETHOD(Release)(ObjID obj, sDatum* pval)
-   {
-      if (mTable.Lookup(obj,pval))
-      {
          mTable.Delete(obj);
          return S_OK; 
          

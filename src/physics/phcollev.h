@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/physics/RCS/phcollev.h 1.2 1998/07/29 08:26:43 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phcollev.h,v 1.3 2000/02/22 20:01:08 toml Exp $
 #pragma once  
 #ifndef __PHCOLLEV_H
 #define __PHCOLLEV_H
@@ -8,6 +8,8 @@
 #include <phclsn.h>
 
 #include <mprintf.h>
+
+#include <dbmem.h>
 
 //
 // A phys collision chained event.  This is in no way a flat
@@ -30,5 +32,7 @@ struct sPhysClsnEvent : public sChainedEvent
       delete collision;
    }
 }; 
+
+#include <undbmem.h>
 
 #endif // __PHCOLLEV_H
