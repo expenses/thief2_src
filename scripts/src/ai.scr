@@ -281,7 +281,8 @@ MESSAGES:
             // If not unconscious, de-physicalize on sleep
             if (!Object.InheritsFrom(self,"M-KnockedOut"))
             {
-               if (Property.Possessed(self,"PhysType"))
+//just set it anyway.
+//               if (Property.Possessed(self,"PhysType"))
                   Property.Set(self,"PhysType","Remove On Sleep",TRUE); 
             }
             PlayerLimbs.UnEquip(self);
