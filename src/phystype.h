@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/phystype.h 1.1 1997/01/08 22:36:43 mahk Exp $
 
 #ifndef PHYSTYPE_H
