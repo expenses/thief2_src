@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.7 1993/03/24 12:02:27 matt Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.8 1993/03/24 12:12:37 matt Exp $
 # $Log: makefile $
-# Revision 1.7  1993/03/24 12:02:27  matt
-# More asm header junk
+# Revision 1.8  1993/03/24 12:12:37  matt
+# install assembly macros header file
 #
+# Revision 1.7  1993/03/24  12:02:27  matt
+# More asm header junk
+# 
 # Revision 1.6  1993/03/22  19:10:22  matt
 # Added list of .inc files to be converted from .h files.
 # 
@@ -47,8 +50,8 @@ EXTRA_TARGETS =
 
 LG_SRCS = memall.c dbg.c dbgcfg.c datapath.c exit.c
 LG_OBJS = memall.obj dbg.obj dbgcfg.obj datapath.obj exit.obj
-LG_HDRS = lg.h lgalt.h memall.h dbg.h datapath.h memmacro.inc
-LG_H2I  = lg.inc memall.inc
+LG_HDRS = lg.h lgalt.h memall.h dbg.h datapath.h memmacro.inc dbgmacro.inc
+LG_H2I  = lg.inc memall.inc dbg.inc
 
 DBGMAKEH_SRCS = dbgmakeh.c
 DBGMAKEH_OBJS = dbgmakeh.obj
