@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shksloop.cpp,v 1.57 1999/11/19 14:58:22 adurant Exp $
 
 #include <lg.h>
