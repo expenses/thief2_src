@@ -7,6 +7,7 @@
 #define WEAP_ID_QVAR "WeapID"
 #define INV_UI_QVAR "InvUI"
 #define INV_ID_QVAR "InvID"
+#define WORLD_ID_QVAR "WorldID"
 #define kUnready 0
 #define kReady 1
 #define kCocked 2
@@ -97,249 +98,11 @@ END_SCRIPT(AwakeToEscape)
 
 
 
-/*
-  Many of these scripts will have in common the need to display information on
-  uses of various key and mouse button commands.  We define a script for them
-  to inherit a method for this.
-  */
-BEGIN_SCRIPT(KeyPrompter,RootScript)
-
-METHODS:
-
-   /* Action is the full description of the action to be attempted (e.g.
-      "USE Door to open"), while Key describes only the interface binding
-      to be prompted (e.g. the identity of the USE key).
-
-      The quest variable tracking successful completion of the lesson
-      is derived from the name of the Action string by prepending "tr_".
-      */
-   METHOD boolean LessonDone(const string ref Action)
-   {
-      integer difficulty=Quest.Get("difficulty");
-      boolean done=(difficulty>0) || Quest.Get(string("tr_")+Action);
-
-      return done;
-   }      
-   METHOD void KeyString(const string ref Action, const string ref Key, 
-                         const string ref Key2=string(""))
-   {
-      string DisplayOutput = "";
-      string Command = Data.GetString("PlayCmd",Key+"_command");
-      string Command2 = Data.GetString("PlayCmd",Key2+"_command");
-      boolean done=LessonDone(Action);
-
-      if(!done)
-      {
-         if (Key!="" && DarkUI.IsCommandBound(Command))
-         {
-            /* Build string of the form (e.g.) "USE = Mouse2" */
-            DisplayOutput = Data.GetString("PlayAct",Key) + " = " 
-                          + DarkUI.DescribeKeyBinding(Command);
-         }
-         if (Key2!="" && DarkUI.IsCommandBound(Command2))
-            DisplayOutput = DisplayOutput + "\n"
-                          + Data.GetString("PlayAct",Key2) + " = " 
-                          + DarkUI.DescribeKeyBinding(Command2);
-         /* Tack string descriptive of action in question on front */
-         DisplayOutput = Data.GetString("PlayHint",Action)
-                          + DisplayOutput;
-         DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
-      }
-      else
-         Debug.MPrint("Already done lesson: ",Action);
-   }
-   // derived scripts will override this.  In particular, the Prompt()
-   // method on the player should handle anything other than world focus
-   // hints, basically.
-   METHOD void Prompt()
-   {
-      ;
-   }
-   // Note that since NewHint messages to elicit further prompting (on other
-   // lessons), Prompt() should not call NewHint() (or, for that matter, Score()).
-   METHOD void NewHint(void)
-   {
-      DarkUI.TextMessage("");
-      PostMessage(object("Player"),"Prompt?");
-   }
-   METHOD void Score(const string ref Action)
-   {
-      Quest.Set(string("tr_")+Action,TRUE);
-      NewHint();
-   }
-
-MESSAGES:
-   OnMessage()
-   {
-      if(MessageIs("Prompt?"))
-         Prompt();
-      DefaultOnMessage();
-   }
-
-END_SCRIPT(KeyPrompter)
-
-
-/* This script goes on the player, to track any state changes that will affect
-   our training messages.  It also handles training of inventory objects (although
-   we need scripts on those objects themselves to score the lesson).
+/* We put this script on each object as it comes into inventory
+   (this way, even objects created at run-time, like the arrows
+   produced by crystals, should work).
    */
-BEGIN_SCRIPT(TrainPlayer, KeyPrompter)
-
-METHODS:
-   METHOD void Prompt()
-   {
-      object invobj=object(Quest.Get(INV_ID_QVAR));
-
-      Debug.MPrint("TrainPlayer.  inv obj=",invobj);
-
-      if(Object.Exists(invobj))
-      {
-         if(Object.InheritsFrom(invobj,"HealingPotion"))
-         {
-            integer hp=Property.Get(self,"HitPoints");
-            integer max=Property.Get(self,"MAX_HP");
-
-            if(hp<max)
-            {
-               KeyString("UsePotionHeal","Use");
-            }
-         }
-         else if(Object.InheritsFrom(invobj,"Flashbomb"))
-         {
-            KeyString("UseFlashbomb","Use","Drop");
-         }
-      }
-   }
-MESSAGES:
-
-   OnBeginScript()
-   {
-      // don't want starting point to bother with these messages.
-      if(!IsDataSet("Init") && Object.InheritsFrom(self,"Avatar"))
-      {
-         SetData("Init",TRUE);
-         Quest.SubscribeMsg(self,INV_UI_QVAR);
-         Quest.SubscribeMsg(self,INV_ID_QVAR);
-      }
-   }
-
-   OnQuestChange()
-   {
-      Prompt();
-      DefaultOnQuestChange();
-   }
-
-   OnDamage()
-   {
-      Prompt();
-      DefaultOnDamage();
-   }
-
-
-/*
-   To track the interface state of the player's arrows and such, we will
-   add a script to them.  We'll do this when the player contains them
-   so that water crystals work correctly and so we have no chance for
-   error.  He claimed.
-   */
-   OnContainer()
-   {
-      if(message.event==kContainAdd || message.event==kContainCombine)
-      {
-         object containee=message.containee;
-         integer invtype=kInvTypeJunk; // by default
-
-         if(Property.Possessed(containee,"InvType"))
-            invtype=Property.Get(containee,"InvType");
-
-         if(invtype!=kInvTypeJunk &&
-            !Object.HasMetaProperty(containee,"M1_TrainWeapon"))
-         {
-            Object.AddMetaProperty(containee,"M1_TrainWeapon");
-         }
-      }
-   }
-END_SCRIPT(TrainPlayer)
-      
-
-
-BEGIN_SCRIPT(EntryDoor, KeyPrompter)
-MESSAGES:
-   OnWorldSelect()
-   {
-      KeyString("UseDoorOpen","Use");
-      DefaultOnWorldSelect();
-   }
-   OnWorldDeSelect()
-   {
-      NewHint();
-      DefaultOnWorldDeSelect();
-   }
-   OnFrobWorldEnd()
-   {
-      Score("UseDoorOpen");
-      DefaultOnFrobWorldEnd();
-   }
-END_SCRIPT(EntryDoor)
-
-
-BEGIN_SCRIPT(FirstKey, KeyPrompter)
-MESSAGES:
-   OnWorldSelect()
-   {
-      KeyString("UseKeyTake","Use");
-      DefaultOnWorldSelect();
-   }
-   OnWorldDeSelect()
-   {
-      NewHint();
-      DefaultOnWorldDeSelect();
-   }
-   OnFrobWorldEnd()
-   {
-      Score("UseKeyTake");
-      DefaultOnFrobWorldEnd();
-   }
-
-END_SCRIPT(FirstKey)
-
-
-BEGIN_SCRIPT(TakeLoot, KeyPrompter)
-MESSAGES:
-   OnWorldSelect()
-   {
-      KeyString("UseLootTake","Use");
-      DefaultOnWorldSelect();
-   }
-   OnWorldDeSelect()
-   {
-      NewHint();
-      DefaultOnWorldDeSelect();
-   }
-   OnFrobWorldEnd()
-   {
-      Score("UseLootTake");
-      DefaultOnFrobWorldEnd();
-   }
-
-END_SCRIPT(TakeLoot)
-
-
-
-/* The prompter about shooting out the torch does not score
-   each individual "lesson" as it is completed.  Rather, it scores
-   them all when the torch is shot out, since each is a thing about
-   which a novice player may need guidance until the torch is shot out.
-   */
-/*
-   First, track interface state of water arrows.  History will absolve
-   us of keeping all of this in quest variables.  Basically, we can
-   communicate between scripts, and automatically get state change
-   messages because we can subscribe to the quest vars.
-   */
-
-
-BEGIN_SCRIPT(TrainWeapon, RootScript)
+BEGIN_SCRIPT(TrackInv, RootScript)
 
 METHODS:
    METHOD integer InvType()
@@ -356,7 +119,7 @@ METHODS:
 
       if(type==kInvTypeWeapon)
          Quest.Set(WEAP_UI_QVAR,state);
-      else if(type==kInvTypeItem)
+      else
          Quest.Set(INV_UI_QVAR,state);
    }
    METHOD void SetID(object obj)
@@ -365,7 +128,7 @@ METHODS:
 
       if(type==kInvTypeWeapon)
          Quest.Set(WEAP_ID_QVAR,obj);
-      else if(type==kInvTypeItem)
+      else
          Quest.Set(INV_ID_QVAR,obj);
    }
 MESSAGES:
@@ -407,6 +170,9 @@ MESSAGES:
       DefaultOnInvDeSelect();
    }
 
+// @TODO: This is not really right.  It's just barely possible for 
+// an inventory item that isn't your current one to get destroyed, which
+// would queer this.
    OnDestroy()
    {
       SetUI(kUnready);
@@ -414,218 +180,544 @@ MESSAGES:
       BaseOnDestroy();
    }
 
-END_SCRIPT(TrainWeapon)
+END_SCRIPT(TrackInv)
 
+/* We put this on ALL world objects that can be world-frobbed, at startup,
+   because we're just _that_ crazy.  Note that this means that we shouldn't
+   count on knowing about world focus on objects that get created at run-time.
+   Should be okay.
 
-
-/* We will assume that notification of player's presence in region where we
-   want to prompt will come from a separate player room trigger.
-
-   Note again, we do not score the player on this lesson ourselves.  When
-   the torch goes out, traps will delete the trap that has this script,
-   and it will clean up.
+   Note that this will also require us to set the World focus frob info bits
+   on all these things as we put the script on them, which means their FrobInfo
+   will be instantiated and any metaproperties with frobinfo that are added
+   at runtime will be ignored.  This too should be okay.
    */
-BEGIN_SCRIPT(ShootTorchHere, KeyPrompter)
+BEGIN_SCRIPT(TrackWorldObj,RootScript)
 METHODS:
-   METHOD void Prompt()
+   METHOD void NotMeWorld()
    {
+      if(Quest.Get(WORLD_ID_QVAR)==self)
       {
-         Debug.MPrint("Might prompt.  On=",GetData("On"));
-         Debug.MPrint("Weapon ObjID=",Quest.Get(WEAP_ID_QVAR));
-         Debug.MPrint("Weapon UI state=",Quest.Get(WEAP_UI_QVAR));
-      }
-
-      object CurrentWeapon=object(Quest.Get(WEAP_ID_QVAR));
-
-      if(GetData("On")==FALSE)
-      {
-         NewHint();
-         return;
-      }
-      if(!Object.Exists(CurrentWeapon) ||
-         !Object.InheritsFrom(CurrentWeapon,"water"))
-      {
-         // @TODO: Really, only prompt player if he actually had got
-         // water arrows.
-         KeyString("SelectWaterArrow","ReadyWater");
-      }
-      else
-      {
-         integer weapui=Quest.Get(WEAP_UI_QVAR);
-
-         if(weapui==kReady)
-         {
-            KeyString("PullArrow","Attack");
-         }
-         else if(weapui==kCocked)
-         {
-            KeyString("ReleaseArrow","Attack");
-         }
+         Quest.Set(WORLD_ID_QVAR,0);
       }
    }
 MESSAGES:
-   OnBeginScript()
-   {
-      Quest.SubscribeMsg(self,WEAP_UI_QVAR);
-      Quest.SubscribeMsg(self,WEAP_ID_QVAR);
-      if(!IsDataSet("On"))
-         SetData("On",FALSE);
-      DefaultOnBeginScript();
-   }
-   OnEndScript()
-   {
-      // Do we need to do this?
-      Quest.UnsubscribeMsg(self,WEAP_ID_QVAR);
-      Quest.UnsubscribeMsg(self,WEAP_UI_QVAR);
-   }
-   OnDestroy()
-   {
-      // Just to be tidy.
-      Score("SelectWaterArrow");
-      Score("PullArrow");
-      Score("ReleaseArrow");
-   }
-   OnQuestChange()
-   {
-      Prompt();
-      DefaultOnQuestChange();
-   }
-   OnMessage()
-   {
-      if(MessageIs("TurnOn"))
-         SetData("On",TRUE);
-      else if(MessageIs("TurnOff"))
-         SetData("On",FALSE);
-      else
-      {
-         DefaultOnMessage();
-         return;
-      }
-      Prompt();
-      DefaultOnMessage();
-   }
-END_SCRIPT(ShootTorchHere);
-
-/* Script for locked doors in the first area.  Need to prompt player to use key. */
-BEGIN_SCRIPT(TrainLockedDoors,KeyPrompter)
-METHODS:
-   METHOD void Prompt()
-   {
-      {
-         Debug.MPrint("Might prompt.  On=",GetData("On"));
-         Debug.MPrint("Inventory ObjID=",Quest.Get(INV_ID_QVAR));
-         Debug.MPrint("Inventory UI state=",Quest.Get(INV_UI_QVAR));
-      }
-
-      object CurrentItem=object(Quest.Get(INV_ID_QVAR));
-
-      if(GetData("On")==FALSE)
-      {
-         NewHint();
-         return;
-      }
-      if(Object.Exists(CurrentItem) &&
-         Key.TryToUseKey(CurrentItem,self,kKeyUseCheck))
-      {
-         integer invui=Quest.Get(WEAP_UI_QVAR);
-
-         // Well, we'd love to know whether the tool was zipped to the
-         // center of the screen or not.  Luckily it's all on the same
-         // USE key, so let's just write our way around it.
-         KeyString("UseKeyUnlock","Use");
-      }
-      else
-      {
-         // only prompt player to cycle inventory if he's actually got 
-         // the key in his inventory.  Of course, _all_ of this is brutally
-         // single-player specific.
-         linkset invlinks=Link.GetAll("Contains",object("Player"));
-
-         while(invlinks.AnyLinksLeft())
-         {
-            if(Key.TryToUseKey(invlinks.Link().To(),self,kKeyUseCheck))
-            {
-               KeyString("SelectKey","CycleInventory");
-               return;
-            }
-            invlinks.NextLink();
-         }
-         KeyString("GoFindKey","");
-      }
-   }
-
-MESSAGES:
-   OnBeginScript()
-   {
-      Quest.SubscribeMsg(self,INV_UI_QVAR);
-      Quest.SubscribeMsg(self,INV_ID_QVAR);
-      if(!IsDataSet("On"))
-         SetData("On",FALSE);
-      DefaultOnBeginScript();
-   }
-   OnEndScript()
-   {
-      // Do we need to do this?
-      Quest.UnsubscribeMsg(self,INV_ID_QVAR);
-      Quest.UnsubscribeMsg(self,INV_UI_QVAR);
-   }
    OnWorldSelect()
    {
-      SetData("On",TRUE);
-      Prompt();
+      Quest.Set(WORLD_ID_QVAR,self);
       DefaultOnWorldSelect();
    }
    OnWorldDeSelect()
    {
-      NewHint();
-      SetData("On",FALSE);
+      Quest.Set(WORLD_ID_QVAR,0);
       DefaultOnWorldDeSelect();
+   }
+   OnDestroy()
+   {
+      NotMeWorld();
+      BaseOnDestroy();
+   }
+   OnContained()
+   {
+      if(message.event!=kContainRemove)
+      {
+         NotMeWorld();
+      }
+      DefaultOnContained();
+   }
+END_SCRIPT(TrackWorldObj)
+
+
+BEGIN_SCRIPT(TrackDoor, Door)
+METHODS:
+   METHOD void Ping()
+   {
+      object player=object("Player"); // gruesomely single-player
+      // for the time being, let's assume the player doesn't care about
+      // state changes in doors that are not his world focus.  Cut down
+      // on the flurry of messages.
+      if(object(self)!=object(Quest.Get(WORLD_ID_QVAR)))
+         return;
+      if(player!=object(0))
+      {
+         PostMessage(player,"Prompt");
+      }
+   }
+
+MESSAGES:
+   OnDoorHalt()
+   {
+      Ping();
+      DefaultOnDoorHalt();
+   }
+   OnDoorOpen()
+   {
+      Ping();
+      DefaultOnDoorOpen();
+   }
+   OnDoorOpening()
+   {
+      Ping();
+      DefaultOnDoorOpening();
+   }
+   OnDoorClose()
+   {
+      Ping();
+      DefaultOnDoorClose();
+   }
+   OnDoorClosing()
+   {
+      Ping();
+      DefaultOnDoorClosing();
+   }
+   OnNowLocked()
+   {
+      Ping();
+      DefaultOnNowLocked();
+   }
+   OnNowUnlocked()
+   {
+      Ping();
+      DefaultOnNowUnlocked();
+   }
+   OnFrobWorldEnd()
+   {
+      integer state=Door.GetDoorState(self);
+      object frobr=message.Frobber;
+
+      if(!Locked.IsLocked(self))
+      {
+         if(Object.InheritsFrom(frobr,"Avatar")) // frobbed by player
+         {
+            if(state==kDoorOpen || state==kDoorOpening)
+               // Closed the door.  Score it.
+               Quest.Set("tr_UseDoorClose",TRUE);
+            else
+               Quest.Set("tr_UseDoorOpen",TRUE);
+         }
+      }
+      DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(TrackDoor)
+
+
+BEGIN_SCRIPT(PromptOnTrig, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      object player=object("Player");
+      if(player!=object(0))
+         PostMessage(player,"Prompt");
+      DefaultOnMessage();
+   }
+END_SCRIPT(PromptOnTrig)
+
+
+/* To do this, we're going to need to get events about _anything_
+   that we factor into our decision that is liable to change in-
+   mission.  So far, that includes:
+   * Current world focus object (Brute-force iterate through all 
+     objects at beginning of mission and add scripts and world 
+     select script bits to anything that can be world frobbed.
+     Ugly, but functional.)
+   * Current inventory focus object [null if inactive?].
+     (except for inactive inv object, could just slam a script on
+     each object as it comes into inventory.  The inactive object thing
+     we have NO!!! way of doing yet.).
+   * Whether current inventory item is positioned for tool frob or not
+     (redundant frob event state machine in script?)
+   * Current weapon. (ditto).
+   * Wheather current weapon is pulled back. (ditto).
+   * Whether world focus object is locked. (see below).
+   * Door open state of world focus object (if a door).  (When we are
+     putting scripts on all world objects, doors get a special one that
+     pings about state changes and lock/unlock state changes).
+   * Contents of player's inventory (use OnContainer message).
+   * Event when player brings up the map (NO!!! way to do it yet).
+   * Presence of a AI eligible for blackjacking in front of the player.
+     (NO!! way to do it yet).
+   * Player's hit points (use OnDamage message).
+   * Player's position in relation to certain marks (script on marks).
+   */
+
+#define NO_OBJ object(0)
+
+
+BEGIN_SCRIPT(Training, RootScript)
+  METHODS:
+    /* Many things will want to know if your current inventory item is a
+       tool, since this _can_ prevent world frobs.  It doesn't prevent
+       world frobs to pick things up, however, because we're idiots
+       with a gruesome highly contextual interface.
+       */
+    METHOD boolean IsTool(object obj)
+    {
+       if(obj==NO_OBJ) return FALSE;
+       if(Property.Possessed(obj,"FrobInfo"))
+       {
+          integer tool=Property.Get(obj,"FrobInfo","Tool Action");
+          return(tool!=0);
+       }
+       return FALSE;
+    }
+    /* Action is the full description of the action to be attempted (e.g.
+       "USE Door to open"), while Key describes only the interface binding
+       to be prompted (e.g. the identity of the USE key).
+
+       The quest variable tracking successful completion of the lesson
+       is derived from the name of the Action string by prepending "tr_".
+       */
+    METHOD boolean LessonDone(const string ref Action)
+    {
+       integer difficulty=Quest.Get("difficulty");
+       boolean done=(difficulty>0) || Quest.Get(string("tr_")+Action);
+
+       return done;
+    }
+    /* Returns FALSE if this lesson has already been done (meaning we did
+       nothing) and TRUE otherwise.
+       */
+    METHOD boolean DoLesson(const string ref Action, const string ref Key,
+                            const string ref Key2=string(""))
+    {
+       string DisplayOutput = "";
+       string Command = Data.GetString("PlayCmd",Key+"_command");
+       string Command2 = Data.GetString("PlayCmd",Key2+"_command");
+       boolean done=LessonDone(Action);
+
+       Debug.MPrint("Call DoLesson ",Action);
+       
+       if(!done)
+       {
+          if (Key!="" && DarkUI.IsCommandBound(Command))
+          {
+             /* Build string of the form (e.g.) "USE = Mouse2" */
+             DisplayOutput = Data.GetString("PlayAct",Key) + " = "
+                           + DarkUI.DescribeKeyBinding(Command);
+          }
+          if (Key2!="" && DarkUI.IsCommandBound(Command2))
+             DisplayOutput = DisplayOutput + "\n"
+                           + Data.GetString("PlayAct",Key2) + " = "
+                           + DarkUI.DescribeKeyBinding(Command2);
+          /* Tack string descriptive of action in question on front */
+          DisplayOutput = Data.GetString("PlayHint",Action)
+                          + DisplayOutput;
+          DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
+          return TRUE;
+       }
+       else
+       {
+          Debug.MPrint("Already done lesson: ",Action);
+          return FALSE;
+       }
+    }
+
+    METHOD boolean TrainHealing (object world, object inv, object weap)
+    {
+      integer hp=Property.Get(self,"HitPoints");
+      integer max=Property.Get(self,"MAX_HP");
+
+      if(world==NO_OBJ &&
+         Object.InheritsFrom(inv,"HealingPotion") &&
+         hp<max)
+        return DoLesson("UsePotionHeal","Use");
+      return FALSE;
+    }
+    // In general, objects you can pick up are a single lesson.  However,
+    // we have a lesson about keys and loot specifically, to drive these
+    // important cases home. 
+    METHOD boolean TrainPickUpKey (object world, object inv, object weap)
+    {
+       if(Object.InheritsFrom(world,"Key"))
+          return DoLesson("UseKeyTake","Use");
+       return FALSE;
+    }
+    METHOD boolean TrainGetLoot (object world, object inv, object weap)
+    {
+       if(Property.Possessed(world,"Loot"))
+          return DoLesson("UseLootTake","Use");
+       return FALSE;
+    }
+    METHOD boolean TrainPortable (object world, object inv, object weap)
+    {
+       if(Property.Possessed(world,"FrobInfo"))
+       {
+          integer worldfrob=Property.Get(world,"FrobInfo","World Action");
+          if(worldfrob & kFrobMove)
+             return DoLesson("UsePortable","Use");
+       }
+       return FALSE;
+    }
+       
+    /* How to train flash bombs?  Seems impossible to tell whether AIs
+       stand to be affected, which kind of blows.
+       */
+    METHOD boolean TrainUseFlares (object world, object inv, object weap)
+    {
+       if(Object.InheritsFrom(inv,"LitFlare"))
+          if(world!=NO_OBJ)
+             return DoLesson("DropFlare","Drop");
+          else
+             return DoLesson("DropOrUseFlare","Drop","Use");
+       else if(Object.InheritsFrom(inv,"Flare"))
+          if(world==NO_OBJ)
+             return DoLesson("UseFlareLight","Use");
+       return FALSE;
+    }
+    /* How the heck do we do the map lesson?
+       What about the light gem lesson?  Do we just score it complete N
+       seconds after putting it up?
+       */
+    METHOD boolean TrainLockedDoor (object world, object inv, object weap)
+    {
+       boolean keyfit=Key.TryToUseKey(inv,world,kKeyUseCheck);
+
+       if(keyfit)
+       {
+          // @TODO: Check whether key is in frob position
+          return DoLesson("UseKeyUnlock","Use");
+       }
+       else
+       {
+          linkset invlinks=Link.GetAll("Contains",self);
+          while(!keyfit && invlinks.AnyLinksLeft())
+          {
+             keyfit=Key.TryToUseKey(invlinks.Link().To(),world,kKeyUseCheck);
+             invlinks.NextLink();
+          }
+          if(keyfit) // some key in inventory fits
+          {
+             return DoLesson("SelectKey","CycleInventory");
+          }
+          else
+             return DoLesson("GoFindKey","");
+       }
+    }
+    METHOD boolean IsDoor(object obj)
+    {
+       if(obj==NO_OBJ) return FALSE;
+       return(Property.Possessed(obj,"RotDoor") ||
+              Property.Possessed(obj,"TransDoor"));
+    }
+   METHOD boolean TrainDoor (object world, object inv, object weap)
+   {
+      if(IsDoor(world))
+      {
+         integer state=Door.GetDoorState(world);
+         
+         Debug.MPrint(world," is a door, state ",state);
+         
+         if(Locked.IsLocked(world) && TrainLockedDoor(world, inv, weap))
+            return TRUE;
+         if(IsTool(inv))
+         {
+            // If tool is a key that fits, tell us that we can _lock_
+            // doors with keys.
+            if(Key.TryToUseKey(inv,world,kKeyUseCheck))
+               return DoLesson("UseKeyLock","Use");
+            else
+               return DoLesson("SelectNonTool","Use","CycleInventory");
+         }
+         if(state==kDoorOpen || state==kDoorOpening) 
+            return DoLesson("UseDoorClose","Use");
+         else
+            return DoLesson("UseDoorOpen","Use");
+      }
+      return FALSE;
+   }
+
+   METHOD boolean TrainShootTorch (object world, object inv, object weap)
+   {
+      boolean positioned=FALSE;
+
+      // This way, we only have to score the one thing to shut down all
+      // of this logic:
+      if(LessonDone("SelectWaterArrow"))
+         return FALSE;
+
+      // Are we even in position to do this lesson?
+      if(Link.AnyExist("~Population",self))
+      {
+         linkset habitations=Link.GetAll("~Population",self);
+         while(!positioned && habitations.AnyLinksLeft())
+         {
+            if(habitations.Link().To()==object("TorchPromptRoom"))
+               positioned=TRUE;
+            habitations.NextLink();
+         }
+         if(!positioned) return FALSE;
+      }
+      else
+         return FALSE;
+      if(Object.InheritsFrom(weap,"water"))
+      {
+         // got a water arrow selected
+         integer weapui=Quest.Get(WEAP_UI_QVAR);
+         
+         if(weapui==kReady)
+         {
+            return DoLesson("PullArrow","Attack");
+         }
+         else if(weapui==kCocked)
+         {
+            return DoLesson("ReleaseArrow","Attack");
+         }
+         else
+            return FALSE; // how did we get here anyway?
+      }
+      else
+      {
+         // @TODO: This doesn't handle the slim chance that the player _has_
+         // no water arrows.
+         return DoLesson("SelectWaterArrow","ReadyWater");
+      }
+   }
+
+   METHOD void Prompt()
+   {
+      object inv=Quest.Get(INV_ID_QVAR);
+      object weap=Quest.Get(WEAP_ID_QVAR);
+      object world=Quest.Get(WORLD_ID_QVAR);
+
+      Debug.MPrint("Checking prompt.  Objects=",world,",",inv,",",weap);
+
+      if(
+      TrainHealing(world,inv,weap) ||
+      TrainShootTorch(world,inv,weap) ||
+      TrainDoor(world,inv,weap) ||
+      TrainPickUpKey(world,inv,weap) ||
+      TrainGetLoot(world,inv,weap) ||
+      TrainPortable(world,inv,weap) ||
+      TrainUseFlares(world,inv,weap))
+         return;
+      DarkUI.TextMessage("",rgb(255,0,0),30000);
+   }
+   METHOD void Score(const string ref Action)
+   {
+      Quest.Set(string("tr_")+Action,TRUE);
+      Prompt();
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      // don't want starting point to bother with these messages.
+      if(!IsDataSet("Init") && Object.InheritsFrom(self,"Avatar"))
+      {
+         integer objmax=0;
+
+         Debug.MPrint("Doing avatar setup");
+
+         SetData("Init",TRUE);
+         // Create quest vars.
+         Quest.Set(WEAP_ID_QVAR,Quest.Get(WEAP_ID_QVAR));
+         Quest.Set(INV_ID_QVAR,Quest.Get(INV_ID_QVAR));
+         Quest.Set(WORLD_ID_QVAR,Quest.Get(WORLD_ID_QVAR));
+         Quest.Set(WEAP_UI_QVAR,Quest.Get(WEAP_UI_QVAR));
+         
+         Quest.SubscribeMsg(self,WEAP_ID_QVAR);
+         Quest.SubscribeMsg(self,INV_ID_QVAR);
+         Quest.SubscribeMsg(self,WORLD_ID_QVAR);
+         Quest.SubscribeMsg(self,WEAP_UI_QVAR);
+
+         // Woo hoo.  Put tracking scripts on all world-frobbable items,
+         // and set their FrobInfo to make sure they send select messages to
+         // scripts.
+         if(DarkGame.ConfigIsDefined("obj_max"))
+            DarkGame.ConfigGetInt("obj_max",objmax);
+
+         if(objmax>0)
+         {
+            integer object_id=1;
+            integer frobinfo=0;
+
+            for(object_id=1;object_id<=objmax;object_id++)
+            {
+               if(Object.Exists(object_id))
+               {
+                  frobinfo=Property.Get(object_id,"FrobInfo","World Action");
+
+                  if(frobinfo!=0)
+                  {
+                     if(!(frobinfo & kFrobFocusScript))
+                     {
+                        frobinfo=frobinfo|kFrobFocusScript;
+                        Property.Set(object_id,"FrobInfo","World Action",frobinfo);
+                     }
+                     if(IsDoor(object_id) && 
+                        !Object.HasMetaProperty(object_id,"M1_TrackDoor"))
+                        Object.AddMetaProperty(object_id,"M1_TrackDoor");
+                     else if(!Object.HasMetaProperty(object_id,"M1_TrackWorld"))
+                        Object.AddMetaProperty(object_id,"M1_TrackWorld");
+                  }
+               }
+            }
+         }
+      }
+      DefaultOnBeginScript();
+   }
+   /*
+   To track the interface state of the player's arrows and such, we will
+   add a script to them.  We'll do this when the player contains them
+   so that water crystals work correctly and so we have no chance for
+   error.  He claimed.
+   */
+   OnContainer()
+   {
+      if(message.event==kContainAdd || message.event==kContainCombine)
+      {
+         object containee=message.containee;
+         integer invtype=kInvTypeJunk; // by default
+
+         if(Property.Possessed(containee,"InvType"))
+            invtype=Property.Get(containee,"InvType");
+
+         if(!Object.HasMetaProperty(containee,"M1_TrackInv"))
+            Object.AddMetaProperty(containee,"M1_TrackInv");
+         if(invtype==kInvTypeJunk)
+         {
+            Quest.Set(INV_ID_QVAR,containee);
+            Quest.Set(INV_UI_QVAR,kUnready);
+         }
+
+         // Okay, this is a hack, but don't score any of this stuff
+         // in the first few moments of the sim, so we don't score
+         // based on the player's loadout.  Duh.
+         if(GetTime()>0.0)
+         {
+            if(Property.Possessed(containee,"Loot"))
+               if(LessonDone("UseLootTake"))
+                  Score("UsePortable");
+               else
+                  Score("UseLootTake");
+            else if(Object.InheritsFrom(containee,"Key"))
+               if(LessonDone("UseLootTake"))
+                  Score("UsePortable");
+               else
+                  Score("UseKeyTake");
+            else
+               Score("UsePortable");
+         }
+      }
+      Prompt();
    }
    OnQuestChange()
    {
       Prompt();
       DefaultOnQuestChange();
    }
-   OnNowUnlocked()
+   OnDamage()
    {
-      Score("SelectKey");
-      Score("UseKeyUnlock");
-      Score("UseKeyCenter");
-      DefaultOnNowUnlocked();
+      Prompt();
+      DefaultOnDamage();
    }
-END_SCRIPT(TrainLockedDoors)
-
-
-/* Script goes on the metaproperty that all of our inventory objects
-   get.  Handles various training messages depending on object type.
-   */
-BEGIN_SCRIPT(TrainInvent, KeyPrompter)
-MESSAGES:
-   OnFrobInvEnd()
+   OnMessage()
    {
-      object frobber=message.Frobber;
-      integer hp=0, max=0;
+      if(MessageIs("Prompt"))
+         Prompt();
+      DefaultOnMessage();
+   }
 
-      if(Object.InheritsFrom(self,"HealingPotion"))
-      {
-         if(Property.Possessed(frobber,"HitPoints"))
-            hp=Property.Get(frobber,"HitPoints");
-         if(Property.Possessed(frobber,"MAX_HP"))
-            max=Property.Get(frobber,"MAX_HP");
-         if(hp<max)
-            Score("UsePotionHeal");
-      }
-      DefaultOnFrobInvEnd();
-   }
-   OnContained()
-   {
-      if(Object.InheritsFrom(self,"Flashbomb") &&
-         message.event==kContainRemove &&
-         Object.InheritsFrom(message.container,"Avatar"))
-      {
-         Score("UseFlashbomb");
-      }
-      DefaultOnContained();
-   }
-END_SCRIPT(TrainInvent);
+END_SCRIPT(Training)
 
