@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/matrix/RCS/mxmat.h 1.4 1998/09/11 12:16:19 MAT Exp $
 
 #ifndef __MXMAT_H
