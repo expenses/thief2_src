@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/ai.h 1.40 1999/05/21 13:29:10 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/ai.h,v 1.46 2000/02/28 17:27:50 toml Exp $
 //
 //
 //
@@ -29,6 +29,7 @@ typedef cFixedStack<tAIPathCellID, 16> cAICellStack;
 
 class cAIActions;
 struct sAIEfficiency;
+struct sAIFrustrated;
 typedef unsigned tAIActionType;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,9 +65,10 @@ public:
    //
    STDMETHOD_(void, Kill)();
    STDMETHOD_(void, Resurrect)();
+   STDMETHOD_(BOOL, IsDying)(void);
    STDMETHOD_(BOOL, IsDead)();
 
-   // 
+   //
    // Freeze/unfreeze
    //
    STDMETHOD_(void, Freeze)(tSimTime duration);
@@ -89,7 +91,7 @@ public:
    STDMETHOD_(IAIComponent *, GetFirstComponent)(tAIIter *);
    STDMETHOD_(IAIComponent *, GetNextComponent)(tAIIter *);
    STDMETHOD_(void, GetComponentDone)(tAIIter *);
-   
+
    //
    // Access enactor components
    //
@@ -114,7 +116,7 @@ public:
    // Projectile hook
    //
    STDMETHOD_(void, NotifyFastObj)(ObjID firer, ObjID projectile, const mxs_vector & velocity);
-   
+
    ////////////////////////////////////
    //
    // Sound hook
@@ -132,11 +134,17 @@ public:
    // Notify of found body
    //
    STDMETHOD_(void, NotifyFoundBody)(ObjID body);
-   
+
+   ////////////////////////////////////
+   //
+   // Notify of found something suspicious
+   //
+   STDMETHOD_(void, NotifyFoundSuspicious)(ObjID suspobj);
+
    ////////////////////////////////////
 
    STDMETHOD_(void, NotifyScriptCommand)(eAIScriptCmd command, void *);
-   
+
    ////////////////////////////////////
 
    STDMETHOD_(void, NotifyProperty)(IProperty *, const sPropertyListenMsg *);
@@ -251,9 +259,9 @@ public:
    //
    // Reset the AIs thinking
    //
-   
+
    void ResetGoals();
-   
+
    /////////////////////////////////////////////////////////////
    //
    // Core Flow
@@ -312,6 +320,13 @@ public:
 
    ////////////////////////////////////
    //
+   // Update frustration.
+   //
+
+   virtual void UpdateFrustration();
+
+   ////////////////////////////////////
+   //
    // Update current action, if any. Return
    //
 
@@ -366,6 +381,14 @@ public:
 
    virtual void Enact();
 
+   ////////////////////////////////////
+   //
+   // Query "rendered" status
+   //
+
+   BOOL WasRendered(unsigned time = 0) const;
+   void UpdateRenderedStatus();
+
 protected:
 
    ////////////////////////////////////
@@ -374,14 +397,14 @@ protected:
    //
 
    cAIState m_state;
-   
+
    enum eFlags
    {
       kStarted = 0x01,
       kResetGoals = 0x02
    };
-   
-   unsigned m_flags;                             // these flags differ from state flags in that they are more 
+
+   unsigned m_flags;                             // these flags differ from state flags in that they are more
                                                  // concerned with the AI-as-state-machine than the AI-as-object (toml 10-31-98)
 
    STDMETHOD_(void, SetModeAndNotify)(eAIMode);
@@ -396,7 +419,7 @@ protected:
    //
    // General component management and notifications
    //
-   
+
    void ConnectComponent(IAIComponent * pComponent);
 
    STDMETHOD_(void, NotifySimStart)();
@@ -415,14 +438,20 @@ protected:
    void NotifyGoalChange(const cAIGoal *, const cAIGoal *);
    void NotifyActionChange(IAIAction *, IAIAction *);
 
+   void NotifyAwareness(ObjID source, eAIAwareLevel current, const sAIAlertness * pRaw);
+
    void NotifyAlertness(ObjID source, eAIAwareLevel previous, eAIAwareLevel current, const sAIAlertness * pRaw);
+
+   void NotifyHighAlert(ObjID source, eAIAwareLevel previous, eAIAwareLevel current, const sAIAlertness * pRaw);
+
+   void NotifyFrustration(sAIFrustrated *);
 
    STDMETHOD_(void, NotifyGoalsReset)(const cAIGoal *);
 
    STDMETHOD_(void, NotifyGameEvent)(void *);
-   
+
    ////////////////////////////////////
-   
+
    struct sAINotifyInfo
    {
       IAIComponent * pComponent;
@@ -435,6 +464,10 @@ protected:
    };
 
    cDynArray_<sAINotifyInfo, 1> m_NotifyInfo;
+
+   ////////////////////////////////////
+   
+   unsigned m_TimeLastRendered;
 
    ////////////////////////////////////
    //
@@ -456,9 +489,9 @@ protected:
    sAIUpdateSchedule m_UpdateSchedule;
 
    ////////////////////////////////////
-   
+
    cAITimer m_ResetTimer;
-   
+
    ////////////////////////////////////
    //
    // Senses
@@ -526,14 +559,14 @@ protected:
    eAIResult    m_CurGoalLastResult;
    cAIActions   m_CurActions;
    eAIResult    m_CurActionLastResult;
-   
+
    cAITimer     m_NullActionTimer;
-   
+
    ////////////////////////////////////
    //
    // Visited cell history
    //
-   
+
    cAICellStack m_CellStack;
 
    ////////////////////////////////////
@@ -548,17 +581,17 @@ protected:
    //
    // Debugging options
    //
-   
+
    const cAIMoveSuggestions * m_pDebugMoveSuggestions;
    const sAIMoveGoal *        m_pDebugMoveGoal;
-   
+
    STDMETHOD_(void, DebugDraw)();
    STDMETHOD_(void, DebugSetPrimitiveMove)(const cAIMoveSuggestions *, const sAIMoveGoal *);
    STDMETHOD_(void, DebugGetPrimitiveMove)(const cAIMoveSuggestions **, const sAIMoveGoal **);
 #endif
 
    ////////////////////////////////////
-   
+
    cAIRandomTimer m_SimStartTimer;
 
 };
@@ -574,7 +607,7 @@ inline ObjID cAI::GetID()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-   
+
 #pragma pack()
 
 #endif /* !__AI_H */
