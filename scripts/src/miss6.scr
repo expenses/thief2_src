@@ -200,9 +200,37 @@ BEGIN_SCRIPT(SoundGuy, RootScript)
 
 METHODS:
  
+  METHOD void SetSoundUp(object sndobj, string sndname)
+  {
+    Debug.MPrint("Setting sound ",sndname," up on ",sndobj);
+    object sndtoplay = Object.Named(sndname);
+    Debug.MPrint("Target sound is ",sndtoplay);
+    if (!Link.AnyExist("SoundDescription",sndobj,sndtoplay))
+      Link.Create("SoundDescription",sndobj,sndtoplay);
+  }
+
   METHOD void DoSoundSetup(int i)
   {
     Debug.MPrint(self," running sound setup on path ",i);
+    linkset splinks = Link.GetAll("ScriptParams",self);
+    while (splinks.AnyLinksLeft())
+    {
+      link cursplink = splinks.Link();
+
+      cAnsiStr tempstr = (cAnsiStr)((string)cursplink.GetData());
+      cAnsiStr altstr = (cAnsiStr)((string)i);
+
+      if (tempstr.Find(altstr)==0)  //string starts it off
+      {
+        if ((i != 1) || (tempstr.Find("10")!=0))  //check other case
+        {
+          tempstr.Remove(0,strlen(altstr));
+          SetSoundUp(cursplink.To(),(string)tempstr);
+        }
+      }
+
+      splinks.NextLink();
+    }
   }
 
 MESSAGES:
