@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/property.h 1.1 1999/04/07 14:40:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/property.h,v 1.15 2000/01/29 13:24:22 adurant Exp $
+#pragma once
 
 #ifndef PROPERTY__H
 #define PROPERTY__H
@@ -153,44 +154,8 @@ EXTERN IProperty* GetPropertyNamed(const char* name);
         (COMQueryInterface(_GetPropertyNamed(name),IID_##IFACE,(void**)ppFace) == S_OK)
 
 
-///////////////////////////////////////////////////////////////////////////////
-// 
-// TEMPLATE FUNCTION: GetPropVal
-//
-// Template function gets the value for an object, or the default value
-//
-// Be careful about mutating the result, it could mutate the default
-// structure!
-//
-// Commonly used inside macros to make a more convenient call:
-//
-//   IIntProperty *pHitPoints;
-//   IIntProperty *pMaxHitPoints;
-//   IMyProperty  *pMyProp;
-//
-//   #define kDefMaxHP 100
-//
-//   #define GetHP(obj)     GetPropVal(pHitPoints, obj, (int)0)
-//   #define GetMaxHP(obj)  GetPropVal(pMaxHitPoints, obj, (int)kDefMaxHP)
-//   #define GetMyProp(obj) GetPropVal(pMyProp, obj, (sMyStruct *)NULL)
-//
-//   void Foo(ObjID obj)
-//   {
-//      sMyStruct *pMyStruct;
-//      mprintf("%d has %d HP, %d Max\n");
-//      if ((pMyStruct = GetMyProp(obj)) != NULL)
-//         mprintf("(and has my property)\n");
-//   }
-//
 
-template <class IPROP, class PROP_TYPE>
-inline
-const PROP_TYPE GetPropVal(IPROP * pProp, ObjID obj, PROP_TYPE defVal)
-{
-   PROP_TYPE result = defVal;
-   pProp->Get(obj, &result);
-   return result;
-}
+
 
 #endif // PROPERTY__H
 

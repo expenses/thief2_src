@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propert_.h 1.2 1999/04/19 15:39:48 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/propert_.h,v 1.31 2000/01/29 13:24:24 adurant Exp $
+#pragma once
 
 #ifndef PROPERT__H
 #define PROPERT__H
@@ -6,6 +7,7 @@
 #include <propstor.h>
 #include <propman.h>
 #include <propknow.h>
+#include <dbtype.h>
 #include <propbase.h>
 #include <dynarray.h>
 #include <pstordel.h>
@@ -20,8 +22,6 @@ F_DECLARE_INTERFACE(INetManager);
 F_DECLARE_INTERFACE(IObjectNetworking);
 
 template <class T> class cSimpleDList;
-
-typedef ulong edbFiletype; // file type, a bitmask 
 
 ////////////////////////////////////////////////////////////
 //
@@ -211,8 +211,8 @@ public:
 
    // Concrete requirements enforcement
    void SetRebuildConcretes(BOOL fRebuild);
-   void RebuildConcretes(ObjID obj, uPropListenerValue);
-   void RebuildOneConcrete(ObjID obj, uPropListenerValue); 
+   void RebuildConcretes(ObjID obj);
+   void RebuildOneConcrete(ObjID obj); 
    static void LGAPI RebuildHierarchyListener(const sHierarchyMsg* msg, 
                                               HierarchyListenerData data);
 

@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/trait/RCS/traittyp.h 1.1 1999/04/07 14:41:00 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/traittyp.h,v 1.4 2000/01/29 13:25:17 adurant Exp $
+#pragma once
 
 #ifndef __TRAITTYP_H
 #define __TRAITTYP_H
