@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/relation.h 1.1 1999/04/07 14:38:24 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/relation.h,v 1.6 2000/01/29 13:24:50 adurant Exp $
+#pragma once
 #ifndef __RELATION_H
 #define __RELATION_H
 

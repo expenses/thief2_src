@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propman.h 1.1 1999/04/07 14:40:22 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/propman.h,v 1.6 2000/01/29 13:24:38 adurant Exp $
+#pragma once
 
 #ifndef __PROPMAN_H
 #define __PROPMAN_H

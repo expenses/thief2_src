@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/trait/RCS/traitbas.h 1.1 1999/04/07 14:40:58 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/traitbas.h,v 1.6 2000/01/29 13:25:04 adurant Exp $
+#pragma once
 
 #ifndef __TRAITBAS_H
 #define __TRAITBAS_H

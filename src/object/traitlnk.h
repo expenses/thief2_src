@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/trait/RCS/traitlnk.h 1.1 1999/04/07 14:40:59 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/traitlnk.h,v 1.2 2000/01/29 13:25:07 adurant Exp $
+#pragma once
 #ifndef __TRAITLNK_H
 #define __TRAITLNK_H
 #include <traitprp.h>

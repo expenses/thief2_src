@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/trait/RCS/traitman.h 1.1 1999/04/07 14:41:00 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/traitman.h,v 1.12 2000/01/29 13:25:09 adurant Exp $
+#pragma once
 
 #ifndef __TRAITMAN_H
 #define __TRAITMAN_H
