@@ -464,9 +464,12 @@ METHODS:
             object potion=MyPotion();
             if(potion!=object(0))
             {
-               // Play drinking motion?
+               // Play drinking motion
+               // @TODO: Attach potion to hand?
+               Object.AddMetaProperty(self,"M-LeftHandAlt");
+               Link.GetOne("Contains",self,potion).SetData(kContainTypeAlt);
                SetData("Drinking",TRUE);
-               Puppet.PlayMotion(self,"BH214113");
+               Puppet.PlayMotion(self,"humgulp");
             }
          }
       }
@@ -485,11 +488,12 @@ MESSAGES:
    }
    OnMotionEnd()
    {
-      if(message.MotionName=="BH214113" && IsDataSet("Drinking"))
+      if(message.MotionName=="humgulp" && IsDataSet("Drinking"))
       {
          object potion=MyPotion();
          if(potion!=object(0)) FrobObj(potion,kHighPriorityAction);
          ClearData("Drinking");
+         Object.RemoveMetaProperty(self,"M-LeftHandAlt");
       }
       DefaultOnMotionEnd();
    }
