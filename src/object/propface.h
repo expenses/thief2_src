@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propface.h 1.4 1999/04/22 14:54:29 JAEMZ Exp $
+// $Header: r:/t2repos/thief2/src/object/propface.h,v 1.12 2000/02/24 23:41:07 mahk Exp $
+#pragma once
 #ifndef PROPFACE_H
 #define PROPFACE_H
 
@@ -29,7 +30,7 @@ EXTERN IBoolProperty* CreateBoolProperty(const sPropertyDesc* desc, ePropertyImp
 EXTERN IBoolProperty* CreateBoolPropertyFromStore(const sPropertyDesc* desc, 
                                                   IPropertyStore* store); 
 // Use the default boolean property store
-EXTERN IBoolProperty* CreateDefaultBoolProperty(const sPropertyDesc* desc); 
+//EXTERN IBoolProperty* CreateDefaultBoolProperty(const sPropertyDesc* desc); 
 
 
 
@@ -111,26 +112,6 @@ EXTERN IVectorProperty* CreateVectorPropertyFromStore(const sPropertyDesc* desc,
 
 
 //------------------------------------------------------------
-// RGB PROPERTY 
-//
-
-#undef INTERFACE
-#define INTERFACE IRGBProperty
-DECLARE_PROPERTY_INTERFACE(IRGBProperty)
-{
-   DECLARE_UNKNOWN_PURE();
-   DECLARE_PROPERTY_PURE();
-   DECLARE_PROPERTY_ACCESSORS(struct sRGBA*);
-}; 
-
-EXTERN IRGBProperty* CreateRGBProperty(const sPropertyDesc* desc, ePropertyImpl impl); 
-EXTERN IRGBProperty* CreateRGBPropertyFromStore(const sPropertyDesc* desc, IPropertyStore* store); 
-
-
-
-
-
-//------------------------------------------------------------
 // STRING PROPERTY
 //
 
@@ -147,47 +128,6 @@ EXTERN IStringProperty* CreateStringProperty(const sPropertyDesc* desc, ePropert
 EXTERN IStringProperty* CreateStringPropertyFromStore(const sPropertyDesc* desc, IPropertyStore* store); 
 
 
-
-//------------------------------------------------------------
-// DoubleVec PROPERTY 
-//
-
-#undef INTERFACE
-#define INTERFACE IDoubleVecProperty
-DECLARE_PROPERTY_INTERFACE(IDoubleVecProperty)
-{
-   DECLARE_UNKNOWN_PURE();
-   DECLARE_PROPERTY_PURE();
-   DECLARE_PROPERTY_ACCESSORS(struct mxds_vector*);
-}; 
-
-EXTERN IDoubleVecProperty* CreateDoubleVecProperty(const sPropertyDesc* desc, ePropertyImpl impl); 
-EXTERN IDoubleVecProperty* CreateDoubleVecPropertyFromStore(const sPropertyDesc* desc, IPropertyStore* store); 
-
-
-
-//------------------------------------------------------------
-// ANGVEC PROPERTY 
-//
-
-#undef INTERFACE
-#define INTERFACE IAngVecProperty
-DECLARE_PROPERTY_INTERFACE(IAngVecProperty)
-{
-   DECLARE_UNKNOWN_PURE();
-   DECLARE_PROPERTY_PURE();
-   DECLARE_PROPERTY_ACCESSORS(struct mxs_angvec*);
-}; 
-
-EXTERN IAngVecProperty* CreateAngVecProperty(const sPropertyDesc* desc, ePropertyImpl impl); 
-EXTERN IAngVecProperty* CreateAngVecPropertyFromStore(const sPropertyDesc* desc, IPropertyStore* store); 
-
-
 #endif // PROPFACE_H
-
-
-
-
-
 
 

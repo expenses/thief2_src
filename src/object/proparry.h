@@ -1,65 +1,112 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/proparry.h 1.2 1999/04/21 11:38:24 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/proparry.h,v 1.9 2000/02/24 23:41:02 mahk Exp $
+
+
 #pragma once  
 #ifndef __PROPARRY_H
 #define __PROPARRY_H
 
-#include <propsto_.h>
+#include <objtype.h>
+#include <property.h>
+#include "propsto_.h"
+#include <dataops.h>
 #include <dataops_.h>
-#include <propbase.h>
 #include <packflag.h>
-#include <iobjsys.h>
-#include <objdef.h>
+#include <ObjArray.h>
+
+#include <dbmem.h>
 
 ////////////////////////////////////////////////////////////
 // ARRAY PROPERTY STORE IMPLEMENTATION 
 //
 
-template <class OPS> 
+template <class OPS, ulong flags = kOAF_Default> 
 class cArrayPropertyStore: public cPropertyStore<OPS>
 {
+protected:   
+
+
    
 public:
-   cArrayPropertyStore(ObjID min = gObjSys->GetLocalID(gObjSys->MaxObjID(kObjectAbstract)), 
-                       ObjID max = gObjSys->GetLocalID(gObjSys->MaxObjID(kObjectConcrete)))
-      : mArray(new sDatum[max-min]),
-        mInUse(max-min),
-        mMinObj(min),
-        mMaxObj(max)
+   cArrayPropertyStore()
+      : mArray(),       
+        mInUse(MaxObj()-MinObj()), 
+        m_pSink(NULL)
    {
-      // translate array
-      mArray -= mMinObj; 
+      AutoConnect(); 
    }
 
    ~cArrayPropertyStore()
    {
-      mArray += mMinObj; 
-      delete [] mArray; 
+      AutoDisconnect(); 
    }
+
 
    //
    // Helpers
    // 
+
+   tObjIdx MinObj() const { return mArray.Bounds().min; }; 
+   tObjIdx MaxObj() const { return mArray.Bounds().max; }; 
+
    
-   BOOL InUse(ObjID obj) const { return mInUse.IsSet(obj - mMinObj); };
-   void SetInUse(ObjID obj)  { mInUse.Set(obj - mMinObj); }; 
-   void ClearInUse(ObjID obj)  { mInUse.Clear(obj - mMinObj); }; 
+   BOOL InUse(ObjID obj) const { return mInUse.IsSet(obj - MinObj()); };
+   void SetInUse(ObjID obj)  { mInUse.Set(obj - MinObj()); }; 
+   void ClearInUse(ObjID obj)  { mInUse.Clear(obj - MinObj()); }; 
 
    BOOL InBounds(ObjID obj) const
    { 
-      return obj >= mMinObj && obj < mMaxObj;
+      tObjIdx idx = obj; 
+      return idx >= MinObj() && idx < MaxObj();
    }      
 
-   void ValidateHost(ObjID obj) const
+   //
+   // Auto-resizing
+   // 
+
+   void AutoConnect(); 
+   void AutoDisconnect(); 
+
+   void Resize(const sObjBounds& bounds)
    {
-      AssertMsg(gObjSys->GetObjHost(obj) == gObjSys->GetHost(),
-                "Array property store can only be used on locally created properties!");
+      tObjIdx oldMin = MinObj(); 
+      tObjIdx oldMax = MaxObj(); 
+
+      // Resize our vector
+      tResult result = mArray.Resize(bounds); 
+
+      if (result != S_OK) 
+         return;  // No work to do.
+
+      // If min changes, we have to shift all our bits around
+      if (oldMin != MinObj())
+      {
+         // Make a copy of the vector
+         cPackedBoolSet tempVec(oldMax-oldMin);
+         tempVec.CopyFrom(mInUse); 
+
+         // Resize it
+         mInUse.Resize(MaxObj()-MinObj());          
+         mInUse.ClearAll(); 
+
+         // Now copy over the temp vector bit by bit
+         tObjIdx start = (oldMin > bounds.min) ? oldMin : bounds.min; 
+         tObjIdx end   = (oldMax < bounds.max) ? oldMax : bounds.max; 
+
+         for (int i = start; i < end; i++)
+            if (tempVec.IsSet(i - oldMin))
+               SetInUse(i);
+      }
+      else
+         mInUse.Resize(MaxObj()-MinObj());
    }
 
+
+   
    //
    // FAST ACCESS PATH 
    //
    
-   sDatum& operator[](int obj) const { Assert_(InBounds(obj)); return mArray[obj]; }; 
+   sDatum& operator[](ObjID obj) const { Assert_(InBounds(obj)); return mArray[obj]; }; 
 
 
    //
@@ -74,9 +121,6 @@ public:
 
    STDMETHOD_(sDatum,Create)(ObjID obj) 
    {
-      ValidateHost(obj);
-      obj = gObjSys->GetLocalID(obj);
-
       sDatum val; 
       if (InBounds(obj) && !InUse(obj))
       {
@@ -90,9 +134,6 @@ public:
 
    STDMETHOD(Delete)(ObjID obj)
    {
-      ValidateHost(obj);
-      obj = gObjSys->GetLocalID(obj);
-
       if (InBounds(obj) && InUse(obj))
       {
          mOps.Delete(mArray[obj]); 
@@ -105,9 +146,6 @@ public:
 
    STDMETHOD(Release)(ObjID obj, sDatum *pval)
    {
-      ValidateHost(obj);
-      obj = gObjSys->GetLocalID(obj);
-
       if (InBounds(obj) && InUse(obj))
       {
          *pval = mArray[obj];
@@ -121,21 +159,11 @@ public:
 
    STDMETHOD_(BOOL,Relevant)(ObjID obj) const
    {
-      if (gObjSys->GetObjHost(obj) != gObjSys->GetHost())
-         return FALSE;
-
-      obj = gObjSys->GetLocalID(obj);
-
       return InBounds(obj) && InUse(obj); 
    }
 
    STDMETHOD_(BOOL,Get)(ObjID obj, sDatum* pval) const
    {
-      if (gObjSys->GetObjHost(obj) != gObjSys->GetHost())
-         return FALSE;
-
-      obj = gObjSys->GetLocalID(obj);
-
       if (InBounds(obj) && InUse(obj))
       {
          *pval = mArray[obj];
@@ -146,9 +174,6 @@ public:
 
    STDMETHOD(Set)(ObjID obj, sDatum val)
    {
-      ValidateHost(obj);
-      obj = gObjSys->GetLocalID(obj);
-
       if (!InBounds(obj))
          return E_FAIL; 
 
@@ -167,12 +192,6 @@ public:
 
    STDMETHOD_(sDatum,Copy)(ObjID targ, ObjID src) 
    {
-      ValidateHost(targ);
-      ValidateHost(src);
-
-      targ = gObjSys->GetLocalID(targ);
-      src = gObjSys->GetLocalID(src);
-
       if (!InBounds(targ) || !InBounds(src) || !InUse(src))
          return sDatum(); 
 
@@ -192,7 +211,7 @@ public:
 
    STDMETHOD(Reset)()
    {
-      for (int i = mMinObj; i < mMaxObj; i++)
+      for (int i = MinObj(); i < MaxObj(); i++)
          if (InUse(i))
          {
             mOps.Delete(mArray[i]); 
@@ -204,16 +223,16 @@ public:
 
    STDMETHOD(IterStart)(sPropertyObjIter* piter) const
    {
-      piter->next = mMinObj; 
+      piter->next = MinObj(); 
 
       return S_OK; 
    }
 
    STDMETHOD_(BOOL,IterNext)(sPropertyObjIter* piter, ObjID* obj, sDatum* value) const
    {
-      while (piter->next < mMaxObj && !InUse(piter->next))
+      while (piter->next < MaxObj() && !InUse(piter->next))
          piter->next++; 
-      if (piter->next >= mMaxObj)
+      if (piter->next >= MaxObj())
          return FALSE; 
 
       if (obj)
@@ -231,11 +250,15 @@ public:
    }
 
 protected: 
-   sDatum* mArray;
+   typedef cObjArray<sDatum,flags|kOAF_NoAutoResize> cDatumVec;
+
+
+   // @NOTE: Order here is very important for construction 
+   cDatumVec mArray;
+ 
    cPackedBoolSet mInUse; 
-   ObjID mMinObj;
-   ObjID mMaxObj;
-   
+
+   IObjIDSink* m_pSink; 
 };
 
 //------------------------------------------------------------
@@ -244,10 +267,10 @@ protected:
 
 class cGenericArrayPropertyStore : public cArrayPropertyStore<cDelegatingDataOps>
 {
+
 public:
-   cGenericArrayPropertyStore(ObjID min = gObjSys->GetLocalID(gObjSys->MaxObjID(kObjectAbstract)), 
-                              ObjID max = gObjSys->GetLocalID(gObjSys->MaxObjID(kObjectConcrete)))
-      : cArrayPropertyStore<cDelegatingDataOps>(min,max)
+   cGenericArrayPropertyStore()
+      : cArrayPropertyStore<cDelegatingDataOps>()
    {
       mOps.InitDelegation(this); 
    }
@@ -260,6 +283,68 @@ public:
 
 }; 
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// TEMPLATE: cArrayPropObjIDSink
+//
 
+template <class STORE> 
+class cArrayPropObjIDSink: public cObjIDSink
+{
+
+public:
+   
+   cArrayPropObjIDSink(STORE* pStore) : m_pStore(pStore) {}; 
+
+
+   virtual void OnObjIDSpaceResize(const sObjBounds& bounds)
+   {
+      m_pStore->Resize(bounds); 
+   }
+
+private:
+
+   STORE* m_pStore; 
+
+
+};
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// AutoConnection support for array
+//
+//
+
+template <class OPS, ulong flags>
+inline void cArrayPropertyStore<OPS,flags>::AutoConnect()
+{
+   AutoAppIPtr(ObjIDManager); 
+
+   // Resize the array based on the current size of the ObjID space
+   Resize(pObjIDManager->GetObjIDBounds()); 
+
+   m_pSink = new cArrayPropObjIDSink< cArrayPropertyStore<OPS,flags> >(this); 
+      
+   pObjIDManager->Connect(m_pSink); 
+  
+}
+
+///////////////////////////////////////
+
+template <class OPS, ulong flags>
+inline void cArrayPropertyStore<OPS,flags>::AutoDisconnect()
+{
+   if (m_pSink)
+   {
+      AutoAppIPtr(ObjIDManager); 
+      pObjIDManager->Disconnect(m_pSink); 
+
+      SafeRelease(m_pSink);       
+   }
+}
+
+
+
+#include <undbmem.h>
 
 #endif // __PROPARRY_H
