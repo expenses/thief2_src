@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.8 2000/02/26 21:07:40 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.9 2000/02/28 06:04:55 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -772,3 +772,105 @@ OnMessage()
 }
 
 END_SCRIPT (TrapAddMetaProp)
+
+
+
+// Script:	RenewableResource
+
+// This script is on a Marker object.  The marker is ScriptParams-linked to a
+// power-up archetype in the hierarchy.  The data on the ScriptParams link describes 
+// how destitute the player has to be in this resource in order for this script to 
+// produce a new instance of this resource in the world at its own location.  The
+// script tracks whether there is already such an object at its location and will
+// not produce a new one if so.
+
+// This script hasn't been finished, tested, checked-in, or 
+// added to the mission yet. 2/28/00 - RLS
+
+BEGIN_SCRIPT (RenewableResource, RootScript)
+
+METHODS:
+// return something on the end of a ScriptParams link
+// or OBJ_NULL if none
+object GetResource()
+{
+	if (Link.AnyExist("ScriptParams",self))
+		return Link.GetOne("ScriptParams",self).To();
+	else
+		return OBJ_NULL;
+}
+
+// return value in ScriptTiming property or
+// default to 180.0 (3 minutes) otherwise
+float GetPeriod()
+{
+	float period = 180.0;
+
+   if (Property.Possessed(self, "ScriptTiming"))
+   {
+      period = Property.Get(self, "ScriptTiming");
+   }
+		
+	return period;
+}
+
+// create a new instance of my resource, add the
+// "TrigWorldFrob" script to it, and
+// forge a CD-link from it to me
+void SpawnResource()
+{
+
+}
+
+// scan through all outgoing Contains links from
+// the player, check to see if any inherit from my 
+// resource, keep a sum of the stack counts of those
+// that do.  return (sum < X)  where X is the data
+// on the ScriptParams link from me to the resource archetype
+boolean PlayerNeedsResource()
+{
+	return FALSE;
+}
+
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+	{
+		SetOneShotTimer("Ping",GetPeriod());
+		SpawnResource();  // assumes there is no resource instance there at sim start
+	}
+	DefaultOnSim();
+}
+
+OnTimer()
+{
+	if (message.name == "Ping")
+	{
+		// check for outgoing ~CD link,   if my it exists, my resource is still
+		// here, so nevermind
+		if (Link.AnyExist("~ControlDevice",self))
+		{
+			Debug.MPrint(self," still has a resource, not spawning.");
+		}
+		else if (PlayerNeedsResource())
+		{
+			SpawnResource();
+		}
+	}
+	DefaultOnTimer();
+}
+
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		// my resource has been picked up.  snap the CD link from it to me
+	}
+	DefaultOnMessage();
+}
+
+END_SCRIPT (RenewableResource)
+
+
+
