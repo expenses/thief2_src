@@ -984,6 +984,12 @@ BEGIN_SCRIPT(SuspiciousReactions, AI)
 //ugh, this is getting ugly.  Sigh.  AMSD
 
 METHODS:
+
+   METHOD BOOL ShouldILight()
+   {
+      integer should = Data.RandInt(1,6);
+      return (should == 1);
+   }
   
    //We have a semaphore "DoingSuspicious" for not stomping over ourselves,
    //but new suspicious objects can grab our attention if they are high
@@ -1097,6 +1103,8 @@ METHODS:
    METHOD void GasLightCall(ObjID suspobj)
    {
      Debug.MPrint("Running gas light reaction");
+     if (!ShouldILight())
+        return;
      if ((integer)GetData("DoingSuspicious")!=0)
      {
        if ((integer)GetData("DoingSuspicious")!=1) //not currently doing gaslight
