@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/tagfile/RCS/tagfile.h 1.2 1999/01/07 16:20:53 mahk Exp $
 
 #ifndef __TAGFILE_H
