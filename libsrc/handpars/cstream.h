@@ -1,8 +1,16 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		CSTREAM.H		Streams for C
 //		Rex E. Bradford (REX)
 /*
-* $Header: x:/prj/tech/libsrc/handpars/RCS/cstream.h 1.5 1996/12/18 16:11:06 DAVET Exp $
+* $Header: x:/prj/tech/libsrc/handpars/RCS/cstream.h 1.6 1970/01/01 00:00:00 REX Exp $
 * $Log: cstream.h $
+ * Revision 1.6  1970/01/01  00:00:00  REX
+ * Added ifdef cplusplus
+ * 
  * Revision 1.5  1996/12/18  16:11:06  DAVET
  * Added prevChar and CsGetPrev for ability to get the previous character
  * 
@@ -29,12 +37,16 @@
  * 
 */
 
-#ifndef CSTREAM_H
-#define CSTREAM_H
+#ifndef __CSTREAM_H
+#define __CSTREAM_H
 
 #include <stdio.h>
-#include "types.h"
-#include "datapath.h"
+#include <types.h>
+#include <datapath.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //	A Cstream implements these functions:
 
@@ -145,6 +157,9 @@ void CsPrintf(Cstream *cs, char *fmt, ...);
 #define CS_DEFAULT_LINEBUFF_SIZE 1024
 void CsInitLineBuff(Cstream *cs, int size);	// if 0, uses default size
 
+#ifdef __cplusplus
+};
 #endif
 
-
+#endif
+
