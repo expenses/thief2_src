@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/res/RCS/makefile $
 # $Revisiion: $
-# $Author: TOML $
-# $Date: 1997/03/06 21:46:48 $
+# $Author: JAEMZ $
+# $Date: 1997/05/17 17:45:57 $
 
 MAKETOP = $(CWD)
 
@@ -17,8 +17,7 @@ LIBTARGS = res
 res_OBJS = lzw lzwfd2bf res restypes resfile resacc refacc \
            resload resmem rescum resbuild resmake resexblk \
            resmisc resarq resthred resagg resguid rescache \
-           pkzip
-
+           rescback pkzip
 
 nostackchk_OBJS = pkzip
 
