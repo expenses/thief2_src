@@ -1612,3 +1612,15 @@ MESSAGES:
    }
 
 END_SCRIPT(CleanUpAttack)
+
+BEGIN_SCRIPT(SlayHaltSpeech, AI)
+
+MESSAGES:
+
+   OnSlain()
+   {
+      Sound.HaltSpeech(self);
+      DefaultOnSlain();
+   }
+END_SCRIPT(SlayHaltSpeech)
+
