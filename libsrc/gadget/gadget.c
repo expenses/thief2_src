@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/gadget/gadget.c,v 1.56 1998/09/09 14:59:27 KEVIN Exp $
 
 // library includes

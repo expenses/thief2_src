@@ -1,7 +1,12 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #ifndef __UIBUTTON_H
 #define __UIBUTTON_H
 /*
- * $Source: x:/prj/tech/libsrc/gadget/RCS/uibutton.h $
+ * $Source: r:/t2repos/thief2/libsrc/gadget/uibutton.h,v $
  * $Revision: 1.4 $
  * $Author: mahk $
  * $Date: 1996/08/26 02:03:03 $

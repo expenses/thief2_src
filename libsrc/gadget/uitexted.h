@@ -1,7 +1,12 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #ifndef __UITEXTED_H
 #define __UITEXTED_H
 /*
- * $Source: x:/prj/tech/libsrc/gadget/RCS/uitexted.h $
+ * $Source: r:/t2repos/thief2/libsrc/gadget/uitexted.h,v $
  * $Revision: 1.5 $
  * $Author: JAEMZ $
  * $Date: 1998/01/12 12:41:29 $
