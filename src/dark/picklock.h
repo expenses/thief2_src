@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/picklock.h 1.4 1998/11/01 05:21:29 dc Exp $
+// $Header: r:/t2repos/thief2/src/dark/picklock.h,v 1.6 2000/01/29 20:22:08 adurant Exp $
 // lockpick service, properties, the whole thing...
 
 #pragma once
@@ -19,6 +19,34 @@ DECLARE_PROPERTY_INTERFACE(IPickCfgProperty)
 }; 
 
 #undef INTERFACE
+
+#define INTERFACE IAdvPickTransCfgProperty
+DECLARE_PROPERTY_INTERFACE(IAdvPickTransCfgProperty)
+{
+  DECLARE_UNKNOWN_PURE();
+  DECLARE_PROPERTY_PURE();
+  DECLARE_PROPERTY_ACCESSORS(sAdvPickTransCfg*);
+};
+#undef INTERFACE
+
+#define INTERFACE IAdvPickStateCfgProperty
+DECLARE_PROPERTY_INTERFACE(IAdvPickStateCfgProperty)
+{
+  DECLARE_UNKNOWN_PURE();
+  DECLARE_PROPERTY_PURE();
+  DECLARE_PROPERTY_ACCESSORS(sAdvPickStateCfg*);
+};
+#undef INTERFACE
+
+#define INTERFACE IAdvPickSoundCfgProperty
+DECLARE_PROPERTY_INTERFACE(IAdvPickSoundCfgProperty)
+{
+  DECLARE_UNKNOWN_PURE();
+  DECLARE_PROPERTY_PURE();
+  DECLARE_PROPERTY_ACCESSORS(sAdvPickSoundCfg*);
+};
+#undef INTERFACE
+
 #define INTERFACE IPickStateProperty
 DECLARE_PROPERTY_INTERFACE(IPickStateProperty)
 {
@@ -30,6 +58,9 @@ DECLARE_PROPERTY_INTERFACE(IPickStateProperty)
 #define PROP_PICKSRC_NAME   "PickSrc"
 #define PROP_PICKCFG_NAME   "PickCfg"
 #define PROP_PICKSTATE_NAME "PickState"
+#define PROP_ADVPICKTRANSCFG_NAME "AdvPickTransCfg"
+#define PROP_ADVPICKSTATECFG_NAME "AdvPickStateCfg"
+#define PROP_ADVPICKSOUNDCFG_NAME "AdvPickSoundCfg"
 
 // do player hand motion setup/other master control for pick readiness
 EXTERN BOOL PickLockReady(ObjID frobber, ObjID pick_obj);
@@ -54,5 +85,7 @@ EXTERN BOOL PickLockTerm(void);
 
 // since we dont use player arm anymore
 EXTERN void PickLockPerFrameCallback(ulong dt);
+
+void ResetPickState(ObjID lock);
 
 #endif  // __PICKLOCK_H
