@@ -1,11 +1,10 @@
-// $Header: x:/prj/tech/libsrc/object/objcore/RCS/iobjsys.h 1.1 1999/04/07 14:38:42 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/iobjsys.h,v 1.16 2000/02/24 23:40:58 mahk Exp $
+#pragma once
 #ifndef __IOBJSYS_H
 #define __IOBJSYS_H
 
 #include <objtype.h>
-#include <objdef.h>
 #include <comtools.h>
-#include <lazyagg.h>
 
 F_DECLARE_INTERFACE(IObjectQuery);
 F_DECLARE_INTERFACE(IObjectSystem);
@@ -22,13 +21,7 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    // If the "archetype" is not actually an archetype, then creates a clone
    // of the "archetype" object using CloneObject
    //
-   STDMETHOD_(ObjID,Create)(THIS_ ObjID archetype, eObjConcreteness concrete = kObjectConcrete) PURE;
-
-   //
-   // Create a concrete object with a specific ObjID.  You must be sure that the
-   // ObjID is available (ie. used to create a proxy object)
-   //
-   STDMETHOD_(ObjID,CreateID)(THIS_ ObjID objID, ObjID archetype) PURE;
+   STDMETHOD_(ObjID,Create)(THIS_ ObjID archetype, eObjConcreteness concrete) PURE;
 
    // 
    // Complex object creation
@@ -38,10 +31,7 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    // "object creation transaction," adding properties to the created object, and then
    // ending the "object creation transaction."
    //
-   // There is also a version for a specific objID.  You must be sure that the 
-   // ObjID is available (ie. used to create a proxy object)
    STDMETHOD_(ObjID,BeginCreate)(THIS_ ObjID archetype, eObjConcreteness concrete) PURE;
-   STDMETHOD_(ObjID,BeginCreateID)(THIS_ ObjID obj, ObjID archetype) PURE;
    STDMETHOD(EndCreate)(THIS_ ObjID obj) PURE;
 
    //
@@ -61,25 +51,9 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    STDMETHOD(Reset)(THIS) PURE;
 
    //
-   // Set/Get the this machine's HostID
-   //
-   STDMETHOD(SetHost)(THIS_ HostID host) PURE;
-   STDMETHOD_(HostID,GetHost)(THIS) PURE;
-
-   //
    // Return whether an object exists
    //
    STDMETHOD_(BOOL,Exists)(THIS_ ObjID obj) PURE;
-
-   //
-   // Return the host (birthpace, not necessarily owner) of an object
-   //
-   STDMETHOD_(HostID,GetObjHost)(THIS_ ObjID obj) PURE;
-
-   //
-   // Return the local ID (w/o host) of an object
-   //
-   STDMETHOD_(ObjID,GetLocalID)(THIS_ ObjID obj) PURE;
 
    // 
    // Object Naming
@@ -93,6 +67,12 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    //
    STDMETHOD(SetObjTransience)(THIS_ ObjID obj, BOOL transient) PURE;
    STDMETHOD_(BOOL,ObjIsTransient)(THIS_ ObjID obj) PURE;
+
+   //
+   // Immobility, i.e. whether we can ever be moved
+   //
+   STDMETHOD(SetObjImmobility)(THIS_ ObjID obj, BOOL immobile) PURE;
+   STDMETHOD_(BOOL,ObjIsImmobile)(THIS_ ObjID obj) PURE;
 
    //
    // Iteration
@@ -110,6 +90,12 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    STDMETHOD(DatabaseNotify)(THIS_ eObjNotifyMsg msg, ObjNotifyData data) PURE;
 
    //
+   // Cause Destroyed objects to be actually removed
+   // *To Be Removed* 
+   //
+   STDMETHOD(PurgeObjects)(THIS) PURE;
+
+   //
    // Listen for changes to objects
    //
    STDMETHOD_(tObjListenerHandle,Listen)(THIS_ sObjListenerDesc* desc) PURE; 
@@ -118,8 +104,9 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    //
    // Size of the object space
    //
-   STDMETHOD_(ObjID,MaxObjID)(THIS_ eObjConcreteness which) PURE;
-   STDMETHOD_(ObjID,MinObjID)(THIS_ eObjConcreteness which) PURE;
+   STDMETHOD_(ObjID,MaxObjID)(THIS) PURE;
+   STDMETHOD_(ObjID,MinObjID)(THIS) PURE;
+   STDMETHOD_(int,ActiveObjects)(THIS) PURE;
 
    // 
    // "lock" the object system so that no objects will be destroyed.
@@ -166,14 +153,6 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
    //
    STDMETHOD(SetSubPartitionFilter)(THIS_ eObjPartition subpart, const sObjPartitionFilter* filter) PURE; 
 
-#ifndef SHIP
-
-   //
-   // Debugging/spewing methods
-   //
-   STDMETHOD(SpewObjList)(THIS_ eObjConcreteness which) PURE;
-
-#endif
 };
 
 #undef INTERFACE 
@@ -204,7 +183,6 @@ DECLARE_INTERFACE_(IObjectSystem,IUnknown)
 
 EXTERN tResult LGAPI ObjectSystemCreate(void);
 
-static LazyAggMember(IObjectSystem) gObjSys;
 
 
 #endif // __IOBJSYS_H
