@@ -10,7 +10,7 @@ SPEW_ON = 1
 
 COMPILER = watcom
 SRCDIR = r:\prj\lib\src\res
-RELDIR = r:\prj\lib\release
+RELDIR = r:\prj\lib\rel
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
