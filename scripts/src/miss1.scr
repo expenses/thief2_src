@@ -470,11 +470,13 @@ BEGIN_SCRIPT(Training, RootScript)
        nothing) and TRUE otherwise.
        */
     METHOD boolean DoLesson(const string ref Action, const string ref Key,
-                            const string ref Key2=string(""))
+                            const string ref Key2=string(""),
+                            const string ref Key3=string(""))
     {
        string DisplayOutput = "";
        string Command = Data.GetString("PlayCmd",Key+"_command");
        string Command2 = Data.GetString("PlayCmd",Key2+"_command");
+       string Command3 = Data.GetString("PlayCmd",Key3+"_command");
        boolean done=LessonDone(Action);
 
        // Debug.MPrint("Call DoLesson ",Action);
@@ -491,6 +493,10 @@ BEGIN_SCRIPT(Training, RootScript)
              DisplayOutput = DisplayOutput + "\n"
                            + Data.GetString("PlayAct",Key2) + " = "
                            + DarkUI.DescribeKeyBinding(Command2);
+          if (Key3!="" && DarkUI.IsCommandBound(Command3))
+             DisplayOutput = DisplayOutput + "\n"
+                           + Data.GetString("PlayAct",Key3) + " = "
+                           + DarkUI.DescribeKeyBinding(Command3);
           /* Tack string descriptive of action in question on front */
           DisplayOutput = Data.GetString("PlayHint",Action)
                           + DisplayOutput;
@@ -577,7 +583,10 @@ BEGIN_SCRIPT(Training, RootScript)
     {
        if(ObjPortable(world) && Link.AnyExist("~Contains",world))
        {
-          return DoLesson("UsePickpocket","Use");
+          // For one frame after picking things up, this could be an item
+          // now in _our_ inventory.  So, check that.
+          if(Object.InheritsFrom(Link.GetOne("~Contains",world).To(),"Creature"))
+             return DoLesson("UsePickpocket","Use");
        }
        return FALSE;
     }
@@ -659,7 +668,7 @@ BEGIN_SCRIPT(Training, RootScript)
           }
           if(keyfit) // some key in inventory fits
           {
-             return DoLesson("SelectKey","CycleInventory");
+             return DoLesson("SelectKey","CycleInventory","Countercycle");
           }
           else
           {
@@ -695,7 +704,7 @@ BEGIN_SCRIPT(Training, RootScript)
             if(Key.TryToUseKey(inv,world,kKeyUseCheck))
                return DoLesson("UseKeyLock","Use");
             else
-               return DoLesson("SelectNonTool","Use","CycleInventory");
+               return DoLesson("SelectNonTool","Use","CycleInventory","Countercycle");
          }
          if(state==kDoorOpen || state==kDoorOpening) 
             return DoLesson("UseDoorClose","Use");
@@ -1124,11 +1133,4 @@ MESSAGES:
    }
 
 END_SCRIPT(WhistleCall);
-
-
-
-
-
-
-
 
