@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/crettype.h 1.5 1998/06/21 15:12:06 kate Exp $
+// $Header: r:/t2repos/thief2/src/motion/crettype.h,v 1.6 2000/01/31 09:50:08 adurant Exp $
+#pragma once
 
 #ifndef __CRETTYPE_H
 #define __CRETTYPE_H

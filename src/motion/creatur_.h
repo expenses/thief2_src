@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/creatur_.h 1.11 1999/02/17 13:35:32 JON Exp $
+// $Header: r:/t2repos/thief2/src/motion/creatur_.h,v 1.12 2000/01/31 09:50:07 adurant Exp $
+#pragma once
 
 #ifndef __CREATUR__H
 #define __CREATUR__H

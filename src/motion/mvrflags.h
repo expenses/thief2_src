@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/motion/RCS/mvrflags.h 1.5 1999/08/05 17:08:35 Justin Exp $
+// $Header: r:/t2repos/thief2/src/motion/mvrflags.h,v 1.6 2000/01/31 09:49:54 adurant Exp $
 //
+#pragma once
 
 #ifndef __MVRFLAGS_H
 #define __MVRFLAGS_H

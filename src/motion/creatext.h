@@ -1,6 +1,7 @@
-// $Header: r:/prj/cam/src/motion/RCS/creatext.h 1.22 1999/02/02 16:37:49 JUSTIN Exp $
+// $Header: r:/t2repos/thief2/src/motion/creatext.h,v 1.23 2000/01/31 09:50:06 adurant Exp $
 // external command file for creature module.
 // used for calling from .c files
+#pragma once
 
 #ifndef __CREATEXT_H
 #define __CREATEXT_H

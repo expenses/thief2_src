@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/mvrutils.h 1.14 1999/06/22 20:31:16 JON Exp $
+// $Header: r:/t2repos/thief2/src/motion/mvrutils.h,v 1.15 2000/01/31 09:49:56 adurant Exp $
+#pragma once
 
 #ifndef __MVRUTILS_H
 #define __MVRUTILS_H
