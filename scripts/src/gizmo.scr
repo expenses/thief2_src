@@ -683,25 +683,24 @@ END_SCRIPT(StdTwoState)
 // A lever that uses this script needs FrobWorld and Tweq properties on it.
 BEGIN_SCRIPT(StdLever,StdTwoState)
 
-  METHODS:
-     METHOD void PostTweqActivate (integer dir)
-     {
-        // if you want to modify the basic behavior of broadcasting
-        // TurnOn and TurnOff messages, you can derive from this
-        // script and override the method.
-        if (dir==kTweqDirReverse) 
-           // the lever is going from down to up, send TurnOff
-           Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-        else if (dir==kTweqDirForward) {
-           // the lever is going from up to down, send TurnOn
-           Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-           DarkGame.FoundObject(self);
-        }
-     }
+METHODS:
+   METHOD void PostTweqActivate (integer dir)
+   {
+      // if you want to modify the basic behavior of broadcasting
+      // TurnOn and TurnOff messages, you can derive from this
+      // script and override the method.
+      if (dir==kTweqDirReverse) 
+         // the lever is going from down to up, send TurnOff
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      else if (dir==kTweqDirForward) {
+         // the lever is going from up to down, send TurnOn
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         DarkGame.FoundObject(self);
+      }   
+   }
 
-  MESSAGES:
-     OnFrobWorldEnd()
-     {
+   METHOD void HandleFrob(void)
+   {
        // If lever is locked, then it can't move in respone to frobs.
        // There must of course be some feedback to the frob, but unlike
        // in the door case this feedback won't be as natural with just
@@ -715,7 +714,13 @@ BEGIN_SCRIPT(StdLever,StdTwoState)
        else {
           TweqActivate();
        }
-       DefaultOnFrobWorldEnd();
+   }
+
+MESSAGES:
+     OnFrobWorldEnd()
+     {
+        HandleFrob();
+        DefaultOnFrobWorldEnd();
      }
 
 END_SCRIPT(StdLever)
@@ -897,7 +902,7 @@ MESSAGES:
         if(! (Object.InheritsFrom(message.collObj,"Avatar")
               || Object.InheritsFrom(message.collObj,"Creature")))
         {
-          ButtonPush();
+           ButtonPush();
         }
       }
       DefaultOnPhysCollision();
@@ -909,6 +914,63 @@ MESSAGES:
    }
 END_SCRIPT(StdButton)
 
+
+/* DOUBLE BUTTON:
+   A toggling switch with two buttons on it.  When one is depressed, the other is expressed
+   (as it were).  Functionally equivalent to a lever (toggling between TurnOn and TurnOff
+   with successive frobs) except that it animates differently and you can toggle it by
+   colliding with it.
+   */
+BEGIN_SCRIPT(DoubleButton, StdLever)
+METHODS:
+   METHOD void TweqActivate()
+   {
+      // by default, flags1 will want the value of flags2.
+      integer flags1=Property.Get(self,"StTweqJoints","Joint2AnimS");
+      integer flags=Property.Get(self,"StTweqJoints","AnimS");
+
+      Base::TweqActivate();
+
+      if(flags&0x1) // if tweq is ON
+         flags1=flags1^0x2;  // toggle REVERSE bit.
+      // no matter what, joint 1 shold be ON now
+      flags1=flags1|0x1;
+
+      Property.Set(self,"StTweqJoints","Joint1AnimS",flags1);
+   }
+   // @TODO: As with buttons, treat certain phys collisions like frobs.
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // only pushed by collisions with your front face
+      // @TODO: Get rid of magic number.
+      if(message.collSubmod==4)
+      {
+        // collisions with AI's don't push the button; they're
+        // assumed to be controlling themselves a bit better than that.
+        if(! (Object.InheritsFrom(message.collObj,"Avatar")
+              || Object.InheritsFrom(message.collObj,"Creature")))
+        {
+           HandleFrob();
+        }
+      }
+      DefaultOnPhysCollision();
+   }
+
+
+END_SCRIPT(DoubleButton)
 
 
 /*
