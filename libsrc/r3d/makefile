@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.10 $
+# $Revision: 1.11 $
 # $Author: buzzard $
-# $Date: 1996/05/13 23:20:27 $
+# $Date: 1996/05/20 13:26:39 $
 #
 # Makefile for r3d library
 #
@@ -55,7 +55,8 @@ r3d_HDRS= r3d.h r3ds.h
 
 r3d.h .REREAD :\
         grspoint.h r3ds.h rtex.h  xfrmtab.h xform.h \
-        clip.h clipcon.h cliptab.h primcon.h prim.h primtab.h \
+        clip.h clipcon.h cliptab.h \
+        primcon.h prim.h primtab.h primface.h \
         ctxts.h object.h space.h view.h block.h r3dctxt.h init.h 
 	$(eko1) $(@,F) \<-- $(?,F)
         %do comp_h h_pre="\#include \<matrix.h\>  \#include \<2d.h\>" h_in="$^" h_out="$(@,F)"
