@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.14 $
+# $Revision: 1.15 $
 # $Author: KEVIN $
-# $Date: 1997/02/18 14:35:21 $
+# $Date: 1997/02/24 16:31:30 $
 #
 
 MAKETOP = $(CWD)
@@ -51,6 +51,7 @@ G2_OBJS = \
         fl8o2ni fl8nni fl8o2wi fl8lo2wi \
         trigrad trirast plyshell \
         golftmap shadtmap drytmap lh816 dlh816 \
+        shadhack \
         o2w88i area
 
 G2_HDRS= g2.h icanvas.inc
