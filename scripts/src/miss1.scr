@@ -89,6 +89,44 @@ MESSAGES:
    }
 END_SCRIPT(AwakeToEscape)
 
+/* This sets up Jenivere's watch links that make her follow Basso.
+ */
+BEGIN_SCRIPT(Jenivere, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("FollowBasso"))
+      {
+         object basso=object("Basso");
+
+         Debug.MPrint("Basso=",basso);
+
+         if(basso!=object(0))
+         {
+            integer follow=0;
+            for(;follow<666;follow++)
+            {
+               object metaprop=object(string("M-Follow")+string(follow));
+               if(metaprop!=object(0))
+               {
+                  Debug.MPrint("Adding metaprop follow (",metaprop,")");
+                  // Metaproperty has the watch links default property that
+                  // is appropriate to this link in the sequence.  Add meta-
+                  // property just long enough to initialize link data correctly.
+                  Object.AddMetaProperty(basso,metaprop);
+                  Link.Create("AIWatchObj",self,basso);
+                  Object.RemoveMetaProperty(basso,metaprop);
+               }
+               else
+                  follow=666;
+            }
+         }
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(Jenivere)
+
+
          
 /* TRAINING SCRIPTS:
    Scripts from this point below are for coordinating the various messages to
@@ -140,6 +178,9 @@ MESSAGES:
       else if(InvType()==kInvTypeWeapon)
          // beginning attack
          SetUI(kCocked);
+
+      if(Object.InheritsFrom(self,"Flare"))
+         Quest.Set("tr_UseFlareLight",TRUE);
 
       DefaultOnFrobInvBegin();
    }
@@ -313,6 +354,26 @@ MESSAGES:
    }
 END_SCRIPT(PromptOnTrig)
 
+/* To score, e.g. the water arrow lesson.  Sets the training quest var
+   specified in the object's TrapQVar property, and _then_ messages to
+   renew the training prompt.
+   */
+BEGIN_SCRIPT(ScoreLesson, PromptOnTrig)
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         if(Property.Possessed(self,"TrapQVar"))
+         { 
+            string qvar=Property.Get(self,"TrapQVar");
+            Quest.Set(qvar,TRUE);
+         }
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(ScoreLesson)
+
 
 /* To do this, we're going to need to get events about _anything_
    that we factor into our decision that is liable to change in-
@@ -453,7 +514,7 @@ BEGIN_SCRIPT(Training, RootScript)
     /* How to train flash bombs?  Seems impossible to tell whether AIs
        stand to be affected, which kind of blows.
        */
-    METHOD boolean TrainUseFlares (object world, object inv, object weap)
+    METHOD boolean TrainUseFlare (object world, object inv, object weap)
     {
        if(Object.InheritsFrom(inv,"LitFlare"))
           if(world!=NO_OBJ)
@@ -583,13 +644,14 @@ BEGIN_SCRIPT(Training, RootScript)
       Debug.MPrint("Checking prompt.  Objects=",world,",",inv,",",weap);
 
       if(
-      TrainHealing(world,inv,weap) ||
-      TrainShootTorch(world,inv,weap) ||
-      TrainDoor(world,inv,weap) ||
-      TrainPickUpKey(world,inv,weap) ||
-      TrainGetLoot(world,inv,weap) ||
-      TrainPortable(world,inv,weap) ||
-      TrainUseFlares(world,inv,weap))
+         (Quest.Get("difficulty") > 0) ||
+         TrainHealing(world,inv,weap) ||
+         TrainShootTorch(world,inv,weap) ||
+         TrainDoor(world,inv,weap) ||
+         TrainPickUpKey(world,inv,weap) ||
+         TrainGetLoot(world,inv,weap) ||
+         TrainPortable(world,inv,weap) ||
+         TrainUseFlare(world,inv,weap))
          return;
       DarkUI.TextMessage("",rgb(255,0,0),30000);
    }
@@ -603,11 +665,11 @@ MESSAGES:
    OnBeginScript()
    {
       // don't want starting point to bother with these messages.
-      if(!IsDataSet("Init") && Object.InheritsFrom(self,"Avatar"))
+      if((Quest.Get("difficulty")==0) && 
+         !IsDataSet("Init") && 
+         Object.InheritsFrom(self,"Avatar"))
       {
          integer objmax=0;
-
-         Debug.MPrint("Doing avatar setup");
 
          SetData("Init",TRUE);
          // Create quest vars.
@@ -665,42 +727,53 @@ MESSAGES:
    */
    OnContainer()
    {
-      if(message.event==kContainAdd || message.event==kContainCombine)
+      if(Quest.Get("difficulty")==0)
       {
          object containee=message.containee;
-         integer invtype=kInvTypeJunk; // by default
-
-         if(Property.Possessed(containee,"InvType"))
-            invtype=Property.Get(containee,"InvType");
-
-         if(!Object.HasMetaProperty(containee,"M1_TrackInv"))
-            Object.AddMetaProperty(containee,"M1_TrackInv");
-         if(invtype==kInvTypeJunk)
+         if(message.event==kContainAdd || message.event==kContainCombine)
          {
-            Quest.Set(INV_ID_QVAR,containee);
-            Quest.Set(INV_UI_QVAR,kUnready);
-         }
+            integer invtype=kInvTypeJunk; // by default
 
-         // Okay, this is a hack, but don't score any of this stuff
-         // in the first few moments of the sim, so we don't score
-         // based on the player's loadout.  Duh.
-         if(GetTime()>0.0)
-         {
-            if(Property.Possessed(containee,"Loot"))
-               if(LessonDone("UseLootTake"))
-                  Score("UsePortable");
+            if(Property.Possessed(containee,"InvType"))
+               invtype=Property.Get(containee,"InvType");
+
+            if(!Object.HasMetaProperty(containee,"M1_TrackInv"))
+               Object.AddMetaProperty(containee,"M1_TrackInv");
+            if(invtype==kInvTypeJunk)
+            {
+               Quest.Set(INV_ID_QVAR,containee);
+               Quest.Set(INV_UI_QVAR,kUnready);
+            }
+
+            // Okay, this is a hack, but don't score any of this stuff
+            // in the first few moments of the sim, so we don't score
+            // based on the player's loadout.  Duh.
+            if(GetTime()>0.0)
+            {
+               if(Property.Possessed(containee,"Loot"))
+                  if(LessonDone("UseLootTake"))
+                     Score("UsePortable");
+                  else
+                     Score("UseLootTake");
+               else if(Object.InheritsFrom(containee,"Key"))
+                  if(LessonDone("UseLootTake"))
+                     Score("UsePortable");
+                  else
+                     Score("UseKeyTake");
                else
-                  Score("UseLootTake");
-            else if(Object.InheritsFrom(containee,"Key"))
-               if(LessonDone("UseLootTake"))
                   Score("UsePortable");
-               else
-                  Score("UseKeyTake");
-            else
-               Score("UsePortable");
+            }
          }
+         else
+         {
+            // Object leaving container.  Note that we can't count on this
+            // message for objects using "ammo" off a stack.
+            if(Object.InheritsFrom(containee,"LitFlare"))
+               Score("DropOrUseFlare");
+         }
+         Prompt();
       }
-      Prompt();
+      DefaultOnContainer();
    }
    OnQuestChange()
    {
@@ -709,6 +782,9 @@ MESSAGES:
    }
    OnDamage()
    {
+      if((message.damage<0) && 
+         Object.InheritsFrom(message.culprit,"HealingPotion"))
+         Score("UsePotionHeal");
       Prompt();
       DefaultOnDamage();
    }
