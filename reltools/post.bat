@@ -192,7 +192,7 @@ rem **************************************************************
 rem build the ilist files
 rem **************************************************************
 
-cd %_DAILYCD_%\thief
+cd %_DAILYCD_%\thief2
 
 perl5 r:\prj\thief2\reltools\mkitype.pl r:\prj\thief2\reltools\thief2.ist
 
