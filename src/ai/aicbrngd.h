@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicbrngd.h 1.20 1999/05/10 19:09:38 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicbrngd.h,v 1.21 1999/12/02 18:54:35 BFarquha Exp $
 //
 //
 //
@@ -178,6 +178,7 @@ private:
    cAIRandomTimer m_ReactShootTimer;
 
    BOOL m_fDamaged;
+   float m_fDamage;
 
 #if 0
    ObjID    GetProjectile();
