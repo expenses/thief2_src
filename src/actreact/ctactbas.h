@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/ctactbas.h,v 1.5 1998/10/21 20:14:17 mahk Exp $
 #pragma once  
 #ifndef __CTACTBAS_H

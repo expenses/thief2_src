@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/contag8r.h,v 1.8 1998/10/21 18:52:21 mahk Exp $
 #pragma once  
 #ifndef __CONTAG8R_H
