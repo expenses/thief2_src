@@ -65,3 +65,46 @@ OnMessage()
 
 END_SCRIPT (SummonableGuard)
 
+
+
+// Script: TattleTale
+
+// Upon alert level 3, run to the ControlDevice linked object.
+// since the desired behavior upon arrival is finicky, this script
+// now also signals the basement combatbots, therefore it is specific
+// to workerbots in the basement
+
+BEGIN_SCRIPT (TattleTale, AI)
+
+METHODS:
+object GetDest()
+{
+	return (object)Link.GetOne("ControlDevice",self).To();
+}
+
+MESSAGES:
+
+OnAlertness()
+{
+	if (message.level == kHighAlert)
+	{
+		GotoObjLoc(GetDest(),kFast,kHighPriorityAction);		
+	}
+
+	DefaultOnAlertness();
+}
+
+OnObjActResult()
+{
+	if (SuccessfulGoto(GetDest()))
+	{
+		AI.Signal(Object.Named("BaseGuardBot1"),"WakeUp");
+		AI.Signal(Object.Named("BaseGuardBot2"),"WakeUp");
+	}
+
+	DefaultOnObjActResult();
+}
+
+
+END_SCRIPT (TattleTale)
+
