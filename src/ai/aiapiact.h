@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapiact.h 1.8 1999/03/04 13:30:22 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapiact.h,v 1.9 1999/12/01 16:05:26 BFarquha Exp $
 //
 //
 //
@@ -25,6 +25,7 @@ typedef cAnsiStr cStr;
 
 F_DECLARE_INTERFACE(IAIActor);
 F_DECLARE_INTERFACE(IAIAction);
+F_DECLARE_INTERFACE(IAIPath);
 
 typedef unsigned tAIActionType;
 
@@ -63,7 +64,7 @@ struct sAIAction
    tAIActionType  type;
 
    // Tag set
-   cTagSet        tags; 
+   cTagSet        tags;
 
    // Flags
    unsigned       flags;
@@ -79,7 +80,7 @@ struct sAIAction
 
    // Action suggestor
    IAIActor *   pOwner;
-   
+
    #define kAIA_OwnerDataSetSize 2
    union
    {
@@ -114,16 +115,16 @@ DECLARE_INTERFACE_(IAIAction, IUnknown)
    STDMETHOD_(const sAIAction *, Access)() PURE;
 
    //
-   // Proxy support 
+   // Proxy support
    //
-   // Note a proxy action need not necessarily be kAIAT_Proxy -- kAIAT_Proxy 
+   // Note a proxy action need not necessarily be kAIAT_Proxy -- kAIAT_Proxy
    // is just one possible implementation
    //
-   
+
    STDMETHOD_(BOOL,        IsProxy)() PURE;
    STDMETHOD_(IAIAction *, GetInnerAction)() PURE;
    STDMETHOD_(IAIAction *, GetTrueAction)() PURE;
-   
+
    // Get the owner, or true owner if the action is some sort of adaptor or proxy
    STDMETHOD_(IAIActor *,  GetTrueOwner)() PURE;
 
@@ -147,6 +148,11 @@ DECLARE_INTERFACE_(IAIAction, IUnknown)
    //
    STDMETHOD_(BOOL, Save)(ITagFile * pTagFile) PURE;
    STDMETHOD_(BOOL, Load)(ITagFile * pTagFile) PURE;
+
+   //
+   // Retrieve current path, if any.
+   //
+   STDMETHOD_(IAIPath *, GetPath)() PURE;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibasact.h 1.12 1999/03/04 13:30:32 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibasact.h,v 1.13 1999/12/01 16:05:48 BFarquha Exp $
 //
 // Base AI action class. This is an abstract base class.
 //
@@ -65,7 +65,7 @@ public:
    void AddTag(const char *pszTypeName, int iValue);
    void AddTag(const cTag &Tag);
    void AddTags(const cTagSet &Source);
-   
+
    const cTagSet & GetTags() const;
 
    // Describe the action, in detailed human terms
@@ -83,7 +83,7 @@ public:
    STDMETHOD_(IAIAction *,       GetInnerAction)();
    STDMETHOD_(IAIAction *,       GetTrueAction)();
    STDMETHOD_(IAIActor *,        GetTrueOwner)();
-   
+
    STDMETHOD_(BOOL,              Started)();
 
    // Update the action
@@ -98,6 +98,8 @@ public:
    // Save/Load already created action.  Load returns false if the action should be deleted.
    STDMETHOD_(BOOL, Save)(ITagFile * pTagFile);
    STDMETHOD_(BOOL, Load)(ITagFile * pTagFile);
+
+   STDMETHOD_(IAIPath *, GetPath)();
 
 protected:
 
