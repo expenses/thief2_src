@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aitrace.h 1.1 1998/04/26 18:13:39 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aitrace.h,v 1.2 2000/01/31 09:34:12 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AITRACE_H
 #define __AITRACE_H
