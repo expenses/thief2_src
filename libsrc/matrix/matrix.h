@@ -1,13 +1,14 @@
 /*
  * $Source: x:/prj/tech/libsrc/matrix/RCS/matrix.h $
- * $Revision: 1.21 $
+ * $Revision: 1.22 $
  * $Author: JAEMZ $
- * $Date: 1998/02/12 15:16:47 $
+ * $Date: 1998/06/18 13:07:01 $
  */
 
 
 #ifndef __MATRIX_H
 #define __MATRIX_H
+#pragma once
 
 #include <matrixs.h>
 

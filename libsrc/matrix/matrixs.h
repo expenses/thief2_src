@@ -1,8 +1,8 @@
 /*
  * $Source: x:/prj/tech/libsrc/matrix/RCS/matrixs.h $
- * $Revision: 1.9 $
- * $Author: buzzard $
- * $Date: 1998/05/14 12:06:51 $
+ * $Revision: 1.10 $
+ * $Author: JAEMZ $
+ * $Date: 1998/06/18 13:07:09 $
  *
  * Matrix library structures and constructors
  */
@@ -10,6 +10,7 @@
 
 #ifndef __MATRIXS_H
 #define __MATRIXS_H
+#pragma once
 
 #include <types.h>
 
