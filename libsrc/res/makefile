@@ -18,7 +18,7 @@ BINDIR = n:\bin
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = $(RELDIR)
 
-PROG_TARGETS = resdump respack restest
+PROG_TARGETS = resdump respack restest lzwtest
 LIB_TARGETS = res
 INST_TARGETS = res resdump respack
 EXTRA_TARGET =
@@ -35,6 +35,9 @@ RESPACK_LIBS	= res.lib _lg.lib mprintf.lib
 
 RESTEST_OBJS	= restest.obj
 RESTEST_LIBS	= res.lib _lg.lib mprintf.lib
+
+LZWTEST_OBJS	= lzwtest.obj
+LZWTEST_LIBS	= res.lib _lg.lib mprintf.lib
 
 !include n:/etc/make.rc
 
