@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/font/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: KEVIN $
-# $Date: 1996/04/11 10:28:42 $
+# $Date: 1997/01/23 14:43:37 $
 #
 
 MAKETOP = $(CWD)
@@ -21,6 +21,7 @@ irrupt_OBJS = \
 
 font_OBJS = \
         chr chrclr chrsiz \
+        f16fl8t setup \
         str strclr strsiz \
         strscl strwrap
 
