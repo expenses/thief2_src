@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/editsave.c,v 1.35 2000/02/19 13:10:37 toml Exp $
 // editorlevel file format and save/load code
 
