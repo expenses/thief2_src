@@ -152,6 +152,64 @@ END_SCRIPT(Courier)
 
 
 
+// Script specially for the pagan agent.
+BEGIN_SCRIPT(ThePagan, Room)
 
+MESSAGES:
+  OnObjRoomTransit()
+  {
+     object room=message.ToObjId;
+     object endroom=object("endroom");
 
+     Debug.MPrint(self," entering room ",room);
 
+     if(Object.Exists(endroom) && 
+        Object.InheritsFrom(room,endroom))
+     {
+        Object.AddMetaProperty(self,"M-AI-Stasis");
+        Property.Set(self,"RenderAlpha",1.0);
+        PostMessage(self,"PhantomEnd");
+        SetOneShotTimer(self,"TPort",2.0);
+     }
+     DefaultOnCreatureRoomEnter();
+  }
+  OnMessage()
+  {
+     // I want to get the note.  May I?
+     if(MessageIs("WantNote"))
+     {
+        object note=object("TheNote");
+        if(Object.Exists(note))
+        {
+           if(Link.AnyExist("~Contains",note))
+           {
+              Debug.MPrint("Eek. Someone else has note.");
+              Reply(FALSE);
+           }
+           else
+              Reply(TRUE);
+        }
+        else
+           Reply(FALSE);
+     }
+     DefaultOnMessage();
+  }
+  OnTimer()
+  {
+     if(message.name=="TPort")
+     {
+        // make sure to destroy note, just to be safe.  This will stop the note
+        // from checking for the player getting too far away.
+        object note=object("TheNote");
+        if(Object.Exists(note) &&
+           Link.AnyExist("Contains",self,note))
+        {
+           Object.Destroy(note);
+           if(Quest.Get(GoalStateVarName(READ_NOTE_GOAL))!=kGoalComplete)
+              Quest.Set(GoalStateVarName(READ_NOTE_GOAL),kGoalFailed);
+        }
+        Object.Destroy(self);
+     }
+     DefaultOnTimer();
+  }
+END_SCRIPT(ThePagan)
