@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/motplay.h 1.9 1997/09/29 10:34:20 kate Exp $
 
 #ifndef __MOTPLAY_H
