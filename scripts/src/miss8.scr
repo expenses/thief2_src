@@ -39,6 +39,13 @@ MESSAGES:
    {
       if(message.event==kContainRemove)
       {
+         // If the courier wasn't rendered last frame, our position hasn't
+         // been updated.  We must teleport.
+         object cont=message.container;
+         if(!Object.InheritsFrom(cont,"Avatar") &&
+            !Object.RenderedThisFrame(cont))
+            Object.Teleport(self,vector(0,0,0),vector(0,0,0),cont);
+
          // perhaps the Courier dropped us.  We'll need physics.
          if(!Physics.HasPhysics(self))
             Property.Add(self,"PhysType");
