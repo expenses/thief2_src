@@ -218,8 +218,8 @@ rem ******************************************************
 :Thief
 s:
 cd \prj\cam\src
-echo make -k build dark  FLAV=shp MASTER=SHIPPROT SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
-make -k build dark  FLAV=shp MASTER=SHIPPROT SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.spp
+echo make -k build dark THIEF=THIEF FLAV=shp MASTER=SHIPPROT SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
+make -k build dark  THIEF=THIEF FLAV=shp MASTER=SHIPPROT SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.spp
 iff not exist thief.exe then
    echo Failed to build thief.exe (spp)
    grep -i error log.spp
@@ -260,8 +260,8 @@ rem ******************************************************
 :ShpDark
 s:
 cd \prj\cam\src
-echo make -k build dark  FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
-make -k build dark  FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.shp
+echo make -k build dark THIEF=THIEF FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
+make -k build dark  THIEF=THIEF FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.shp
 iff not exist thief.exe then
    echo Failed to build thief.exe (shp)
    grep -i error log.shp
@@ -283,8 +283,8 @@ rem ******************************************************
 :OptDark
 s:
 cd \prj\cam\src
-echo make -k build dark FLAV=opt MASTER=PLAYTEST SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
-make -k build dark FLAV=opt MASTER=PLAYTEST SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1 >> log.opt
+echo make -k build dark THIEF=THIEF FLAV=opt MASTER=PLAYTEST SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
+make -k build dark THIEF=THIEF FLAV=opt MASTER=PLAYTEST SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1 >> log.opt
 
 iff not exist thief.exe then
    echo Failed to build thief.exe (opt)
@@ -307,9 +307,9 @@ rem ******************************************************
 :DebugDark
 s:
 cd \prj\cam\src
-echo make -k build dark  FLAV=dbg MASTER=dbg SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
+echo make -k build dark THIEF=THIEF FLAV=dbg MASTER=dbg SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 
-make -k build dark  FLAV=dbg MASTER=dbg SB=s:\prj comp=v60 sys=win32 addres=1  DISPLAY_PROGRESS=1 >> log.dbg
+make -k build dark THIEF=THIEF FLAV=dbg MASTER=dbg SB=s:\prj comp=v60 sys=win32 addres=1  DISPLAY_PROGRESS=1 >> log.dbg
 iff not exist dbgdark.exe then
    echo Failed to build dbgdark.exe
    grep -i error log.dbg
@@ -331,9 +331,9 @@ rem ******************************************************
 
 :DbsDark
 s:
-echo make -k build dark  FLAV=dbs MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
+echo make -k build dark  THIEF=THIEF FLAV=dbs MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 
-make -k build dark  FLAV=dbs MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
+make -k build dark THIEF=THIEF FLAV=dbs MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 
 if .%@lower[%RunOneStep].==.y. goto Exit
 
@@ -352,8 +352,8 @@ rem ******************************************************
 :DbgDrom
 s:
 cd \prj\cam\src
-echo make -k build FLAV=dbg MASTER=editor SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
-make -k build FLAV=dbg MASTER=editor SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1 >>log.edb
+echo make -k build THIEF=THIEF FLAV=dbg MASTER=editor SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
+make -k build THIEF=THIEF FLAV=dbg MASTER=editor SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1 >>log.edb
 
 if exist dbgdrom.exe rm dbgdrom.exe
 if exist dbgdrom.pdb rm dbgdrom.pdb
@@ -378,8 +378,8 @@ rem **************************************************************
 :Dromed
 s:
 cd \prj\cam\src
-echo make -k build FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1
-make -k build FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1 >> log.dro
+echo make -k build THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1
+make -k build THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1 >> log.dro
 
 iff not exist dromed.exe then
    echo Failed to build dromed.exe
