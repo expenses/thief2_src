@@ -1051,14 +1051,16 @@ END_SCRIPT(QVarTrapTrigBase)
    comparison to apply to the quest var of the given name, compared
    to the integer value in the argument.
 
-   The comparator can be '>' '<' '=' or '"'.  For the time being, assume
-   we're going to implement a Shock-style trap flags property with
-   a "reverse sense" flag, so we'll then be able to reverse the
-   sense of the _trigger_ for <=, >=, and !=.
+   The comparator can be '>' '<' '=' '"' or '&'.  You can reverse the
+   sense of the trigger for <=, >=, and != using trap flags.
 
    The comparator " requires some explanation.  It works just like =
    except that only the digits actually supplied in the argument are
    considered.  A value of 5199 satisfies "199 but not =199.
+
+   The & comparator works if the quest variable value shares any bits
+   with the argument (that is, if the boolean & of the two is non-zero).
+   Handy for checking particular bits of a bitfield.
  */
 BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
 
@@ -1081,6 +1083,7 @@ BEGIN_SCRIPT(TrigQVar, QVarTrapTrigBase)
          case '"': satisfied=((qvarval%mod)==arg); break;
          case '>': satisfied=(qvarval>arg); break;
          case '<': satisfied=(qvarval<arg); break;
+         case '&': satisfied=(qvarval&arg); break;
       }
       if(reverse) satisfied=!satisfied;
 
