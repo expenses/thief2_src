@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiprdev.h 1.6 1999/02/14 16:02:21 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiprdev.h,v 1.7 1999/11/19 20:50:32 adurant Exp $
 //
 // Device properties
 //
@@ -37,13 +37,15 @@ EXTERN IAIDeviceProperty * g_pAIDeviceProperty;
 struct sAIDeviceParams
 {
    // raise/lower params
-   int m_jointRaise;
+   int m_jointActivate;
    float m_inactivePos;
    float m_activePos;
-   float m_raiseSpeed;
+   float m_activateSpeed;
    // rotate params
    int m_jointRotate;
    float m_facingEpsilon;
+   //more part of raise/lower, put here for alignment
+   BOOL m_activateRotate;
 };
 
 EXTERN const sAIDeviceParams g_AIDefaultDeviceParams;
