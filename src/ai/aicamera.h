@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicamera.h 1.3 1999/05/29 21:55:08 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicamera.h,v 1.4 2000/02/22 16:04:06 adurant Exp $
 //
 // AI Camera Ability
 //
@@ -42,6 +42,8 @@ public:
                                  eAIAwareLevel previous, 
                                  eAIAwareLevel current,
                                  const sAIAlertness * pRaw);
+   
+   STDMETHOD_(void, OnModeChange)(eAIMode previous, eAIMode mode);
 
 private:
    void BroadcastSwitches(void);
