@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.13 $
+# $Revision: 1.14 $
 # $Author: KEVIN $
-# $Date: 1996/08/29 09:43:52 $
+# $Date: 1996/09/09 14:16:10 $
 #
 
 MAKETOP = $(CWD)
@@ -15,7 +15,7 @@ PROJECT = tech
 
 LIBTARGS = dev2d
 
-EXETARGS = gdtest
+SPEC_EXETARGS = gdtest
 
 irrupt_OBJS = \
         f16bm fl8bm bk8bm mxbm \
@@ -47,7 +47,7 @@ dev2d_OBJS = \
         f16pix f16lin f16bm \
         f16pix8 f16pix16 f16hlin \
         f16fl8 f16mono f16f16 f16rsd8 \
-        f16il \
+        f16set f16il f16fl8il f16til \
         gdbm gdgbm gdrect gdlin gdpix \
         genbm \
         genlin genfl8u genf16u genmonou \
