@@ -9,8 +9,8 @@ PROJECT = tech
 LIBTARGS = sound
 EXETARGS = sndtest miditest testsnd1
 
-sound_OBJS = mixer
-sound_win32_OBJS = sndfmt sample lgsndid fade midiplay dsnddynf waildynf timelog
+sound_OBJS = mixer qmixer dmixer
+sound_win32_OBJS = sndfmt sample lgsndid fade midiplay dsnddynf waildynf timelog qsample dsample
 
 sound_HDRS = lgsound.h lgsndid.h sndfmt.h midiplay.h timelog.h
 #sound_DEFINES = SND_TEST
