@@ -1,7 +1,7 @@
 # $Source: x:/prj/tech/libsrc/config/RCS/makefile $
-# $Revision: 2.2 $
-# $Author: mahk $
-# $Date: 1995/11/27 03:23:52 $
+# $Revision: 2.3 $
+# $Author: DAVET $
+# $Date: 1996/02/06 16:51:26 $
 
 MAKETOP = $(CWD)
 
