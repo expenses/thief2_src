@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/ctrast.c,v 1.12 2000/03/19 15:18:43 patmac Exp $
 
 #include <string.h>
