@@ -6,7 +6,7 @@ DBG_ON = 1
 
 COMPILER = watcom
 SRCDIR = r:\prj\lib\src\dstruct
-RELDIR = r:\prj\lib\release
+RELDIR = r:\prj\lib\rel
 
 OBJDIR = obj
 BINDIR =
