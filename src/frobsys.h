@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/frobsys.h 1.2 1997/09/03 23:51:37 dc Exp $
 
 #ifndef __FROBSYS_H
