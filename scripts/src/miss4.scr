@@ -1,6 +1,146 @@
 #include "drkgoalt.h"
 #include "drkstats.h"
 
+#define kObjNull ((object)OBJ_NULL)
+
+#define PICK_ID_QVAR "PickID"
+
+///////////////////////////////////////
+
+BEGIN_SCRIPT(TwoPickDoorTraining, RootScript)
+
+METHODS:
+
+   METHOD void DoTrain()
+   {
+      // If the script is no longer active, do nothing
+      if (GetData("CurActive") == TRUE)
+      {
+         if (GetData("CurSelected") == TRUE)
+         {
+            // Draw some text, depending if we have our picks ready or not
+            if ((object)GetData("CurPickObj") == kObjNull)
+            {
+               string hintString1 = Data.GetString("PlayHint", "SelectPickDoor"); // LockpickDoor2
+               string command1 = Data.GetString("PlayAct", "CycleInventory");
+               string command2 = Data.GetString("PlayAct", "Countercycle");
+
+               string DisplayOutput = hintString1 + "\n" + 
+                  command1 + " = " + DarkUI.DescribeKeyBinding(Data.GetString("PlayCmd", "CycleInventory_command")) + "\n" +
+                  command2 + " = " + DarkUI.DescribeKeyBinding(Data.GetString("PlayCmd", "Countercycle_command"));
+
+               DarkUI.TextMessage(DisplayOutput, rgb(255,0,0), 30000);
+            }
+            else
+            {
+               string hintString2 = Data.GetString("PlayHint", "LockpickDoor2");
+               string command = Data.GetString("PlayAct", "Use");
+
+               string DisplayOutput = hintString2 + "\n" + command + " = " + 
+                  DarkUI.DescribeKeyBinding(Data.GetString("PlayCmd", "Use_command"));
+
+               DarkUI.TextMessage(DisplayOutput, rgb(255,0,0), 30000);
+            }
+         }
+         else
+            DarkUI.TextMessage("", rgb(255,0,0), 30000);
+      }
+   }
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      // Create quest vars, if not already there, and subscribe to changes
+      Quest.Set(PICK_ID_QVAR, kObjNull);
+      Quest.SubscribeMsg(self, PICK_ID_QVAR);
+
+      // Initialize our data
+      SetData("CurPickObj", kObjNull);
+      SetData("CurActive", TRUE);
+      SetData("CurSelected", FALSE);
+
+      DefaultOnBeginScript();
+   }
+
+   OnQuestChange()
+   {
+      object pickObj = Quest.Get(PICK_ID_QVAR);
+
+      if ((pickObj == kObjNull) || !Object.InheritsFrom(pickObj, "Lockpick"))
+      {
+         // Note switch away from lockpicks
+         if ((object)GetData("CurPickObj") != kObjNull)
+         {
+            SetData("CurPickObj", kObjNull);
+            DoTrain();
+         }
+      }
+      else
+      {
+         // Note switch to lockpicks
+         if ((object)GetData("CurPickObj") != pickObj)
+         {
+            SetData("CurPickObj", pickObj);
+            DoTrain();
+         }
+      }
+      
+      DefaultOnQuestChange();
+   }
+
+   OnWorldSelect()
+   {
+      SetData("CurSelected", TRUE);
+      DoTrain();
+
+      DefaultOnWorldSelect();
+   }
+
+   OnWorldDeSelect()
+   {
+      SetData("CurSelected", FALSE);
+      DoTrain();
+
+      DefaultOnWorldDeSelect();
+   }
+
+   OnNowUnlocked()
+   {
+      // Deselect and update
+      SetData("CurSelected", FALSE);
+      DoTrain();
+
+      // Disable the script, they "won"
+      SetData("CurActive", FALSE);
+
+      DefaultOnNowUnlocked();
+   }
+
+END_SCRIPT(TwoPickDoorTraining)
+
+///////////////////////////////////////
+
+BEGIN_SCRIPT(TwoPickTraining, RootScript)
+
+MESSAGES:
+
+   OnInvSelect()
+   {
+      Quest.Set(PICK_ID_QVAR, self);
+      DefaultOnInvSelect();
+   }
+
+   OnInvDeSelect()
+   {
+      Quest.Set(PICK_ID_QVAR, kObjNull);
+      DefaultOnInvSelect();
+   }
+
+END_SCRIPT(TwoPickTraining)
+
+///////////////////////////////////////////////////////////////////////////////
+
 #define CASUALTY_GOAL_NORMAL 1
 
 BEGIN_SCRIPT(SpecialGoals, RootScript)
