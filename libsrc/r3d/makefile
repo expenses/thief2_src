@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.14 $
-# $Author: buzzard $
-# $Date: 1996/06/06 14:52:00 $
+# $Revision: 1.15 $
+# $Author: JAEMZ $
+# $Date: 1996/06/06 19:00:26 $
 #
 # Makefile for r3d library
 #
@@ -58,7 +58,7 @@ r3d.h .REREAD :\
         primcon.h prim.h primtab.h primface.h \
         ctxts.h object.h space.h view.h block.h r3dctxt.h init.h 
 	$(eko1) $(@,F) \<-- $(?,F)
-        %do comp_h h_pre="\#include \<matrix.h\>  \#include \<r3ds.h\>" h_in="$^" h_out="$(@,F)"
+        %do comp_h h_pre="\#include \<matrix.h\> \#include \<r3ds.h\> \#include \<g2.h\>" h_in="$^" h_out="$(@,F)"
 
 %include $(MRC)\make.rc
 
