@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/txtrpal.h 1.4 1998/08/08 18:43:55 dc Exp $
+// $Header: r:/t2repos/thief2/src/editor/txtrpal.h,v 1.5 2000/01/29 13:13:19 adurant Exp $
+#pragma once
 
 #ifndef __TEXTRPAL_H
 #define __TEXTRPAL_H

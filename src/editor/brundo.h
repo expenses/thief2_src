@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/editor/RCS/brundo.h 1.4 1999/11/16 13:01:39 henrys Exp $
+// $Header: r:/t2repos/thief2/src/editor/brundo.h,v 1.5 2000/01/29 13:11:19 adurant Exp $
 // brush specific undo and redo
+#pragma once
 
 #ifndef __BRUNDO_H
 #define __BRUNDO_H

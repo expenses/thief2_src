@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/cvtbrush.h 1.4 1998/08/27 08:54:05 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/editor/cvtbrush.h,v 1.5 2000/01/29 13:11:23 adurant Exp $
+#pragma once
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
    cvtbrush.h

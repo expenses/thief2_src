@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/objhistp.h 1.2 1998/07/27 21:29:49 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/editor/objhistp.h,v 1.3 2000/01/29 13:12:51 adurant Exp $
+#pragma once
 
 #ifndef __OBJHISTP_H
 #define __OBJHISTP_H
