@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/drksound.h 1.2 1998/08/25 23:24:50 dc Exp $
+// $Header: r:/t2repos/thief2/src/dark/drksound.h,v 1.3 2000/02/03 17:37:44 patmac Exp $
 #pragma once
 #ifndef __DRKSOUND_H
 #define __DRKSOUND_H
@@ -14,5 +14,9 @@ EXTERN void DarkSoundTerm(void);
 // run ms of a dark specific sound frame
 // really, for now, this is just the "am i stopping to listen" code
 EXTERN void DrkSoundFrame(void);
+
+// ambient volume offset in millibels
+EXTERN void DarkSoundSetAmbientVolume( int vol );
+EXTERN int  DarkSoundGetAmbientVolume( void );
 
 #endif // __DRKSOUND_H
