@@ -1,6 +1,11 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////////////////////////////
 //
-// $Header: x:/prj/tech/libsrc/namedres/RCS/resbase.h 1.9 1999/03/18 13:44:28 mwhite Exp $
+// $Header: x:/prj/tech/libsrc/namedres/RCS/resbase.h 1.11 1970/01/01 00:00:00 TOML Exp $
 //
 // Template for creating resource types from.
 //
@@ -13,6 +18,7 @@
 #include <resapi.h>
 #include <reshelp.h>
 #include <reshack.h>
+#include <resthred.h>
 
 #pragma pack(4)
 
