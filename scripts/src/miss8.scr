@@ -50,7 +50,7 @@ MESSAGES:
          // perhaps the Courier dropped us.  We'll need physics.
          if(!Physics.HasPhysics(self))
             Property.Add(self,"PhysType");
-         Object.RemoveMetaProperty(self,"FrobInert");
+         Object.RemoveMetaProperty(self,"MostlyFrobInert");
       }
       else
       {
@@ -140,8 +140,8 @@ METHODS:
       if(Property.Possessed(self,"AI_Mode"))
          mode=Property.Get(self,"AI_Mode");
       if(note!=NULLOBJ && mode!=kAIM_Dead &&
-         !Object.HasMetaProperty(note,"FrobInert"))
-         Object.AddMetaProperty(note,"FrobInert");
+         !Object.HasMetaProperty(note,"MostlyFrobInert"))
+         Object.AddMetaProperty(note,"MostlyFrobInert");
    }
 END_SCRIPT(Conspirator)
 
@@ -161,7 +161,7 @@ METHODS:
          case kAIM_Dead:
             // Dead or KO'd.  Scroll I carry is now frobbable.
             if(note!=NULLOBJ)
-               Object.RemoveMetaProperty(note,"FrobInert");
+               Object.RemoveMetaProperty(note,"MostlyFrobInert");
             break;
       }
          
