@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.27 $
+# $Revision: 1.28 $
 # $Author: KEVIN $
-# $Date: 1998/04/02 11:47:26 $
+# $Date: 1998/04/28 13:51:16 $
 #
 
 MAKETOP = $(CWD)
@@ -81,7 +81,7 @@ gdtest_OBJS = gdtest
 
 gdtest_LIBS = lg dev2d mprintf
 
-DEV2D_HDRS = dev2d.h astring.h bitmap.inc cseg.inc dseg.inc gdican.inc
+DEV2D_HDRS = dev2d.h astring.h grs.inc bitmap.inc cseg.inc dseg.inc gdican.inc
 
 newline_hack=" "
 newline=$(newline_hack,W\n)
