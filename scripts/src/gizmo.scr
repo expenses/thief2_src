@@ -1550,13 +1550,26 @@ MESSAGES:
       }
       else if(MessageIs("Call"))
       {
-         TraceToPoint(message.from);
+         SeekPoint(message.from);
       }
       DefaultOnMessage();
    }
 
 END_SCRIPT(StdElevator)
 
+// Elevator that moves along its waypoint path instead of beelining, when it gets a call.
+BEGIN_SCRIPT(PathElevator, StdElevator)
+   OnMessage()
+   {
+      if(MessageIs("Call"))
+      {
+         TraceToPoint(message.from);
+         // And don't do default behavior
+      }
+      else
+         DefaultOnMessage();
+   }
+END_SCRIPT(PathElevator)
 
 /* Overhead doors are actually moving terrain objects that tweq rotate when they move.
  */
