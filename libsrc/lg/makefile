@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.4 1993/03/04 18:45:27 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.5 1993/03/22 18:04:18 rex Exp $
 # $Log: makefile $
-# Revision 1.4  1993/03/04 18:45:27  rex
-# Removed libdbg.h
+# Revision 1.5  1993/03/22 18:04:18  rex
+# Fixed plurality of DBGMAKEH_SRCS
 #
+# Revision 1.4  1993/03/04  18:45:27  rex
+# Removed libdbg.h
+# 
 # Revision 1.3  1993/03/04  11:51:27  rex
 # Added exit.c
 # /
@@ -40,7 +43,7 @@ LG_SRCS = memall.c dbg.c dbgcfg.c datapath.c exit.c
 LG_OBJS = memall.obj dbg.obj dbgcfg.obj datapath.obj exit.obj
 LG_HDRS = lg.h lgalt.h memall.h dbg.h datapath.h
 
-DBGMAKEH_SRC = dbgmakeh.c
+DBGMAKEH_SRCS = dbgmakeh.c
 DBGMAKEH_OBJS = dbgmakeh.obj
 DBGMAKEH_LIBS = lg.lib
 
