@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/comtools/RCS/makefile $
-# $Revision: 1.5 $
+# $Revision: 1.6 $
 # $Author: TOML $
-# $Date: 1996/04/23 13:57:34 $
+# $Date: 1996/04/23 14:06:21 $
 #
 # Makefile for comtools library
 #
@@ -19,6 +19,6 @@ LIBTARGS = comtools
 
 COMTOOLS_OBJS = genagg geniset
 
-COMTOOLS_HDRS = comtools.h com.h
+COMTOOLS_HDRS = comtools.h objcoll.h
 
 %include $(MRC)\make.rc
