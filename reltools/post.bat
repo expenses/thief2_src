@@ -225,6 +225,7 @@ rem **************************************************************
 
 mkdirs %_DAILYCD_%\editor
 cd %_DAILYCD_%\editor
+copy r:\prj\thief2\release\dromread\readme.txt .
 copy r:\prj\thief2\release\dromed.exe r:\prj\thief2\reltools\dromrel
 pkzip dromed.zip r:\prj\thief2\reltools\dromrel\*
 pkzip missions.zip r:\prj\thief2\levels\shipping\*.mis
