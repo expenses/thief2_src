@@ -2080,6 +2080,12 @@ MESSAGES:
    OnNowUnlocked()
    {
       ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoActivate);
+      // Really don't want to be able to be locked again, since the whole metaphor
+      // of socketing an object into another object is totally unsupported for that
+      // case.  Give ourselves a KeyDst property that can never be matched.
+      if(Property.Possessed(self,"KeyDst"))
+         Property.Set(self,"KeyDst","RegionMask",0);
+
       DefaultOnNowUnlocked();
    }
 
