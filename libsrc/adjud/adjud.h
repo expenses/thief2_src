@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
 ** adjud.h
 **
 ** The adjudimicator, for running process faster or slower than the frame rate
