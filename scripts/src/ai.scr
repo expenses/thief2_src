@@ -1057,6 +1057,8 @@ METHODS:
        LootCall(suspobj);
      if (susptype=="door")
        DoorCall(suspobj);
+     if (susptype=="blood")
+       BloodCall(suspobj);
      if (susptype=="Generic")
        GenericParser(suspobj);
    }
@@ -1067,6 +1069,8 @@ METHODS:
      //HACK: We know they are called windows.  So sue me.
      if (Object.InheritsFrom((object)suspobj,Object.Named("Windows")))
        GlassCall(suspobj);
+     if (Object.InheritsFrom((object)suspobj,Object.Named("ExBanner")))
+       BannerCall(suspobj);
      if (Object.InheritsFrom((object)suspobj,Object.Named("RopeArrowRope")))
        RopeCall(suspobj);
    }
@@ -1179,6 +1183,25 @@ METHODS:
      SetOneShotTimer(self,"removeminimum",5.0);
      RunOtherLinked(suspobj,"gaslight");
    }
+
+   METHOD void BannerCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running banner reaction");
+     //We've already said something, now we need to go to Alert 2.
+     SetMinimumAlert(kModerateAlert); //go to alert 2
+     SetOneShotTimer(self,"removeminimum",5.0);
+     RunOtherLinked(suspobj,"gaslight");
+   }
+
+   METHOD void BloodCall(ObjID suspobj)
+   {
+     Debug.MPrint("Running blood reaction");
+     //We've already said something, now we need to go to Alert 3.
+     SetMinimumAlert(kHighAlert); //go to alert 3
+     SetOneShotTimer(self,"removeminimum",10.0);
+     //at alert 3... ignore other stuff, don't run other linked.
+   }
+
 
    METHOD void LootCall(ObjID suspobj)
    {     
