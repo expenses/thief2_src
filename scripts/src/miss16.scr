@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.10 2000/02/28 17:13:44 ccarollo Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.11 2000/02/29 07:55:52 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -58,7 +58,7 @@ METHOD void Heal(object Target)
 	// shut off the particle stream fountain effects
 	if (Link.AnyExist("~ParticleAttachement",self))
 	{
-		Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
+		Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement",NULL);
 	}
 
 	SetOneShotTimer("Recharged",GetRechargeTime());
@@ -102,7 +102,7 @@ OnTimer()
 		// turn on the particle stream fountain effect
 		if (Link.AnyExist("~ParticleAttachement",self))
 		{
-			Link.BroadcastOnAllLinks(self,"TurnOn","~ParticleAttachement");
+			Link.BroadcastOnAllLinks(self,"TurnOn","~ParticleAttachement",NULL);
 		}
 	}
 
@@ -1001,47 +1001,88 @@ OnPhysContactDestroy()
 
 END_SCRIPT (MachineSlot)
 
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Constants
+//  Script: MachineSlotAutoTrigger
+//
+//  Identical to MachineSlot script, above, except that it broadcasts 
+//  "TurnOn" immediately after physcontact.
+//
 
-#define kBellowPlot   "Stage0"
+BEGIN_SCRIPT(MachineSlotAutoTrigger, MachineSlot)
 
-#define kRollingPlot  "Stage1"
-#define kRollingPlot2 "MetalPlate"
+MESSAGES:
 
-#define kSealingPlot  "Stage2"
-#define kSealingPlot2 "RegulatingRound"
+OnPhysContactCreate()
+{
+   // Filter on submodel 0, so we don't get multiple messages for each 
+   // submodel of a contacting model
+   if (message.contactSubmod == 0)
+   {
+		SetOneShotTimer("TriggerTurnOn",0.1);
+      link toMachine = Link.GetOne("ScriptParams", self);
+      PostMessage(toMachine.To(), "Enter", message.contactObj, (integer)toMachine.GetData());
+   }
 
-#define kFusingPlot   "Stage3"
+//   DefaultOnPhysContactCreate();
+}
 
-#define kFinalPlot    "FinalObj"
+OnTimer()
+{
+	if (message.name == "TriggerTurnOn")
+	{
+		Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+	}
+	DefaultOnTimer();
+}
+
+END_SCRIPT (MachineSlotAutoTrigger)
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Constants  - strings used as parameter to Object.Named()
+
+#define kBellowPlot   "HIPStage0"
+
+#define kRollingPlot  "HIPStage1"
+#define kRollingPlot2 "PlateO'Metal"
+
+#define kSealingPlot  "HIPStage2"
+#define kSealingPlot2 "RegRound"
+
+#define kFusingPlot   "HIPStage3"
+
+#define kFinalPlot    "HomingIntact"
 
 ////////////////////////////////////////
 
-#define kBellowExtra1   "FluxOrb"
+#define kBellowExtra1   "FluxSpheroid"
 #define kBellowExtra2   "BantamNode"
 #define kBellowResult   "CameraGrenade"
 
 #define kRollingExtra1  "FlareMixture"
-#define kRollingExtra2  "MetalPlate"
+#define kRollingExtra2  "PlateO'Metal"
 #define kRollingResult  "Flare"
 
 #define kSealingExtra1  "MineBulb"
-#define kSealingExtra2  "MetalPlate"
+#define kSealingExtra2  "PlateO'Metal"
 #define kSealingResult  "Mine"
 
-#define kLinkingExtra1  "Gauge"
+#define kLinkingExtra1  "InvGauge"
 #define kLinkingExtra2  "BantamNode"
-#define kLinkingResult  "RegulatingRound"
+#define kLinkingResult  "RegRound"
 
-#define kFusingExtra1   "AcidicMixture"
-#define kFusingExtra2   "SpringWiring"
+#define kFusingExtra1   "AcidMixture"
+#define kFusingExtra2   "WireSpool"
 #define kFusingResult   "FluxSpheroid"
 
-#define kAmalgExtra1    "IronChasis"
-#define kAmalgExtra2    "QuicklimeMixture"
-#define kAmalgExtra3    "AcidicMixture"
+#define kAmalgExtra1    "IronChassis"
+#define kAmalgExtra2    "QuickLimeMixture"
+#define kAmalgExtra3    "AcidMixture"
 #define kAmalgResult1   "MineBulb"
 #define kAmalgResult2   "FlareMixture"
 
