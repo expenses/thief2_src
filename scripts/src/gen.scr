@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.68 2000/03/01 20:26:58 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.69 2000/03/02 23:49:48 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -14,6 +14,7 @@
 #include "dmgprop.h" // for slay results
 #include "ambbase.h" // for ambient hack flags
 #include "tfint.h" // for trap flags
+#include "drkstats.h"
 
 #include <stdio.h> // for sprintf, because damn, why not. 
 
@@ -2955,3 +2956,52 @@ OnDifficulty()
 }
 
 END_SCRIPT(LastMissionLoot)
+
+BEGIN_SCRIPT(SecretSounds, RootScript)
+
+
+METHODS:
+  
+  METHOD void FoundASecret()
+  {
+     if ((DarkGame.BindingGetFloat("goal_notify")!=0.0))
+     {
+        object schem=Object.Named("new_obj");
+        string popup=Data.GetString("PlayHint.str","FoundSecret");
+        if (popup!="") 
+           DarkUI.TextMessage(popup);
+        if (schem!=object(NULL)) 
+           Sound.PlaySchemaAmbient(self,schem); 
+     }
+  }
+
+
+MESSAGES:
+
+  OnBeginScript()
+  {
+     Quest.SubscribeMsg(self,kDarkStatSecrets);
+     if (!IsDataSet("SecretsFound"))
+        SetData("SecretsFound",Quest.Get(kDarkStatSecrets));
+     DefaultOnBeginScript();
+  }
+  
+  OnEndScript()
+  {
+     Quest.UnsubscribeMsg(self,kDarkStatSecrets);
+     DefaultOnEndScript();
+  }
+
+  OnQuestChange()
+  {
+     if (stricmp(message.m_pName,kDarkStatSecrets)==0) //make sure was secrets
+        if (Quest.Get(kDarkStatSecrets)>(integer)GetData("SecretsFound"))
+        {
+           FoundASecret(); 
+           SetData("SecretsFound",Quest.Get(kDarkStatSecrets));
+        }
+     DefaultOnQuestChange();
+  }
+
+END_SCRIPT(SecretSounds)
+
