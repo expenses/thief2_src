@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/ui/RCS/event.h 1.27 1998/07/30 10:52:04 JAEMZ Exp $
+// $Header: x:/prj/tech/libsrc/ui/RCS/event.h 1.28 1999/12/28 11:59:40 JAEMZ Exp $
 
 #ifndef _EVENT_H
 #define _EVENT_H
@@ -14,8 +14,8 @@
 #define UIEV_DATASIZE 6
 
 
-#define UIEVFRONT  Point pos;        /* all ui events have a "screen" position */  \
-                   ulong type;         /* An event type, 32 possible.   */
+#define UIEVFRONT  Point pos;   /* all ui events have a "screen" position */  \
+ulong type;         /* An event type, 32 possible.   */
 
 #define UIEVBACK(sz) char pad[UIEV_DATASIZE-(sz)]
 
@@ -26,9 +26,9 @@
 // Generalized input event struct
 typedef struct _ui_event
 {
-  UIEVFRONT
-  short subtype;                 /* type specific */
-  char data[UIEV_DATASIZE];      /* type specific */
+   UIEVFRONT
+   short subtype;                 /* type specific */
+   char data[UIEV_DATASIZE];      /* type specific */
 } uiEvent;
 
 
@@ -52,10 +52,10 @@ typedef struct _ui_event
 // Raw key events
 typedef struct _ui_raw_key_event
 {
-  UIEVFRONT
-  short scancode;    /* subtype */
-  uchar action;      /* KBS_UP or _DOWN */
-  UIEVBACK(sizeof(uchar));
+   UIEVFRONT
+   short scancode;    /* subtype */
+   uchar action;      /* KBS_UP or _DOWN */
+   UIEVBACK(sizeof(uchar));
 } uiRawKeyEvent;
 
 typedef uiRawKeyEvent uiPollKeyEvent;
@@ -63,37 +63,38 @@ typedef uiRawKeyEvent uiPollKeyEvent;
 // Cooked key events
 typedef struct _ui_cooked_key_event
 {
-  UIEVFRONT
-  short code;        /* cooked keycode, chock full o' stuff */
-  UIEVBACK(0);
+   UIEVFRONT
+   short code;        /* cooked keycode, chock full o' stuff */
+   UIEVBACK(0);
 } uiCookedKeyEvent;
 
 // mouse events
 typedef struct _ui_mouse_event
 {
-  UIEVFRONT
-  short action;        /* mouse event type, as per mouse library */
-  ulong tstamp;
-  ubyte buttons;
-  UIEVBACK(sizeof(ulong)+sizeof(ubyte));
+   UIEVFRONT
+   short action;        /* mouse event type, as per mouse library */
+   ulong tstamp;
+   ubyte buttons;
+   char wheel;   // would rather make it short, but we're out of space!
+   // Full house!   UIEVBACK(sizeof(ulong)+sizeof(ubyte)+sizeof(char));
 } uiMouseEvent;
 
 // joystick events
 typedef struct _ui_joy_event
 {
-  UIEVFRONT
-  short action;        /* joystick event subtype, as defined below */
-  uchar joynum;        /* joystick number */
-  Point joypos;     /* joystick position */
-  UIEVBACK(sizeof(uchar)+sizeof(Point));
+   UIEVFRONT
+   short action;        /* joystick event subtype, as defined below */
+   uchar joynum;        /* joystick number */
+   Point joypos;     /* joystick position */
+   UIEVBACK(sizeof(uchar)+sizeof(Point));
 } uiJoyEvent;
 
 // user-defined events
 typedef struct _ui_user_defined_event
 {
-  UIEVFRONT
-  short action;        /* event subtype, as defined by application */
-  UIEVBACK(0);
+   UIEVFRONT
+   short action;        /* event subtype, as defined by application */
+   UIEVBACK(0);
 } uiUserDefinedEvent;
 
 // extended mouse event types (double clicks)
