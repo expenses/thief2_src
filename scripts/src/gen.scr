@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.15 1999/10/06 11:42:51 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.16 1999/10/11 15:02:32 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1397,8 +1397,6 @@ METHODS:
 
    METHOD boolean CanAttachTo(object targ)
    {
-      float stickchance=100.00;
-
       if(targ==object(0)) return FALSE;
       if(!(Property.Possessed(targ,"CanAttach")
            && boolean(Property.Get(targ,"CanAttach"))))
@@ -1417,15 +1415,16 @@ METHODS:
          Property.Possessed(targ,"TransDoor") ||
          Property.Possessed(targ,"MovingTerrain"))
          return FALSE;
-      if(Property.Possessed(self,"scriptTiming"))
-         stickchance=Property.Get(self,"scriptTiming");
-      return ((Data.RandFlt0to1()*100.0)<=stickchance);
-
+      return TRUE;
    }
 
    METHOD real LifeSpan()
    {
-      real limit=30.0;
+      // by default, don't time out
+      real limit=-1.0;
+      if(Property.Possessed(self,"ScriptTiming"))
+         limit=Property.Get(self,"ScriptTiming");
+      // Anything shot by the player lasts much longer
       if(Link.AnyExist("CulpableFor",Object.Named("Player"),self))
          limit*=5.0;
       return limit;
@@ -1449,9 +1448,10 @@ MESSAGES:
 
       if(attach)
       {
-         if(!IsDataSet("DontTimeout"))
+         real limit=LifeSpan();
+         if(limit>0.0)
          {
-            timer_handle timeout=SetOneShotTimer(self,"Tick",LifeSpan());
+            timer_handle timeout=SetOneShotTimer(self,"Tick",limit);
             SetData("timeout",timeout);
          }
          if(!Property.Possessed(self,"StackCount"))
@@ -1473,7 +1473,7 @@ MESSAGES:
          else
          {
             timer_handle new_timeout;
-            new_timeout=SetOneShotTimer(self,"Tick",30.0);
+            new_timeout=SetOneShotTimer(self,"Tick",10.0);
             SetData("timeout",new_timeout);
          }
       }
@@ -1560,7 +1560,6 @@ MESSAGES:
       {
          object MyRope=Object.BeginCreate("RopeArrowRope");
 
-         SetData("DontTimeout",TRUE);
          Link.Create("Owns",self,MyRope);
          Object.Teleport(MyRope,vector(-1.0,0,0),vector(0,0,0),self);
          Object.EndCreate(MyRope);
