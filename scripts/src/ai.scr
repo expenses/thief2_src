@@ -561,12 +561,10 @@ METHODS:
       else
          return object(0);
    }
-MESSAGES:
-   OnAlertness()
+   METHOD void ConsiderPotion()
    {
       if(Property.Possessed(self,"AI_Mode") &&
-         integer(Property.Get(self,"AI_Mode"))!=kAIM_Dead &&
-         message.level!=kAIAL_High && 
+         integer(Property.Get(self,"AI_Mode"))==kAIM_Normal &&
          Property.Possessed(self,"HitPoints") &&
          Property.Possessed(self,"MAX_HP"))
       {
@@ -584,7 +582,18 @@ MESSAGES:
             }
          }
       }
-      DefaultOnAlertness();
+   }
+
+MESSAGES:
+   OnAIModeChange()
+   {
+      ConsiderPotion();
+      DefaultOnAIModeChange();
+   }
+   OnDamage()
+   {
+      ConsiderPotion();
+      DefaultOnDamage();
    }
    OnMotionEnd()
    {
