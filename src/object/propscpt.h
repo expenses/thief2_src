@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/propscpt.h,v 1.2 1999/03/03 13:27:16 Justin Exp $
 #pragma once  
 #ifndef __PROPSCPT_H
