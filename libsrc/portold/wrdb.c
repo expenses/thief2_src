@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/wrdb.c,v 1.16 1996/12/08 21:39:27 buzzard Exp $
 
 // World representation save/load

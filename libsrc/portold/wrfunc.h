@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/wrfunc.h,v 1.9 1998/02/11 11:38:53 MAT Exp $
 
 // World Representation Functions
