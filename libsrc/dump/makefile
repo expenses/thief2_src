@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dump/RCS/makefile $
-# $Revision: 1.1 $
-# $Author: JAEMZ $
-# $Date: 1996/01/19 14:07:00 $
+# $Revision: 1.2 $
+# $Author: TOML $
+# $Date: 1996/04/08 16:51:20 $
 #
 
 MAKETOP = $(CWD)
