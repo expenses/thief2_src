@@ -409,6 +409,7 @@ MESSAGES:
 
   OnSchemaDone()
   {
+    Debug.MPrint("Player schema callback from ",message.targetObject," received.  Name: ",message.name);
     integer convid = (integer)GetData("ConversationObject");
     if (convid == (integer)message.targetObject)
       { 
