@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/damgscrm.h,v 1.3 1998/06/29 16:45:15 mahk Exp $
 #pragma once  
 #ifndef __DAMGSCRM_H

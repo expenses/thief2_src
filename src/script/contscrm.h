@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/contscrm.h,v 1.4 1998/09/09 02:28:13 mahk Exp $
 #pragma once  
 #ifndef __CONTSCRM_H
