@@ -1,5 +1,7 @@
 #include "dmgprop.h" //kslaynormal
 #include "aiaware.h"
+#include "aiteams.h"
+#include "drkgoalt.h"
 #include "invtype.h"
 #include "aitype.h"
 
@@ -1623,4 +1625,93 @@ MESSAGES:
       DefaultOnSlain();
    }
 END_SCRIPT(SlayHaltSpeech)
+
+BEGIN_SCRIPT(AICheatScript, AI)
+
+METHODS:
+  METHOD void Catch(string whatdata)
+  {
+     if ((integer)GetData(whatdata)==0)
+        return;
+     Debug.MPrint(self," Catching Garrett");
+     integer i;
+     for (i = 0; i<20; i++)
+     {
+       if (Quest.Get(GoalVisibleVarName(i)))
+          Quest.Set(GoalStateVarName(i),kGoalFailed);
+     }
+  }
+
+MESSAGES:
+
+  OnSim()
+  {
+     if (message.starting)
+     {
+        //FailOnSee logic.
+        if (DarkGame.ConfigIsDefined("FailOnSee"))
+           SetData("FailOnSee",1);
+        else
+           SetData("FailOnSee",0);
+        if (DarkGame.ConfigIsDefined("FailOnKO"))
+           SetData("FailOnKO",1);
+        else
+           SetData("FailOnKO",0);
+        if (Object.InheritsFrom(self,Object.Named("Rat")))
+           SetData("FailOnSee",0);
+        if (Object.InheritsFrom(self,Object.Named("EyeballPlant")))
+           SetData("FailOnSee",0);
+        if (Property.Possessed(self,"AI_Team"))
+        {
+           integer myteam = (integer)Property.Get(self,"AI_Team");
+           if (myteam<=kAIT_Neutral)
+           {
+              SetData("FailOnSee",0);
+           }              
+        }
+        else
+        {
+           Property.Add(self,"AI_Team");
+           integer myteam = (integer)Property.Get(self,"AI_Team");
+           if (myteam<=kAIT_Neutral)
+           {
+              SetData("FailOnSee",0);
+           }
+           Property.Remove(self,"AI_Team");
+        }
+        if ((integer)GetData("FailOnSee")==1)
+           Debug.MPrint(self," is looking for Garrett.");
+        if ((integer)GetData("FailOnKO")==1)
+           Debug.MPrint(self," should not get KO'd by Garrett.");
+     }
+     DefaultOnSim();
+  }
+
+  OnAIModeChange()
+  {
+     if (message.mode==kAIM_Dead)
+     {
+           integer hp = 99;
+      
+           if (Property.Possessed(self,"HitPoints"))
+              hp=Property.Get(self,"HitPoints");
+           if (hp>0)
+              Catch("FailOnKO");
+     }
+     DefaultOnAIModeChange();
+  }
+
+  OnHighAlert()
+  {
+     int hp = 99;
+     if (Property.Possessed(self,"HitPoints"))
+        hp = Property.Get(self,"HitPoints");
+
+     if ((!Object.HasMetaProperty(self,Object.Named("M-KnockedOut"))) &&
+         (hp>0))
+        Catch("FailOnSee");
+     DefaultOnHighAlert();
+  }
+
+END_SCRIPT(AICheatScript)
 
