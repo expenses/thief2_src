@@ -1,5 +1,10 @@
 /*
- * $Source: x:/prj/tech/libsrc/gadget/RCS/uitexted.c $
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
+ * $Source: r:/t2repos/thief2/libsrc/gadget/uitexted.c,v $
  * $Revision: 1.10 $
  * $Author: JAEMZ $
  * $Date: 1998/01/12 20:42:30 $

@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/util2d.h 1.8 1998/07/02 11:45:14 PATMAC Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/util2d.h,v 1.8 1998/07/02 11:45:14 PATMAC Exp $
 
 #ifndef __UTIL2D_H
 #define __UTIL2D_h

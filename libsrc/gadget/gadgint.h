@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadgint.h 1.2 1996/08/15 00:04:59 mahk Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/gadgint.h,v 1.2 1996/08/15 00:04:59 mahk Exp $
 
 #ifndef __GADGINT_H
 #define __GADGINT_H
