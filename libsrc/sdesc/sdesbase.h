@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/sdesc/RCS/sdesbase.h 1.10 1998/05/13 18:50:40 buzzard Exp $
+// $Header: x:/prj/tech/libsrc/sdesc/RCS/sdesbase.h 1.13 1999/04/21 14:39:45 JAEMZ Exp $
 
 #ifndef SDESBASE_H
 #define SDESBASE_H
@@ -70,6 +70,11 @@ enum _eFieldType
    kFieldTypeFloat,        // float
    kFieldTypeFix,          // fix (integer interpreted as 16.16)
    kFieldTypeFixVec,       // vector of fixes
+   kFieldTypeDouble,       // double-precision float
+   kFieldTypeRGBA,         // rgba color sRGBA from srgba.h
+   kFieldTypeDoubleVec,    // double precision vector
+   kFieldTypeAng,          // lg angle (0-0xFFFF), shown as degrees
+   kFieldTypeAngVec,       // lg angle vector, shown as degrees heading, pitch, bank (tz,ty,tx)
 };
 
 //
