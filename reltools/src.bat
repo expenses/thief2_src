@@ -33,6 +33,8 @@ echo    _DAILYDRV_ = %_DAILYDRV_
 echo    _DAILY_ = %_DAILY_
 echo    _DAILYCD_ = %_DAILYCD_
 echo    _DAILYTHIEF_ = %_DAILYTHIEF_
+echo 	_DAILYCD2_ = %_DAILYCD2_
+echo	_DAILYTHIEFCD2_ = %_DAILYTHIEFCD2_
 echo    _DAILYPRJ_ = %_DAILYPRJ_
 echo    _ZIPDIR_ = %_ZIPDIR_
 echo.
@@ -108,8 +110,8 @@ rem ****************************************************
 rem grab the specific .cfg files both to release and to the dailythief
 rem ****************************************************
 
-copy %_PRJPATH_%\src\dark.cfg  %_DAILYTHIEF_%\dark.cfg      >>r:\prj\thief2\reltools\copy.log
-copy %_PRJPATH_%\src\cam.cfg  %_DAILYTHIEF_%\cam.cfg      >>r:\prj\thief2\reltools\copy.log
+copy %_PRJPATH_%\src\dark.cfg  %_DAILYTHIEFCD2_%\dark.cfg      >>r:\prj\thief2\reltools\copy.log
+copy %_PRJPATH_%\src\cam.cfg  %_DAILYTHIEFCD2_%\cam.cfg      >>r:\prj\thief2\reltools\copy.log
 
 rem ****************************************************
 rem Hey, new feature! keybinding.  Take the current english one 
@@ -216,6 +218,10 @@ rem The exe wanted for the CD directory should be produced first
 rem flav=opt master=playtest produces thief.exe. Note it is renamed
 rem ******************************************************
 
+rem skip building thief bit
+
+goto ShpDark
+
 :Thief
 s:
 cd \prj\thief2\src
@@ -268,6 +274,7 @@ iff not exist thief2.exe then
    grep -i error log.shp
 else 
    copy thief2.exe %_DAILYDIR_%\shpthief.exe
+   copy thief2.exe %_DAILYTHIEFCD2_%\thief2.exe
    copy thief2.map %_DAILYDIR_%\shpthief.map
    if exist shpthief.exe rm shpthief.exe
    if exist shpthief.map rm shpthief.exe
