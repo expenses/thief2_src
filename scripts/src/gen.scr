@@ -1,0 +1,4816 @@
+/////////////////////////////////////////////////////////////////////////////
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.1 1999/07/05 15:07:22 TJS Exp $
+//
+
+#include "frobscrt.h"
+#include "invtype.h"
+#include "prjctile.h"
+#include "animlgte.h"
+#include "drscrpt.h"
+#include "tweqflgs.h"
+#include "aitype.h" // for alertness levels
+#include "rendprop.h" // for render types
+#include "dmgprop.h" // for slay results
+#include "ambbase.h" // for ambient hack flags
+#include "phprops.h" // for kCPT_ constants
+
+#include <stdio.h> // for sprintf, because damn, why not. 
+
+#include "evidence.scr"
+
+/* GEN.SCR
+  This file contains "generic" object behavior scripts of various sorts.
+  This is meant to include the default behaviors of certain object types,
+  which corresponds to scripts set at the archetype level, in the game
+  system.
+
+  Usually, this includes two main classes of behaviors for each object
+  type:
+     * Interpretation of "Frob" events, excluding those behaviors which
+       can be encoded in the object's FrobInfo property, such as being
+       picked up or destroyed.
+     * Type-dependent interpretation of "TurnOn" and "TurnOff" events,
+       for "trap/trigger" scripting purposes.
+
+  Types of behaviors found herein include:
+     * Doors opening and closing
+     * Keys unlocking lockboxes
+     * Books showing contents when frobbed
+     * Torches turning on and off in response to A/R stimuli
+     * Weapons equipping themselves when selected as current inventory item.
+
+*/
+
+
+/* ====== StdDoor ======
+script for basic door behavior.  The door opens, closes, or changes
+direction of motion when frobbed, and can respond to "TurnOn" and
+"TurnOff" messages by opening and closing (respectively).
+
+The standard frob response takes into account whether the door is locked.
+The door will Open and Close in response to messages even if locked,
+but will not respond to frobs if locked. Responsibility for locking
+and unlocking falls on the lock boxes themselves.
+
+How TurnOn/TurnOff messages are delivered is intentionally left flexible:
+the usual vector would presumably be from a controlling lever.
+
+If a door should not open to frobs at all (e.g., in the case where the
+door is strictly remote-controlled) there are two options.  Either the
+door can simply be absent a "scripts" flag in its "FrobInfo" property
+(or without a FrobInfo property at all) in which case it will of course
+have absolutely no scripted Frob response.  The other option is to have
+a special-purpose script for that door, though possibly one which
+inherits from StdDoor but declines to chain up with DefaultOnFrobWorldEnd()
+*/
+BEGIN_SCRIPT(StdDoor,Door)
+
+   METHODS:
+
+      METHOD string StateChangeTags(integer Status, integer OldStatus)
+      {
+         static string StateTags[]={"Open","Closed","Opening","Closing","Halted"};
+         string retval="Event StateChange, OpenState ";
+
+         retval=retval+StateTags[Status]+string(", OldOpenState ")+StateTags[OldStatus];
+
+         if(IsDataSet("PlayerFrob"))
+         {
+            retval=retval+", CreatureType Player";
+         }
+         // When I halt, open, or close, clear the player frob info
+         if(Status!=kDoorClosing && Status!=kDoorOpening)
+            ClearData("PlayerFrob");
+         return retval;
+      }         
+
+MESSAGES:
+
+    // Since we know we probably have our hands full with a key
+    // when we unlock a door, and using the key and door are now
+    // on the same mouse button, locking and unlocking a door
+    // will also close and open it.  -TJS
+    OnNowLocked()
+    {
+       Door.CloseDoor(self);
+       DefaultOnNowLocked();
+    }
+    OnNowUnlocked()
+    {
+       Door.OpenDoor(self);
+       DefaultOnNowUnlocked();
+    }
+
+    OnFrobWorldEnd()
+    {
+      if(Locked.IsLocked(self) && Door.GetDoorState(self)==kDoorClosed)
+      {
+         Sound.PlayEnvSchema(self,"Event Reject, Operation OpenDoor",self);
+      }
+      else
+      {
+         if(object(message.Frobber)==object("Player"))
+         {
+            SetData("PlayerFrob",0);
+         }
+         Door.ToggleDoor(self);
+      }
+      DefaultOnFrobWorldEnd();
+    }
+    OnDoorHalt()
+    {
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorHalt();
+    }
+    OnDoorOpening()
+    {
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorOpening();
+    }
+    OnDoorClosing()
+    {
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorClosing();
+    }
+    OnDoorClose()
+    {
+       Sound.HaltSchema(self);
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorClose();
+    }
+    OnDoorOpen()
+    {
+       Sound.HaltSchema(self);
+       Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
+       DefaultOnDoorOpen();
+    }
+    OnSlain()
+    {
+       // Resurrect so that I can potentially be bashed open again.
+       Damage.Resurrect(self);
+       Property.Set(self,"HitPoints",1);
+
+       /* Note that this doesn't deal with double doors
+          at all.  We presume that for double doors to be
+          locked, all of the synchronized doors will be
+          locked.  Probably there will be a separate script
+          with the sole responsibility of slaying all doors
+          in the set when any of them is slain, if that's
+          what you want.
+          */
+       linkset locks=Link.GetAll("Lock",self);
+
+       while(locks.AnyLinksLeft())
+       {
+          Link.Destroy(locks.Link());
+          locks.NextLink();
+       }
+       if(Property.Possessed(self,"Locked"))
+       {
+          // see how sneaky!  first we set to FALSE, so the TweqLock
+          // listener knows.
+          Property.Set(self,"Locked",FALSE);
+          // but really, we don't want it around at all anymore.
+          Property.Remove(self,"Locked");
+       }
+       if(Property.Possessed(self,"KeyDst"))
+          Property.Remove(self,"KeyDst");
+
+       Door.OpenDoor(self);
+    }
+    
+    OnMessage()
+    {
+       // interpret TurnOn/TurnOff messages, in this case as Open/Close
+       if(MessageIs("TurnOn") || MessageIs("Open"))
+          Door.OpenDoor(self);
+       else if(MessageIs("TurnOff") || MessageIs("Close"))
+          Door.CloseDoor(self);
+       // used by key script to let the door know of tool-frobs by the player
+       // so we can treat them as direct frobs with respect to sound.  This
+       // message better be strictly correlated with immediately subsequent
+       // events causing changes in door state...
+       else if(MessageIs("PlayerToolFrob"))
+       {
+          SetData("PlayerFrob",0);
+       }
+    }
+
+END_SCRIPT(StdDoor)
+
+BEGIN_SCRIPT(ToggleDoor, StdDoor)
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn")||MessageIs("TurnOff"))
+         Door.ToggleDoor(self);
+      else
+         DefaultOnMessage();
+   }
+END_SCRIPT(ToggleDoor)
+
+BEGIN_SCRIPT(TrigDoorOpen, Door)
+MESSAGES:
+    OnDoorOpening()
+    {
+       if(message.PrevActionType==sDoorMsg::kClose)
+       {
+          Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+       }
+       DefaultOnDoorOpening();
+    }
+    OnDoorClose()
+    {
+       Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+       DefaultOnDoorClose();
+    }
+END_SCRIPT(TrigDoorOpen)
+
+
+/* Key which knows how to lock and unlock an object, if and only 
+   if it matches that object's RegionID and either has its Master
+   bit set or matches the object's LockID.  Mind you, all of that
+   is adjudicated by the Key service.
+*/
+BEGIN_SCRIPT(StdKey,RootScript)
+
+   METHODS: 
+     METHOD boolean IsDoor(object obj)
+     {
+       return(Property.Possessed(obj,"RotDoor") ||
+              Property.Possessed(obj,"TransDoor"));
+     }
+   MESSAGES:
+     // Keys of the same KeySrc value combine in inventory.
+     // we do this thusly: if a key without a Combine Type (as is the default)
+     // comes into the player's inventory, we cook the KeySrc into a string
+     // which gets slammed into its CombineType.  Then the object is punched
+     // back into inventory so as to combine.  Lets go:
+     OnContained()
+     {
+        if(message.event==kContainAdd &&
+           object(message.container)==Object.Named("Player"))
+        {
+           object schem=Object.Named("pickup_key");
+
+           // all keys coming into player inv must have stack count 
+           // so it'll be clear when they combine.
+           if(!Property.Possessed(self,"StackCount"))
+              Property.Set(self,"StackCount",1);
+
+           if(!Property.Possessed(self,"CombineType") &&
+              Property.Possessed(self,"KeySrc"))
+           {
+              string combine="key";
+              boolean master=Property.Get(self,"KeySrc","MasterBit");
+              integer region=Property.Get(self,"KeySrc","RegionMask");
+              integer id=Property.Get(self,"KeySrc","LockID");
+
+              combine=combine+(master?"T":"F");
+              combine=combine+string(region)+"i"+string(id);
+              
+              // Debug.MPrint("Setting combine type on ",self," to ",combine);
+
+              Property.Set(self,"CombineType",(const char*)(combine));
+              // Not clear if this is safe to do inside the OnContained handler...
+              Container.Remove(self);
+              Container.Add(self,Object.Named("Player"));
+           }
+           if(schem!=object(0))
+              Sound.PlaySchemaAmbient(self,schem);
+        }
+        DefaultOnContained();
+     }
+     OnFrobToolEnd()
+     {
+        object targ=message.DstObjId;
+        // we use kKeyUseCheck instead of (before) kKeyUseDefault because
+        // we don't want to lock/unlock until we know whether the frob
+        // will succeed, since we need to send PlayerFrob messages to
+        // the affected door beforehand, so it can tag the sounds
+        // appropriately.  Ick.
+        boolean keyfit=Key.TryToUseKey(self,targ,kKeyUseCheck);
+        boolean playerfrob=(object(message.Frobber)==object("Player"));
+        boolean wasused=keyfit;
+
+        if(keyfit)
+        {
+           if(playerfrob) SendMessage(targ,"PlayerToolFrob");
+           Key.TryToUseKey(self,targ,kKeyUseDefault);
+        }
+        else
+        {
+           // okay, so the key doesn't fit whatever I'm trying to
+           // use it on.  The least I can do, is if the thing I'm
+           // trying to use it on is a door which has no lock,
+           // to use the door.  But if it _has_ a lock, maybe I really
+           // am trying to lock the lock, and the key just doesn't
+           // fit.  Oi.  This is what happens when you try to read
+           // the player's mind.
+
+           // Not clear if we really need to check whether our targ
+           // is a door.  Could the Door service be handing us this
+           // information instead?
+           if(IsDoor(targ) && !Property.Possessed(targ,"Locked")
+              && !Locked.IsLocked(targ))
+           {
+              if(playerfrob) SendMessage(targ,"PlayerToolFrob");
+              Door.ToggleDoor(targ);
+              wasused=TRUE;
+           }
+           else
+              SendMessage(targ,"Wrongkey");
+        }
+        Reply(wasused);
+        DefaultOnFrobToolEnd();
+     }
+
+END_SCRIPT(StdKey)
+
+/* Basic script for locking and unlocking objects.
+   Responds to TurnOn and TurnOff messages by locking
+   and unlocking, respectively.  This script can be used on
+   an abstract object (Lock linked to some device) as
+   part of a trap mechanism, or can be derived from for
+   objects which want more concrete additional behaviors
+   (such as lock boxes)
+   */
+BEGIN_SCRIPT(Lock, RootScript)
+
+  MESSAGES:
+      OnMessage()
+      {
+         // if Locked property is not present, take this to
+         // represent a potentially- or previously-lockable
+         // object which does not currently have a lock
+         // (e.g., when a door is forced open, it loses its
+         // locks).  So, do not add the property; do nothing.
+         if(Property.Possessed(self,"Locked"))
+            if(MessageIs("TurnOn") || MessageIs("Lock"))
+            {
+               Property.Set(self,"Locked",TRUE);
+            }
+            else if(MessageIs("TurnOff") || MessageIs("Unlock"))
+            {
+               Property.Set(self,"Locked",FALSE);
+            }
+         DefaultOnMessage();
+      }
+
+END_SCRIPT(Lock)
+
+
+BEGIN_SCRIPT(TrigUnlock, RootScript)
+   MESSAGES:
+      OnNowLocked()
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         DefaultOnNowLocked();
+      }
+      OnNowUnlocked()
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         DefaultOnNowUnlocked();
+      }
+END_SCRIPT(TrigUnlock)
+
+
+
+
+/* LockSounds
+   Control logic for lock box objects, doors, chests, encoding
+   the sounds they make to express their state changes.  Visible
+   state changes are handled by the TweqLock property.
+*/
+BEGIN_SCRIPT(LockSounds,RootScript)
+   METHODS:
+      METHOD string CritterTag(string tagset)
+      {
+         if(IsDataSet("PlayerFrob"))
+         {
+            tagset+=", CreatureType Player";
+            ClearData("PlayerFrob");
+         }
+         return tagset;
+      }
+   MESSAGES:
+      OnNowLocked()
+      {
+         string tags="Event StateChange, LockState Locked";
+         Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         DefaultOnNowLocked();
+      }
+      OnNowUnlocked()
+      {
+         string tags="Event StateChange, LockState Unlocked";
+         Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         DefaultOnNowUnlocked();
+      }
+      OnMessage()
+      {
+        if(MessageIs("Wrongkey"))
+        {
+           Sound.PlayEnvSchema(self,"Event Reject, Operation KeyFit",self,NULL,kEnvSoundAtObjLoc);
+        }
+        else if(MessageIs("PlayerToolFrob"))
+           SetData("PlayerFrob",0);
+        DefaultOnMessage();
+      }
+
+END_SCRIPT(LockSounds)
+
+
+BEGIN_SCRIPT(Legible, RootScript)
+
+METHODS:
+   METHOD void ShowText()
+   {
+      if(Property.Possessed(self,"book"))
+      {
+         string bookname=Property.Get(self,"book");
+         if(Property.Possessed(self,"bookart"))
+         {
+            string bookart=Property.Get(self,"bookart");
+
+            DarkUI.ReadBook(bookname,bookart);
+         }
+         else
+         {
+            bookname=string("..\\Books\\")+bookname;
+            string popup=Data.GetString(bookname,"Page_0");
+            DarkUI.TextMessage(popup);
+         }
+      }
+   }
+END_SCRIPT(Legible)
+
+BEGIN_SCRIPT(StdBook,Legible)
+
+MESSAGES:
+  OnFrobWorldEnd()
+  {
+     ShowText();
+     DefaultOnFrobWorldEnd();
+  }
+END_SCRIPT(StdBook)
+
+
+BEGIN_SCRIPT(StdScroll,Legible)
+
+MESSAGES:
+  OnFrobInvEnd()
+  {
+     ShowText();
+     DefaultOnFrobInvEnd();
+  }
+END_SCRIPT(StdScroll)
+
+
+/* Goofy food script.  In addition to destroying the item
+   (as specified in its FrobInfo property) play a sound.
+   */
+BEGIN_SCRIPT(EatFood,RootScript)
+
+  MESSAGES:
+
+  OnFrobInvEnd()
+  {
+     boolean is_player = (object(message.Frobber) == object("Player")); 
+     eEnvSoundLoc loc = is_player ? kEnvSoundAmbient : kEnvSoundAtObjLoc;
+     // move the object to the frobber
+     vector zeroes(0,0,0); 
+     Object.Teleport(self,zeroes,zeroes,message.Frobber); 
+
+     // Now play the activate event 
+     Sound.PlayEnvSchema(self,"Event Activate",self,message.Frobber,loc);
+        
+     // Note: the food item is destroyed because of its FrobInfo property
+     // so we don't have to do that here.
+     DefaultOnFrobInvEnd();
+  }
+
+END_SCRIPT(EatFood)
+
+/* For healing potions: when I am frobbed, make an unreffed clone of 
+   myself and put it in A/R contact with the frobber.
+   */
+BEGIN_SCRIPT(CloneContactFrob, RootScript)
+MESSAGES:
+   OnFrobInvEnd()
+   {
+      object newobj=Object.BeginCreate(self);
+      Property.Set(newobj,"HasRefs",FALSE);
+      Object.EndCreate(newobj);
+      ActReact.BeginContact(newobj,message.Frobber);
+      DefaultOnFrobInvEnd();
+   }
+END_SCRIPT(CloneContactFrob)
+
+/* Similar to the above: when I take damage from VenomStim,
+   clone the weapon responsible and put me in contact with it,
+   thus causing continuing damage.
+   */
+BEGIN_SCRIPT(CloneContactDmg, RootScript)
+MESSAGES:
+   OnDamage()
+   {
+      object stim=message.kind;
+      object source=message.culprit;
+
+      if(stim==Object.Named("VenomStim"))
+      {
+         object newobj=Object.BeginCreate(source);
+         Property.Set(newobj,"HasRefs",FALSE);
+         Object.EndCreate(newobj);
+         ActReact.BeginContact(newobj,self);
+      }
+      DefaultOnDamage();
+   }
+END_SCRIPT(CloneContactDmg)
+
+
+// For object which is slain when frobbed
+BEGIN_SCRIPT(FrobSlay, RootScript)
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      Damage.Slay(self,message.Frobber);
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(FrobSlay)
+
+// Base script for animating lights: knows how to turn them on and off
+// Objects with special effects associated with these events should
+// override the TurnOn and TurnOff methods
+
+// If the anim light has a TweqFlicker property, then the light will
+// respond to TurnOn messages by starting the TweqFlicker and going
+// into "flicker between min and max" mode.  When the TweqFlicker
+// finishes, _then_ it will turn on.
+
+BEGIN_SCRIPT(AnimLight,RootScript)
+
+   METHODS:
+
+      METHOD void InitModes()
+      {
+         integer mode, onmode, offmode;
+
+         if(Property.Possessed(self,"AnimLight"))
+            mode=Property.Get(self,"AnimLight","Mode");
+         else
+            return; // Bad, but nothing we can do.
+
+         if(mode==ANIM_LIGHT_MODE_MINIMUM)
+            offmode=mode;
+         else if(mode==ANIM_LIGHT_MODE_SMOOTH_BRIGHTEN ||
+                 mode==ANIM_LIGHT_MODE_SMOOTH_DIM)
+            offmode=ANIM_LIGHT_MODE_SMOOTH_DIM;
+         else
+            offmode=ANIM_LIGHT_MODE_EXTINGUISH;
+
+         if(mode!=offmode)
+            onmode=mode;
+         else
+         {
+            if(offmode==ANIM_LIGHT_MODE_SMOOTH_DIM)
+               onmode=ANIM_LIGHT_MODE_SMOOTH_BRIGHTEN;
+            else
+               onmode=ANIM_LIGHT_MODE_MAXIMUM;
+         }
+
+         SetData("OnLiteMode",onmode);
+         SetData("OffLiteMode",offmode);
+      }
+         
+      // Turn our ambienthack sound (if present) on or off
+      METHOD void AmbientHack(boolean on)
+      {
+         if(Property.Possessed(self,"AmbientHacked"))
+         {
+            integer flags=Property.Get(self,"AmbientHacked","Flags");
+
+            if(!on)
+               flags|=AMBFLG_S_TURNEDOFF;
+            else
+               flags&=(~AMBFLG_S_TURNEDOFF);
+            Property.Set(self,"AmbientHacked","Flags",flags);
+         }
+      }
+      METHOD boolean IsLightOn()
+      {
+         integer mode;
+
+         if(Property.Possessed(self,"AnimLight"))
+            mode=Property.Get(self,"AnimLight","Mode");
+         else
+            return FALSE;
+
+         if(!IsDataSet("OnLiteMode"))
+            InitModes();
+
+         return mode==integer(GetData("OnLiteMode"));
+      }
+      METHOD void ChangeMode(boolean on)
+      {
+         integer newmode;
+         string onoffmsg=on?"TurnOn":"TurnOff";
+         string modedata=on?"OnLiteMode":"OffLiteMode";
+
+         Link.BroadcastOnAllLinks(self,onoffmsg,"~ParticleAttachement");
+         
+         if(Property.Possessed(self,"SelfIllum"))
+            Property.Set(self,"SelfIllum",on?1.0:0);
+
+         AmbientHack(on);
+
+         Link.BroadcastOnAllLinks(self,onoffmsg,"ControlDevice",NULL);
+
+         if(!Property.Possessed(self,"AnimLight"))
+            return; // nothing we can do.
+
+         if(!IsDataSet(modedata))
+            InitModes();
+
+         newmode=GetData(modedata);
+         Light.SetMode(self,newmode);
+      }
+      METHOD void TurnOn()
+      {
+         ChangeMode(TRUE);
+      }
+      METHOD void TurnOff()
+      {
+         ChangeMode(FALSE);
+      }
+      METHOD void Toggle()
+      {
+         integer mode;
+         if(!Property.Possessed(self,"AnimLight")) return;
+
+         if(!IsDataSet("OnLiteMode") || !IsDataSet("OffLiteMode"))
+            InitModes();
+
+         mode=Property.Get(self,"AnimLight","Mode");
+         if(mode==integer(GetData("OnLiteMode")))
+            TurnOff();
+         else if(mode==integer(GetData("OffLiteMode")))
+            TurnOn();
+      }
+
+   MESSAGES:
+      // Initializations to force particle and self-illum state to be
+      // consistent with light "on" state.  Safe for save/load.
+      OnSim()
+      {
+         if(message.starting)
+            InitModes();
+         DefaultOnSim();
+      }
+      OnBeginScript()
+      {
+         if(!IsLightOn())
+         {
+            Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
+            if(Property.Possessed(self,"SelfIllum"))
+               Property.Set(self,"SelfIllum",0.0);
+            AmbientHack(FALSE);
+         }
+         DefaultOnBeginScript();
+      }
+      OnTweqComplete()
+      {
+         if(message.Type==kTweqTypeFlicker)
+         {
+            TurnOn();
+         }
+         DefaultOnTweqComplete();
+      }
+      OnSlain()
+      {
+         // Anim Lights need to stick around just long enough to turn off
+         // when slain.  So...
+         TurnOff();
+         SetOneShotTimer(self,"ReallySlay",0.1);
+      
+         DefaultOnSlain();
+      }
+      OnTimer()
+      {
+         if(message.name=="ReallySlay")
+         {
+            // Destruction of anim lights not safe across save/load, apparently
+            // Object.Destroy(self);
+            Property.Set(self,"HasRefs",FALSE);
+        }
+         DefaultOnTimer();
+      }
+      OnMessage()
+      {
+         if(MessageIs("TurnOn"))
+         {
+            if(Property.Possessed(self,"StTweqBlink"))
+            {
+               ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
+               Light.SetMode(self,ANIM_LIGHT_MODE_FLICKER);
+            }
+            else
+               TurnOn();
+         }
+         else if(MessageIs("TurnOff"))
+         {
+            if(Property.Possessed(self,"StTweqBlink"))
+            {
+               ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
+               Property.Set(self,"StTweqBlink","Cur Time",0);
+            }
+            TurnOff();
+         }
+         else if(MessageIs("Toggle"))
+            Toggle();
+        DefaultOnMessage();
+      }
+
+END_SCRIPT(AnimLight)
+
+
+/* Manages adding and removing the A/R heat source on flames. */
+BEGIN_SCRIPT(DoFlameSource, RootScript)
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         Object.AddMetaProperty(self,"FlameHeatSource");
+      }
+      DefaultOnSim();
+   }
+   OnSlain()
+   {
+      Object.RemoveMetaProperty(self,"FlameHeatSource");
+      DefaultOnSlain();
+   }
+END_SCRIPT(DoFlameSource)
+
+
+// really, this script is specific to torches, not Extinguishable
+// lights in general...
+BEGIN_SCRIPT(Extinguishable, AnimLight)
+
+   METHODS:
+      METHOD void TurnOn()
+      {
+         // turn on our TweqModels animation
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoActivate);
+         // Turn on our light
+         Base::TurnOn();
+      }
+      METHOD void TurnOff()
+      {
+         // turn off our TweqModels animation
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoHalt);
+         // change our model
+         // @TODO: don't really want the model new model name coded into this
+         ActReact.React("set_model",1.0,self,0,"Newt01");
+         Base::TurnOff();
+      } 
+
+   MESSAGES:
+      OnBeginScript()
+      {
+         ActReact.SubscribeToStimulus(self,"WaterStim");
+         ActReact.SubscribeToStimulus(self,"FireStim");
+         ActReact.SubscribeToStimulus(self,"KOGas");
+         DefaultOnBeginScript();
+      }
+      OnEndScript()
+      {
+         ActReact.UnsubscribeToStimulus(self,"KOGas");
+         ActReact.UnsubscribeToStimulus(self,"FireStim");
+         ActReact.UnsubscribeToStimulus(self,"WaterStim");
+         DefaultOnEndScript();
+      }
+      OnStimulus(KOGas)
+      {
+         TurnOff();
+      }
+      OnStimulus(WaterStim)
+      {
+         TurnOff();
+      }
+      OnStimulus(FireStim)
+      {
+         TurnOn();
+      }
+
+  // This will allow us to get the stimulus messages we're asking for
+  SCRIPT_BEGIN_MESSAGE_MAP()
+    STIMULUS_MESSAGE_MAP_ENTRY(KOGas)
+    STIMULUS_MESSAGE_MAP_ENTRY(WaterStim)
+    STIMULUS_MESSAGE_MAP_ENTRY(FireStim)
+  SCRIPT_END_MESSAGE_MAP()
+
+END_SCRIPT(Extinguishable)
+
+
+// fairly generic script to play sounds upon receipt of
+// TurnOn and TurnOff messages, presumably corresponding
+// to other scripted actions.
+
+// If a "Script Timing" property is present then it indicates
+// flags about the sound sequencing:
+// Treat the property as 0 if not present.
+
+enum seqflags
+{
+   NoTwiceOn=0x1,
+   RevThenLoop=0x2,
+};
+
+
+BEGIN_SCRIPT(OnOffSounds, RootScript)
+States
+{
+   Off=0,
+   RevOn=1,
+   On=2,
+   RevOff=3
+};
+METHODS:
+   METHOD void NextSound()
+   {
+      integer state=GetState();
+      integer flags=0;
+
+      if(Property.Possessed(self,"scriptTiming"))
+         flags=Property.Get(self,"scriptTiming");
+
+      if(state==RevOn)
+      {
+         if(flags & seqflags(RevThenLoop))
+         {
+            // Play my "I am active" loop.
+            Sound.PlayEnvSchema(self,"Event ActiveLoop",self);
+         }
+         SetState(On);
+      }
+      else if(state==RevOff)
+      {
+         SetState(Off);
+      }
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("State"))
+         SetState(Off);
+      DefaultOnBeginScript();
+   }
+   OnSchemaDone()
+   {
+      NextSound();
+   }
+   OnMessage()
+   {
+      integer flags=0;
+      boolean success=TRUE;
+      integer state=GetState();
+
+      if(Property.Possessed(self,"scriptTiming"))
+         flags=Property.Get(self,"scriptTiming");
+
+      if(MessageIs("TurnOn"))
+      {
+         if(flags & (seqflags(RevThenLoop)|seqflags(NoTwiceOn)))
+         {
+            if(!(state==RevOn || state==On))
+            {
+               Sound.HaltSchema(self);
+               success=Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+               SetState(RevOn);
+
+               // If failed to play rev-up sound, proceed straight to loop
+               if(!success)
+                  NextSound();
+            }
+         }
+         else
+         {
+            Sound.HaltSchema(self);
+            success=Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+         }
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         if(flags & (seqflags(RevThenLoop)|seqflags(NoTwiceOn)))
+         {
+            if(!(state==RevOff || state==Off))
+            {
+               Sound.HaltSchema(self);
+               success=Sound.PlayEnvSchema(self,"Event Deactivate",self,NULL,kEnvSoundAtObjLoc);
+               SetState(RevOff);
+            }
+         }
+         else
+         {
+            Sound.HaltSchema(self);
+            success=Sound.PlayEnvSchema(self,"Event Deactivate",self,NULL,kEnvSoundAtObjLoc);
+         }
+      }
+      if(!success)
+      {
+         Debug.MPrint("Sorrow! Object ",self," failing to play OnOff sounds.");
+      }
+      DefaultOnMessage();            
+   }
+
+END_SCRIPT(OnOffSounds)
+
+////////////////////////////////////////////////
+// Activate/deactivate AmbientHacked
+
+BEGIN_SCRIPT(ActivateAmbient, RootScript)
+
+MESSAGES:
+ 
+   OnMessage()
+   {
+      if (MessageIs("TurnOn"))
+      {
+         if (Property.Possessed(self,"AmbientHacked"))
+         {
+            integer flags=Property.Get(self,"AmbientHacked","Flags");
+
+            flags &= ~AMBFLG_S_TURNEDOFF;
+            Property.Set(self,"AmbientHacked","Flags",flags);
+         }
+      }
+
+      if (MessageIs("TurnOff"))
+      {
+         if (Property.Possessed(self,"AmbientHacked"))
+         {
+            integer flags=Property.Get(self,"AmbientHacked","Flags");
+
+            flags |= AMBFLG_S_TURNEDOFF;
+            Property.Set(self,"AmbientHacked","Flags",flags);
+         }
+      }
+   }
+
+END_SCRIPT(ActivateAmbient)
+
+// As above, this will play sounds on receipt of
+// TurnOn message.  This is more suitable to single cases,
+// whereas OnOffSounds is more suited to by-type cases.
+BEGIN_SCRIPT(DescribeSounds, RootScript)
+METHODS:
+   METHOD void PlayMe(object schem)
+   {
+      Sound.PlaySchema(self,schem,self);
+   }
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         linkset sounds=Link.GetAll("SoundDescription",self);
+
+         while(sounds.AnyLinksLeft())
+         {
+            PlayMe(sounds.Link().To());
+            sounds.NextLink();
+         }
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(DescribeSounds)
+
+// Like DescribeSounds, but plays sounds "ambient" (non-localized)
+BEGIN_SCRIPT(AmbientSounds, DescribeSounds)
+METHODS:
+   METHOD void PlayMe(object schem)
+   {
+      Sound.PlaySchemaAmbient(self,schem);
+   }
+END_SCRIPT(AmbientSounds)
+
+
+BEGIN_SCRIPT(VOSounds, DescribeSounds)
+METHODS:
+   METHOD void PlayMe(object schem)
+   {
+      Sound.PlayVoiceOver(self,schem);
+   }
+END_SCRIPT(VOSounds)
+
+
+
+BEGIN_SCRIPT(TrigSchemaDone, RootScript)
+
+MESSAGES:
+   OnSchemaDone()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      // DefaultOnSchemaDone();
+      SCRIPT_CALL_BASE(SchemaDone);
+   }
+END_SCRIPT(TrigSchemaDone)
+
+BEGIN_SCRIPT(Burplauncher, RootScript)
+
+MESSAGES:
+   // we want all objects in the burp fan to time out simultaneously.
+   OnSlain()
+   {
+      linkset firedset=Link.GetAll("~Firer",self);
+
+      while(firedset.AnyLinksLeft())
+      {
+         object fired=firedset.Link().To();
+
+         Damage.Slay(fired,self);
+         firedset.NextLink();
+      }
+      DefaultOnSlain();
+   }
+END_SCRIPT(Burplauncher)
+
+
+BEGIN_SCRIPT(Mine, Physics)
+
+METHODS:
+   // What object type am I when I'm armed (@HACK!)
+   METHOD object ArmType()
+   {
+      return(object("ActiveMine"));
+   }
+
+   METHOD void Arm()
+   {
+      // @TODO: Would prefer to determine what we transform into some
+      // other way than by overloading this method.
+      object newmine=Object.Create(ArmType());
+      object bounds=Object.Create("MineBounds");
+      vector z=vector(0,0,0);
+
+      Object.Teleport(newmine,z,z,self);
+      Object.Teleport(bounds,z,z,self);
+
+      // Just becaue it's a different object didn't mean it isn't
+      // you who threw it.  Sorta.
+      // This is important for assigning blame for kills, with
+      // victory conditions and such.
+      if(Link.AnyExist("~CulpableFor",self))
+         Link.Create("~CulpableFor",newmine,Link.GetOne("~CulpableFor",self).To());
+      Link.Create("ControlDevice",bounds,newmine);      
+      Object.Destroy(self);
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kFellAsleepMsg);
+      if(!IsDataSet("Arming"))
+         SetData("Arming",FALSE);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+      DefaultOnEndScript();
+   }
+   // when we come to rest, destroy ourselves and create the
+   // object type which represents the active mine.
+   // Only do this is something is culpable for us, so objects
+   // placed in levels and settling to rest don't arm...
+   OnPhysFellAsleep()
+   {
+      if(Link.AnyExist("~CulpableFor",self))
+      {
+         // Start playing our arming sound.  When we're done with the
+         // sound, become Live.
+         boolean played=Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+
+         // if failed to play schema, arm right away.
+         if(!played) Arm();
+         else
+         {
+            // Failsafe to arm in case schema doesn't complete
+            timer_handle armtimer=SetOneShotTimer(self,"Arm",6.0);
+
+            SetData("Arming",TRUE);
+            SetData("ArmTimer",armtimer);
+         }
+      }
+      DefaultOnPhysFellAsleep();
+   }
+   OnSchemaDone()
+   {
+      // if done playing arming sound, become live
+      // @TODO: would rather not code this schema name in here,
+      // especially when we've gone to all the trouble to use envsound and all.
+      if(message.name=="mine_arming")
+      {
+         boolean arming=GetData("Arming");
+         if(arming) Arm();
+      }
+      DefaultOnSchemaDone();
+   }
+   OnTimer()
+   {
+      if(message.name=="Arm")
+         Arm();
+      DefaultOnTimer();
+   }
+   OnFrobWorldEnd()
+   {
+      boolean arming=GetData("Arming");
+
+      SetData("Arming",FALSE);
+      Sound.HaltSchema(self);
+      if(arming && IsDataSet("ArmTimer"))
+      {
+         timer_handle armtimer=GetData("ArmTimer");
+         KillTimer(armtimer);
+         ClearData("ArmTimer");
+      }
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(Mine)
+
+
+// Just like a regular mine, only it turns into a different object when active.
+BEGIN_SCRIPT(GasMine, Mine)
+
+METHODS:
+   METHOD object ArmType()
+   {
+      return(object("ActiveGasMine"));
+   }
+END_SCRIPT(GasMine)
+
+
+/* When active (armed) the mine detonates in response to collisions,
+   or when triggered by associated bounds trigger.  When slain, also
+   clean up bounds trigger.
+*/
+BEGIN_SCRIPT(ActiveMine,Physics)
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+   OnPhysCollision()
+   {
+      Reply(kPM_Slay);
+      DefaultOnPhysCollision();
+   }
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         Damage.Slay(self,self);
+      DefaultOnMessage();
+   }
+   OnSlain()
+   {
+      linkset triggers=Link.GetAll("~ControlDevice",self);
+      for(;triggers.AnyLinksLeft();triggers.NextLink())
+      {
+         Object.Destroy(triggers.Link().To());
+      }
+      DefaultOnSlain();
+   }
+
+END_SCRIPT(ActiveMine);
+
+
+
+// Script: MossLump
+/* When the moss lump falls asleep, create a moss launcher */
+BEGIN_SCRIPT(MossLump, Physics)
+MESSAGES:
+   // when we come to rest, destroy ourselves and create the launcher
+   // Better count on moss lumps only being created as part of the moss
+   // arrow firing sequence, since we can't do the Firer-link check we
+   // do for mines.
+   OnPhysMadeNonPhysical()
+   {
+      object launcher=Object.Create("Mosslauncher");
+      Object.Teleport(launcher,vector(0,0,0),vector(0,0,0),self);
+      // make me the "firer" of the lancher, helps with culpability
+      //      Link.Create("firer",launcher,self); 
+      DefaultOnPhysMadeNonPhysical();
+   }
+END_SCRIPT(MossLump)
+
+
+// Script: MossSpore
+/* Spores want to corpify only if they land on a fairly flat surface. */
+BEGIN_SCRIPT(MossSpore,Physics)
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+   OnPhysCollision()
+   {
+      vector normal=message.collNormal;
+      // Dot product of normal with unit vertical vector
+      // is just its compnent in the z direction.  Such
+      // normals are unit vectors.
+      if(normal.z<0.707) // incline vs. 45 degrees?
+      {
+         // Don't corpsify; hit wall or ground not level
+         Property.Set(self,"SlayResult",kSlayDestroy);         
+      }
+      Reply(kPM_Slay);
+      DefaultOnPhysCollision();
+   }
+END_SCRIPT(MossSpore)
+
+
+
+// Crystals, when frobbed, create the appropriate number of the
+// appropriate type of arrow and stuff them in your inventory.
+// The number is determined from the StackCount property of the
+// crystal itself.  The type of arrow is currently determined by
+// a total hack.  I'd write it a bit more elegantly but I expect
+// to rip it out shortly anyway.  @TODO: Change this.
+BEGIN_SCRIPT(Crystal, RootScript)
+
+METHODS:
+   METHOD object ArrowType()
+   {
+     if(Object.InheritsFrom(self,"EarthCrystal"))
+       return object("EarthArrow");
+     else if(Object.InheritsFrom(self,"WaterCrystal"))
+       return object("water");
+     else if(Object.InheritsFrom(self,"FireCrystal"))
+       return object("firearr");
+     else if(Object.InheritsFrom(self,"AirCrystal"))
+       return object("GasArrow");
+     else
+       return self;
+   }
+   METHOD void StuffAmmo(object container)
+   {
+     object newobj=Object.Create(ArrowType());
+     integer count=1;
+
+     if(Property.Possessed(self,"StackCount"))
+       count=Property.Get(self,"StackCount");
+     Property.Set(newobj,"StackCount",count);
+
+     Container.Add(newobj,container);
+   } 
+
+MESSAGES:
+
+   OnContained()
+   {
+      if(message.event!=kContainRemove &&
+         object(message.container)==Object.Named("Player"))
+      {
+         StuffAmmo(message.container);
+         Object.Destroy(self);
+      }
+      DefaultOnContained();
+   }
+   OnFrobWorldEnd()
+   {
+      StuffAmmo(message.Frobber);
+      // frob property takes care of destroying the crystal.
+      DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(Crystal)
+
+
+BEGIN_SCRIPT(Sanctifier, RootScript)
+
+METHODS:
+
+   METHOD object GetArrowInInv()
+   {
+      linkset invent=Link.GetAll("Contains",self);
+
+      for(; invent.AnyLinksLeft(); invent.NextLink())
+      {
+         object inv_item=invent.Link().To();
+
+         if(Object.InheritsFrom(inv_item,Object.Named("water")))
+            return inv_item; 
+      }
+      return 0; 
+   }
+   METHOD integer GetTimeLeft()
+   {
+      return GetData("Ticks"); 
+   }
+   METHOD void Tick()
+   {
+      integer ticks = GetTimeLeft(); 
+      if (ticks > 0)
+      {
+         SetOneShotTimer(self,"Defile",1.0);
+         //
+         // Here's where we format ticks as a string, and set the water
+         // arrow object name to it. 
+         //
+
+         // This is NOT FAST :)
+         object arrow = GetArrowInInv(); 
+
+         // blast the old name
+         Property.Remove(arrow,"GameName"); 
+         // look it up, so we get the archetypical name
+         string name = Data.GetObjString(arrow,"objnames"); 
+
+         // MAHK 9/6.  I'm too cool for string concatenation.  
+         // behold my sprintf.  Don't try this at home, designers.  
+         // Unless, of course, you really want to. 
+
+         char buf[64]; 
+         sprintf(buf,"@hack: \"%s %d:%02d\"",(const char*)name,ticks/60,ticks%60); 
+
+         Property.Set(arrow,"GameName",buf); 
+
+         ticks --; 
+         SetTimeLeft(ticks); 
+      }
+      else
+         Sanctify(FALSE); 
+   }
+
+
+   METHOD void SetTimeLeft(integer ticks)
+   {
+      SetData("Ticks",ticks); 
+   }
+
+   // if sanctify TRUE, turn water arrows into holy water arrows.
+   // if false, do the reverse.
+   METHOD void Sanctify(boolean sanctify)
+   {
+      object inv_item = GetArrowInInv();
+      object holiness = Object.Named("ArrowIsHoly");
+
+      if(inv_item==object(0)) return;
+
+      if(sanctify)
+      {
+         if(!Object.HasMetaProperty(inv_item,holiness))
+            Object.AddMetaProperty(inv_item,holiness);
+         // aaaand, select the water arrows
+         Debug.Command("inv_select water");
+      }
+      else
+      {
+         Object.RemoveMetaProperty(inv_item,holiness);
+         // and revert to archetypal inv name
+         Property.Remove(inv_item,"GameName");
+      }
+   }
+
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         SetData("Sanctity",0);
+         SetTimeLeft(0);
+      } 
+      DefaultOnSim();
+   }
+
+   OnMessage()
+   {
+      if(MessageIs("Sanctify"))
+      {
+         Sanctify(TRUE);
+         boolean start = GetTimeLeft() <= 0; 
+         SetTimeLeft(30); 
+         if (start)
+            Tick(); 
+      }
+      DefaultOnMessage();
+   }
+
+   OnTimer()
+   {
+      if(message.name=="Defile")
+         Tick(); 
+      DefaultOnTimer();
+   }
+
+END_SCRIPT(Sanctifier)
+
+
+BEGIN_SCRIPT(HolyFont, RootScript)
+
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      PostMessage(message.Frobber,"Sanctify");
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(HolyFont)
+
+
+
+BEGIN_SCRIPT(HolyH2O,EatFood)
+
+MESSAGES:
+
+   OnFrobInvEnd()
+   {
+      linkset invent=Link.GetAll("Contains",message.Frobber);
+      boolean haswater=FALSE;
+
+      while(!haswater && invent.AnyLinksLeft())
+      {
+         if(Object.InheritsFrom(invent.Link().To(),Object.Named("water")))
+            haswater=TRUE;
+         invent.NextLink();
+      }
+      if(haswater)
+         PostMessage(message.Frobber,"Sanctify");
+      else
+         Reply(0);
+      DefaultOnFrobInvEnd();
+   }
+
+END_SCRIPT(HolyH2O)
+
+
+BEGIN_SCRIPT(AirPotion,EatFood)
+
+MESSAGES:
+
+  OnFrobInvEnd()
+  {
+     object imbiber=message.Frobber;
+
+     if(Property.Possessed(imbiber,"BreathConfig"))
+     {
+        integer max=Property.Get(imbiber,"BreathConfig","Max Air (ms)");
+        Property.Set(imbiber,"AirSupply",max);
+     }
+     DefaultOnFrobInvEnd();
+  }
+
+END_SCRIPT(AirPotion)
+
+
+BEGIN_SCRIPT(SpeedPotion,EatFood)
+MESSAGES:
+  OnFrobInvEnd()
+  {
+     object imbiber=message.Frobber;
+
+     if(Object.InheritsFrom(imbiber,Object.Named("Avatar")))
+     {
+        if(!Object.HasMetaProperty(imbiber,Object.Named("M-SpeedyPlayer")))
+           Object.AddMetaProperty(imbiber,Object.Named("M-SpeedyPlayer"));
+        PostMessage(imbiber,"Speedy");
+     }
+     DefaultOnFrobInvEnd();
+  }
+
+END_SCRIPT(SpeedPotion)
+
+BEGIN_SCRIPT(SpeedyPlayer,RootScript)
+MESSAGES:
+  OnMessage()
+  {
+     if(MessageIs("Speedy"))
+     {
+        DrkInv.AddSpeedControl("Speedy", 1.75,1.25);
+        if(!IsDataSet("Timeout"))
+           SetOneShotTimer(self,"Pokey",1.0);
+        SetData("Timeout",GetTime()+8.6);
+     }
+     DefaultOnMessage();
+  }
+  OnTimer()
+  {
+     if(message.name=="Pokey")
+     {
+        real timeout=0.0;
+        if(IsDataSet("Timeout")) timeout=GetData("Timeout");
+        if(GetTime()>=timeout)
+        {
+           Object.RemoveMetaProperty(self,"M-SpeedyPlayer");
+           DrkInv.RemoveSpeedControl("Speedy");
+           ClearData("Timeout");
+        }
+        else
+           SetOneShotTimer(self,"Pokey",1.0);
+     }
+     DefaultOnTimer();
+  }
+END_SCRIPT(SpeedyPlayer)
+
+
+BEGIN_SCRIPT (Arrow, RootScript)
+
+METHODS:
+   METHOD void UnEquipMe()
+   {
+      Bow.UnEquip();
+      DrkInv.RemoveSpeedControl("BowDraw");
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("Selected"))
+         SetData("Selected",FALSE);
+      DefaultOnBeginScript();
+   }
+   OnFrobInvBegin()           
+   {
+      if (message.Abort)
+      {
+         Bow.AbortAttack();
+         DrkInv.RemoveSpeedControl("BowDraw");
+      }
+      else
+      {  
+         Bow.StartAttack();
+         DrkInv.AddSpeedControl("BowDraw",0.75,1.0);
+      }
+      DefaultOnFrobInvBegin();
+   }
+   OnFrobInvEnd()
+   {
+      BOOL retval = Bow.FinishAttack();
+      DrkInv.RemoveSpeedControl("BowDraw");
+      Reply(retval);
+      DefaultOnFrobInvEnd();
+   }
+
+   OnInvSelect()
+   {
+      SetData("Selected",TRUE);
+      Bow.SetArrow(self);
+      Bow.Equip();
+      DefaultOnInvSelect();
+   }
+
+   OnInvDeSelect()
+   {
+      SetData("Selected",FALSE);
+      UnEquipMe();
+      DefaultOnInvDeSelect();
+   }
+
+   OnDestroy()
+   {
+      if(boolean(GetData("Selected")))
+         UnEquipMe(); 
+   }
+
+END_SCRIPT(Arrow)
+
+
+BEGIN_SCRIPT(LootSounds, RootScript)
+MESSAGES:
+   OnContained()
+   {
+      if(message.event!=kContainRemove &&
+         object(message.container)==Object.Named("Player") &&
+         GetTime()>0.1)
+      {
+         object schem;
+
+         if(Object.InheritsFrom(self,"IsLoot"))
+            schem=Object.Named("pickup_loot");
+         else
+            schem=Object.Named("pickup_power");
+
+         if(schem!=object(0)) Sound.PlaySchemaAmbient(self,schem);
+      }
+      DefaultOnContained();
+   }
+END_SCRIPT(LootSounds)
+
+
+BEGIN_SCRIPT(OutDamnSpot, RootScript)
+
+MESSAGES:
+   OnSlain()
+   {
+      DrkPowerups.CleanseBlood(self,5.0);
+      DefaultOnSlain();
+   }
+
+END_SCRIPT(OutDamnSpot)
+
+
+BEGIN_SCRIPT(CollisionStick, Physics)
+
+METHODS:
+
+   METHOD boolean CanAttachTo(object targ)
+   {
+      if(targ==object(0)) return FALSE;
+      if(!(Property.Possessed(targ,"CanAttach")
+           && boolean(Property.Get(targ,"CanAttach"))))
+         return FALSE;
+      if(Object.InheritsFrom(targ,"Texture"))
+         return TRUE;
+      // Objects which are not textures ought to be
+      // immobile, or we can't attach.
+      if(!Property.Possessed(targ,"Immobile") ||
+         !boolean(Property.Get(targ,"Immobile")))
+         return FALSE;
+      // Even if "immobile", the object might be a door
+      // set to "immobile" because we'd like it to block
+      // lights.  So, check for doors explicitly.
+      if(Property.Possessed(targ,"RotDoor") ||
+         Property.Possessed(targ,"TransDoor") ||
+         Property.Possessed(targ,"MovingTerrain"))
+         return FALSE;
+      return TRUE;
+   }
+
+   METHOD real LifeSpan()
+   {
+      real limit=30.0;
+      if(Link.AnyExist("CulpableFor",Object.Named("Player"),self))
+         limit*=5.0;
+      return limit;
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+   OnPhysCollision()
+   {
+      object WhatIHit=message.collObj;
+      boolean attach=CanAttachTo(WhatIHit);
+
+      if(attach)
+      {
+         if(!IsDataSet("DontTimeout"))
+         {
+            timer_handle timeout=SetOneShotTimer(self,"Tick",LifeSpan());
+            SetData("timeout",timeout);
+         }
+         if(!Property.Possessed(self,"StackCount"))
+         {
+            Property.Add(self,"StackCount");
+            Property.Set(self,"StackCount",1);
+         }
+      }
+      Reply(attach?kPM_NonPhys:kPM_Slay);
+   }
+   OnTimer()
+   {
+      if(message.name=="Tick")
+      {
+         if(!Object.RenderedThisFrame(self))
+         {
+            Object.Destroy(self);
+         }
+         else
+         {
+            timer_handle new_timeout;
+            new_timeout=SetOneShotTimer(self,"Tick",30.0);
+            SetData("timeout",new_timeout);
+         }
+      }
+      DefaultOnTimer();
+   }
+   OnContained()
+   {
+      if(message.event==kContainAdd && IsDataSet("timeout"))
+      {
+         timer_handle timeout=GetData("timeout");
+         KillTimer(timeout);
+         ClearData("timeout");
+      }
+      DefaultOnContained();
+   }
+END_SCRIPT(CollisionStick)
+
+
+// Starts the noisemaker schema when the arrow collides.
+// Stops it again (if necessary) if it's picked up.
+BEGIN_SCRIPT(PlayNoisemaker, Physics)
+
+METHODS:
+
+   METHOD void TurnOffSound()
+   {
+      Sound.HaltSchema(self);
+      ClearData("Playing");
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      TurnOffSound();
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // @TODO: should probably be an activate envschema on
+      // the arrow, but don't know if we can do that and have it
+      // still track the arrow...
+      if(!IsDataSet("Playing"))
+      {
+         Sound.PlaySchema(self,"noisemaker",self);
+         SetData("Playing",NULL);
+      }
+      DefaultOnPhysCollision();
+   }
+   OnPhysMadeNonPhysical()
+   {
+      // either we've been picked up, or come to rest in the world
+      // turn off our special emit effect, if any
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoHalt);
+      DefaultOnPhysMadeNonPhysical();
+   }
+   OnContainer()
+   {
+      if(message.containee==self)
+         TurnOffSound();
+      DefaultOnContainer();
+   }
+
+END_SCRIPT(PlayNoisemaker)
+
+
+// script for rope arrows, to be used _in addition to_ the usual "Arrow" script.
+// this script is only responsible for the rope-deploying behavior.
+BEGIN_SCRIPT(DeployRope, CollisionStick)
+
+MESSAGES:
+
+   OnPhysCollision()
+   {
+      object WhatIHit=message.collObj;
+
+      if(CanAttachTo(WhatIHit))
+      {
+         object MyRope=Object.Create("RopeArrowRope");
+
+         SetData("DontTimeout",TRUE);
+         Link.Create("Owns",self,MyRope);
+         Object.Teleport(MyRope,vector(-1.0,0,0),vector(0,0,0),self);
+      }
+      DefaultOnPhysCollision();
+   }
+   OnFrobWorldEnd()
+   {
+      // if rope arrow is picked up, destroy the rope it deployed
+      if(Link.AnyExist("Owns",self))
+      {
+         object rope=Link.GetOne("Owns",self).To();
+         Damage.Slay(rope,self);
+      }
+      DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(DeployRope)
+
+
+BEGIN_SCRIPT(RopeFX, RootScript)
+
+MESSAGES:
+   OnFrobWorldEnd()
+   {
+      // if rope is frobbed, stuff arrow into frobber's inventory
+      // (rope is slain here instead of destroyed by virtue of its
+      // frob properties so as to get the OnSlain SFX below.)
+      if(Link.AnyExist("~Owns",self))
+      {
+         object arrow=Link.GetOne("~Owns",self).To();
+         Container.Add(arrow,message.Frobber);
+         Damage.Slay(self,message.Frobber);
+      }
+      DefaultOnFrobWorldEnd();
+   }
+   OnSlain()
+   {
+      object FX=Object.BeginCreate("ExRope");
+      integer len=0, particles=0;
+      vector lenvec=vector(0,0,0);
+
+      if(Property.Possessed(self,"PhysRope"))
+         len=Property.Get(self,"PhysRope","Length");
+      else
+         Debug.MPrint("Dang!  No rope anymore already.");
+
+      // Treat #particles on archetype as #particles per foot
+      if(Property.Possessed(FX,"ParticleGroup"))
+         particles=Property.Get(FX,"ParticleGroup","number of particles");      
+
+      lenvec.z=-len;
+
+      Property.Set(FX,"ParticleGroup","number of particles",particles*len);
+
+      Property.Set(FX,"PGLaunchInfo","Box Min",lenvec);
+      Object.EndCreate(FX);
+      Object.Teleport(FX,Object.Position(self),vector(0,0,0));
+      DefaultOnSlain();
+   }
+END_SCRIPT(RopeFX)
+
+BEGIN_SCRIPT (Sword, RootScript)
+
+MESSAGES:
+   OnFrobInvBegin()           
+   {
+      if (message.Abort)
+         Weapon.FinishAttack(message.Frobber, message.SrcObjId);
+      else
+         Weapon.StartAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobInvBegin();
+   }
+
+   OnFrobInvEnd()
+   {
+      Weapon.FinishAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobInvEnd();
+   }
+
+   // Note: without FrobTool message handlers, the sword
+   // won't swing if you have a tool target selected, because
+   // that's a tool frob.  It must treat tool frobs just like
+   // inv frobs.
+   OnFrobToolBegin()           
+   {
+      Weapon.StartAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobToolBegin();
+   }
+   OnFrobToolEnd()
+   {
+      Weapon.FinishAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobToolEnd();
+   }
+
+   OnInvSelect()
+   {
+      Weapon.Equip(self,kDWT_Sword);
+      DrkInv.AddSpeedControl("SwordEquip", 0.75,0.8);
+      DefaultOnInvSelect();
+   }
+
+   OnInvDeSelect()
+   {
+      Weapon.UnEquip(self);
+      DrkInv.RemoveSpeedControl("SwordEquip");
+      DefaultOnInvDeSelect();
+   }
+
+END_SCRIPT(Sword)
+
+BEGIN_SCRIPT (BlackJack, RootScript)
+
+MESSAGES:
+   OnFrobInvBegin()           
+   {  
+      if (message.Abort)
+         Weapon.FinishAttack(message.Frobber, message.SrcObjId);
+      else
+         Weapon.StartAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobInvBegin();
+   }
+
+   OnFrobInvEnd()
+   {
+      Weapon.FinishAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobInvEnd();
+   }
+
+   // Note: without FrobTool message handlers, the sword
+   // won't swing if you have a tool target selected, because
+   // that's a tool frob.  It must treat tool frobs just like
+   // inv frobs.
+   OnFrobToolBegin()           
+   {
+      Weapon.StartAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobToolBegin();
+   }
+   OnFrobToolEnd()
+   {
+      Weapon.FinishAttack(message.Frobber, message.SrcObjId);
+      DefaultOnFrobToolEnd();
+   }
+
+   OnInvSelect()
+   {
+      Weapon.Equip(self,kDWT_BlackJack);
+      DefaultOnInvSelect();
+   }
+
+   OnInvDeSelect()
+   {
+      Weapon.UnEquip(self);
+      DefaultOnInvDeSelect();
+   }
+
+END_SCRIPT(BlackJack)
+
+BEGIN_SCRIPT(AttackActivate, Attack)
+
+METHODS:
+   METHOD integer GetWeap()
+   {
+      if(!IsDataSet("weapon"))
+         return 0;
+      else
+         return GetData("weapon");
+   }
+   METHOD void SetWeap(integer weap)
+   {
+      integer weapset;
+      // set weapon data only if not already set, or if somehow set to a
+      // positive value which for some reason is not a valid object.
+      if(!IsDataSet("weapon") ||
+         ((weapset=GetData("weapon"))>0 && !Object.Exists(weapset)))
+         SetData("weapon",weap);
+   }
+
+MESSAGES:
+
+   // if no weapon, must be ranged, so send message to self
+   // otherwise send messages to the weapon
+
+   OnStartWindup()
+   {
+      // Debug.MPrint(self," StartWindup weapon ",message.weapon);
+      integer weapon;
+      SetWeap(message.weapon);
+      weapon=GetWeap();
+      if (weapon<=0)
+         Link.BroadcastOnAllLinks(self,"TurnOn","~ParticleAttachement");
+      else
+         SendMessage(weapon, "TurnOn");
+   }
+
+   OnStartAttack()
+   {
+      // Debug.MPrint(self," StartAttack weapon ",message.weapon);
+      integer weapon;
+      SetWeap(message.weapon);
+      weapon=GetWeap();
+      if (weapon<=0)
+         Link.BroadcastOnAllLinks(self,"TurnOn","~ParticleAttachement");
+      else
+         SendMessage(weapon, "TurnOn");
+   }
+
+   OnEndAttack()
+   {
+      integer weapon=GetWeap();
+      // Debug.MPrint(self," EndAttack weapon ",message.weapon);
+      if (weapon<=0)
+         Link.BroadcastOnAllLinks(self,"TurnOff","~ParticleAttachement");
+      else
+         SendMessage(weapon, "TurnOff");
+   }
+
+END_SCRIPT(AttackActivate)
+
+
+BEGIN_SCRIPT(StickyWebs, Physics)
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+   OnPhysCollision()
+   {
+      object WhatIHit=message.collObj;
+
+      if(WhatIHit==Object.Named("Player"))
+      {
+         object new_obj=Object.Create("JunkWebs");
+         Container.Add(new_obj,WhatIHit);
+      }
+      // @TODO: Else, would like to at least stun the victim
+      Reply(kPM_Slay);
+   }
+
+END_SCRIPT(StickyWebs)
+
+
+BEGIN_SCRIPT(JunkWebs, RootScript)
+
+METHODS:
+   // movement speed allowable when webbed depends on stack count.
+   METHOD float MoveFromStackCount()
+   {
+      integer count;
+      float moveratio=1.0;
+      const float BEST_MOVE_WEBBED=0.8;
+      const float WEBS_TO_STICK=20.0;
+
+      if(!Property.Possessed(self,"StackCount"))
+         return 0.0;
+      count=Property.Get(self,"StackCount");
+      moveratio=BEST_MOVE_WEBBED*(1.0-float(count)/WEBS_TO_STICK);
+      return((moveratio<0.0)?0.0:moveratio);
+   }      
+
+MESSAGES:
+   OnFrobInvEnd()
+   {
+      float moveratio=MoveFromStackCount();
+      if(Property.Possessed(self,"StackCount") &&
+         integer(Property.Get(self,"StackCount"))>1)
+      {
+         Object.AddMetaProperty(self,"FrobInert");
+         SetOneShotTimer(self,"CanFrob",0.5);
+         DrkInv.AddSpeedControl("Webs", moveratio,moveratio);
+      }
+      else
+      {
+         DrkInv.RemoveSpeedControl("Webs");
+      }
+      DefaultOnFrobInvEnd();
+   }
+   OnTimer()
+   {
+      if(message.name=="CanFrob")
+      {
+         Object.RemoveMetaProperty(self,"FrobInert");
+      }
+      DefaultOnTimer();
+   }
+   OnContained()
+   {
+      if(message.event!=kContainRemove &&
+         object(message.container)==Object.Named("Player"))
+      {
+         float moveratio=MoveFromStackCount();
+
+         DrkInv.AddSpeedControl("Webs", moveratio,moveratio);
+      }
+      DefaultOnContained();
+   }
+
+END_SCRIPT(JunkWebs)
+
+
+// Lockpick script handles setting the player hand art and
+// starting and stopping the pick attempt.
+BEGIN_SCRIPT(LockPick, RootScript)
+
+MESSAGES:
+
+   OnInvSelect()
+   {
+      PickLock.Ready("Player",self);
+      DefaultOnInvSelect();
+   }
+
+   OnInvDeSelect()
+   {
+      PickLock.FinishPicking(self);
+      PickLock.UnReady("Player",self);
+      DefaultOnInvDeSelect();
+   }
+
+   OnFrobToolBegin()
+   {
+      if (message.Abort)
+         PickLock.FinishPicking(message.SrcObjId);  
+      else
+         PickLock.StartPicking(message.Frobber,message.SrcObjId,message.DstObjId);
+      DefaultOnFrobToolBegin();
+   }
+
+   OnFrobToolEnd()
+   {
+      PickLock.FinishPicking(message.SrcObjId);
+      DefaultOnFrobToolEnd();
+   }
+
+END_SCRIPT(LockPick)
+
+
+
+//////////////////////////////////////////////////////////
+///////  GENERIC LEVER SCRIPTS BELOW THIS POINT  /////////
+//////////////////////////////////////////////////////////
+
+// Note: until we demonstrate a compelling need for genericity
+// here, only controllers which animate via TweqJoints will be
+// supported.  If other tweqs need to be supported we should
+// pursue better service-side utilities. -TJS
+BEGIN_SCRIPT(StdController,Physics)
+
+  METHODS:
+
+     /* TODO: In the future (when we all drive electric cars)
+        there should be a better way of detecting this. */
+     METHOD boolean TweqAnimStateHasVal(object obj, int InputMask)
+     {
+        // InputMask should be all zeros except bit(s) being
+        // queried for set to 1
+        integer AnimS;
+
+        if(!Property.Possessed(self,"StTweqJoints")) // No tweq!
+        {
+           Debug.MPrint(" *** Warning: Object ", obj, " has no TweqState properties (and is in script method TweqAnimStateHasValue).");
+           return FALSE;
+        }
+
+        AnimS=Property.Get(obj,"StTweqJoints","AnimS");
+
+        // return TRUE if the bit(s) is 1 in the bitfield, FALSE if not
+        return ((AnimS & InputMask)!=0);
+     }  // end of Method: TweqAnimStateHasVal
+
+END_SCRIPT(StdController)
+
+// script for object which turns on its tweq when it gets a 
+// "TurnOn" message and turns off when it gets "TurnOff".
+// To start and stop associated sound with environmental
+// sound schema, just add the OnOffSounds script.
+BEGIN_SCRIPT(TweqOnOff,StdController)
+
+  MESSAGES:
+     OnMessage()
+     {
+        integer TweqDo=kTweqDoActivate;
+        boolean TweqMe=FALSE;
+
+        if(MessageIs("GoForward"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoForward;
+        }
+        else if(MessageIs("GoReverse"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoReverse;
+        }                
+        else if (MessageIs("TurnOn"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoActivate;
+        }
+        else if (MessageIs("TurnOff"))
+        {
+           TweqMe=TRUE;
+           TweqDo=kTweqDoHalt;
+        }
+
+        if(TweqMe)
+        {
+           ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, TweqDo);
+           // use with caution: relaying messages like
+           // this put you in peril of cycles.
+           Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
+        }
+     }
+
+END_SCRIPT(TweqOnOff)
+
+
+/*
+Script for a two-state device which animates between
+states using the Tweq system.  The actual tweq involved
+is not specified, but detected by the script.  For
+convenience, kTweqDirForward is used to refer to the 
+state which is reached by the tweq acting in the "forward"
+direction, and kTweqDirReverse refers to the state 
+reached by acting in reverse.
+*/
+BEGIN_SCRIPT(StdTwoState,StdController)
+
+METHODS:
+
+     /* Return the state (kTweqDirForward or kTweqDirReverse
+        which the device is either resting (if resting)
+        in or moving towards (if moving). */
+     METHOD integer TargetState(object obj)
+     {
+        // Device is in or towards forward position IFF it
+        // is currently active and going forwards (of course)
+        // or inactive and set to reverse.  That is, if its
+        // ACTIVE bit (0x01) is not equal to its REVERSE
+        // bit (0x02).
+        if(TweqAnimStateHasVal(obj,0x01)!=TweqAnimStateHasVal(obj,0x02))
+           return(kTweqDirForward);
+        else
+           return(kTweqDirReverse);
+     }  // end of Method: TargetState
+
+     METHOD string DirectionTags(integer dir)
+     {
+        if(dir==kTweqDirForward)
+           return("Forward");
+        else
+           return("Reverse");
+     }
+
+     METHOD void PreTweqActivate (integer dir)
+     {
+        // this method should be defined by scripts that derive from this one
+     }
+     METHOD void PostTweqActivate (integer dir)
+     {
+        // this method should be defined by scripts that derive from this one
+     }
+
+     METHOD void TweqActivate()
+     {
+        if(!TweqAnimStateHasVal(self,0x01)) // 0x01==ON, so if anims are OFF
+        {
+           integer targ=TargetState(self);
+           string tags="Event StateChange, DirectionState "+DirectionTags(targ);
+
+           // Debug.MPrint("Event on ",self," generating tags:",tags);
+
+           PreTweqActivate(targ);
+           Sound.PlayEnvSchema(self,tags,self,NULL,kEnvSoundAtObjLoc);
+        }
+        
+        // activate/reverse the motion of the lever
+        ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
+     }  
+
+     /* Sends the tweq device towards the specified state if it's
+        not already there.  
+     */
+     METHOD void GoTowardsState(integer stateId)
+     {
+        if(TargetState(self)==stateId)
+           return;
+        else // get moving, then
+           TweqActivate();
+     }  // end of Method: GoTowardsState
+
+
+MESSAGES:
+     OnMessage()
+     {
+        if (MessageIs("TurnOn") || MessageIs("GoForward"))
+        {
+           GoTowardsState(kTweqDirForward);
+        }
+        else if (MessageIs("TurnOff") || MessageIs("GoBackward"))
+        {
+           GoTowardsState(kTweqDirReverse);
+        }
+        else if (MessageIs("Target?"))
+           Reply(TargetState(self));
+     }
+     OnTweqComplete()
+     {
+        if(message.Type==kTweqTypeJoints)
+           PostTweqActivate(message.Dir);
+        DefaultOnTweqComplete();
+     }
+
+END_SCRIPT(StdTwoState)
+
+// This script activates the animation on a lever when it is frobbed,
+// and calls the method Activate and passes in the message.Dir from the
+// TweqComplete message.
+// A lever that uses this script needs FrobWorld and Tweq properties on it.
+BEGIN_SCRIPT(StdLever,StdTwoState)
+
+  METHODS:
+     METHOD void PostTweqActivate (integer dir)
+     {
+        // if you want to modify the basic behavior of broadcasting
+        // TurnOn and TurnOff messages, you can derive from this
+        // script and override the method.
+        if (dir==kTweqDirReverse) 
+           // the lever is going from down to up, send TurnOff
+           Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+        else if (dir==kTweqDirForward)
+           // the lever is going from up to down, send TurnOn
+           Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+     }
+
+  MESSAGES:
+     OnFrobWorldEnd()
+     {
+       // If lever is locked, then it can't move in respone to frobs.
+       // There must of course be some feedback to the frob, but unlike
+       // in the door case this feedback won't be as natural with just
+       // lock-rattling sounds and/or Garrett voice-overs.  So, we
+       // assume that there's some external error-signalling mechanism,
+       // like an alarm light.  This should be indicated by a (insert
+       // link flavor here) link, which will direct a TurnOn message.
+       if(Locked.IsLocked(self)) {
+          Link.BroadcastOnAllLinks(self,"TurnOn","ScriptParams","ErrorOutput");
+       }
+       else {
+          TweqActivate();
+       }
+       DefaultOnFrobWorldEnd();
+     }
+
+END_SCRIPT(StdLever)
+
+
+/* Slight variation on the standard lever behavior in
+   terms of triggering circumstances. 
+   This script sends a "TurnOn" message when the attached object's
+   tweq animation has ended in the forward direction; for the reverse
+   direction, it sends a "TurnOff" message when the frob has ended.
+   This behavior corresponds to a JumperSwitch in which the electric
+   current is connected only when the switch is fully closed.
+   */
+BEGIN_SCRIPT(JumperSwitch,StdLever)
+
+METHODS:
+
+   METHOD void PreTweqActivate(integer dir)
+   {
+      //    This gets called just after the object is frobbed and before the
+      // tweq animation starts.
+      //    If the tweq is set to go in reverse, then last time the tweq went
+      // forward and the JumperSwitch is currently engaged. We wish to shut
+      // off the "electric current" now since the connection is about to be
+      // broken.
+      // @TODO: Get rid of magic numbers.
+      if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
+   }  // end of method PreTweqActivate
+
+   METHOD void PostTweqActivate (int dir)
+   {
+      //    This gets called just after the tweq animation finishes.
+      //   If the tweq is set to go in reverse, then it just got done
+      // going forward and the JumperSwitch just got engaged.  We wish to
+      // turn on the "electric current" now that the connection has been
+      // established.
+      if (TweqAnimStateHasVal(self,0x02)) // 0x02 = REVERSE
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+   } // end of method PostTweqActivate
+
+END_SCRIPT(JumperSwitch)
+
+
+/* STANDARD GAUGE (no pun intended)
+
+   Gauges are essentially levers with a twist.  They animate in response to
+   turnon and turnoff messages, and can run Pre- and Post-TweqActivate methods
+   when they reach their limits.  The difference is that some gauges also
+   have some intermediate point in their animation which we want to be able
+   to detect and respond to, as when the gauge enters the "danger zone."
+
+   This is less a behavior that it's clear you'd really want on a particular
+   gauge than a core infrastructure for implementing this kind of (potent,
+   intricate) gauge.
+
+   For right now, we're going to totally hack this.
+*/
+
+BEGIN_SCRIPT(StdGauge,StdLever)
+
+METHODS:
+
+States
+{
+   lowrangerising=0,
+   redzonerising=1,
+   falling=2
+};
+/* Stages are
+   0 (rising from low to error point),
+   1 (rising from error point to max),
+   2 (falling)
+
+   Gauge can have different tweq params for each stage.
+   Overload this method to change.
+   */
+   METHOD vector TweqParams(integer stage)
+   {
+      return(vector(0,0,0));
+   }
+
+   // This method gets called as the gauge passes the designated error point.
+   // overload as necessary.
+   METHOD void MidTweqActivate()
+   {
+      return;
+   }
+
+   METHOD void StateChange(integer stage)
+   {
+      Property.Set(self,"CfgTweqJoints","    rate-low-high",TweqParams(stage));
+      SetState(stage);
+   }
+
+MESSAGES:
+
+   OnTweqComplete()
+   {
+      vector limits;
+
+      if(!Property.Possessed(self, "CfgTweqJoints"))
+         return;
+      limits=Property.Get(self,"CfgTweqJoints","    rate-low-high");
+      if(message.Dir==kTweqDirReverse) // joint returning to rest
+      {
+         StateChange(lowrangerising);
+         DefaultOnTweqComplete();
+      }
+      else if(limits.z==TweqParams(redzonerising).z) // joint reached real upper limit
+      {
+         // as payback for the brutal tweqjoint hackery we do,
+         // incorrect initial conditions for the guage's
+         // tweqjoint extents can keep the MidTweqActivate from
+         // ever being run.  So, we detect this case and issue a warning.
+
+         if(!StateIs((int)redzonerising))
+         {
+            // Debug.MPrint("Hey!  Gauge ",self," has got no red zone!");
+            MidTweqActivate();
+         }
+
+         StateChange(falling);
+         DefaultOnTweqComplete();
+      }
+      else // joint reached error angle
+      {
+         StateChange(redzonerising);
+         MidTweqActivate();
+         // keep going to new upper range
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoForward);
+      }
+   }
+    
+END_SCRIPT(StdGauge)  
+      
+
+/* STANDARD BUTTON
+Standard button, when frobbed, sends a TurnOn message.
+*/
+BEGIN_SCRIPT(StdButton, StdController)
+
+METHODS:
+   METHOD void ButtonPush()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      // bounce the button
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+   }
+      
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // only pushed by collisions with your front face
+      // @TODO: Get rid of magic number.
+      if(message.collSubmod==4)
+      {
+        // collisions with AI's don't push the button; they're
+        // assumed to be controlling themselves a bit better than that.
+        if(! (Object.InheritsFrom(message.collObj,"Avatar")
+              || Object.InheritsFrom(message.collObj,"Creature")))
+        {
+          ButtonPush();
+        }
+      }
+      DefaultOnPhysCollision();
+   }
+   OnFrobWorldEnd()
+   {
+      ButtonPush();
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(StdButton)
+
+
+
+// Assumed to be put on an object with an edge-triggered OBB
+// physics model.  Triggers when the player intrudes on those bounds.
+BEGIN_SCRIPT(TrigOBB, Physics)
+
+METHODS:
+   METHOD void Census(object who)
+   {
+      if(!Link.AnyExist("Population",self,who))
+      {
+         Link.Create("Population",self,who);
+         Object.AddMetaProperty(who,"M-NotifyRegion");
+      }
+      UpdatePop();
+   }
+   METHOD void DeCensus(object who)
+   {
+      Object.RemoveMetaProperty(who,"M-NotifyRegion");
+      Link.DestroyMany("Population",self,who);
+      UpdatePop();
+   }
+   METHOD void TrigOBBActivate()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+   }
+   METHOD void TrigOBBDeactivate()
+   {
+      Sound.PlayEnvSchema(self,"Event Deactivate",self,NULL,kEnvSoundAtObjLoc);
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+   METHOD void UpdatePop()
+   {
+      boolean populated=Link.AnyExist("Population",self);
+      boolean was_populated=GetData("Populated");
+
+      if(populated!=was_populated)
+      {
+         if(!populated)
+            TrigOBBDeactivate();
+         else
+            TrigOBBActivate();
+      }
+      SetData("Populated",populated);
+   }      
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kEnterExitMsg);
+      if(!IsDataSet("Populated"))
+         SetData("Populated",FALSE);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kEnterExitMsg);
+      DefaultOnEndScript();
+   }
+   OnPhysEnter()
+   {
+      object critter=message.transObj;
+
+      // Debug.MPrint("PhysEnter ",self," by ",critter);
+
+      // only collisions with AI's and players trigger the glyph.
+      if((Object.InheritsFrom(critter,"Avatar")
+          || Object.InheritsFrom(critter,"Creature")))
+      {
+         boolean live=TRUE;
+
+         // Dead guys don't trigger.
+         if(Property.Possessed(critter,"AI_Mode") &&
+            integer(Property.Get(critter,"AI_Mode"))==kAIM_Dead)
+            live=FALSE;
+         if(Property.Possessed(critter,"DeathStage") &&
+            integer(Property.Get(critter,"DeathStage"))!=0)
+            live=FALSE;
+
+         if(live)
+            Census(critter);
+      }
+      DefaultOnPhysEnter();
+   }
+   OnPhysExit()
+   {
+      object critter=message.transObj;
+
+      // Debug.MPrint("PhysExit ",self," by ",critter);
+
+      if(Link.AnyExist("Population",self,critter))
+         DeCensus(critter);
+      DefaultOnPhysExit();
+   }
+   
+END_SCRIPT(TrigOBB)
+
+
+// glyphs fire their triggers when a creature collides with
+// their "edge-triggered" physics model.
+// upon firing, they actuate some tweq effects.
+// otherwise, they're standard triggers.
+BEGIN_SCRIPT(Glyph,TrigOBB)
+
+METHODS:
+   METHOD integer Shots()
+   {
+      integer count=-1;
+      if(Property.Possessed(self,"StackCount"))
+         count=Property.Get(self,"StackCount");
+      return count;
+   }
+
+   METHOD void TrigOBBActivate()
+   {
+      integer count=Shots();
+      if(count!=0)
+      {
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeAll,kTweqDoActivate);
+         Base::TrigOBBActivate();
+         if(count>0)
+         {
+            Property.Set(self,"StackCount",--count);
+         }
+      }
+   }
+
+MESSAGES:
+
+   // when our tweqscale completes, stop all tweqs
+   OnTweqComplete()
+   {
+      if(message.Type==kTweqTypeScale)
+      {
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeAll,kTweqDoHalt);
+         Property.Set(self,"Scale",vector(1.0,1.0,1.0));
+         if(Shots()==0 || !Link.AnyExist("ControlDevice",self))
+            Object.Destroy(self);
+      }
+      DefaultOnTweqComplete();
+   }
+
+END_SCRIPT(Glyph)
+
+
+/* CONTAINER
+   This is a container which yields its contents into the frobber's
+   inventory when frobbed.  Containers may want to do additional
+   things when frobbed (like a chest whose lid swings open)
+   but that isn't being dealt with here.
+   */
+BEGIN_SCRIPT(Container, RootScript)
+
+METHODS:
+
+   METHOD void ContainerReport(integer WarnLevel)
+   {
+      integer contcount=0;
+      linkset contents=Link.GetAll("Contains",self);
+
+      while(contents.AnyLinksLeft())
+      {
+         if(WarnLevel<2)
+         {
+            Debug.MPrint("Container ",self,"->",contents.Link().To());
+         }
+         contcount++;
+         contents.NextLink();
+      }
+      if(WarnLevel>=2 && contcount>1)
+      {
+         Debug.MPrint("Container ",self," contains ",contcount,">1 items.");
+      }
+      // @TODO: Report on containers with nonzero joint positions (except for lock joint, if any)
+      // and more than zero contents.
+   }      
+
+MESSAGES:
+   OnTweqComplete()
+   {
+      if(message.Type!=kTweqTypeLock)
+      {
+         // for purposes of generating sound effects, treat the container lid
+         // as semantically equivalent to a door.  Reinterpret tweq actions
+         // appropriately.
+
+         // halt previous sound effect, if any
+         Sound.HaltSchema(self);
+
+         // not the lock; must be the lid
+         if(message.Dir==kTweqDirForward)
+         {
+            // finished opening
+            Sound.PlayEnvSchema(self,"Event StateChange, OpenState Open, OldOpenState Opening",self,NULL,kEnvSoundAtObjLoc);
+         }
+         else
+            Sound.PlayEnvSchema(self,"Event StateChange, OpenState Closed, OldOpenState Closing",self,NULL,kEnvSoundAtObjLoc);
+      }
+   }
+   OnFrobWorldEnd()
+   {
+      if(Locked.IsLocked(self))
+      {
+         Sound.PlayEnvSchema(self,"Event Reject, Operation OpenDoor",self,NULL,kEnvSoundAtObjLoc);
+      }
+      else
+      {
+         boolean wasmoving=FALSE;
+
+         // trigger any effects of searching container
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+
+         if(Property.Possessed(self,"StTweqJoints"))
+         {
+            wasmoving=(Property.Get(self,"StTweqJoints","AnimS")&TWEQ_AS_ONOFF);
+         }
+
+         // Animate tweqjoints for container opening/closing, if any.
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeJoints,kTweqDoActivate);
+
+         // Sound effect for lid.  We know after .React call that our tweq ought to
+         // be in motion, so which direction is it going?  Forward is opening.
+         if(Property.Possessed(self,"StTweqJoints"))
+         {
+            // halt whatever schema we might previously have been playing
+            Sound.HaltSchema(self);
+
+            if(Property.Get(self,"StTweqJoints","AnimS")&TWEQ_AS_REVERSE)
+            {
+               // closing
+               if(!wasmoving)
+                  Sound.PlayEnvSchema(self,"Event StateChange, OpenState Closing, OldOpenState Open",self,NULL,kEnvSoundAtObjLoc);
+               else
+                  Sound.PlayEnvSchema(self,"Event StateChange, OpenState Closing, OldOpenState Opening",self,NULL,kEnvSoundAtObjLoc);
+            }
+            else
+               // opening
+               if(!wasmoving)
+                  Sound.PlayEnvSchema(self,"Event StateChange, OpenState Opening, OldOpenState Closed",self,NULL,kEnvSoundAtObjLoc);
+               else
+                  Sound.PlayEnvSchema(self,"Event StateChange, OpenState Opening, OldOpenState Closing",self,NULL,kEnvSoundAtObjLoc);
+         }
+
+         // note that we make no effort to ensure that contents are only delivered when
+         // container tweqs _open_.
+         // we assume this is okay because there's no way to put anything _into_ 
+         // a container, and we assume that nobody will set up an open-jointed
+         // container with stuff in it.
+         Container.MoveAllContents(self,message.Frobber);
+      }
+   }
+   OnReportMessage()
+   {
+      ContainerReport(message.WarnLevel);
+      DefaultOnReportMessage();
+   }
+   
+END_SCRIPT(Container)   
+
+
+
+// Script: LoadoutBox
+// For collections of objects which appear as aggregates in the loadout screen.
+// The loadout object is a container which automatically dumps its contents
+// to _its_ container upon sim start.
+
+BEGIN_SCRIPT (LoadoutBox, RootScript)
+
+METHODS:
+   METHOD object Beneficiary()
+   {
+      if(Link.AnyExist("~Contains",self))
+         return Link.GetOne("~Contains",self).To();
+      return object(0);
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      object MyContainer=Beneficiary();
+      linkset MyContents=Link.GetAll("Contains",self);
+
+      if(MyContainer!=object(0))
+      {
+         while(MyContents.AnyLinksLeft())
+         {
+            object Goodies=MyContents.Link().To();
+
+            Container.Remove(Goodies);
+            Container.Add(Goodies,MyContainer);
+            MyContents.NextLink();
+         }
+      }
+      else
+         Debug.MPrint("Sorrow: invalid beneficiary of object ",self);
+      Object.Destroy(self);
+      DefaultOnBeginScript();
+   }
+
+END_SCRIPT (LoadoutBox)
+
+// Script: LoadoutCache
+// For objects which don't want to appear as in the loadout screen, but
+// nevertheless start in the player's inventory.  Put them in a container
+// with this script.
+BEGIN_SCRIPT(LoadoutCache, LoadoutBox)
+METHODS:
+   METHOD object Beneficiary()
+   {
+      object retval=Object.Named("Player");
+      if(retval==object(0))
+      {
+         // No player?  What about a player factory?
+         object playarch=Object.Named("Garrett");
+         if(playarch==object(0)) return retval; // No good
+
+         if(Link.AnyExist("~PlayerFactory",playarch))
+            retval=Link.GetOne("~PlayerFactory",playarch).To();
+      }
+      return retval;
+   }
+END_SCRIPT(LoadoutCache)
+
+
+
+/* STANDARD ELEVATOR
+The basic "elevator" behavior will be to go between two states,
+interpreting "Off" as the highest terrpt it can find and "On"
+as the lowest.  This is a bit counterintuitive, but corresponds
+to the action of a typical lever.
+
+Obviously, this is only really supported if there
+exactly two waypoints associated with the moving terrain object.
+In truth, the code is easy to write for any cycle of
+waypoints, but it's not like there's any point in setting things
+up that way.
+
+It's also possible to have a multi-stage elevator where each
+waypoint on its path can "call" the elevator.  Thus, the elevator
+can respond to calls by just going towards a specific waypoint.
+*/
+BEGIN_SCRIPT(StdElevator, RootScript)
+
+METHODS:
+
+   METHOD void SeekPoint(object dest)
+   {
+      if(dest==object(self)) return;
+      if(Property.Possessed(self,"MovingTerrain"))
+      {
+         // Hack alert: different scripts know about the elevator
+         // starting and stopping (woe, lamentation), so we just
+         // message ourselves about these things happening so that
+         // yet a third script can handle the sounds.
+         {
+            // At short distances, we may not go at all, and no sound
+            // for tiny trips won't kill us, so check that.
+            vector p1=Object.Position(self);
+            vector p2=Object.Position(dest);
+            real dist=(p1-p2).Magnitude();
+
+            if(dist>0.5)
+            {
+               SendMessage(self,"Starting");
+            }
+         }
+         
+         if(Link.AnyExist("TPathNext",self))
+         {
+            link destlink = Link.GetOne("TPathNext",self);
+            // if we're already going to the right place, 
+            // don't munge the links, but do make sure we're active
+
+            if(destlink.To()==dest)
+            {
+               Property.Set(self,"MovingTerrain","active",TRUE);
+               return;
+            }
+            Property.Set(self,"MovingTerrain","active",FALSE);
+            Link.Destroy(destlink);
+         }
+         // if it so happens that this gets set false twice, it won't hurt.
+         Property.Set(self,"MovingTerrain","active",FALSE);
+         Link.Create("TPathNext",self,dest);
+         Property.Set(self,"MovingTerrain","active",TRUE);
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, kTweqDoActivate);
+      }
+   }
+
+   // Find "the" next waypoint along the moving terrain route.
+   // this assumes that no object has two outgoing TPath
+   // links, which is the only supported case.  Behavior in
+   // other cases is unspecified but should be non-disastrous.
+   // This assumes Link.GetOne acts deterministically so two
+   // calls to NextPoint from the same start do not go different
+   // places. 
+   METHOD object NextPoint(object curpt, linkkind linktype)
+   {
+      if(Link.AnyExist(linktype,curpt))
+         return(Link.GetOne(linktype,curpt).To());
+      else
+         return curpt;
+   }
+
+   // find either the highest or lowest waypoint on the cycle associated
+   // with myself.
+   METHOD object FindPoint(bool highest)
+   {
+      int transform=1;
+      object curpoint;
+
+      // to find the lowest point, turn the world upside-down and find the highest.
+      if(!highest) transform=-1;
+
+      // what waypoint path am I on?
+      if(Link.AnyExist("TPathNext",self))
+         curpoint=Link.GetOne("TPathNext",self).To();
+      else if(Link.AnyExist("TPathInit",self))
+         curpoint=Link.GetOne("TPathInit",self).To();
+      else {
+         Debug.MPrint("Warning: elevator ",self," could not find path.");
+         return(self);
+      }
+
+      // now, starting from initpoint, traverse TPath links and search
+      // for the highest point.  detect both dead ends and cycles by
+      // sending a scouting traversal ahead.  You'll either dead-end
+      // and catch up to the scout, our cycle and be caught by it.
+      {
+         float hgt, max=transform*(Object.Position(curpoint).z);
+         object highpoint=curpoint;
+         object scoutpt=curpoint;
+
+         do {
+            // is current point higher than any found before?
+            hgt=transform*(Object.Position(curpoint).z);
+            if(hgt>max)
+            {
+               max=hgt;
+               highpoint=curpoint;
+            }
+
+            curpoint=NextPoint(curpoint,"TPath");
+            scoutpt=NextPoint(NextPoint(scoutpt,"TPath"),"TPath");
+
+         } while (curpoint!=scoutpt);
+
+         return(highpoint);   
+      }
+   }
+         
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         SeekPoint(FindPoint(FALSE));
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         SeekPoint(FindPoint(TRUE));
+      }
+      else if(MessageIs("Call"))
+      {
+         SeekPoint(message.from);
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(StdElevator)
+
+
+/* Pretty self-explanatory.  A moving terriain object with
+   this script will deactivate when it gets to waypoints.
+   It must rely on some other agency (such as the StdElevator
+   script) to start it up again if it is ever to do so.
+   */
+BEGIN_SCRIPT(StopAtWaypoints,MovingTerrain)
+
+MESSAGES:
+   OnMovingTerrainWaypoint()
+   {
+      // stop when you reach waypoints
+      if(Property.Possessed(self,"MovingTerrain"))
+      {
+         // Debug.MPrint("Lo!  I, ",self,", have reached waypoint ",message.waypoint);
+         Property.Set(self,"MovingTerrain","active",FALSE);
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, kTweqDoHalt);
+
+         // Hack alert: different scripts know about the elevator
+         // starting and stopping (woe, lamentation), so we just
+         // message ourselves about these things happening so that
+         // yet a third script can handle the sounds.
+         SendMessage(self,"Stopping");
+      }
+      DefaultOnMovingTerrainWaypoint();
+   }
+
+END_SCRIPT(StopAtWaypoints)
+
+
+BEGIN_SCRIPT(ElevatorSounds,RootScript)
+MESSAGES:
+   OnSim()
+   {
+      if(message.starting)
+      {
+         SetData("ElevLooping",FALSE);
+      }
+      DefaultOnSim();
+   }
+   OnMessage()
+   {
+      boolean looping=GetData("ElevLooping");
+
+      if(MessageIs("Starting") && !looping)
+      {
+         Sound.PlayEnvSchema(self,"Event ActiveLoop",self);
+         SetData("ElevLooping",TRUE);
+      }
+      else if(MessageIs("Stopping"))
+      {
+         Sound.HaltSchema(self);
+         SetData("ElevLooping",FALSE);
+         Sound.PlayEnvSchema(self,"Event Deactivate",self);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(ElevatorSounds)
+
+
+
+/* STANDARD TERRAIN WAYPOINT
+Terrain waypoints respond to TurnOn messages by calling their associated
+moving terrain object.
+*/
+BEGIN_SCRIPT(StdTerrpoint, RootScript)
+
+METHODS:
+
+   // Find "the" next waypoint along the moving terrain route.
+   // this assumes that no object has two outgoing TPath
+   // links, which is the only supported case.  Behavior in
+   // other cases is unspecified but should be non-disastrous.
+   // This assumes Link.GetOne acts deterministically so two
+   // calls to NextPoint from the same start do not go different
+   // places. 
+
+   METHOD object NextPoint(object curpt, linkkind linktype)
+   {
+      if(Link.AnyExist(linktype,curpt))
+         return(Link.GetOne(linktype,curpt).To());
+      else
+         return curpt;
+   }
+
+   // This of course assumes that only one object links
+   // to the current TPath, and that the current TPath
+   // is non-branching (either a cycle or a sequence).  
+   METHOD object MyTerrObj()
+   {
+      // this is a bit pesky.  scan the waypoints on my path
+      // (assumed to be a simple cycle) to find the one my
+      // terrain object actually currently knows about.
+      object curpoint=self;
+      object scoutpt=curpoint;
+      linkkind linktypes[]={"TPath","~TPath"};
+      linkkind linkdir=linktypes[0];
+      int pass;
+
+      // do one scan traversing forwards, one backwards, in case
+      // we're not just on a simple cycle for some reason.
+      for(pass=0;pass<2;pass++) {
+         do {
+            // found a terrain obj yet?
+            if(Link.AnyExist("~TPathNext",curpoint))
+               return(Link.GetOne("~TPathNext",curpoint).To());
+            else if(Link.AnyExist("~TPathInit",curpoint))
+               return(Link.GetOne("~TPathInit",curpoint).To());
+            
+            linkdir=linktypes[pass];
+
+            curpoint=NextPoint(curpoint,linkdir);
+            scoutpt=NextPoint(NextPoint(scoutpt,linkdir),linkdir);
+         
+         } while (curpoint!=scoutpt);
+      }
+      // if all else fails...
+      return(self);
+   }
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         object MyTerr=MyTerrObj();
+         if(MyTerr!=object(self))
+            SendMessage(MyTerr,"Call");
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(StdTerrpoint)
+
+
+// script for particle groups, so they can respond to
+// state changes in their associated object, which will
+// send messages notifying the group.
+BEGIN_SCRIPT(StdParticleGroup, RootScript)
+
+   // @TODO: If group is of motion type "attached to object,"
+   // but is lacking an attechement (sic) link, then complain
+   // in report function.  This functionality should probably
+   // be the particle module's responsibility, not scripts'.
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("Die"))
+      {
+         Object.Destroy(self);
+      }
+      else if(MessageIs("TurnOn"))
+      {
+         PGroup.SetActive(self, TRUE);
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         PGroup.SetActive(self, FALSE);
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(StdParticleGroup)
+
+
+/* CREATURE SCRIPTS
+   Fire Elementals
+   Undead vs. Holy Water
+ */
+
+// Behaviors of the fire elemental's particle group to reflect
+// AI state and such.
+BEGIN_SCRIPT(FireElemSparx, StdParticleGroup)
+
+METHODS:
+
+   METHOD void SetColorToMood(int alertness)
+   {
+      static const int alert_red[] = {185, 187, 187, 122};
+      // @TODO: In the future, when particle color is really
+      // RGB instead of a palette index in "red," do the obvious.
+
+      if((alertness<0)||(alertness>=(sizeof(alert_red)/sizeof(alert_red[0]))))
+      {
+         Debug.MPrint("Heeey! Invalid alertness ",alertness,
+                      " in method SetColorToMood.");
+         return;
+      }
+      Property.Set(self,"ParticleGroup","red",alert_red[alertness]);
+   }
+
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if(Property.Possessed(self,"ParticleGroup"))
+      {
+         // Hack hack
+         if(MessageIs("Mood0")||MessageIs("Mood1")||MessageIs("Mood2")||
+            MessageIs("Mood3"))
+         {
+            SetColorToMood(message.message[4]-'0');
+         }
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(FireElemSparx)
+
+
+// Script behaviors common to elementals, such
+// as changing size based on hit points.
+BEGIN_SCRIPT(Elemental, AI)
+
+METHODS:
+
+   METHOD void NotifyParticleGroups(string mess)
+   {
+      Link.BroadcastOnAllLinks(self,mess,"~ParticleAttachement");
+   }
+
+MESSAGES:
+
+   OnDamage()
+   {
+      // @TODO: Change scale smoothly, using tweq?
+      const float MIN_ELEMENTAL_SCALE=0.375;
+      vector newprop;
+      float newsc;
+
+      if(Property.Possessed(self,"HitPoints") &&
+         Property.Possessed(self,"MAX_HP"))
+      {
+         int max=Property.Get(self,"MAX_HP");
+
+         if(max==0) return; // whaddaya gonna do?
+         newsc=Property.Get(self,"HitPoints");
+
+         // even at negative hit points, don't scale to less than MIN
+         if(newsc<0) newsc=0;
+
+         newsc/=max;
+         newsc=MIN_ELEMENTAL_SCALE+((1.0-MIN_ELEMENTAL_SCALE)*newsc);
+         newprop.x=newprop.y=newprop.z=newsc;
+         Property.Set(self,"Scale",newprop);
+      }
+      else
+         Debug.MPrint(self," got damage message without HP properties!");;
+   }
+
+   // if we have any particle groups associated with us,
+   // we'll want to shut them down.
+   OnSlain()
+   {
+      // set our tweqscale so that we shrink away
+      const float TIME_TO_SHRINK=10.0;
+      vector rates, tmpvec, scale=vector(1.0,1.0,1.0);
+
+      if(Property.Possessed(self,"StTweqScale"))
+      {
+         if(Property.Possessed(self,"Scale"))
+            scale=Property.Get(self,"Scale");
+
+         Property.Add(self,"CfgTweqScale");
+
+         rates.x=-scale.x/TIME_TO_SHRINK;
+         rates.y=-scale.y/TIME_TO_SHRINK;
+         rates.z=-scale.z/TIME_TO_SHRINK;
+
+         // why, oh why, didn't we write this the other way?
+         tmpvec=Property.Get(self,"CfgTweqScale","x rate-low-high");
+         tmpvec.x=rates.x;
+         tmpvec.y=0;
+         tmpvec.z=scale.x;
+         Property.Set(self,"CfgTweqScale","x rate-low-high",tmpvec);
+         tmpvec=Property.Get(self,"CfgTweqScale","y rate-low-high");
+         tmpvec.x=rates.x;
+         tmpvec.z=scale.y;
+         Property.Set(self,"CfgTweqScale","y rate-low-high",tmpvec);
+         tmpvec=Property.Get(self,"CfgTweqScale","z rate-low-high");
+         tmpvec.x=rates.x;
+         tmpvec.z=scale.z;
+         Property.Set(self,"CfgTweqScale","z rate-low-high",tmpvec);
+
+         ActReact.React("tweq_control",1.0,self,0, kTweqTypeAll, kTweqDoActivate); 
+      }
+      Sound.HaltSpeech(self);
+
+      DefaultOnSlain();
+   }
+
+END_SCRIPT(Elemental)
+
+// Special effects associated with fire elemental AI
+BEGIN_SCRIPT(FireElement,Elemental)
+
+MESSAGES:
+
+   OnDamage()
+   {
+      integer hp=Property.Get(self,"HitPoints");
+
+      if (message.damage>0 && hp>=0)
+      {
+         object spang;
+         object spang_arch;
+
+         // @TODO: You'd really like this to be done through the
+         // blood splatter system.
+  
+         if(object(message.kind)==object("WaterStim"))
+         {
+            spang_arch=Object.Named("SteamPuff");
+         }
+         else
+            spang_arch=Object.Named("FElemHit");
+
+         if(Object.InheritsFrom(object(message.culprit),spang_arch))
+         {
+            Debug.MPrint("Pelligro! Heading off potential chain reaction of spang from ",self);
+            spang_arch=object(0);
+         }
+
+         if(spang_arch!=object(0))
+         {
+            spang=Object.Create(spang_arch);
+            Object.Teleport(spang,vector(0.0,0.0,0.0),vector(0.0,0.0,0.0),self);
+         }
+      }
+      DefaultOnDamage();
+   }
+   OnAlertness()
+   {
+      // @TODO: This calculation is of course riddled
+      // with magic numbers which should be dealth with.
+      
+      // I still like an interpolation from like .4-1.0 or so,
+      // but .4 is obviously not very flashy, so let's jack
+      // this up a little bit at least for E3.
+      float litelvl=.6+((.4/3.0)*message.level);
+      
+      float alpha=.3+(.2*message.level);
+      int selflit=25+25*message.level;
+      static const string moods[]={"Mood0","Mood1","Mood2","Mood3"};
+      
+      if(message.level<0 || message.level>=(sizeof(moods)/sizeof(moods[0])))
+      {
+         Debug.MPrint("Invalid alertness in obj ",self," script!");
+         return;
+      }
+
+      if(message.level<2)
+      {
+         // Turn off heat source
+         Object.RemoveMetaProperty(self,Object.Named("BigHeatSource"));
+      }
+      else
+      {
+         object metaprop=Object.Named("BigHeatSource");
+         // Turn on heat source
+         if(!Object.HasMetaProperty(self,metaprop))
+         {
+            Object.AddMetaProperty(self,metaprop);
+         }
+      }
+      
+      if(litelvl>1.0)
+         litelvl=1.0;
+      Property.Set(self,"ExtraLight","Amount (-1..1)",litelvl);
+      Property.Set(self,"RenderAlpha",alpha);
+      Property.Set(self,"SelfLit",selflit);
+      
+      NotifyParticleGroups(moods[message.level]);
+   }
+/* Screw this.  Replace it with CorpsePart
+   OnSlain()
+   {
+      object puff=Object.Create("SmokePuff");
+      Object.Teleport(puff,vector(0.0,0.0,0.0),vector(0.0,0.0,0.0),self);
+      DefaultOnSlain();
+   }
+*/
+
+END_SCRIPT(FireElement)
+
+/* Causes damage done by "HolyStim" (holy water) stimulus to affect
+   zombies permanently, while other types of damage will just put the
+   zombie down for a limited period of time.
+   */
+BEGIN_SCRIPT(ZombieRegen, Physics)
+
+METHODS:
+   METHOD void Resurrect()
+   {
+      Object.RemoveMetaProperty(self,"M-ZombiePossum");
+      Link.DestroyMany("AIWatchObj",self,self);
+   }
+
+MESSAGES:
+
+   // Zombies should get up if you actually bump into them.
+   // in fact, it quite causes problems if they don't.
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   // Problem: will this resurrect the zombie as soon as it dies,
+   // due to hitting the player's sword?  Probably ok.
+   OnPhysCollision()
+   {
+      object WhatIHit=message.collObj;
+
+      if(WhatIHit!=object("Player"))
+         return;
+      // Debug.MPrint("Resurrecting ",self," due to collision with ",WhatIHit);
+      Resurrect();
+   }
+
+   /* Zombies have a NULL slay result, so we can catch the slain event 
+      here and decide what to do.  If we _really_ want to slay them, we
+      can always resurrect them, set their slay result to terminate, and
+      slay them all over again.
+   */
+   OnSlain()
+   {
+      integer slay=Property.Get(self,"SlayResult");
+
+      // Debug.MPrint(self," slain.");
+      Property.Remove(self,"AI_IdleOrgn");
+      if(Property.Possessed(self,"MAX_HP"))
+      {
+         integer max=Property.Get(self,"MAX_HP");
+         if(max<=0)
+         {
+            // set me up to explode
+            object parts=Object.Named("M-ZombieParts");
+            if(Object.InheritsFrom(self,Object.Named("HammerZombie")))
+               parts=Object.Named("M-HamZombieParts");
+            Object.AddMetaProperty(self,parts);
+            Property.Set(self,"SlayResult",kSlayNormal);
+            Sound.HaltSpeech(self);
+            // Debug.MPrint(self," Really Dead");
+         }
+         else if(slay!=kSlayNormal)
+         {
+            boolean possum=GetData("Possum");
+
+            Damage.Resurrect(self);
+            if(!possum)
+            {
+               AI.Signal(self,"Possum");
+               // Debug.MPrint(self," Playing Possum");
+            }
+         }
+      }
+   }
+
+   OnDamage()
+   {
+      integer damage=message.damage;
+      integer max, hp=Property.Get(self,"HitPoints");
+      object stim=message.kind;
+      object culprit=message.culprit;
+      real permanent=0.0;
+      
+      if(culprit!=object(0) && Link.AnyExist("~CulpableFor",culprit))
+         culprit=Link.GetOne("~CulpableFor",culprit).To();
+
+      if(stim==object("HolyStim") ||
+         stim==object("FireStim"))
+         permanent=1.0;
+      else if(stim==object("LightBright"))
+         permanent=0.5;
+
+      if(culprit!=object(0) &&
+         Object.InheritsFrom(culprit,"Hammerite"))
+         permanent=1.0;
+       
+      if(Property.Possessed(self,"MAX_HP"))
+      {
+         max=Property.Get(self,"MAX_HP");
+         max-=(damage*permanent);
+         Property.Set(self,"MAX_HP",max);
+      }
+
+      // Okay, the only way we're going to get damaged by WaterStim
+      // is drowning.  If we drown, best to just lie down and stop
+      // embarrassing us.
+      if(stim==object("WaterStim") && hp<=0)
+      {
+         Property.Set(self,"SlayResult",kSlayNormal);
+      }
+      DefaultOnDamage();
+   }
+   OnMessage()
+   {
+      if(MessageIs("Resurrect"))
+      {
+         // Debug.MPrint("Resurrecting ",self," due to message request.");
+         Resurrect();
+      }
+      if(MessageIs("Possum?"))
+      {
+         // pseudoscript wanting to know if it should add the possum
+         // metaproperty/link.  Don't do it if they're already there.
+         Reply(!Object.HasMetaProperty(self,"M-ZombiePossum"));
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(ZombieRegen)
+      
+
+
+
+BEGIN_SCRIPT(FlashBomb, Physics)
+
+METHODS:
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      //      Debug.MPrint("unsubscribe for ", self, " ", message.message);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      DrkPowerups.TriggerWorldFlash(self);
+      Reply(kPM_Slay);
+   }
+
+END_SCRIPT(FlashBomb)
+
+
+BEGIN_SCRIPT(JAccuse, RootScript)
+
+   OnSlain()
+   {
+      object slayer=message.culprit;
+      object player=Object.Named("Player");
+      boolean accuse=FALSE;
+
+      // Debug.MPrint(self," dying.  Culprit is ",slayer);
+
+      /* First off, if the player is culpable for me, then he has carried
+         my carcass somewhere, in this case clearly somewhere that turned
+         out to be dangerous.  So, this clause allows us to blame you for
+         dropping unconscious guys in water or lava or off cliffs and such.
+         */
+      if(Link.AnyExist("CulpableFor",player,self))
+         accuse=TRUE;
+
+      /* Okay, the "culprit" of the slaying is pretty literal,
+         e.g. the actual sword, arrow, or whatever that did the damage.
+         To hold the player responsible, the object might be Weapon
+         or Firer linked to him.
+      */
+      if(slayer==player ||
+         (slayer!=object(0) && Link.AnyExist("CulpableFor",player,slayer)))
+         accuse=TRUE;
+
+      if(accuse)
+      {
+         // Debug.MPrint(self," accusing the player of killing it.");
+         PostMessage(player,"J'Accuse");
+      }
+
+      DefaultOnSlain();
+   }
+
+END_SCRIPT(JAccuse)
+
+
+BEGIN_SCRIPT(CorpseFrobHack, AI)
+
+METHODS:
+   METHOD void MakeFrobbable(boolean frobbable)
+   {
+      // Debug.MPrint("Call ",self," MakeFrobbable, ",frobbable);
+      if(frobbable)
+         Object.RemoveMetaProperty(self,"FrobInert");
+      else if(!Object.HasMetaProperty(self,"FrobInert"))
+         Object.AddMetaProperty(self,"FrobInert");
+
+      // Frobbable creatures are not responsible for their own actions or safety.
+      Property.Set(self,"Culpable",!frobbable);
+   }
+
+
+   METHOD void CheckFrobbable()
+   {
+      if(Property.Possessed(self,"AI"))
+      {
+         string set=Property.Get(self,"AI","Behavior Set");
+      
+         if(set=="null")
+            MakeFrobbable(TRUE);
+         else if(Property.Possessed(self,"AI_Mode"))
+         {
+            integer mode=Property.Get(self,"AI_Mode");
+
+            MakeFrobbable(mode==kAIM_Dead);
+         }
+         else
+            MakeFrobbable(FALSE); // Can't tell AI mode; no frob
+      }
+      else
+         MakeFrobbable(TRUE); // No AI, assume it's okay
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      CheckFrobbable();
+      DefaultOnBeginScript();
+   }
+
+
+   OnAIModeChange()
+   {
+      if (message.mode == kAIM_Dead)
+      {
+         MakeFrobbable(TRUE); 
+      }
+      else if (message.previous_mode == kAIM_Dead)
+         MakeFrobbable(FALSE); 
+      
+      // Otherwise, stay how you were 
+         
+      DefaultOnAIModeChange(); 
+   }
+
+   OnSlain()
+   {
+      // we're no longer knocked out.
+      object ko = object("M-KnockedOut"); 
+      if (ko != object(0))
+         while (Object.HasMetaProperty(self,ko))
+            Object.RemoveMetaProperty(self,ko); 
+      // de-physicalize
+      if (Property.Possessed(self,"PhysType"))
+         Property.Set(self,"PhysType","Remove On Sleep",TRUE); 
+      DefaultOnSlain(); 
+   }
+
+
+END_SCRIPT(CorpseFrobHack)
+
+
+BEGIN_SCRIPT(Corpsed, Physics)
+MESSAGES:
+   OnContained()
+   {
+      if(object(message.container)==Object.Named("Player"))
+      {
+         if(message.event==kContainAdd)
+         {
+            Sound.PlaySchemaAmbient(self,"garlift");
+            DrkInv.AddSpeedControl("CorpseCarry", 0.6,0.9);
+            PlayerLimbs.Equip(self);
+            Property.Set(self, "NonPhysCreature", FALSE);
+         }
+         else if(message.event==kContainRemove)
+         {
+            Sound.PlaySchemaAmbient(self,"gardrop");
+            DrkInv.RemoveSpeedControl("CorpseCarry");
+            // If not unconscious, de-physicalize on sleep
+            if (!Object.InheritsFrom(self,"M-KnockedOut"))
+            {
+               if (Property.Possessed(self,"PhysType"))
+                  Property.Set(self,"PhysType","Remove On Sleep",TRUE); 
+            }
+
+            PlayerLimbs.UnEquip(self);
+
+         }
+      }
+      DefaultOnContained();
+   }
+
+// This is re-physicalization code if the body throw code is set up to
+// auto-remove on sleep. 
+#ifdef RE_PHYSICALIZE
+   OnPhysMadeNonPhysical()
+   {
+      if (Object.InheritsFrom(self,"M-KnockedOut"))
+         PostMessage(self,"ReFiz"); 
+      DefaultOnPhysMadeNonPhysical(); 
+   }
+
+   OnMessage()
+   {
+      if (MessageIs("ReFiz"))
+      {
+         // re-add physics
+         Property.Remove(self,"PhysType"); 
+         Property.Add(self,"PhysType"); 
+         Property.Set(self,"PhysType","Remove On Sleep",FALSE); 
+      }
+   } 
+
+#endif // RE_PHYSICALIZE
+
+END_SCRIPT(Corpsed)
+
+
+
+
+// the script for alarm gongs.  When rung, either by frobbing
+// or impact, make appropriate activation sound so as to notify
+// any AI's within earshot.
+BEGIN_SCRIPT(Gong,StdController)
+
+METHODS:
+
+   METHOD void Ring()
+   {
+      Sound.PlayEnvSchema(self,"Event Activate",self,NULL,kEnvSoundAtObjLoc);
+      /* @TODO: In our perfect world, guys would just hear
+         the sound and get the signal.  Sadly...
+         Well, suffice to say that if you want a guy to  
+         get the signal whether or not he really hears the
+         gong, give him an "Owns" link to the gong.
+         */
+      {
+         linkset owners=Link.GetAll("~Owns",self);
+         while(owners.AnyLinksLeft())
+         {
+            object owner=owners.Link().To();
+            AI.Signal(owner,"gong_ring");
+            owners.NextLink();
+         }
+      }
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // Only collisions with broad faces of gong will ring it.
+      // @TODO: Kill magic numbers
+      // @TODO: If we get a jointed model and TweqWubWub, do so.
+      if(message.collSubmod==1 || message.collSubmod==4)
+      {
+        // collisions with AI's don't ring the gong; they're
+        // assumed to be controlling themselves a bit better than that.
+        if(! (Object.InheritsFrom(message.collObj,"Avatar")
+              || Object.InheritsFrom(message.collObj,"Creature")))
+        {
+          Ring();
+        }
+      }
+      DefaultOnPhysCollision();
+   }
+   OnFrobWorldEnd()
+   {
+      Ring();
+      DefaultOnFrobWorldEnd();
+   }
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         Ring();
+   }
+
+END_SCRIPT(Gong)
+
+/* This "window shade" is responsible for retexturing in its locality
+   to represent an interior light turning on or off, or to represent the
+   window itself being broken.  Also handles lighting changes.
+*/
+BEGIN_SCRIPT(WindowShade, AnimLight)
+
+States
+{
+   LightOn,
+   LightOff,
+   WindowBroken
+};
+
+METHODS:
+  METHOD string StateTexture(integer state)
+  {
+     string propname;
+
+     if(state==LightOn)
+        propname="TerrRepOn";
+     else if(state==LightOff)
+        propname="TerrRepOff";
+     else if(state==WindowBroken)
+        propname="TerrRepDestroy";
+     else
+     {
+        Debug.MPrint("Invalid state passed to StateTexture by object ",self);
+        return "";
+     }
+     if(!Property.Possessed(self,propname))
+     {
+        Debug.MPrint("Object ",self," missing desired property ",propname);
+        return "";
+     }
+     return(Property.Get(self,propname));
+  }
+  
+  METHOD void GoToState(integer state)
+  {
+     if(StateIs((integer)state) || StateIs((integer)WindowBroken)) return;
+
+     AnimTexture.ChangeTexture(self,NULL,StateTexture(GetState()),
+                                    NULL,StateTexture(state));
+     SetState(state);
+     if(StateIs((integer)LightOn))
+        TurnOn();
+     else
+        TurnOff();
+  }
+
+  METHOD void HandleMessage(string message)
+  {
+     if(message==string("TurnOn"))
+        GoToState(LightOn);
+     else if(message==string("TurnOff"))
+        GoToState(LightOff);
+  }
+
+MESSAGES:
+
+  OnBeginScript()
+  {
+     // Discern starting state from light mode
+     boolean on=IsLightOn();
+     SetState(on?LightOn:LightOff);
+     // Note that it's the designer's responsibility for the level to actually be textured
+     // to match the light state.  We literally have no other possible way of knowing.
+     SetData("StartState",GetState());
+     DefaultOnBeginScript();
+  }
+  OnEndScript()
+  {
+     /* Hey, this crashes.  So, don't do this until it doesn't crash.
+     AnimTexture.ChangeTexture(self,NULL,StateTexture(GetState()),
+                                    NULL,StateTexture(GetData("StartState")));
+     */
+     DefaultOnEndScript();
+  }
+  OnSlain()
+  {
+     GoToState(WindowBroken);
+     DefaultOnSlain();
+  }
+  OnMessage()
+  {
+     if(!StateIs((integer)WindowBroken))
+     {
+        HandleMessage(message.message);
+     }
+     DefaultOnMessage();
+  }
+
+END_SCRIPT(WindowShade)
+
+
+BEGIN_SCRIPT(ControlWindowShade, WindowShade)
+
+METHODS:
+  // return a number from 0 to 1, which is (stochastically) the
+  // the proportion of my time I spend in the "on" state.
+  METHOD float OnWeight()
+  {
+     integer percent_on=50;
+
+     if(Property.Possessed(self,"scriptTiming"))
+        percent_on=Property.Get(self,"scriptTiming");
+
+     return(percent_on/100.0);
+  }
+
+MESSAGES:
+  OnSim()
+  {
+     if(message.starting)
+     {
+        float dont_all_go_at_once=15.0*Data.RandFlt0to1();
+
+        SetOneShotTimer(self,"Randomize",dont_all_go_at_once);
+     }
+     DefaultOnSim();
+  }
+  OnTimer()
+  {
+     if(message.name=="Randomize")
+     {
+        if(!StateIs((integer)WindowBroken))
+        {
+           float roll=Data.RandFlt0to1();
+           // re-roll every 10 seconds, + or - 5 seconds.
+           float nextroll=10.0+Data.RandFltNeg1to1()*5.0;
+
+           if(roll<OnWeight())
+              GoToState(LightOn);
+           else
+              GoToState(LightOff);
+        
+           SetOneShotTimer(self,"Randomize",nextroll);
+        }
+     }
+     DefaultOnTimer();
+  }
+
+END_SCRIPT(ControlWindowShade)
+
+
+BEGIN_SCRIPT(CollapseFloor,PressurePlate)
+MESSAGES:
+   OnPressurePlateActive()
+   {
+      Damage.Slay(self,self);
+   }
+
+END_SCRIPT(CollapseFloor)
+
+
+/* TRAP/TRIGGER scripts
+@TODO: move these out into their own file
+*/
+
+BEGIN_SCRIPT(TrigRoomPlayer, Room)
+
+MESSAGES:
+
+   OnPlayerRoomEnter()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      DefaultOnPlayerRoomEnter();
+   }
+   OnPlayerRoomExit()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      DefaultOnPlayerRoomExit();
+   }
+
+END_SCRIPT(TrigRoomPlayer)
+
+
+BEGIN_SCRIPT(TrigRoomPlayerTrans, Room)
+
+MESSAGES:
+
+   OnPlayerRoomEnter()
+   {
+      if(Link.AnyExist("Route",message.FromObjId,self))
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      if(Link.AnyExist("Route",self,message.FromObjId))
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      DefaultOnPlayerRoomEnter();
+   }
+   OnPlayerRoomExit()
+   {
+      if(Link.AnyExist("Route",self,message.ToObjId))
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      if(Link.AnyExist("Route",message.ToObjId,self))
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      DefaultOnPlayerRoomExit();
+   }
+
+END_SCRIPT(TrigRoomPlayerTrans)
+
+
+/* Keep track of the creatures in a given room, sending
+   TurnOn messages when the room is populated and
+   TurnOff when the room is depopulated.
+   NOTE: This needs to know when creatures in the room die.  Currently, this is done by
+   a separate script on the creature itself (NotifyRoomOnSlain, below)
+*/
+BEGIN_SCRIPT(TrigRoomCreature, Room)
+
+METHODS:
+   METHOD void TurnOn()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+   }
+   METHOD void TurnOff()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+   METHOD void UpdatePop()
+   {
+      boolean populated=Link.AnyExist("Population",self);
+      boolean was_populated=GetData("Populated");
+
+      if(populated!=was_populated)
+      {
+         if(!populated)
+            TurnOff();
+         else
+            TurnOn();
+      }
+      SetData("Populated",populated);
+   }      
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      // this counts on our getting room enter messages
+      // on simulation start to actually determine initial
+      // population (and trigger if appropriate).
+      if(!IsDataSet("Populated"))
+         SetData("Populated",FALSE);
+   }
+   OnCreatureRoomEnter()
+   {
+      object critter=message.MoveObjId;
+      boolean live=TRUE;
+
+      // Dead guys don't trigger.
+      if(Property.Possessed(critter,"AI_Mode") &&
+         integer(Property.Get(critter,"AI_Mode"))==kAIM_Dead)
+         live=FALSE;
+      if(Property.Possessed(critter,"DeathStage") &&
+         integer(Property.Get(critter,"DeathStage"))!=0)
+         live=FALSE;
+
+      if(live)
+      {  
+         Link.Create("Population",self,critter);
+         Object.AddMetaProperty(critter,"M-NotifyRegion");
+         UpdatePop();
+      }
+      DefaultOnCreatureRoomEnter();
+   }
+   OnCreatureRoomExit()
+   {
+      object critter=message.MoveObjId;
+
+      Object.RemoveMetaProperty(critter,"M-NotifyRegion");
+      Link.DestroyMany("Population",self,critter);
+      UpdatePop();
+
+      DefaultOnCreatureRoomExit();
+   }
+   OnPlayerRoomEnter()
+   {
+      Link.Create("Population",self,"Player");
+      UpdatePop();
+      DefaultOnPlayerRoomEnter();
+   }
+   OnPlayerRoomExit()
+   {
+      Link.DestroyMany("Population",self,"Player");
+      UpdatePop();
+      DefaultOnPlayerRoomExit();
+   }
+   OnMessage()
+   {
+      if(MessageIs("Obituary"))
+      {
+         Link.DestroyMany("Population",self,message.from);
+         UpdatePop();
+      }
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(TrigRoomCreature)
+
+/* Used by population-tracking rooms (and OBB's) to get notification of creature
+   death within their bounds.  This script is put on the creature via a metaprop
+   while so contained.
+   */
+BEGIN_SCRIPT(NotifyRegion, RootScript)
+
+MESSAGES:
+   // Note: this can behave strangely for zombies, who can be "slain"
+   // and then get back up...
+   OnSlain()
+   {
+      Link.BroadcastOnAllLinks(self,"Obituary","~Population");
+      DefaultOnSlain();
+   }
+
+END_SCRIPT(NotifyRegion)
+
+
+/* TrigAIAlert:
+Triggers when AI (presumably a security camera)
+reaches alert level 3 (fully alert of player)
+*/
+BEGIN_SCRIPT(TrigAIAlert, AI)
+
+MESSAGES:
+   OnAlertness()
+   {
+      if(message.level==kAIAL_High)
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+   }
+   // @TODO: Might really want a TurnOff for when AI loses the PC.
+END_SCRIPT(TrigAIAlert)
+
+
+/* TrigSlain:
+Triggers when the object is slain.
+*/
+BEGIN_SCRIPT(TrigSlain, RootScript)
+
+MESSAGES:
+   OnSlain()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      DefaultOnSlain();
+   }
+END_SCRIPT(TrigSlain)
+
+
+/* TrigWorldFocus:
+   This script sends a standard "TurnOn" message when an object is focused
+*/
+BEGIN_SCRIPT(TrigWorldFocus, RootScript)
+
+MESSAGES:
+
+   OnWorldSelect()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      DefaultOnWorldSelect();
+   }
+   OnWorldDeSelect()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      DefaultOnWorldDeSelect();
+   }
+END_SCRIPT(TrigWorldFocus)
+
+
+
+// Script:	TrapConverse
+/* Put on conversation object so as to be able to start it with a "TurnOn." */
+BEGIN_SCRIPT(TrapConverse, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if (MessageIs("TurnOn"))
+         AI.StartConversation(self);
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapConverse)
+
+
+BEGIN_SCRIPT(TrapInverter,RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(!Locked.IsLocked(self))
+      {
+         if(MessageIs("TurnOn"))
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         else if(MessageIs("TurnOff"))
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapInverter)
+
+
+BEGIN_SCRIPT(TrapRelay, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(!Locked.IsLocked(self))
+      {
+         integer percent_filter=100;
+         
+         if(Property.Possessed(self,"scriptTiming"))
+            percent_filter=Property.Get(self,"scriptTiming");
+
+         if(Data.RandFlt0to1()<=(float(percent_filter)/100.0))
+            Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapRelay)
+
+
+BEGIN_SCRIPT(TrapOnFilter,RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(!Locked.IsLocked(self))
+      {
+         if(MessageIs("TurnOn"))
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapOnFilter)
+
+
+
+BEGIN_SCRIPT(TrigPPlate, PressurePlate)
+MESSAGES:
+   OnPressurePlateActive()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+   }
+   OnPressurePlateInactive()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+
+END_SCRIPT(TrigPPlate)
+
+BEGIN_SCRIPT(TrigPPlateImmed, PressurePlate)
+MESSAGES:
+   OnPressurePlateActivating()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+   }
+   OnPressurePlateDeactivating()
+   {
+      Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+   }
+END_SCRIPT(TrigPPlateImmed)
+
+// When I get a TurnOn, release my contents into the world.
+// When I get TurnOff, contain them again.  Both operations
+// are idempotent, of course,
+//
+// Note that this is only _really_ designed for the case where
+// the trap contains exactly one object.
+BEGIN_SCRIPT(TrapRelease, RootScript)
+
+METHODS:
+
+   METHOD boolean HasRefs(object obj)
+   {
+      return(Property.Possessed(obj,"HasRefs") &&
+             (Property.Get(obj,"HasRefs")==TRUE));
+   }
+
+   METHOD void ReplaceLinks(linkkind was, linkkind shallbe)
+   {
+      linkset waslinks=Link.GetAll(was,self);
+      boolean appear=(was==linkkind("Contains"));
+
+      while(waslinks.AnyLinksLeft())
+      {
+         link thislink=waslinks.Link();
+         object targ=thislink.To();
+
+         // if disappearing objects, don't do anything to those
+         // not currently ref'd (e.g., those contained by other
+         // things.
+         if(appear || HasRefs(targ))
+         {
+            if(!Link.AnyExist(shallbe,self,targ))
+               Link.Create(shallbe,self,targ);
+            Link.Destroy(thislink);
+            if(appear)
+            {
+               Object.Teleport(targ,vector(0,0,0),vector(0,0,0),self);
+               Property.Set(targ,"HasRefs",TRUE);
+            }
+            else
+            {
+               Object.Teleport(self,vector(0,0,0),vector(0,0,0),targ);
+            }
+         }
+         waslinks.NextLink();
+      }
+   }
+
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         ReplaceLinks("Contains","Owns");
+      else if(MessageIs("TurnOff"))
+         ReplaceLinks("Owns","Contains");
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(TrapRelease)
+
+// Actually doesn't create the object, just puts its existing contents into the world.
+// Differs from TrapRelease only in that it cannot later dephysicalize the object.
+BEGIN_SCRIPT(TrapCreate, TrapRelease)
+MESSAGES:
+   OnMessage()
+   {
+      if(!MessageIs("TurnOff"))
+         DefaultOnMessage();
+   }
+END_SCRIPT(TrapCreate)
+
+
+BEGIN_SCRIPT(TrapTweqEmit, RootScript)
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoActivate);
+      DefaultOnMessage();
+   }      
+
+END_SCRIPT(TrapTweqEmit)
+
+
+BEGIN_SCRIPT(ReloadTweqEmit, RootScript)
+
+METHODS:
+   METHOD void Report(integer warnlevel)
+  {
+    if(warnlevel>=2)
+    {
+      if(Property.Possessed(self,"CfgTweqEmit"))
+      {
+        integer rate=Property.Get(self,"CfgTweqEmit","Rate");
+        integer time=Property.Get(self,"StTweqEmit","Cur Time");
+        if(time!=(rate-1))
+        {
+          Debug.MPrint("Suspicious time field on reloading tweq emit trap.");
+          Debug.MPrint("rate=",rate," implies time should be ",rate-1," not ",time);
+        }
+      }
+      else
+        Debug.MPrint(self," has no CfgTweqEmit property!");
+    }
+  }
+
+MESSAGES:
+   OnTweqComplete()
+   {
+      if(Property.Possessed(self,"CfgTweqEmit"))
+      {
+         integer rate=Property.Get(self,"CfgTweqEmit","Rate");
+         integer time=rate-1;
+
+         if(time<0) time=0;
+         Property.Set(self,"StTweqEmit","Cur Time",time);
+         Property.Set(self,"StTweqEmit","Frame #",0);
+         DefaultOnTweqComplete();
+      }
+   }
+
+END_SCRIPT(ReloadTweqEmit)
+
+/* Trigger to be associated with a TweqFlicker-ing fnord.
+   Sends a TurnOn on every tweq flicker event.
+   */
+BEGIN_SCRIPT(TrigFlicker, RootScript)
+
+METHODS:
+   METHOD void Fire(boolean on)
+   {
+      SetData("IsOn",on);
+      SetData("LastFiring",GetTime());
+      Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice",NULL);
+   }
+
+MESSAGES:
+
+   OnSim()
+   {
+      if(message.starting)
+      {
+         SetData("IsOn",FALSE);
+         SetData("LastFiring",0.0);
+         SetOneShotTimer(self,"check",15.0);
+      }
+      DefaultOnSim();
+   }
+   OnTweqComplete()
+   {
+      if(message.Type==kTweqTypeFlicker &&
+         message.Op==kTweqOpFrameEvent)
+      {
+         boolean on=GetData("IsOn");
+         on=!on;
+         Fire(on);
+      }
+   }
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
+      else if(MessageIs("TurnOff"))
+      {
+         // Send a final "off." Don't want to leave controlled thing in an on state,
+         // generally.
+         Fire(FALSE);
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
+      }
+   }
+   OnTimer()
+   {
+      // if we've had no activity in a while, then turn off, as a tweq sim
+      // radius may have left us undesirably on.
+      if(message.name=="check")
+      {
+         real time=GetTime();
+         real lasttime=GetData("LastFiring");
+         boolean on=GetData("IsOn");
+
+         if(on && (time-lasttime)>10.0)
+            Fire(FALSE);
+         SetOneShotTimer(self,"check",15.0);
+      }
+      DefaultOnTimer();
+   }
+
+END_SCRIPT(TrigFlicker)
+
+
+/* Used to implement RequireAll and RequireAny meta-traps.
+
+   Keeps track of current state by forging a "ScriptParams"
+   link to a correspondent when it gets a "TurnOn", and
+   breaking the link if it gets a "TurnOff"
+   */
+   
+BEGIN_SCRIPT(TrapRequirement, RootScript)
+MESSAGES:
+
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         if(!Link.AnyExist("ScriptParams",self,message.from))
+         {
+            Link.Create("ScriptParams",self,message.from);
+         }
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         linkset tally=Link.GetAll("ScriptParams",self,message.from);
+
+         while(tally.AnyLinksLeft())
+         {
+            Link.Destroy(tally.Link());
+            tally.NextLink();
+         }
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(TrapRequirement)
+
+/* Trap keeps track of "TurnOn" and "TurnOff" messages,
+   sending a "TurnOn" if and only if all items control linked
+   to it have sent "TurnOn" more recently.  As soon as the
+   first one sends a "TurnOff," so does this trap.
+   */
+BEGIN_SCRIPT(TrapRequireAll, TrapRequirement)
+
+METHODS:
+
+   METHOD boolean CheckForAllLinked()
+   {
+      if(Link.AnyExist("~ControlDevice",self))
+      {
+         linkset controllers=Link.GetAll("~ControlDevice",self);
+
+         while(controllers.AnyLinksLeft())
+         {
+            if(!Link.AnyExist("ScriptParams",self,controllers.Link().To()))
+               return(FALSE);
+            controllers.NextLink();
+         }
+         return TRUE;
+      }
+      else
+         return TRUE;
+   }
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         DefaultOnMessage();
+
+         if(CheckForAllLinked())
+               Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         if(CheckForAllLinked())
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+
+         DefaultOnMessage();
+      }
+      else
+         DefaultOnMessage();
+   }
+END_SCRIPT(TrapRequireAll)
+
+
+/* Trap keeps track of "TurnOn" and "TurnOff" messages,
+   sending a "TurnOn" as soon as any items control linked
+   to it have sent "TurnOn" more recently.  When all have most
+   recently sent a "TurnOff," so does this trap.  All other
+   "TurnOn" and "TurnOff" messages are filtered out.
+   */
+BEGIN_SCRIPT(TrapRequireAny, TrapRequirement)
+
+METHODS:
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         if(!Link.AnyExist("ScriptParams",self))
+               Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+
+         DefaultOnMessage();
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         boolean waslinked=Link.AnyExist("ScriptParams",self);
+
+         DefaultOnMessage();
+         if(waslinked && !Link.AnyExist("ScriptParams",self))
+               Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
+      else
+         DefaultOnMessage();
+   }
+END_SCRIPT(TrapRequireAny)
+
+
+/* Destroys all objects it controls.  Obviously, this is rather a one-shot trap.
+   Destroys itself when it's done, just to be tidy.
+ */
+BEGIN_SCRIPT(TrapDestroy, RootScript)
+
+MESSAGES:
+   OnMessage()
+   {
+     if(MessageIs("TurnOn"))
+     {
+       linkset victims=Link.GetAll("ControlDevice",self);
+       while(victims.AnyLinksLeft())
+       {
+          Damage.Slay(victims.Link().To(),self);
+          victims.NextLink();
+       }
+       if (Property.Possessed(self,"AI"))
+          Sound.HaltSpeech(self);
+       Object.Destroy(self);
+     }
+   }
+END_SCRIPT(TrapDestroy)
+
+
+       
+/* Trap which teleports its controlled object to its own location.
+   No response to "TurnOff"
+   */
+BEGIN_SCRIPT(TrapTeleporter, RootScript)
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         // Let's don't do a Link.GetAll, since I really don't think we
+         // want to teleport several objects to the same location...
+
+         if(Link.AnyExist("ControlDevice",self))
+         {
+            object victim=Link.GetOne("ControlDevice",self).To();
+
+            // Could be that the victim is the player factory.  No
+            // way to link to the actual player object in the edtior,
+            // after all...
+            if(Link.AnyExist("PlayerFactory",victim))
+               victim=Object.Named("Player");
+
+            // remove me from whatever container I might be in.
+            Container.Remove(victim);
+            Object.Teleport(victim,vector(0,0,0),vector(0,0,0),self);
+         }
+      }
+   }  
+
+END_SCRIPT(TrapTeleporter)
+
+
+/* When triggered, makes its controlled object(s) no longer rotation-
+   or location-controlled.  You'd better know what you're doing!
+*/
+BEGIN_SCRIPT(TrapDeadfall, RootScript)
+
+METHODS:
+  METHOD void Uncontrol(object targ)
+  {
+     if(Property.Possessed(targ,"PhysControl"))
+     {
+        integer controls=Property.Get(targ,"PhysControl","Controls Active");
+
+        controls &= (~(kCPT_Location|kCPT_Rotation));
+        Property.Set(targ,"PhysControl","Controls Active",controls);
+     }
+  }
+MESSAGES:
+  OnMessage()
+  {
+     if(MessageIs("TurnOn"))
+     {
+        linkset controls=Link.GetAll("ControlDevice",self);
+
+        while(controls.AnyLinksLeft())
+        {
+           Uncontrol(controls.Link().To());
+           controls.NextLink();
+        }
+        Object.Destroy(self);
+     }
+  }
+
+END_SCRIPT(TrapDeadfall)
+
+
+
+
+/* 
+   The Quest Var trap performs some operation on a quest variable
+   as specified by an "operator" string property.
+
+   The format of the quest var operator is <op><argument>:<name>
+   the op is a single character indicating the operation to apply
+   to the quest var of the specified name.  The argument is a single
+   non-negative integer argument which us used if the op is a
+   binary operator.  Currently-supported ops are:
+   
+   Let x be the named quest variable, and a be the argument:
+   
+   Op    Effect of TurnOn     Effect of TurnOff
+   
+   =     x=a                  none
+   !     x|=a                 x&=(~a)
+
+   Obvious possibilities to be implemented are x+=a, x-=a, etc.
+      
+*/
+BEGIN_SCRIPT(TrapSetQVar, RootScript)
+
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn") || MessageIs("TurnOff"))
+      {
+         string command;
+         integer NameInd, ArgInd, arg=0, qvarval;
+         char op;
+         boolean on=MessageIs("TurnOn");
+
+         if(Property.Possessed(self,"TrapQVar"))
+            command=Property.Get(self,"TrapQVar");
+         else
+         {
+            // For temporary back-compatibility to previous hacked way
+            // of doing this, try reading the DesignNote instead.  But warn.
+
+            if(!Property.Possessed(self,"DesignNote"))
+               return;
+
+            Debug.MPrint("Note fullwise: Quest var trap ",self,
+                         " using non-kosher property settings.");
+            command=Property.Get(self,"DesignNote");
+         }
+         
+         // Search to just after any occurance of ':'
+         // we take this to be our Qvar name
+         for(NameInd=0;command[NameInd]!=':';NameInd++)
+            if(command[NameInd]==0) return;
+         NameInd++;
+
+         qvarval=Quest.Get(((const char*)command)+NameInd);
+
+         // Okay, at this point, our string is at least 1 char long
+         // since we found a ':'.  The first char is taken as our
+         // opcode, and contiguous digits after the first char
+         // are our argument.
+         for(ArgInd=1;(command[ArgInd]>='0' && command[ArgInd]<='9');ArgInd++)
+            arg=(arg*10)+(command[ArgInd]-'0');
+
+         op=command[0];
+         if(op=='=' && on)            
+            qvarval=arg;
+         else if(op=='!')
+         {
+            if(on)
+               qvarval|=arg; // set bits in arg
+            else
+               qvarval&=(~arg); // unset bits in arg
+         }
+         // @TODO: And so on for '+', '-', what have you.
+
+         Quest.Set(((const char*)command)+NameInd,qvarval);
+      }
+   }
+END_SCRIPT(TrapSetQVar)
+
+
+/* QuaffHeal:
+Prompt AI to use a healing potion, if he has one and has lost
+hit points.
+*/
+BEGIN_SCRIPT(QuaffHeal, AI)
+METHODS:
+   METHOD object MyPotion()
+   {
+      boolean gotpotion=FALSE;
+      object potion, item;
+      linkset inventlinks=Link.GetAll("Contains",self);
+      object healing=Object.Named("HealingPotion");
+      
+      for(;!gotpotion && inventlinks.AnyLinksLeft();inventlinks.NextLink())
+      {
+         item=inventlinks.Link().To();
+         if(Object.InheritsFrom(item,healing))
+         {
+            gotpotion=TRUE;
+            potion=item;
+         }
+      }
+      if(gotpotion)
+         return potion;
+      else
+         return object(0);
+   }
+MESSAGES:
+   OnAlertness()
+   {
+      if(Property.Possessed(self,"AI_Mode") &&
+         integer(Property.Get(self,"AI_Mode"))!=kAIM_Dead &&
+         message.level!=kAIAL_High && 
+         Property.Possessed(self,"HitPoints") &&
+         Property.Possessed(self,"MAX_HP"))
+      {
+         integer hp=Property.Get(self,"HitPoints");
+         integer max=Property.Get(self,"MAX_HP");
+
+         if(hp<max)
+         {
+            object potion=MyPotion();
+            if(potion!=object(0))
+            {
+               // Play drinking motion?
+               SetData("Drinking",TRUE);
+               Puppet.PlayMotion(self,"BH214113");
+            }
+         }
+      }
+      DefaultOnAlertness();
+   }
+   OnMotionEnd()
+   {
+      if(message.MotionName=="BH214113" && IsDataSet("Drinking"))
+      {
+         object potion=MyPotion();
+         if(potion!=object(0)) FrobObj(potion,kHighPriorityAction);
+         ClearData("Drinking");
+      }
+      DefaultOnMotionEnd();
+   }
+END_SCRIPT(QuaffHeal)
