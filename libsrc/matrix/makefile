@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.14 $
-# $Author: DAVET $
-# $Date: 1997/08/13 12:56:18 $
+# $Revision: 1.15 $
+# $Author: dc $
+# $Date: 1997/08/15 00:33:51 $
 #
 # Makefile for Matrix library
 #
@@ -44,9 +44,9 @@ mxd.sed .ALWAYS:
 
 build_double_version: 
         @echo Building double version of $(source)
-        -@chmod +w $(target)
+        -@chmod +w $(target,F)
         @sed -f $(fullpath_for_sed_script) $(source) > $(target,F)
-        @chmod -w $(target)
+        @chmod -w $(target,F)
 
 vecvecd.c .MISER .NODEFAULT: vecvec.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
