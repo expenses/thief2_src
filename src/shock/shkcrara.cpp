@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkcrara.cpp,v 1.5 1999/08/24 14:21:48 ccarollo Exp $
 
 #include <creatur_.h>
