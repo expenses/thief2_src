@@ -537,7 +537,10 @@ METHODS:
       for(;!gotpotion && inventlinks.AnyLinksLeft();inventlinks.NextLink())
       {
          item=inventlinks.Link().To();
-         if(Object.InheritsFrom(item,healing))
+         //only allow belt or alt potions (ones the player can SEE)
+         if (Object.InheritsFrom(item,healing) && 
+            (((integer)inventlinks.Link().GetData()==kContainTypeAlt) ||
+             ((integer)inventlinks.Link().GetData()==kContainTypeBelt)))
          {
             gotpotion=TRUE;
             potion=item;
@@ -550,6 +553,8 @@ METHODS:
    }
    METHOD void ConsiderPotion()
    {
+      if ((integer)GetData("IgnorePotion")==1)
+         return; //we're ignoring potions.
       if(Property.Possessed(self,"AI_Mode") &&
          integer(Property.Get(self,"AI_Mode"))==kAIM_Normal &&
          Property.Possessed(self,"HitPoints") &&
@@ -565,8 +570,11 @@ METHODS:
             {
                // Play drinking motion
                // @TODO: Attach potion to hand?
-               Object.AddMetaProperty(self,"M-LeftHandAlt");
-               Link.GetOne("Contains",self,potion).SetData(kContainTypeAlt);
+               if ((integer)Link.GetOne("Contains",self,potion).GetData()==kContainTypeAlt)
+                  Object.AddMetaProperty(self,"M-LeftHandAlt");
+               else //assumes Belt is other type
+                  Object.AddMetaProperty(self,"M-LeftHandBelt");
+               //don't change the contain type anymore
                SetData("Drinking",TRUE);
                Puppet.PlayMotion(self,"humgulp");
             }
@@ -575,14 +583,20 @@ METHODS:
    }
 
 MESSAGES:
+   OnBeginScript()
+   {
+      if (!IsDataSet("IgnorePotion"))
+         SetData("IgnorePotion",0);
+      DefaultOnBeginScript();
+   }
    OnAIModeChange()
    {
-      ConsiderPotion();
+      SetOneShotTimer(self,"ConsiderPotion",0.2);
       DefaultOnAIModeChange();
    }
    OnDamage()
    {
-      ConsiderPotion();
+      SetOneShotTimer(self,"ConsiderPotion",0.2);
       DefaultOnDamage();
    }
    OnMotionEnd()
@@ -593,8 +607,21 @@ MESSAGES:
          if(potion!=object(0)) FrobObj(potion,kHighPriorityAction);
          ClearData("Drinking");
          Object.RemoveMetaProperty(self,"M-LeftHandAlt");
+         Object.RemoveMetaProperty(self,"M-LeftHandBelt");
       }
       DefaultOnMotionEnd();
+   }
+   OnMessage()
+   {
+      if (MessageIs("IgnorePotion"))
+         SetData("IgnorePotion",1);
+      DefaultOnMessage();
+   }
+   OnTimer()
+   {
+      if (message.name == "ConsiderPotion")
+         ConsiderPotion();
+      DefaultOnTimer();
    }
 END_SCRIPT(QuaffHeal)
 
@@ -1003,6 +1030,9 @@ MESSAGES:
       }
     }
     
+    //don't drink any more potions.
+    PostMessage(self,"IgnorePotion");
+
     SetData("Snapped",1);
     DefaultOnBeginScript();
   }
@@ -1569,3 +1599,16 @@ MESSAGES:
 
 
 END_SCRIPT(RoboSteam)
+
+BEGIN_SCRIPT(CleanUpAttack, AI)
+
+MESSAGES:
+  
+   OnAIModeChange()
+   {
+      if (message.mode == kAIM_Dead)
+         PostMessage(self,"AbortAttack");
+      DefaultOnAIModeChange();
+   }
+
+END_SCRIPT(CleanUpAttack)
