@@ -1,9 +1,12 @@
 #
-# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.5 1995/01/17 11:25:51 buzzard Exp $
+# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.6 1995/01/17 12:54:01 buzzard Exp $
 # $Log: makefile $
-# Revision 1.5  1995/01/17 11:25:51  buzzard
-# no stack checking
+# Revision 1.6  1995/01/17 12:54:01  buzzard
+# fix stack checking
 #
+# Revision 1.5  1995/01/17  11:25:51  buzzard
+# no stack checking
+# 
 # Revision 1.4  1995/01/17  07:54:12  buzzard
 # dependencies
 # 
@@ -36,7 +39,7 @@ INST_TARGETS = prof
 
 PROF_OBJS = prof.obj
 PROF_HDRS = prof.h
-PROF_CFLAGS = -s
+PROF.C_CFLAGS = -s
 
 !include $(INIT)/make.rc
 
