@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/cpptools/RCS/hashfast.h 1.6 1999/05/05 09:54:54 ccarollo Exp $
+// $Header: x:/prj/tech/libsrc/cpptools/RCS/hashfast.h 1.7 1999/09/28 18:49:10 JAEMZ Exp $
 
 #ifndef __HASHFAST_H
 #define __HASHFAST_H
@@ -95,6 +95,23 @@ public:
    // Resets the whole hash table to being empty.  Does not
    // delete all the entries or anything like that though.
    void Reset() {memset(m_pEntries,0,sizeof(m_pEntries));}
+
+   // Resets the thing and DOES delete all the members
+   // so beware...
+   void Destroy() 
+   {
+      NODE *pCur,*pNext;
+      int i;
+      for (i=0;i<SIZE;++i) {
+         pCur = m_pEntries[i];
+         while (pCur) {
+            pNext = pCur->pNext;
+            delete pCur;
+            pCur = pNext;
+         }
+      }
+      Reset();
+   }
 
    // This inserts an entry into the table
    // no checking is done to see if the same
