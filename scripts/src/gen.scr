@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.25 1999/12/16 11:17:44 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.26 1999/12/16 20:01:34 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -714,44 +714,68 @@ BEGIN_SCRIPT(CamGrenade, Physics)
 
 MESSAGES:
     OnBeginScript()
-	{
-	    Physics.SubscribeMsg(self, kFellAsleepMsg);
-	    DefaultOnBeginScript();
-	}
+    {
+       if(!IsDataSet("Armed")) SetData("Armed",FALSE);
+       Physics.SubscribeMsg(self, kFellAsleepMsg);
+       DefaultOnBeginScript();
+    }
     OnEndScript()
-	{
-	    Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-	    DefaultOnEndScript();
-	}
+    {
+       Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+       DefaultOnEndScript();
+    }
 	
     OnFrobWorldEnd()
-	{	
-	    //he picked me up, subscribe again
-	    Physics.SubscribeMsg(self, kFellAsleepMsg);
-	    DefaultOnFrobWorldEnd();
-	}
+    {	
+       //he picked me up, subscribe again
+       Physics.SubscribeMsg(self, kFellAsleepMsg);
+       DefaultOnFrobWorldEnd();
+    }
 	
     OnPhysFellAsleep()
-	{
-	    //will be back when player throws it again
-	    Physics.UnsubscribeMsg(self, kFellAsleepMsg);
-	    Camera.DynamicAttach(self);
-	    DefaultOnPhysFellAsleep();
-	}
+    {
+       //will be back when player throws it again
+       Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+
+       // So, who ever said I was in motion because the player threw me, anyway?
+       // Need to check that.
+       if(IsDataSet("Armed") && boolean(GetData("Armed")) &&
+          Link.AnyExist("~CulpableFor",self))
+       {
+          if(Object.InheritsFrom(Link.GetOne("~CulpableFor",self).To(),
+                                 "Avatar"))
+             Camera.DynamicAttach(self);
+       }
+       SetData("Armed",FALSE);
+       DefaultOnPhysFellAsleep();
+    }
 
     OnSlain()
-	{
-	    //if camera still attached to me, return.
-	    Camera.CameraReturn(self);
-	    DefaultOnSlain();
-	}
+    {
+       //if camera still attached to me, return.
+       Camera.CameraReturn(self);
+       DefaultOnSlain();
+    }
 	
     OnDestroy()
-	{
-	    Camera.CameraReturn(self);
-	//I'm irked that this isn't DefaultOnDestroy
-	    BaseOnDestroy();
-	}
+    {
+       Camera.CameraReturn(self);
+       //I'm irked that this isn't DefaultOnDestroy
+       BaseOnDestroy();
+    }
+
+    OnContained()
+    {
+       if(message.event==kContainRemove &&
+          Object.InheritsFrom(message.container,"Avatar"))
+       {
+          // Player just threw/dropped us
+          SetData("Armed",TRUE);
+       }
+       DefaultOnContained();
+    }
+
+
 END_SCRIPT(CamGrenade);
 
 BEGIN_SCRIPT(Mine, Physics)
@@ -2918,32 +2942,53 @@ MESSAGES:
 END_SCRIPT(CorpseFrobHack)
 
 
-BEGIN_SCRIPT(Corpsed, Physics)
-MESSAGES:
+/* LUGGED
+   For any especially heavy-seeming object (e.g. corpses, boulders).
+   When the player picks such a thing up, there's a sound effect and
+   he is slowed.
+   */
+BEGIN_SCRIPT(Lugged, RootScript)
    OnContained()
    {
-      if(object(message.container)==Object.Named("Player"))
+      if(Object.InheritsFrom(message.container,"Avatar"))
       {
          if(message.event==kContainAdd)
          {
             Sound.PlaySchemaAmbient(self,"garlift");
             DrkInv.AddSpeedControl("CorpseCarry", 0.6,0.9);
-            PlayerLimbs.Equip(self);
-            Property.Set(self, "NonPhysCreature", FALSE);
          }
          else if(message.event==kContainRemove)
          {
             Sound.PlaySchemaAmbient(self,"gardrop");
             DrkInv.RemoveSpeedControl("CorpseCarry");
+         }
+      }
+      DefaultOnContained();
+   }
+
+END_SCRIPT(Lugged)
+
+
+BEGIN_SCRIPT(Corpsed, Physics)
+MESSAGES:
+   OnContained()
+   {
+      if(Object.InheritsFrom(message.container,"Avatar"))
+      {
+         if(message.event==kContainAdd)
+         {
+            PlayerLimbs.Equip(self);
+            Property.Set(self, "NonPhysCreature", FALSE);
+         }
+         else if(message.event==kContainRemove)
+         {
             // If not unconscious, de-physicalize on sleep
             if (!Object.InheritsFrom(self,"M-KnockedOut"))
             {
                if (Property.Possessed(self,"PhysType"))
                   Property.Set(self,"PhysType","Remove On Sleep",TRUE); 
             }
-
             PlayerLimbs.UnEquip(self);
-
          }
       }
       DefaultOnContained();
