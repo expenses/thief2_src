@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.16 1999/10/11 15:02:32 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.17 1999/10/27 15:04:45 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -2703,7 +2703,8 @@ MESSAGES:
       // we're no longer knocked out.
       object ko = object("M-KnockedOut"); 
       if (ko != object(0))
-         while (Object.HasMetaProperty(self,ko))
+//next line was causing a hang
+//         while (Object.HasMetaProperty(self,ko))
             Object.RemoveMetaProperty(self,ko); 
       // de-physicalize
       if (Property.Possessed(self,"PhysType"))
