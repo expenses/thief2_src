@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propmix.h 1.2 1999/04/21 11:39:07 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/propmix.h,v 1.3 1998/03/26 13:52:48 mahk Exp $
 #pragma once  
 #ifndef __PROPMIX_H
 #define __PROPMIX_H
@@ -61,7 +61,6 @@ public:
    STDMETHOD(SetID)(PropertyID id); 
    STDMETHOD_(sDatum,Create)(ObjID obj);
    STDMETHOD(Delete)(ObjID obj); 
-   STDMETHOD(Release)(ObjID obj, sDatum *);
    STDMETHOD_(BOOL,Relevant)(ObjID obj) const ; 
    STDMETHOD_(BOOL,Get)(ObjID obj, sDatum* ) const ; 
    STDMETHOD(Set)(ObjID obj, sDatum val);
