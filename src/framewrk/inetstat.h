@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/inetstat.h,v 1.3 1999/08/05 16:58:05 Justin Exp $
 
 #ifndef __INETSTAT_H
