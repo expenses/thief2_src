@@ -1183,7 +1183,95 @@ MESSAGES:
      DefaultOnTimer();
    }
 
-END_SCRIPT(SuspiciousReactions);
+END_SCRIPT(SuspiciousReactions)
+
+
+BEGIN_SCRIPT(SummonMeBoiler, AI)
+
+METHODS:
+
+   METHOD void BringBoiler()
+   {
+     SetData("MyBoiler",0);
+     Debug.MPrint("Summoning boiler for ",self);
+     //hack, know name of boiler
+     object myboiler = Object.BeginCreate(Object.Named("RobotBoiler"));
+
+     Object.Teleport(myboiler,Object.Position(self),Object.Facing(self));
+	
+     Object.EndCreate(myboiler);
+
+     link altclink = Link.Create("Contains",self,myboiler);
+     altclink.SetData(kContainTypeAlt); //make it alternate
+
+     Property.Add(myboiler,"PhysAttr"); //reinstantiate physics
+     Property.Add(myboiler,"PhysType");
+     Property.Set(myboiler,"HasRefs",TRUE); //reref ourselves.
+     SetData("MyBoiler",(integer)myboiler);
+
+   }
+
+MESSAGES:
+
+   OnSim()
+   {
+     if (message.starting)
+       BringBoiler();
+     DefaultOnSim();
+   }
+
+   OnAIModeChange()
+   {
+     if (message.mode==kAIM_Dead)   
+     {
+       Debug.MPrint(self," destroying boiler.");
+       if ((integer)GetData("MyBoiler")!=0)
+         if (Object.Exists((object)GetData("MyBoiler")))
+           Object.Destroy((object)GetData("MyBoiler"));
+     }
+     DefaultOnAIModeChange();
+   }
+
+END_SCRIPT(SummonMeBoiler)
+
+//ContainWaterProp is not really an AI script, but its only used for robots
+//since it's specific to water
+
+BEGIN_SCRIPT(ContainWaterProp, RootScript)
+
+METHODS:
+  
+   METHOD void ContainPropagate(stimulus_kind thestim, real theintensity)
+   {
+     linkset clinks = Link.GetAll("~Contains",self);
+     while (clinks.AnyLinksLeft())
+     {
+       ActReact.Stimulate(clinks.Link().To(),thestim,theintensity);
+       clinks.NextLink();
+     }
+   }
+
+MESSAGES:
+ 
+   OnBeginScript()
+   {
+     ActReact.SubscribeToStimulus(self,"WaterStim");
+     DefaultOnBeginScript();
+   }
+   
+   OnStimulus(WaterStim)
+   {
+     ContainPropagate(message.stimulus,message.intensity);
+     //no base class
+   }
+
+//to get the stim message
+
+   SCRIPT_BEGIN_MESSAGE_MAP()
+     STIMULUS_MESSAGE_MAP_ENTRY(WaterStim)
+   SCRIPT_END_MESSAGE_MAP()
+
+END_SCRIPT(ContainWaterProp)
 
 
 
