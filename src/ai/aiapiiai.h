@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapiiai.h 1.32 1999/04/29 18:15:56 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapiiai.h,v 1.40 2000/02/28 19:35:10 bfarquha Exp $
 //
 // Internal AI object interface. (curse 8.3)
 //
@@ -34,6 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 F_DECLARE_INTERFACE(ITagFile);
+F_DECLARE_INTERFACE(IAIPath);
 
 typedef ulong eDamageResult;
 typedef void* tDamageCallbackData;
@@ -41,8 +42,8 @@ struct sDamageMsg;
 
 typedef int eWeaponEvent;
 
-typedef struct sPropertyListenMsg sPropertyListenMsg;  
-typedef struct sPhysListenMsg sPhysListenMsg;  
+typedef struct sPropertyListenMsg sPropertyListenMsg;
+typedef struct sPhysListenMsg sPhysListenMsg;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -89,7 +90,7 @@ enum eAIStateFlags
 
    // The AI is not in a valid part of the world
    kAI_OutOfWorld = 0x02,
-   
+
    // AI is a motion capture creature
    kAI_IsCreature = 0x04,
 
@@ -120,22 +121,36 @@ struct sAIState
    eAIMode       mode;
 
    // Location and orientation
-   union 
+   union
    {
       Position   position;
       mxs_vector loc;
    };
-   
+
    mxs_vector    pathLoc;
-   
+
    tAIPathCellID cell;
    floatang      facingAng;
-   
+
    // Alertness level
    eAIAwareLevel alertness;
-   
+
+   eAIAwareLevel last_alertness;
+   tSimTime nLastAlertChangeTime;
+   tAIPathOkBits nStressBits;
+
    // Flags
    unsigned      flags;
+
+   IAIPath *pCurrentPath;
+   int nCurrentMedium;
+
+   BOOL bDidHighAlert;
+
+   ObjID LastHighAwareObject;
+   BOOL bHighAwareLostContact;
+
+   BOOL bNeedsLargeDoors;
 };
 
 
@@ -188,6 +203,12 @@ public:
    //
    eAIAwareLevel GetAlertness() const;
 
+   tAIPathOkBits GetStressBits() const;
+
+   IAIPath *GetCurrentPath() const;
+   void SetCurrentPath(IAIPath *pPath);
+
+
    //
    // Query flags
    //
@@ -204,11 +225,11 @@ public:
    //
    // Computational tools
    //
-   
+
    // @TBD (toml 05-26-98): change these to const mxs_vector &
    // Angle from AI location
    floatang AngleTo(const mxs_vector & toLoc) const;
-   
+
    // Angle from AI facing to facing point
    floatang RelAngleTo(const mxs_vector & toLoc) const;
 
@@ -221,13 +242,15 @@ public:
    float    DistXYSq(const mxs_vector & toLoc) const;
    float    DistXY(const mxs_vector & toLoc) const;
    float    DiffZ(const mxs_vector & toLoc) const;
-   
+
    // Inside tests
    BOOL     InsideSphere(const mxs_vector & center, float radiusSq) const;
    BOOL     InsideCylinder(const mxs_vector & center, float radiusSq, float halfHeight) const;
    BOOL     InsideSphere(const mxs_vector & center, float radiusSq, float * pDistSq) const;
    BOOL     InsideCylinder(const mxs_vector & center, float radiusSq, float halfHeight, float * pDistSq) const;
 
+   // Needs large doors?
+   BOOL NeedsLargeDoors() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -243,7 +266,7 @@ DECLARE_INTERFACE_(IInternalAI, IAI)
    //
    STDMETHOD_(IInternalAI *, AccessOtherAI)(ObjID) PURE;
    STDMETHOD_(void, AccessAIs)(IInternalAI ***, int *) PURE;
-   
+
    ////////////////////////////////////
    //
    // AI Component management
@@ -259,7 +282,7 @@ DECLARE_INTERFACE_(IInternalAI, IAI)
    // Access a component, Note: reference *is* incremented
    //
    STDMETHOD (GetComponent)(const char * pszComponent, IAIComponent **) PURE;
-   
+
    //
    // Component iteration protocol
    //
@@ -290,12 +313,12 @@ DECLARE_INTERFACE_(IInternalAI, IAI)
    // Freshen the AI path cell
    //
    STDMETHOD_(tAIPathCellID, UpdatePathCell)() PURE;
-   
+
    //
    // Get recently visited cells
    //
    STDMETHOD_(void, GetRecentCells)(cAICellArray * pResult) PURE;
-   
+
    //
    // Get the desired Z for the AI when non-biped locomoted
    //
@@ -319,7 +342,7 @@ DECLARE_INTERFACE_(IInternalAI, IAI)
    //
    // Notifiers
    //
-   
+
    STDMETHOD_(void, NotifySimStart)() PURE;
    STDMETHOD_(void, NotifySimEnd)() PURE;
    STDMETHOD_(eDamageResult, NotifyDamage)(const sDamageMsg * pMsg) PURE;
@@ -330,23 +353,29 @@ DECLARE_INTERFACE_(IInternalAI, IAI)
    // Projectile hook
    //
    STDMETHOD_(void, NotifyFastObj)(ObjID firer, ObjID projectile, const mxs_vector & velocity) PURE;
-   
+
    ////////////////////////////////////
    //
    // Sound hook
    //
    STDMETHOD_(void, NotifySound)(const sSoundInfo *, const sAISoundType *) PURE;
-   
+
    ////////////////////////////////////
    //
    // Notify of found body
    //
    STDMETHOD_(void, NotifyFoundBody)(ObjID body) PURE;
-   
+
+   ////////////////////////////////////
+   //
+   // Notify of found something suspicious
+   //
+   STDMETHOD_(void, NotifyFoundSuspicious)(ObjID suspobj) PURE;
+
    ////////////////////////////////////
 
    STDMETHOD_(void, NotifyScriptCommand)(eAIScriptCmd command, void *) PURE;
-   
+
    ////////////////////////////////////
 
    STDMETHOD_(void, NotifyProperty)(IProperty *, const sPropertyListenMsg *) PURE;
@@ -511,6 +540,27 @@ inline eAIAwareLevel cAIState::GetAlertness() const
 
 ///////////////////////////////////////
 
+inline tAIPathOkBits cAIState::GetStressBits() const
+{
+   return nStressBits;
+}
+
+///////////////////////////////////////
+
+inline IAIPath *cAIState::GetCurrentPath() const
+{
+   return pCurrentPath;
+}
+
+///////////////////////////////////////
+
+inline void cAIState::SetCurrentPath(IAIPath *pPath)
+{
+   pCurrentPath = pPath;
+}
+
+///////////////////////////////////////
+
 inline BOOL cAIState::IsRemote() const
 {
    return !!(flags & kAI_IsRemote);
@@ -649,6 +699,14 @@ inline BOOL cAIState::InsideCylinder(const mxs_vector & center, float radiusSq, 
 {
    return AIInsideCylinder(loc, center, radiusSq, halfHeight, pDistSq);
 }
+
+///////////////////////////////////////
+
+inline BOOL cAIState::NeedsLargeDoors() const
+{
+   return bNeedsLargeDoors;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

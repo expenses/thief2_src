@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiutils.h 1.17 1999/05/17 17:28:18 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiutils.h,v 1.20 2000/02/28 19:35:19 bfarquha Exp $
 //
 // Utility functions and wrappers to the outside world
 //
@@ -71,6 +71,8 @@ void SetObjImpulse(ObjID obj, float x, float y, float z, float facing, BOOL rota
 typedef mxs_vector tAIFloorBBox[4];
 BOOL AIGetObjFloorBBox(ObjID object, tAIFloorBBox * pBBox, const mxs_vector * pAltLoc = NULL, const mxs_angvec * pAltFac = NULL);
 
+BOOL AIGetPhysSphereZMinMax(ObjID object, float *pMinZ, float *pMaxZ);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Door manipulation
@@ -78,7 +80,8 @@ BOOL AIGetObjFloorBBox(ObjID object, tAIFloorBBox * pBBox, const mxs_vector * pA
 
 enum eAIDoorFlags
 {
-   kAIDF_BlocksVision = 0x01
+   kAIDF_BlocksVision = 0x01,
+   kAIDF_LargeDoor = 0x02
 };
 
 struct sAIDoorInfo
@@ -95,7 +98,7 @@ void AIUpdateDoors();
 BOOL AICanOpenDoor(ObjID ai, ObjID obj);
 BOOL AIDoorIsOpen(ObjID obj);
 void AIOpenDoor(ObjID ai, ObjID door);
-void AICloseDoor(ObjID ai, ObjID door);
+void AICloseDoor(ObjID ai, ObjID door, BOOL all=TRUE);
 
 ///////////////////
 
@@ -152,11 +155,11 @@ tOption * _AIDecide(tOption **     ppOptions,
    tOption ** ppFirstBest;
    tOption ** ppLastBest;
    tOption *  pTieBreak = (tOption *) pTieBreakVoid;
-   
+
    // Quick outs...
    if (!nOptions)
       return NULL;
-      
+
    if (nOptions == 1)
       return *ppOptions;
 
@@ -191,7 +194,7 @@ tOption * _AIDecide(tOption **     ppOptions,
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAITimer; consolodation of AI's simple scheduling mechanism 
+// CLASS: cAITimer; consolodation of AI's simple scheduling mechanism
 //
 // Times are set out as an enum to reduce phase shifting issues somewhat.
 //
@@ -199,26 +202,26 @@ tOption * _AIDecide(tOption **     ppOptions,
 enum eAITimerPeriod
 {
    kAIT_Min = 1,
-   
+
    kAIT_40Hz   = 25,
    kAIT_20Hz   = 50,
    kAIT_10Hz   = 100,
    kAIT_2Hz    = 500,
-   
+
    kAIT_1Sec   = 1000,
-   kAIT_2Sec   = 2000, 
-   kAIT_10Sec  = 10000, 
-   kAIT_20Sec  = 20000, 
-   
+   kAIT_2Sec   = 2000,
+   kAIT_10Sec  = 10000,
+   kAIT_20Sec  = 20000,
+
    kAIT_Infinite = 0x7fffffff,
-   
+
    // AI elements run 20 by default
    kAIT_Default = kAIT_20Hz,
    kAIT_Max = 0xffffffff,
 };
 
 //
-// This is a type violation, but a mild one. If you really 
+// This is a type violation, but a mild one. If you really
 // want a nonstandard time, use this to make it
 //
 #define AICustomTime(t) ((eAITimerPeriod)(t))
@@ -230,14 +233,14 @@ public:
 
    void Set(eAITimerPeriod period);
    void Reset();
-   
+
    BOOL Expired() const;
 
    unsigned Remaining() const;
 
    void Force();
    void Delay(unsigned delay);
-   
+
    void Save(ITagFile *);
    void Load(ITagFile *);
 
@@ -253,9 +256,9 @@ private:
 
 class cAIRandomTimer
 {
-public:   
+public:
    cAIRandomTimer(unsigned low, unsigned high);
-   
+
    void Set(unsigned low, unsigned high);
    void Reset();
 
@@ -299,9 +302,9 @@ inline unsigned cAITimer::Remaining() const
 {
    if (m_Expiration == kAIT_Infinite)
       return kAIT_Infinite;
-   
+
    unsigned time = AIGetTime();
-   
+
    if (!m_Expiration || time > m_Expiration)
       return 0;
 
@@ -362,9 +365,9 @@ inline unsigned cAIRandomTimer::Remaining() const
 {
    if (m_Expiration == kAIT_Infinite)
       return kAIT_Infinite;
-   
+
    unsigned time = AIGetTime();
-   
+
    if (!m_Expiration || time > m_Expiration)
       return 0;
 
@@ -406,5 +409,7 @@ inline void cAIRandomTimer::Delay(unsigned delay)
 void CalcArc(mxs_vector* pDir, float initVelocity, float gravity);
 
 ///////////////////////////////////////////////////////////////////////////////
+
+BOOL DoorIsBig(ObjID door);
 
 #endif /* !__AIUTILS_H */
