@@ -1,33 +1,36 @@
 #
 # $Source: x:/prj/tech/libsrc/timer/RCS/makefile $
-# $Revision: 1.1 $
-# $Author: kaboom $
-# $Date: 1993/05/20 16:17:41 $
+# $Revision: 1.2 $
+# $Author: lmfeeney $
+# $Date: 1994/10/17 17:47:52 $
 #
 
 DEBUG_ON = 1
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\timer
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\timer
+RELDIR = r:\prj\lib\rel
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
 INCPATH = . $(SRCDIR) $(INCDIR)
 LIBPATH = $(RELDIR)
-LIB_TARGETS = timer
+LIB_TARGETS = timer 
 PROG_TARGETS =
-INST_TARGETS = timer
+INST_TARGETS = TIMER 
 
-TIMER_OBJS = tmact.obj tmadd.obj tmclose.obj tmd.obj \
+TMRT.C_CFLAGS = -zu -s 
+
+timer_OBJS = tmact.obj tmadd.obj tmclose.obj tmd.obj \
              tmdeact.obj tmfast.obj tminit.obj tmphnd.obj \
-             tmrate.obj tmrem.obj tmsden.obj \
-             tmsfreq.obj tmsper.obj tmtick.obj
-TIMER_HDRS = timer.h
+             tmrate.obj tmrem.obj tmsden.obj tmrt.obj \
+             tmsfreq.obj tmsper.obj tmftab.obj tmlibt.obj tmail.obj
+
+TIMER_HDRS = timer.h tminit.h
 
 !include $(INIT)\make.rc
 
-timer.h: tmdecl.h tmd.inc tmflag.inc tmlow.inc tmreg.inc
+timer.h:  tmdecl.h tmftab.h tmmac.h tmd.inc tmflag.inc tmlow.inc tmreg.inc
         rm -f junk
         @echo cat $^ \>junk
         !foreach FILE $(^,M\.h)
@@ -43,31 +46,35 @@ timer.h: tmdecl.h tmd.inc tmflag.inc tmlow.inc tmreg.inc
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-tmact.obj: tmd.inc tmflag.inc tmlow.inc tmrec.inc
+tmact.obj objo\tmact.obj objd\tmact.obj: tmd.inc tmflag.inc tmlow.inc tmrec.inc
 
-tmadd.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc
+tmadd.obj objo\tmadd.obj objd\tmadd.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc
 
-tmclose.obj: dpmi.inc tmd.inc tmreg.inc type.inc
+tmail.obj objo\tmail.obj objd\tmail.obj: ail32.h tmftab.h
 
-tmd.obj: tmd.inc tmlow.inc
+tmclose.obj objo\tmclose.obj objd\tmclose.obj: dpmi.inc tmd.inc tmhnd.inc tmreg.inc type.inc
 
-tmdeact.obj: tmd.inc tmflag.inc tmlow.inc tmrec.inc
+tmd.obj objo\tmd.obj objd\tmd.obj: tmd.inc tmlow.inc
 
-tmfast.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc
+tmdeact.obj objo\tmdeact.obj objd\tmdeact.obj: tmd.inc tmflag.inc tmlow.inc tmrec.inc
 
-tminit.obj: dpmi.inc tmd.inc tmdecl.inc tmflag.inc tmhnd.inc tmlow.inc \
-	 tmrec.inc tmreg.inc type.inc
+tmfast.obj objo\tmfast.obj objd\tmfast.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc
 
-tmphnd.obj: pic.inc tmd.inc tmflag.inc tmlow.inc tmrec.inc type.inc
+tmftab.obj objo\tmftab.obj objd\tmftab.obj: tmdecl.h tmftab.h
 
-tmrate.obj: tmd.inc tmlow.inc tmreg.inc
+tminit.obj objo\tminit.obj objd\tminit.obj: dpmi.inc tmd.inc tmdecl.inc tmflag.inc tmftab.inc tmhnd.inc \
+	 tmlow.inc tmrec.inc tmreg.inc type.inc
 
-tmrem.obj: tmd.inc tmflag.inc tmlow.inc
+tmphnd.obj objo\tmphnd.obj objd\tmphnd.obj: pic.inc tmd.inc tmflag.inc tmlow.inc tmrec.inc type.inc
 
-tmsden.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc
+tmrate.obj objo\tmrate.obj objd\tmrate.obj: tmd.inc tmlow.inc tmreg.inc
 
-tmsfreq.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc tmreg.inc
+tmrem.obj objo\tmrem.obj objd\tmrem.obj: tmd.inc tmflag.inc tmlow.inc
 
-tmsper.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc tmreg.inc
+tmsden.obj objo\tmsden.obj objd\tmsden.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc
 
-tmtick.obj: tmlow.inc
+tmsfreq.obj objo\tmsfreq.obj objd\tmsfreq.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc tmreg.inc
+
+tmsper.obj objo\tmsper.obj objd\tmsper.obj: tmd.inc tmdecl.inc tmflag.inc tmlow.inc tmrec.inc tmreg.inc
+
+tmtick.obj objo\tmtick.obj objd\tmtick.obj: tmlow.inc
