@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.15 $
+# $Revision: 1.16 $
 # $Author: dc $
-# $Date: 1997/08/15 00:33:51 $
+# $Date: 1997/08/15 00:42:26 $
 #
 # Makefile for Matrix library
 #
@@ -38,7 +38,7 @@ matrix_HDRS = \
 mxd.sed .ALWAYS: 
         @%set fullpath_for_sed_script = $(.TARGET)
 
-%if ($(LGFIRSTTARGET,lc) == 'build') 
+%if ($(LGFIRSTTARGET,lc) == 'build') || ($(LGFIRSTTARGET,lc) == 'depend')
 .BEFORE: mxd.sed matrixd.h matrixds.h mxsymd.h
 %endif
 
