@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
-# $Revision: 1.23 $
-# $Author: kaboom $
-# $Date: 1994/08/04 22:27:03 $
+# $Revision: 1.24 $
+# $Author: jak $
+# $Date: 1994/08/12 17:08:18 $
 #
 # makefile for lg library.
 #
@@ -26,13 +26,13 @@ LIB_TARGETS = lg
 INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
 
-LG_SRCS = bugtrak.c dbg.c dbgcfg.c datapath.c exit.c \
+LG_SRCS = bugtrak.c dbg.c dbgcfg.c dbgpp.cc datapath.c exit.c \
                 lgprntf.c lgsprntf.c memall.c memgrow.c memstat.c \
                 stack.c oheapwal.asm tmpalloc.c
-LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj datapath.obj exit.obj \
+LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj dbgpp.obj datapath.obj exit.obj \
                 lgsprntf.obj memall.obj memgrow.obj memstat.obj \
                 lgprntf.obj stack.obj oheapwal.obj tmpalloc.obj
-LG_HDRS = lg.h lgalt.h dbg.h datapath.h memmacro.inc dbgmacro.inc \
+LG_HDRS = lg.h lgalt.h dbg.h dbgpp.h datapath.h memmacro.inc dbgmacro.inc \
 	memall.h memstat.h bugtrak.h lgprntf.h lgsprntf.h tmpalloc.h 
 LG_H2I  = lg.inc memall.inc dbg.inc
 
@@ -59,8 +59,8 @@ datapath.obj objo\datapath.obj objd\datapath.obj: datapath.h dos.h fcntl.h i86.h
 	 stdarg.h stdio.h stdlib.h string.h types.h
 
 dbg.obj objo\dbg.obj objd\dbg.obj: conio.h ctype.h dbg.h dbgmacro.h error.h kb.h kbcook.h keydefs.h \
-	 lg.h lgalt.h malloc.h memall.h memmacro.h mprintf.h stdarg.h \
-	 stdio.h stdlib.h string.h types.h
+	 lg.h lgalt.h lgsprntf.h malloc.h memall.h memmacro.h mprintf.h \
+	 stdarg.h stdio.h stdlib.h string.h types.h
 
 dbgcfg.obj objo\dbgcfg.obj objd\dbgcfg.obj: conio.h ctype.h datapath.h dbg.h dbgmacro.h error.h kb.h \
 	 kbcook.h keydefs.h lg.h lgalt.h malloc.h memall.h memmacro.h \
@@ -69,12 +69,15 @@ dbgcfg.obj objo\dbgcfg.obj objd\dbgcfg.obj: conio.h ctype.h datapath.h dbg.h dbg
 dbgmakeh.obj objo\dbgmakeh.obj objd\dbgmakeh.obj: conio.h ctype.h dbg.h dbgmacro.h stdarg.h stdio.h stdlib.h \
 	 string.h types.h
 
+dbgpp.obj objo\dbgpp.obj objd\dbgpp.obj: dbg.h dbgmacro.h dbgpp.h iostream.h mout.h mprintf.h stddef.h \
+	 stdio.h streambu.h string.h strstrea.h types.h
+
 dbgtest.obj objo\dbgtest.obj objd\dbgtest.obj: conio.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
 	 memall.h memmacro.h memstat.h mprintf.h stdarg.h stdio.h stdlib.h \
 	 string.h types.h
 
-exit.obj objo\exit.obj objd\exit.obj: dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h memmacro.h \
-	 stdio.h stdlib.h types.h
+exit.obj objo\exit.obj objd\exit.obj: dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h memall.h memmacro.h \
+	 stat.h stdio.h stdlib.h string.h types.h
 
 lgprntf.obj objo\lgprntf.obj objd\lgprntf.obj: dbg.h dbgmacro.h io.h lgsprntf.h malloc.h memall.h memmacro.h \
 	 stat.h stdarg.h stdio.h tmpalloc.h types.h
