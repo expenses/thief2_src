@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //  $Header: r:/t2repos/thief2/src/portal/portlit.c,v 1.51 2000/01/26 16:11:27 BFarquha Exp $
 //
 //  PORTAL
