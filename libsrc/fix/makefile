@@ -1,16 +1,20 @@
 #
-# $RCSFile$
+# $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
+# $Revision: 1.5 $
 # $Author: kaboom $
-# $Date: 1992/09/16 20:05:40 $
+# $Date: 1992/10/15 20:31:17 $
 #
 # Makefile for Watcom C/Micosoft ASM
 #
 # $Log: makefile $
-# Revision 1.4  1992/09/16 20:05:40  kaboom
+# Revision 1.5  1992/10/15 20:31:17  kaboom
+# Fixed RCS header stuff to have source instead of rcsfile.
+#
+# Revision 1.4  1992/09/16  20:05:40  kaboom
 # Removed fix.lib from targets.  Added a new target type, HDR_TARGET which
 # is just a set of header files.  Made the fix point library consist of just
 # the fix.h file.
-#
+# 
 # Revision 1.3  1992/08/25  08:47:39  kaboom
 # Added INST_TARGETS macro, a list of which targets should be installed when
 # a make install is done.  Executables are copied to $(BIN), libraries are
@@ -19,6 +23,9 @@
 # Revision 1.2  1992/08/24  17:27:40  kaboom
 # Added RCS keywords and header at top of file.
 # 
+# Revision 1.1  1992/08/20  12:00:00  kaboom
+# Initial revision.
+#
 
 SRCDIR = n:\project\lib\src\fix
 VPATH =
