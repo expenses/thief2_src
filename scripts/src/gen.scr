@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.73 2000/03/18 19:39:45 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.74 2000/03/21 11:54:14 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -1080,12 +1080,27 @@ MESSAGES:
                Physics.GetVelocity(self,selfvel);
             if (Physics.HasPhysics(WhatHitMe))
                Physics.GetVelocity(WhatHitMe,hitmevel);
+            float selfmag = selfvel.Magnitude();
+            float hitmemag = hitmevel.Magnitude();
             //make sure that I don't trigger myself, and make sure that
             //at least one of us is actually moving and this isn't some 
             //wierd spoof collision...
-            if ((selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0)))
+//            if ((selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0)))
+            //ignore low velocity collisions.
+            Debug.MPrint("Active mine collision, selfmag: ",selfmag," and hitmemag: ",hitmemag);
+            if ((selfmag < 10) && (hitmemag < 10))
                fakeout = TRUE;
-         } 
+         }
+         else
+         {
+            vector selfvel(0,0,0);
+            if (Physics.HasPhysics(self))
+               Physics.GetVelocity(self,selfvel);
+            float selfmag = selfvel.Magnitude();
+            Debug.MPrint("Active mine collision.  Selfmag: ",selfmag);
+            if (selfmag < 10)
+               fakeout = TRUE;
+         }
          if (!fakeout)
             Reply(kPM_Slay);
       }
