@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/dataops_.h,v 1.7 2000/02/21 12:15:07 toml Exp $
 #pragma once
 
