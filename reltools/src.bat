@@ -353,7 +353,7 @@ rem ******************************************************
 :DbgDrom
 s:
 cd \prj\thief2\src
-echo make -k build THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
+echo make -k build dark THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
 make -k build THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1 >>log.edb
 
 iff not exist dbgdrom.exe then
@@ -373,7 +373,7 @@ rem **************************************************************
 :Dromed
 s:
 cd \prj\thief2\src
-echo make -k build THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1
+echo make -k build dark THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1
 make -k build THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1 >> log.dro
 
 iff not exist dromed.exe then
