@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.13 2000/02/27 13:35:09 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.14 2000/02/28 02:13:25 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -284,7 +284,12 @@ METHODS:
 
             Quest.Set(optqv,TRUE);
             if(CheckComplete())
+            {
                ObjectiveSet(objective,goalstate);
+               // Don't let a FINAL objective get unscored once it's been scored.
+               // We're trying to finish a mission, here.
+               Quest.Set(string("GOAL_IRREVERSIBLE_")+string(objective),TRUE);
+            }
             else
                goalstate=ObjectiveGet(objective); // for future reference
         
