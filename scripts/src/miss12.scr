@@ -54,10 +54,13 @@ MESSAGES:
          SetData("InitQuest",TRUE);
 
          // State of library quest (mask of books read)
+         // @TODO: Should make sure not also mission quest var.
          Quest.Set("LibBooks", 0, kQuestDataCampaign);
 
          MakeCampaignVar(GoalStateVarName(M13_LETTER_GOAL));
          MakeCampaignVar(GoalVisibleVarName(M13_CULTIVATOR_GOAL));
+
+         PostMessage(self,"ReSubscribe");
       }
       DefaultOnBeginScript();
    }
@@ -326,6 +329,18 @@ MESSAGES:
 END_SCRIPT(KarrasLetter)
 
 
+/* In mission 12, in addition to the stuff above, we want to score our
+   own optional objective.
+   */
+BEGIN_SCRIPT(KarrasLetter12, KarrasLetter)
+   OnFrobInvEnd()
+   {
+      Quest.Set(GoalStateVarName(M12_LETTER_GOAL),kGoalComplete);
+      DefaultOnFrobInvEnd();
+   }
+END_SCRIPT(KarrasLetter12)
+
+
 /* Clock controlling secret door doesn't let you set its time until you
    "unlock" it with the cuckoo.
    When it gets set to 12:00, send a TurnOn.  Else, send a TurnOff.
@@ -494,7 +509,17 @@ BEGIN_SCRIPT(ConvJukebox, RootScript)
 MESSAGES:
    OnMessage()
    {
-      if(MessageIs("TurnOn") && Link.AnyExist("ControlDevice",self))
+      boolean locked=FALSE;
+
+      if(Property.Possessed(self,"Locked"))
+         locked=Property.Get(self,"Locked");
+      else
+      {
+         Quest.SubscribeMsg(self,"LibBooks");
+         Property.Set(self,"Locked",FALSE);
+      }
+
+      if(!locked && MessageIs("TurnOn") && Link.AnyExist("ControlDevice",self))
       {
          object trig=message.from;
          linkset jukelinx=Link.GetAll("ControlDevice",self);
@@ -519,7 +544,9 @@ MESSAGES:
                if(Link.AnyExist("AIConversationActor",conv))
                {
                   object actor=Link.GetOne("AIConversationActor",conv).To();
-                  Object.Teleport(actor,vector(0,0,0),vector(0,0,0),trig);
+                  vector pos=Object.Position(trig);
+                  vector fac=Object.Facing(trig);
+                  Object.Teleport(actor,pos,fac);
                   Object.Destroy(trig);
                   Property.Remove(actor,"AI_IdleOrgn");
                }
@@ -530,9 +557,26 @@ MESSAGES:
          }
          if(conv!=object(0))
             Link.DestroyMany("ControlDevice",self,conv);
+         Property.Set(self,"Locked",TRUE);
       }
       DefaultOnMessage();
    }
+   OnQuestChange()
+   {
+      if(stricmp(message.m_pName,"LibBooks")==0 && 
+         message.m_oldValue!=message.m_newValue)
+      {
+         Property.Set(self,"Locked",FALSE);
+      }
+      DefaultOnQuestChange();
+   }
+
+   OnBeginScript()
+   {
+      Quest.SubscribeMsg(self,"LibBooks");
+      DefaultOnBeginScript();
+   }
+
 END_SCRIPT(ConvJukebox)
 
 
@@ -591,6 +635,7 @@ METHODS:
 MESSAGES:
    OnBeginScript()
    {
+      // @TODO: Can't count on this campaign quest variable existing yet...
       Quest.SubscribeMsg(self,"LibBooks");
       AmbientHack(!GetBookBit());
       DefaultOnBeginScript();
@@ -602,3 +647,9 @@ MESSAGES:
    }
 
 END_SCRIPT(LibraryBook)
+
+
+
+
+
+
