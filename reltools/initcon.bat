@@ -47,7 +47,7 @@ rem and the prj subdirs
 set _DAILY_=%_BLDDRV_%\prj\thief2\daily
 set _DAILYCD_=%_DAILY_%\cd1
 set _DAILYTHIEF_=%_DAILYCD_%\thief2
-set _MAINCRFPATH_=%_DAILYTHIEF_\res
+set _MAINCRFPATH_=%_DAILYTHIEF_%\res
 
 set _DAILYCD2_=%_DAILY_%\cd2
 set _DAILYTHIEFCD2_=%_DAILYCD2_%\thief2
