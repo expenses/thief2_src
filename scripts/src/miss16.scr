@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.21 2000/03/06 19:55:14 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.22 2000/03/08 03:57:32 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -301,6 +301,9 @@ OnMessage()
 			Quest.Set("goal_state_"+string(M16_GOAL_ADJUST_EXP),kGoalIncomplete,kQuestDataMission);
 		}
 
+		// trigger associated VOs
+		PostMessage(Object.Named("AntVORelay"),"TurnOn");
+
 	}
 
 	DefaultOnMessage();
@@ -328,6 +331,74 @@ OnNowUnlocked()
 END_SCRIPT(Socket)
 
 
+
+// Script:	GuidingBeacon
+
+// Triggers VO when picked up.  The GuidingBeacon is made in-game from
+// out of the heirarchy, so we can't easily just do this w/ trig trap.
+
+BEGIN_SCRIPT (GuidingBeacon, RootScript)
+
+MESSAGES:
+OnFrobWorldEnd()
+{
+	if (Object.Exists(Object.Named("GuidBeacVO")))
+		PostMessage(Object.Named("GuidBeacVO"),"TurnOn");
+
+	DefaultOnFrobWorldEnd();
+}
+
+END_SCRIPT (GuidingBeacon)
+
+
+
+// Script:	TrapDelayer
+
+// Metatrap that holds "TurnOn"s and "TurnOff"s
+// for a time defined by the ScriptTiming property or 5 seconds if
+// not set.
+// Deals only reasonably gracefully w/ multiple msgs arriving
+// before its timer expires, but the behvaior should be fine for
+// this specific mission.
+
+BEGIN_SCRIPT (TrapDelayer, RootScript)
+
+METHODS:
+// return value in ScriptTiming property or
+// default to 5 (seconds) otherwise
+float GetDelay()
+{
+	float delay = 5.0;
+
+   if (Property.Possessed(self, "ScriptTiming"))
+   {
+      delay = Property.Get(self, "ScriptTiming");
+   }
+		
+	return delay;
+}
+
+
+MESSAGES:
+OnMessage()
+{
+	if ( (MessageIs("TurnOn")) || (MessageIs("TurnOff")) )
+	{
+		SetOneShotTimer("Delay",GetDelay(),message.message);
+	}
+	DefaultOnMessage();
+}
+
+OnTimer()
+{
+	if (message.name == "Delay")
+	{
+		Link.BroadcastOnAllLinks(self,message.data,"ControlDevice",NULL);
+	}
+
+	DefaultOnTimer();
+}
+END_SCRIPT (TrapDelayer)
 
 
 
@@ -843,6 +914,9 @@ OnTimer()
          SetOneShotTimer(self, "FireSchema", delay);
 
          PostMessage(self, "TurnOn");
+			// you'd think putting a TrapRelay script on the same object would do this automatically,
+			// but guess what, it doesn't seem to.
+			Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
       }
    }
 
@@ -902,7 +976,7 @@ OnMessage()
          if (Link.AnyExist("ControlDevice", self))
          {
 	    // get the LoudspeakerRelay object
-            object LoudspeakerRelay = Link.GetOne("ControlDevice", self).To();
+            object LoudspeakerRelay = Object.Named("LoudspeakerRelay");
 	    // tell it to play the schema we've selected
             PostMessage(LoudspeakerRelay,"PlaySchema",PlayList.Link().To());
          }
@@ -1436,7 +1510,7 @@ void Transmogrify()
    {
       SetData("Extra3Count", (integer)GetData("Extra3Count") + 1);
 
-      int N=4;
+      int N=5;
       if ((integer)GetData("Extra3Count") >= N) 
       {
          newObj = Object.Create(Object.Named(kRollingResult2));
