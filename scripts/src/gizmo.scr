@@ -1427,6 +1427,7 @@ METHODS:
          integer varval=Quest.Get(qvar);
          integer place, digit, dial, mod=1;
          vector jointparams;
+         boolean dialing=FALSE, reverse=FALSE;
 
          if(! (Property.Possessed(self,"JointPos") && 
                Property.Possessed(self,"CfgTweqJoints")))
@@ -1437,30 +1438,48 @@ METHODS:
          // hard-coded to four joints. kinda sad.
          for(place=0;place<4;place++)
          {
+            string field="    rate-low-high";
+            vector jointrange;
+
+            // fill in for appropriate field, noting that first one has no suffix
+            if(place>0) 
+               field=field+string(place+1);
+            // get old property so we can use the same rate.  The range we'll set.
+            jointrange=Property.Get(self,"CfgTweqJoints",field);
+
             dial=Property.Get(self,"JointPos",string("Joint ")+string(place+1));
+            // by default, leave this dial as is
+            jointrange.y=dial; jointrange.z=dial;
+
             dial=((dial+18)/36)%10; // round to nearest 1/10 revolution.
             digit=(varval/mod)%10;
 
-            // Debug.MPrint(self,": ",mod,"'s digit dialed to ",dial,", should be ",digit);
+            Debug.MPrint(self,": ",mod,"'s digit dialed to ",dial,", should be ",digit);
             
-            if(dial!=digit)
+            if(!dialing && (dial!=digit)) // found our first bad digit
             {
-               // Debug.MPrint("Setting ",mod,"'s digit.");
+               integer low=dial*36, high=digit*36;
 
+               if(low>high)
+               {
+                  low=low^high;
+                  high=low^high;
+                  low=low^high; // XOR swap low and high
+                  reverse=TRUE; // current setting is higher than desired, so reverse direction
+               }
+               jointrange.y=low;
+               jointrange.z=high;
                Property.Set(self,"CfgTweqJoints","Primary Joint",place+1);
 
-               // Argh.  Can't set rate-low-high, since they all have the same name...
-               // Want to leave rate alone, set low and high to lower and higher
-               // of digit*36 and dial*36...
-               
-               // Hence, for now we'll just set the joint positions property.
-               Property.Set(self,"JointPos",string("Joint "+string(place+1)),digit*36);
-               // Recursion would be idiotic if we weren't planning on it taking time to set each
-               // digit.  Callback will replace recursive call.
-               RollNextDigit();               
+               dialing=TRUE;
             }
+            Property.Set(self,"CfgTweqJoints",field,jointrange);
+
             mod*=10;
          }
+         if(dialing)
+            ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, 
+                           reverse?kTweqDoReverse:kTweqDoForward);
       }
    }
 
