@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.7 1999/07/22 09:12:02 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.8 1999/07/31 12:33:22 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -224,10 +224,11 @@ MESSAGES:
        }
        else if(MessageIs("SynchUp"))
        {
+          // @TODO: Work out what to do about PlayerFrob data in this case.
           object otherdoor=message.from;
           integer othertargstate=TargState(Door.GetDoorState(otherdoor));
           integer mytargstate=TargState(Door.GetDoorState(self));
-          
+
           if(mytargstate!=othertargstate)
           {
              if(othertargstate==kDoorClosed)
@@ -235,10 +236,9 @@ MESSAGES:
              else
                 Door.OpenDoor(self);
           }
-          if(Property.Possessed(otherdoor,"Locked"))
-          {
-             Property.Set(self,"Locked",Property.Get(otherdoor,"Locked"));
-          }
+          // @TODO: Address lock states. Currently causing hang in Thief Gold
+          // if(Property.Possessed(otherdoor,"Locked"))
+          //    Property.CopyFrom(self,"Locked",otherdoor);
        }
     }
 
@@ -512,6 +512,34 @@ MESSAGES:
      DefaultOnFrobInvEnd();
   }
 END_SCRIPT(StdScroll)
+
+
+// Script: MapSupplement
+/* When used, changes your MAP_MAX_PAGE quest variable
+   to the page on the object's Automap property, then
+   brings up your automap, then self-destructs since you
+   have perfectly good other ways of bringing up your
+   automap.
+
+   Note that the self-destruct is handled by the object's
+   FrobInfo property, though.
+*/
+BEGIN_SCRIPT(MapSupplement, RootScript)
+MESSAGES:
+   OnFrobInvEnd()
+   {
+      if(Property.Possessed(self,"Automap"))
+      {
+         integer newmax=Property.Get(self,"Automap","Page");
+
+         Quest.Set("map_max_page",newmax);
+      }
+      Debug.Command("automap");
+      DefaultOnFrobInvEnd();
+   }
+END_SCRIPT(MapSupplement)
+
+
 
 
 /* Goofy food script.  In addition to destroying the item
@@ -2340,8 +2368,6 @@ METHODS:
            integer targ=TargetState(self);
            string tags="Event StateChange, DirectionState "+DirectionTags(targ);
 
-           // Debug.MPrint("Event on ",self," generating tags:",tags);
-
            PreTweqActivate(targ);
            Sound.PlayEnvSchema(self,tags,self,NULL,kEnvSoundAtObjLoc);
         }
@@ -2349,6 +2375,7 @@ METHODS:
         // activate/reverse the motion of the lever
         ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
         Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
+        Link.BroadcastOnAllLinks(self,"Toggle","ScriptParams","SideEffect");
      }  
 
      /* Sends the tweq device towards the specified state if it's
@@ -2360,21 +2387,18 @@ METHODS:
            return;
         else // get moving, then
            TweqActivate();
-        Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
+           // The TweqActivate call will take care of synching the frob proxies
      }  // end of Method: GoTowardsState
-
 
 MESSAGES:
      OnMessage()
      {
         if (MessageIs("TurnOn") || MessageIs("GoForward"))
-        {
            GoTowardsState(kTweqDirForward);
-        }
         else if (MessageIs("TurnOff") || MessageIs("GoBackward"))
-        {
            GoTowardsState(kTweqDirReverse);
-        }
+        else if (MessageIs("Toggle"))
+           TweqActivate();
         else if (MessageIs("Target?"))
            Reply(TargetState(self));
         else if (MessageIs("SynchUp"))
@@ -2385,6 +2409,7 @@ MESSAGES:
            // state.
            GoTowardsState(TargetState(message.from));
         }
+        DefaultOnMessage();
      }
      OnTweqComplete()
      {
@@ -4783,26 +4808,30 @@ END_SCRIPT(TrapRequireAny)
    dead camera, while 1 and up are used for alertness levels.
    */
 BEGIN_SCRIPT(CameraAlert, AI)
-
-MESSAGES:
-   OnAlertness()
+METHODS:
+   METHOD void SetTweqModel(integer tweqmod)
    {
       string model=Property.Get(self,"ModelName");
 
-         if(message.level==kHighAlert)
-         {
-            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-         }
-         else if(message.oldLevel==kHighAlert)
-         {
-            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-         }
+      if(Property.Possessed(self,"CfgTweqModels"))
+         model=Property.Get(self,"CfgTweqModels",
+                            string("Model ")+string(tweqmod));
 
-         if(Property.Possessed(self,"CfgTweqModels"))
-            model=Property.Get(self,"CfgTweqModels",
-                               string("Model ")+string(message.level+1));
-
-         Property.Set(self,"ModelName",(const char*)model);
+      Property.Set(self,"ModelName",(const char*)model);
+   }
+MESSAGES:
+   OnAlertness()
+   {
+      if(message.level==kHighAlert)
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+      }
+      else if(message.oldLevel==kHighAlert)
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
+      if(!Object.HasMetaProperty(self,"M-AI-Stasis"))
+         SetTweqModel(message.level+1);
 
       DefaultOnAlertness();
    }
@@ -4810,11 +4839,28 @@ MESSAGES:
       never send the all-clear "TurnOff".  This is intentional. */
    OnSlain()
    {
-      if(Property.Possessed(self,"CfgTweqModels"))
-         Property.Set(self,"ModelName",
-                      Property.Get(self,"CfgTweqModels","Model 0"));
+      SetTweqModel(0);
       DefaultOnSlain();
    }
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         if(Object.HasMetaProperty(self,"M-AI-Stasis"))
+         {
+            SetTweqModel(1); // as per 0 alertness, since we know we're alert-capped
+            Object.RemoveMetaProperty(self,"M-AI-Stasis");
+         }
+      }
+      else if(MessageIs("TurnOff"))
+      {
+         if(!Object.HasMetaProperty(self,"M-AI-Stasis"))
+            Object.AddMetaProperty(self,"M-AI-Stasis");
+         SetTweqModel(5);
+      }
+      DefaultOnMessage();
+   }
+
 END_SCRIPT(CameraAlert)
 
 
@@ -5240,3 +5286,4 @@ MESSAGES:
       DefaultOnMotionEnd();
    }
 END_SCRIPT(QuaffHeal)
+
