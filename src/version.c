@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/version.c,v 1.24 2000/03/27 12:31:19 adurant Exp $
 
 #include <lgsprntf.h>
