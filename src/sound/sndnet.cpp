@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/sndnet.cpp,v 1.10 1999/08/05 18:25:03 Justin Exp $
 //
 // This file deals with broadcasting sounds that occur in the simulation.
