@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/csg/csgfind.c,v 1.3 2000/02/19 12:55:00 toml Exp $
 
 // find_brface_from_poly
