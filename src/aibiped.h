@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/prj/cam/src/RCS/aibiped.h 1.12 1998/02/03 20:42:28 TOML Exp $
 //
