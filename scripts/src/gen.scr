@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.56 2000/02/08 22:30:56 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.57 2000/02/11 11:17:12 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -1961,6 +1961,10 @@ MESSAGES:
 
          Link.Create("Owns",self,MyRope);
          Object.Teleport(MyRope,vector(-1.0,0,0),vector(0,0,0),self);
+
+	 Property.Set(MyRope,"SuspObj","Is Suspicious",TRUE);
+	 //don't set type.	 
+
          Object.EndCreate(MyRope);
       }
       DefaultOnPhysCollision();
