@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sim/simtime.cpp,v 1.16 2000/03/17 17:40:22 bfarquha Exp $
 
 #include <lg.h>
