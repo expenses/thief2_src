@@ -85,7 +85,7 @@ rem xcopy /D /s /I %_ARTPATH_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
 
 
 
-xcopy /D /s /I %_ARTPATH_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
+rem xcopy /D /s /I %_ARTPATH_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
 
 
 rem xcopy /D /s /I %_ARTPATH_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
