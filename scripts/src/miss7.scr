@@ -208,6 +208,7 @@ OnMessage()
 	if (MessageIs("ComeARunnin"))
 	{
 		SetOneShotTimer("Delay",1.5);
+		SetData("Dest",message.from);
 	}
 
 	DefaultOnMessage();
@@ -217,8 +218,10 @@ OnTimer()
 {
 	if (message.name == "Delay")
 	{
-		Debug.MPrint(self," pathfinding now.");
-		GotoObjLoc(message.from, kFast);
+		if ((object)GetData("Dest")!=(object)0)
+		{
+			GotoObjLoc((object)GetData("Dest"), kFast);
+		}
 	}
 	DefaultOnTimer();
 }
