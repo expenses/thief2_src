@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkaigbs.h 1.1 1998/07/19 11:27:26 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkaigbs.h,v 1.3 1999/03/25 17:32:41 JON Exp $
 //
 //
 //
@@ -26,7 +26,9 @@ public:
    STDMETHOD_(const char *, GetName)();
 
 protected:
+   virtual void CreateNonCombatAbilities(cAIComponentPtrs * pComponents);
    virtual void CreateCombatAbilities(cAIComponentPtrs * pComponents);
+   virtual void CreateNonAbilityComponents(cAIComponentPtrs * pComponents);
 };
 
 #pragma pack()
