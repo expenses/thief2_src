@@ -28,7 +28,7 @@ ARRAYTST_LIBS = lg.lib mprintf.lib
 
 GADTEST_OBJS = gadgets.obj rect.obj gadtest.obj region.obj event.obj \
         array.obj pushbutt.obj butarray.obj slider.obj textgadg.obj \
-        qboxgadg.obj        
+        qboxgadg.obj bugtrak.obj cursors.obj      
 GADTEST_LIBS = lg.lib mprintf.lib 2d.lib res.lib kb.lib mouse.lib
 
 TEXTTEST_OBJS = texttest.obj gadgets.obj region.obj slider.obj \
