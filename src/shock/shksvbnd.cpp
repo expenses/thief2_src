@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shksvbnd.cpp,v 1.4 1999/06/24 23:34:50 XEMU Exp $
 #include <filepanl.h>
 #include <appagg.h>
