@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.21 $
+# $Revision: 1.22 $
 # $Author: JAEMZ $
-# $Date: 1996/10/22 11:14:34 $
+# $Date: 1997/05/30 13:02:53 $
 #
 # Makefile for r3d library
 #
@@ -65,7 +65,7 @@ r3d.h .REREAD :\
         clip.h clipcon.h clipplan.h clipprim.h \
         primcon.h prim.h primtab.h primface.h primconv.h \
         ctxts.h object.h space.h view.h block.h r3dctxt.h init.h \
-        utils.h
+        utils.h clipoff.h
 	$(eko1) $(@,F) \<-- $(?,F)
         %do comp_h h_pre=$(r3d_dependent_includes) h_in="$^" h_out="$(@,F)"
 
