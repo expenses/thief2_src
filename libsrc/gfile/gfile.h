@@ -1,8 +1,14 @@
 //		GFILE.H		Generic graphics file access
 //		Rex E. Bradford (REX)
 /*
-* $Header: x:/prj/tech/libsrc/gfile/RCS/gfile.h 1.6 1998/07/01 18:27:10 PATMAC Exp $
+* $Header: x:/prj/tech/libsrc/gfile/RCS/gfile.h 1.8 1999/09/14 11:46:07 JAEMZ Exp $
 * $Log: gfile.h $
+ * Revision 1.8  1999/09/14  11:46:07  JAEMZ
+ * Updated for the 90s
+ * 
+ * Revision 1.7  1999/09/14  11:37:59  JAEMZ
+ * Added const
+ * 
  * Revision 1.6  1998/07/01  18:27:10  PATMAC
  * Add extern "C"
  * 
@@ -28,61 +34,47 @@
 
 #ifndef GFILE_H
 #define GFILE_H
-#ifdef __cplusplus
-extern "C" {
-#endif
+#pragma once
 
-#ifndef STDIO_H
 #include <stdio.h>
-#endif
-#ifndef TYPES_H
-#include <types.h>
-#endif
-#ifndef RECT_H
 #include <rect.h>
-#endif
-#ifndef __2D_H 
-#include <2d.h>
-#endif
-#ifndef DATAPATH_H
+#include <dev2d.h>
 #include <datapath.h>
-#endif
 
 typedef enum {
-	GFILE_PCX,				// .pcx file (org. PC Paintbrush)
-	GFILE_GIF,				// .gif file (org. Compuserve?)
-	GFILE_CEL,				// .cel, .flc, or .fli (Autodesk Animator/Studio)
-	GFILE_IFF,				// .iff (NOT SUPPORTED YET!)
-	GFILE_BMP,				// .bmp file (Windows 3.x)
+	GFILE_PCX,      // .pcx file (org. PC Paintbrush)
+	GFILE_GIF,      // .gif file (org. Compuserve?)
+	GFILE_CEL,	// .cel, .flc, or .fli (Autodesk Animator/Studio)
+	GFILE_IFF,	// .iff (NOT SUPPORTED YET!)
+	GFILE_BMP,	// .bmp file (Windows 3.x)
 } GfileType;
 
-typedef struct {
-	short index;				// index at which to start writing
-	short numcols;				// number of colors to write
-	uchar rgb[3 * 256];		// 0-256 rgb entries
+typedef struct {        
+	short index;	// index at which to start writing
+	short numcols;	// number of colors to write
+	uchar rgb[3 * 256];	// 0-256 rgb entries
 } PallInfo;
 
 typedef struct {
-	GfileType type;		// GFILE_XXX
-	grs_bitmap bm;			// bitmap
-	uchar *ppall;			// ptr to pall, or NULL
+	GfileType type;	// GFILE_XXX
+	grs_bitmap bm;	// bitmap
+	uchar *ppall;	// ptr to pall, or NULL
 } GfileInfo;
 
 //	Function prototypes
 
-bool GfileRead(GfileInfo *pgfi, char *filename, Datapath *pdp);
-bool GfileWrite(GfileInfo *pgfi, char *filename, Datapath *pdp);
-void GfileFree(GfileInfo *pgfi);
-void GfileGetPall(GfileInfo *pgfi, PallInfo *ppall);
+EXTERN bool GfileRead(GfileInfo *pgfi, const char *filename, Datapath *pdp);
+EXTERN bool GfileWrite(GfileInfo *pgfi, const char *filename, Datapath *pdp);
+EXTERN void GfileFree(GfileInfo *pgfi);
+EXTERN void GfileGetPall(GfileInfo *pgfi, PallInfo *ppall);
 
-void GfileGetImage(grs_bitmap *pbm, Rect *parea, uchar *pbits);
-bool GfileFindImage(grs_bitmap *pbm, Point currLoc, Rect *parea, uchar bordCol);
-int GfileFindAnchorRect(grs_bitmap *pbm, Rect *parea, uchar bordCol, Rect *panrect);
-int GfileFindParm(grs_bitmap *pbm, Rect *parea, uchar bordCol, int* parm);
+EXTERN void GfileGetImage(grs_bitmap *pbm, Rect *parea, uchar *pbits);
+EXTERN bool GfileFindImage(grs_bitmap *pbm, Point currLoc, Rect *parea, uchar bordCol);
+EXTERN int GfileFindAnchorRect(grs_bitmap *pbm, Rect *parea, uchar bordCol, Rect *panrect);
+EXTERN int GfileFindParm(grs_bitmap *pbm, Rect *parea, uchar bordCol, int* parm);
 
-
-#ifdef __cplusplus
-}
 #endif
-#endif
+
+
+
 
