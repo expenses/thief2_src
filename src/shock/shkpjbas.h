@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpjbas.h 1.1 1998/07/21 11:06:42 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkpjbas.h 1.2 1999/11/19 14:53:39 adurant Exp $
+
+This file has been moved to projbase.h AMSD
+
 
 #ifndef __SHKPJBAS_H
 #define __SHKPJBAS_H
