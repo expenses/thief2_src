@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/autolink.h 1.1 1999/04/07 14:38:20 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/autolink.h,v 1.2 1998/09/25 23:33:57 mahk Exp $
 #pragma once  
 #ifndef __AUTOLINK_H
 #define __AUTOLINK_H
