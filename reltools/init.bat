@@ -25,10 +25,10 @@ set _DAILYPRJ_=%_DAILY_%\PRJ
 set _ZIPDIR_=c:\zips
 
 rem **************************************************************
-rem we want to use the spun off tree, so remap X:
+rem we don't want to use the spun off tree, so check X
 rem **************************************************************
 
-map root x:=\\wonderland\tech\stprj
+map root x:=\\wonderland\tech\
 
 rem **************************************************************
 rem  Lets rock and roll!!
