@@ -78,6 +78,14 @@ MESSAGES:
       {
          integer thresh=100;
          vector p1=Object.Position(self);
+
+         if(Link.AnyExist("~Contains",self))
+         {
+            // Don't depend on mesh attach to update our position.
+            object container=Link.GetOne("~Contains",self).To();
+            p1=Object.Position(container);
+         }
+
          vector p2=Object.Position("Player");
          real dist=(p1-p2).Magnitude();
 
