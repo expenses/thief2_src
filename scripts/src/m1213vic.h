@@ -5,7 +5,7 @@
 #define M13_MASK_GOAL_0 0
 #define M13_MASK_GOAL_1 1
 #define M13_MASK_GOAL_2 2
-#define M13_MASK_TOTAL 4
+#define M13_MASK_TOTAL 3
 
 
 
