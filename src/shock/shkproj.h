@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkproj.h 1.15 1999/04/02 12:11:52 Justin Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkproj.h 1.16 1999/11/19 14:52:47 adurant Exp $
+
+This file has been moved to gunproj.h  AMSD
+
 
 #ifndef __SHKPROJ_H
 #define __SHOPROJ_H

@@ -1,4 +1,7 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgunan.h 1.2 1998/07/19 16:13:23 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkgunan.h 1.3 1999/11/19 14:53:31 adurant Exp $
+
+This file has been moved to gunanim.h AMSD
+
 
 ///////////////////////
 // Animation tools for joints in a gun
