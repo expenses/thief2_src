@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.24 1999/12/10 14:42:43 PATMAC Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.25 1999/12/16 11:17:44 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -698,6 +698,61 @@ MESSAGES:
    }
 END_SCRIPT(Burplauncher)
 
+// situations for returning camera to player
+// this script should be attached to players.
+BEGIN_SCRIPT(CamReturn, RootScript)
+
+MESSAGES:
+    OnDamage()
+    {
+	Camera.ForceCameraReturn();
+	DefaultOnDamage();
+    }
+END_SCRIPT(CamReturn);
+
+BEGIN_SCRIPT(CamGrenade, Physics)
+
+MESSAGES:
+    OnBeginScript()
+	{
+	    Physics.SubscribeMsg(self, kFellAsleepMsg);
+	    DefaultOnBeginScript();
+	}
+    OnEndScript()
+	{
+	    Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+	    DefaultOnEndScript();
+	}
+	
+    OnFrobWorldEnd()
+	{	
+	    //he picked me up, subscribe again
+	    Physics.SubscribeMsg(self, kFellAsleepMsg);
+	    DefaultOnFrobWorldEnd();
+	}
+	
+    OnPhysFellAsleep()
+	{
+	    //will be back when player throws it again
+	    Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+	    Camera.DynamicAttach(self);
+	    DefaultOnPhysFellAsleep();
+	}
+
+    OnSlain()
+	{
+	    //if camera still attached to me, return.
+	    Camera.CameraReturn(self);
+	    DefaultOnSlain();
+	}
+	
+    OnDestroy()
+	{
+	    Camera.CameraReturn(self);
+	//I'm irked that this isn't DefaultOnDestroy
+	    BaseOnDestroy();
+	}
+END_SCRIPT(CamGrenade);
 
 BEGIN_SCRIPT(Mine, Physics)
 
