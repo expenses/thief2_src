@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/ui/RCS/makefile $
-# $Revision: 1.29 $
-# $Author: xemu $
-# $Date: 1994/10/13 16:20:35 $
+# $Revision: 1.30 $
+# $Author: mahk $
+# $Date: 1994/11/18 12:18:56 $
 
 DEBUG_ON = 1
 SPEW_ON = 1
@@ -29,12 +29,12 @@ UI_OBJS = gadgets.obj region.obj cursors.obj curdrw.obj event.obj slab.obj \
         pushbutt.obj butarray.obj qboxgadg.obj textgadg.obj slider.obj \
         texttool.obj tngfont.obj tng.obj  hotkey.obj\
         tngqbox.obj tngtextg.obj tngpushb.obj tngslidr.obj tngbarry.obj \
-        plain.obj tngplain.obj menu.obj tngmenu.obj vmouse.obj
+        plain.obj tngplain.obj menu.obj tngmenu.obj uires.obj vmouse.obj
 UI_HDRS = gadgets.h region.h cursors.h event.h slab.h pushbutt.h \
         butarray.h qboxgadg.h textgadg.h slider.h texttool.h \
         tngqbox.h tngtextg.h tngpushb.h tngslidr.h tngbarry.h tng.h \
         tngapp.h hotkey.h plain.h tngplain.h menu.h tngmenu.h \
-        curdat.h curtyp.h vmouse.h
+        curdat.h curtyp.h uires.h vmouse.h
 
 UITEST_OBJS = uitest.obj
 UITEST_LIBS = _lg.lib _2d.lib _input.lib _res.lib _fix.lib \
@@ -186,14 +186,19 @@ tngtextg.obj objo\tngtextg.obj objd\tngtextg.obj: 2d.h 2dres.h _ui.h datapath.h 
 	 stat.h stdio.h stdlib.h texttool.h tng.h tngapp.h tngfont.h \
 	 tngslidr.h tngtextg.h types.h
 
+uires.obj objo\uires.obj objd\uires.obj: 2d.h 2dres.h cursors.h datapath.h dbg.h dbgmacro.h error.h fix.h \
+	 lg.h lgalt.h malloc.h memall.h memmacro.h mouse.h rect.h region.h \
+	 res.h restypes.h slist.h stdio.h stdlib.h string.h types.h uires.h
+
 uitest.obj objo\uitest.obj objd\uitest.obj: 2d.h 2dres.h _dstruct.h array.h butarray.h ctype.h cursors.h \
-	 data\gamescr.h datapath.h dbg.h dbgmacro.h error.h event.h fault.h \
-	 fix.h gadgets.h hash.h hotkey.h io.h kb.h kbcook.h keydefs.h lg.h \
+	 datapath.h dbg.h dbgmacro.h error.h event.h fault.h fix.h \
+	 gadgets.h hash.h hotkey.h io.h kb.h kbcook.h keydefs.h lg.h \
 	 lgalt.h malloc.h memall.h memmacro.h menu.h mouse.h mprintf.h \
-	 plain.h pushbutt.h qboxgadg.h rect.h region.h res.h restypes.h \
-	 slab.h slider.h slist.h stat.h stdio.h stdlib.h string.h \
-	 textgadg.h texttool.h tng.h tngapp.h tngbarry.h tngplain.h \
-	 tngpushb.h tngqbox.h tngslidr.h tngtextg.h types.h
+	 plain.h pushbutt.h qboxgadg.h r:\prj\lib\src\ui\data\gamescr.h \
+	 rect.h region.h res.h restypes.h slab.h slider.h slist.h stat.h \
+	 stdio.h stdlib.h string.h textgadg.h texttool.h tng.h tngapp.h \
+	 tngbarry.h tngplain.h tngpushb.h tngqbox.h tngslidr.h tngtextg.h \
+	 types.h
 
 vmouse.obj objo\vmouse.obj objd\vmouse.obj: dbg.h dbgmacro.h error.h lg.h lgalt.h malloc.h memall.h \
 	 memmacro.h mouse.h mprintf.h stdio.h types.h
