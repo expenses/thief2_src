@@ -2,11 +2,14 @@
 #	Makefile for GFILE library
 #	----------------------------------
 #
-# $Header: x:/prj/tech/libsrc/gfile/RCS/makefile 1.4 1993/10/07 09:44:55 rex Exp $
+# $Header: x:/prj/tech/libsrc/gfile/RCS/makefile 1.5 1994/08/22 17:40:19 rex Exp $
 # $Log: makefile $
-# Revision 1.4  1993/10/07 09:44:55  rex
-# Added bmp.obj
+# Revision 1.5  1994/08/22 17:40:19  rex
+# Moved to r:
 #
+# Revision 1.4  1993/10/07  09:44:55  rex
+# Added bmp.obj
+# 
 # Revision 1.3  1993/09/27  19:22:42  rex
 # Added cel.obj
 # 
@@ -24,8 +27,8 @@ WARN_ON = 1
 SPEW_ON = 1
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\gfile
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\gfile
+RELDIR = r:\prj\lib\rel
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
@@ -39,7 +42,7 @@ INST_TARGETS = gfile
 GFILE_OBJS = gfile.obj pcx.obj gif.obj cel.obj bmp.obj
 GFILE_HDRS = gfile.h
 
-BUILD_DIR	= n:\project\lib\build\gfile
+BUILD_DIR	= r:\prj\lib\build\gfile
 
 !include n:/etc/make.rc
 
