@@ -79,3 +79,119 @@ MESSAGES:
 END_SCRIPT(AwakeToEscape)
 
          
+/* TRAINING SCRIPTS:
+   Scripts from this point below are for coordinating the various messages to
+   prompt the player through the training encounters.  In general, none of them
+   act on Hard or Expert difficulty.
+   */
+
+/*
+  Many of these scripts will have in common the need to display information on
+  uses of various key and mouse button commands.  We define a script for them
+  to inherit a method for this.
+  */
+BEGIN_SCRIPT(KeyPrompter,RootScript)
+
+METHODS:
+   METHOD void KeyString(const string ref Action, const string ref Key)
+   {
+      string DisplayOutput = "";
+      string Command = Data.GetString("PlayCmd",Key+"_command");
+      integer difficulty=Quest.Get("difficulty");
+      boolean done=(difficulty>0) || Quest.Get(string("tr_")+Action);
+
+      if(!done)
+      {
+         if (DarkUI.IsCommandBound(Command))
+         {
+            /* Build string of the form (e.g.) "USE = Mouse2" */
+            DisplayOutput = Data.GetString("PlayAct",Key) + " = " 
+                          + DarkUI.DescribeKeyBinding(Command);
+            /* Tack string descriptive of action in question on front */
+            DisplayOutput = Data.GetString("PlayHint",Action)
+                          + DisplayOutput;
+         }
+         DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
+      }
+      else
+         Debug.MPrint("Already done lesson: ",Action);
+   }
+   METHOD void ClearHint(void)
+   {
+      DarkUI.TextMessage("");
+   }
+   METHOD void Score(const string ref Action)
+   {
+      Quest.Set(string("tr_")+Action,TRUE);
+      ClearHint();
+   }
+
+END_SCRIPT(KeyPrompter)
+
+
+BEGIN_SCRIPT(EntryDoor, KeyPrompter)
+MESSAGES:
+   OnWorldSelect()
+   {
+      KeyString("UseDoorOpen","Use");
+      DefaultOnWorldSelect();
+   }
+   OnWorldDeSelect()
+   {
+      ClearHint();
+      DefaultOnWorldDeSelect();
+   }
+   OnFrobWorldEnd()
+   {
+      Score("UseDoorOpen");
+      DefaultOnFrobWorldEnd();
+   }
+END_SCRIPT(EntryDoor)
+
+
+BEGIN_SCRIPT(FirstKey, KeyPrompter)
+MESSAGES:
+   OnWorldSelect()
+   {
+      KeyString("UseKeyTake","Use");
+      DefaultOnWorldSelect();
+   }
+   OnWorldDeSelect()
+   {
+      ClearHint();
+      DefaultOnWorldDeSelect();
+   }
+   OnFrobWorldEnd()
+   {
+      Score("UseKeyTake");
+      DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(FirstKey)
+
+
+BEGIN_SCRIPT(TakeLoot, KeyPrompter)
+MESSAGES:
+   OnWorldSelect()
+   {
+      KeyString("UseLootTake","Use");
+      DefaultOnWorldSelect();
+   }
+   OnWorldDeSelect()
+   {
+      ClearHint();
+      DefaultOnWorldDeSelect();
+   }
+   OnFrobWorldEnd()
+   {
+      Score("UseLootTake");
+      DefaultOnFrobWorldEnd();
+   }
+
+END_SCRIPT(TakeLoot)
+
+
+
+
+
+
