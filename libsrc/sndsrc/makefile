@@ -10,10 +10,10 @@ LIBTARGS = sndsrc
 EXETARGS = playsrc
 
 sndsrc_OBJS = sndsrc
-sndsrc_win32_OBJS = playlist refill sndsrcid sndseg rezseg fileseg memseg
+sndsrc_win32_OBJS = playlist refill sndsrcid sndseg rezseg fileseg memseg imaadpcm
 
 
-sndsrc_HDRS = sndsrc.h playlist.h
+sndsrc_HDRS = sndsrc.h playlist.h sndsrcid.h
 #   sndsrci.h sndsrcid.h sndseg.h sndsegi.h
 #sndsrc_DEFINES = SND_TEST
 
