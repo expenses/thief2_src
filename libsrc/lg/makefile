@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
-# $Revision: 2.18 $
+# $Revision: 2.19 $
 # $Author: TOML $
-# $Date: 1997/03/10 13:35:03 $
+# $Date: 1997/07/15 21:29:22 $
 #
 
 MAKETOP = $(CWD)
@@ -14,15 +14,15 @@ PROJECT = tech
 LIBTARGS = lg
 
 lg_OBJS = bugtrak datapath dbg dbgcfg dbgpp exit lgprntf lgsprntf \
-    memall memgrow memstat oheapwal stack tmpalloc lglog lgassert \
-    stktrace pool poolimp breakkey hashfns thrdtool appagg codewrit \
+    memgrow memstat oheapwal stack tmpalloc lglog lgassert \
+    stktrace  breakkey hashfns thrdtool appagg codewrit \
     dpathdir memreq crc32 findfile coremutx
 
 lg_HDRS = bugtrak.h datapath.h dbg.h dbgmacro.inc dbgpp.h lg.h \
-	lgalt.h lgprntf.h lgsprntf.h memall.h memmacro.inc memstat.h \
-	tmpalloc.h lg.inc memall.inc dbg.inc lglog.h lglocmsg.h lgassert.h \
-	stktrace.h pool.h poolimp.h breakkey.h hashfns.h thrdtool.h \
-	codewrit.h memreq.h crc32.h findfile.h virtmem.h coremutx.h
+	lgalt.h lgprntf.h lgsprntf.h memmacro.inc memstat.h \
+	tmpalloc.h lg.inc dbg.inc lglog.h lglocmsg.h lgassert.h \
+	stktrace.h breakkey.h hashfns.h thrdtool.h \
+	codewrit.h memreq.h crc32.h findfile.h coremutx.h
 
 # can't do
 # h2i_files = lg.inc memall.inc dbg.inc
