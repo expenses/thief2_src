@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.16 $
-# $Author: dc $
-# $Date: 1997/08/15 00:42:26 $
+# $Revision: 1.17 $
+# $Author: JAEMZ $
+# $Date: 1997/10/07 00:49:53 $
 #
 # Makefile for Matrix library
 #
@@ -20,8 +20,8 @@ LIBTARGS = matrix
 # line 2 of each of these is the generated double precision stuff
 
 matrix_OBJS = \
-        vecvec matmat matvec vecang matang trans transasm dmat \
-        vecvecd matmatd matvecd vecangd matangd transd 
+        vecvec vec2 matmat matvec vecang matang trans transasm dmat \
+        vec2 vecvecd matmatd matvecd vecangd matangd transd 
 
 matrix_HDRS = \
         matrix.h matrixs.h dmat.h dmats.h mxsym.h mxang.h mxcvrt.h \
@@ -49,6 +49,9 @@ build_double_version:
         @chmod -w $(target,F)
 
 vecvecd.c .MISER .NODEFAULT: vecvec.c
+        %do build_double_version source=$(.SOURCE) target=$(.TARGET)
+
+vec2d.c .MISER .NODEFAULT: vec2.c
         %do build_double_version source=$(.SOURCE) target=$(.TARGET)
 
 matmatd.c .MISER .NODEFAULT: matmat.c
