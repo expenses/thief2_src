@@ -1,14 +1,17 @@
 #
 # $Source: x:/prj/tech/libsrc/mprintf/RCS/makefile $
-# $Author: dc $
-# $Date: 1993/01/27 16:10:47 $
+# $Revision: 1.4 $
+# $Author: kaboom $
+# $Date: 1994/08/10 20:19:05 $
 #
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\mprintf
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\mprintf
+RELDIR = r:\prj\lib\rel
+BUILD_DIR = r:\prj\lib\build\mprintf
+DEBUG_ON = 1
 
-OBJDIR = obj
+OBJDIR = objd
 BINDIR =
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
@@ -20,19 +23,12 @@ HDR_TARGETS =
 INST_TARGETS = mprintf
 
 MPRINTF_OBJS = mprintf.obj
-
 MPRINTF_HDRS = mprintf.h
 
 MTEST_OBJS = mtest.obj
-MTEST_LIBS = mprintf.lib
+MTEST_LIBS = mprintf.lib lg.lib
 
-#MTEST_CFLAGS    = -d2
-#MTEST_LDFLAGS   = debug all
-
-#MPRINTF_CFLAGS  = -d2
-#MPRINTF_LDFLAGS = debug all
-
-!include $(INIT)/make.rc
+%include $(INIT)\make.rc
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
