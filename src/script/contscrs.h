@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/contscrs.h,v 1.4 1998/12/14 22:02:19 XEMU Exp $
 #pragma once  
 #ifndef __CONTSCRS_H
