@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/recorder/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1996/08/12 14:43:27 $
+# $Date: 1996/08/12 15:43:54 $
 #
 # Makefile for recorder library
 #
@@ -17,7 +17,7 @@ PROJECT = tech
 
 LIBTARGS = recorder
 
-recorder_OBJS = recorder
+recorder_OBJS = recorder recdata
 
 recorder_HDRS =
 
