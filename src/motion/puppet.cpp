@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/puppet.cpp,v 1.12 1998/07/27 13:12:21 CCAROLLO Exp $
 
 #include <puppet.h>
