@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/bintrait.cpp,v 1.3 1998/10/05 17:21:41 mahk Exp $
 #include <objtype.h>
 #include <appagg.h>

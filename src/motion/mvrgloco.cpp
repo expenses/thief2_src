@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/mvrgloco.cpp,v 1.39 1999/08/05 17:09:46 Justin Exp $
 // This is the maneuver builder/controller for solid ground locomotions -
 // That is, one's in which the creature is affected by gravity and moving along
