@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/litnet.cpp,v 1.2 1999/04/02 12:04:19 Justin Exp $
 //
 // Networking for lights, specifically AnimLights
