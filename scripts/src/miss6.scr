@@ -370,6 +370,17 @@ MESSAGES:
         {
 	  SetData("PathNumber",Data.RandInt(1,KEYPATHS)); //which key we're 
                                                           //using.
+          //cheat override...
+	  int i = 0;
+          if (DarkGame.ConfigGetInt("eaves",i))
+	  {
+            if ((i>0) && (i < 10))
+            {
+              Debug.MPrint("Overriding path selection to ",i);
+              SetData("PathNumber",i);
+            }
+          }
+
  	  SetupLocation(); //setup the location, if we are the starting
 			   //point.  This allows all sorts of wholesome
 			   //linky goodness.
@@ -695,6 +706,7 @@ MESSAGES:
     {
       Debug.MPrint("Key knows you eavesdropped.");
       SetData("Eavesdropped",1);
+      Property.Set(self,"GameName","Name_SDBoxKey"); //inventory name
       PlayDropMe(message.from);
     }
     DefaultOnMessage();
