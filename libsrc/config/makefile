@@ -5,7 +5,7 @@ DBG_ON = 1
 
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\config
+SRCDIR = r:\prj\lib\src\config
 RELDIR = r:\prj\lib\rel
 
 OBJDIR = obj
