@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		CDROM.H		CD-ROM INTERFACE
 //
 //		This is the header file for the CD-ROM interface library, which
