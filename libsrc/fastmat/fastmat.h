@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: r:/prj/lib/src/fastmat/rcs/fastmat.h 1.21 1995/06/03 21:51:12 jaemz Exp $
  */
 
