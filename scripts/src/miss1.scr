@@ -246,6 +246,17 @@ MESSAGES:
       BaseOnDestroy();
    }
 
+   OnSlain()
+   {
+      if(Object.InheritsFrom(self,"FlashBomb"))
+      {
+         Quest.Set("tr_DropOrUseFlashBomb",TRUE);
+         Quest.Set("tr_DropFlashBomb",TRUE);
+      }
+      DefaultOnSlain();
+   }
+
+
 END_SCRIPT(TrackInv)
 
 /* We put this on ALL world objects that can be world-frobbed, at startup,
@@ -629,6 +640,19 @@ BEGIN_SCRIPT(Training, RootScript)
     /* How to train flash bombs?  Seems impossible to tell whether AIs
        stand to be affected, which kind of blows.
        */
+
+    METHOD boolean TrainUseFlash (object world, object inv, object weap)
+    {
+       if(Object.InheritsFrom(inv,"FlashBomb"))
+       {
+          if(world!=NO_OBJ)
+             return DoLesson("DropFlashBomb","Drop");
+          else
+             return DoLesson("DropOrUseFlashBomb","Drop","Use");
+       }
+       return FALSE;
+    }
+
     METHOD boolean TrainUseFlare (object world, object inv, object weap)
     {
        if(Object.InheritsFrom(inv,"LitFlare"))
@@ -875,6 +899,7 @@ BEGIN_SCRIPT(Training, RootScript)
          TrainBlackjack(world,inv,weap) ||
          TrainShootTorch(world,inv,weap) ||
          TrainDoor(world,inv,weap) ||
+         TrainUseFlash(world,inv,weap) ||
          TrainPickpocket(world,inv,weap) ||
          TrainPickUpKey(world,inv,weap) ||
          TrainGetLoot(world,inv,weap) ||
