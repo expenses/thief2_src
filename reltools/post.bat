@@ -230,7 +230,6 @@ copy r:\prj\thief2\release\dromed.exe r:\prj\thief2\reltools\dromrel
 copy r:\prj\thief2\release\*.res r:\prj\thief2\reltools\dromrel
 pkzip dromed.zip r:\prj\thief2\reltools\dromrel\*.*
 pkzip missions.zip r:\prj\thief2\levels\shipping\*.mis
-copy r:\prj\thief2\levels\shipping\dark.gam
 mkdir schema
 copy r:\prj\thief2\art\src\schema\*.sch schema
 copy r:\prj\thief2\art\src\schema\base.arc schema
