@@ -1,8 +1,8 @@
 /*
  * $Source: x:/prj/tech/libsrc/ipw/RCS/ipw.h $
- * $Revision: 1.20 $
- * $Author: PATMAC $
- * $Date: 1998/07/02 14:35:40 $
+ * $Revision: 1.22 $
+ * $Author: JAEMZ $
+ * $Date: 1999/03/01 19:59:39 $
  *
  * Image Processing include file
  *
@@ -185,6 +185,9 @@ void     transfer_image(int w,int h,Image *from, int xf,int yf,Image *to,int xt,
 // if Ipw.copytrans == 0, don't copy transparent pixels              
 // cut and paste and the tiler reader uses this 
 
+void    vflip_image(Image *pSrc);
+// vertically flip an image in place
+
 errcode  upscale(Image *from,Image *to);
 errcode  downscale(Image *from,Image *to);
 errcode  copy_image(Image *from,Image *to);
@@ -241,6 +244,10 @@ errcode read_tga_piece(Image **dst,int dx,int dy,int w,int h,char *pathname,int 
 errcode  read_cel(char *pathname,Image **im);
 
 errcode  read_tiff(char *pathname,Image **im);
+
+errcode  read_bmp(char *pathname,Image **im);
+errcode  write_bmp(char *pathname,Image *im);
+
 
 errcode read_byt_pal_im(char *pathname,Image **im,int xres,int yres);
 errcode read_byt_rgb_im(char *pathname,Image **im,int xres,int yres);
