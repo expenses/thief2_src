@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/libsrc/script/RCS/scrptapi.h 1.11 1998/08/04 22:30:16 mahk Exp $
+// $Header: r:/t2repos/thief2/libsrc/script/scrptapi.h,v 1.14 1999/06/29 19:11:09 mahk Exp $
 //
 // ObjScript API
 //
@@ -113,7 +113,6 @@ DECLARE_HANDLE(tScrTimer);
 
 // Timer callback
 typedef void (*tScrMsgCallback)(const sScrMsg *, const sMultiParm *, void *);
-
 
 
 ///////////////////////////////////////
@@ -299,7 +298,8 @@ DECLARE_INTERFACE_(IScriptMan, IUnknown)
                                   const char *,
                                   const cMultiParm &, 
                                   const cMultiParm &, 
-                                  const cMultiParm &) PURE;
+                                  const cMultiParm &,
+                                  ulong flags DEFAULT_TO(0)) PURE;
 
    STDMETHOD_(tScrTimer, SetTimedMessage2)(ObjID to,
                                            const char *,
