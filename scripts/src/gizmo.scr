@@ -2159,4 +2159,45 @@ MESSAGES:
    }
 END_SCRIPT(ConveyorBelt)
 
+BEGIN_SCRIPT(RainSound, RootScript)
+
+METHODS:
+ 
+  METHOD void TouchRain()
+  {
+    integer weathersetting = 0;
+    BOOL weatheron = FALSE;
+    if (DarkGame.ConfigIsDefined("render_weather"))
+    {
+       DarkGame.ConfigGetInt("render_weather",weathersetting);
+       if (weathersetting>0)
+          weatheron = TRUE;
+    }
+    if (!Property.Possessed(self,"AmbientHacked"))
+       return;
+    integer currentflags = Property.Get(self,"AmbientHacked","flags");
+    if (weatheron)
+       currentflags &= ~AMBFLG_S_TURNEDOFF; //turn it off
+    if (!weatheron)
+       currentflags |= AMBFLG_S_TURNEDOFF; //turn it on
+    Property.Set(self,"AmbientHacked","flags",currentflags);
+  }
+
+MESSAGES:
+
+  OnSim()
+  {
+     if (message.starting)
+        TouchRain();
+     DefaultOnSim();
+  }
+
+  OnDarkGameModeChange()
+  {
+     if (message.resuming)
+        TouchRain();
+     DefaultOnDarkGameModeChange();
+  }
+
+END_SCRIPT(RainSound)
 
