@@ -94,13 +94,14 @@ rem **************************************************************
 echo Copying files to build tree...
 echo.
 
-perl5 %_PRJDRV_%\prj\thief2\reltools\cpysrc.pl -targetroot s:
+rem perl5 %_PRJDRV_%\prj\thief2\reltools\cpysrc.pl -targetroot s:
+perl5 r:\prj\thief2\reltools\cpysrc.pl -targetroot s:
 
 
 rem until I fix the copy script...
 copy x:\prj\tech\h\dbgmacro.h  s:\prj\tech\h\dbgmacro.h
 copy x:\prj\tech\h\memmacro.h  s:\prj\tech\h\memmacro.h
-copy r:\prj\cam\src\propraw.h  s:\prj\cam\src\propraw.h
+copy r:\prj\thief2\src\propraw.h  s:\prj\thief2\src\propraw.h
 
 
 rem ****************************************************
@@ -127,11 +128,11 @@ rem dailyprj is r:\prj\cam\daily\prj
 rem ****************************************************
 
 
-mkdirs %_DAILYPRJ_%\cam\scripts\rel_h >& nul
+mkdirs %_DAILYPRJ_%\thief2\scripts\rel_h >& nul
 
-echo xcopy x:\prj\tech\h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
+echo xcopy x:\prj\tech\h\*.h %_DAILYPRJ_%\thief2\scripts\rel_h /q
 rem for the cd
-xcopy r:\prj\cam\scripts\rel_h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
+xcopy r:\prj\thief2\scripts\rel_h\*.h %_DAILYPRJ_%\thief2\scripts\rel_h /q
 
 if .%@lower[%RunOneStep].==.y. goto Exit
 
@@ -157,7 +158,7 @@ rem shpdark:     dark    shp     shp      n        y       <-- playtest after mi
 s:
 
 @echo Starting build on %_cwd
-cd \prj\cam\libsrc\ref
+cd \prj\thief2\libsrc\ref
 
 make depend flav=dbg sb=s:\prj comp=v60
 
@@ -188,7 +189,7 @@ if .%@lower[%RunOneStep].==.y. goto Exit
 
 :Depend
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 make depend sb=s:\prj dark comp=v60
 make depend sb=s:\prj hybrid comp=v60
 
@@ -217,7 +218,7 @@ rem ******************************************************
 
 :Thief
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 echo make -k build dark THIEF=THIEF FLAV=shp MASTER=SHIPPROT SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 make -k build dark  THIEF=THIEF FLAV=shp MASTER=SHIPPROT SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.spp
 iff not exist thief.exe then
@@ -239,18 +240,18 @@ goto ShpDark
 s:
 cd \prj\thief2\scripts\osm
 rm *.osm
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss09 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\gen /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\victory /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss1 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss4 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\convict /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss7 /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\traps /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\evidence /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\gizmo /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\archer /o >> log.scr
-call r:\prj\cam\reltools\buildscr.bat ..\src\miss10 /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\miss09 /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\gen /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\victory /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\miss1 /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\miss4 /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\convict /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\miss7 /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\traps /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\evidence /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\gizmo /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\archer /o >> log.scr
+call r:\prj\thief2\reltools\buildscr.bat ..\src\miss10 /o >> log.scr
 copy *.osm %_DAILYTHIEF_%\*.*
 
 if .%@lower[%RunOneStep].==.y. goto Exit
@@ -259,7 +260,7 @@ rem ******************************************************
 
 :ShpDark
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 echo make -k build dark THIEF=THIEF FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 make -k build dark  THIEF=THIEF FLAV=shp MASTER=SHIP SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1>> log.shp
 iff not exist thief2.exe then
@@ -282,7 +283,7 @@ rem ******************************************************
 
 :OptDark
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 echo make -k build dark THIEF=THIEF FLAV=opt MASTER=PLAYTEST SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 make -k build dark THIEF=THIEF FLAV=opt MASTER=PLAYTEST SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1 >> log.opt
 
@@ -306,7 +307,7 @@ rem ******************************************************
 
 :DebugDark
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 echo make -k build dark THIEF=THIEF FLAV=dbg MASTER=dbg SB=s:\prj comp=v60 sys=win32 addres=1 DISPLAY_PROGRESS=1
 
 make -k build dark THIEF=THIEF FLAV=dbg MASTER=dbg SB=s:\prj comp=v60 sys=win32 addres=1  DISPLAY_PROGRESS=1 >> log.dbg
@@ -351,7 +352,7 @@ rem ******************************************************
 
 :DbgDrom
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 echo make -k build THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1
 make -k build THIEF=THIEF FLAV=dbg MASTER=editdbg SB=s:\prj comp=v60 sys=win32 portal_dbg=1 DISPLAY_PROGRESS=1 >>log.edb
 
@@ -371,7 +372,7 @@ rem **************************************************************
 
 :Dromed
 s:
-cd \prj\cam\src
+cd \prj\thief2\src
 echo make -k build THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1
 make -k build THIEF=THIEF FLAV=opt MASTER=editprof SB=s:\prj comp=v60 sys=win32 debug_portals=1 DISPLAY_PROGRESS=1 >> log.dro
 
