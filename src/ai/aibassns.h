@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibassns.h 1.25 1999/05/10 19:09:02 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibassns.h,v 1.26 2000/01/24 12:12:38 adurant Exp $
 //
 // Base implementation of an AI sense
 //
@@ -56,6 +56,7 @@ public:
    STDMETHOD_(void, OnGoalChange)(const cAIGoal * pPrevious, const cAIGoal * pGoal);
    STDMETHOD_(void, OnSound)(const sSoundInfo *, const sAISoundType * pType);
    STDMETHOD_(void, OnFoundBody)(ObjID body);
+   STDMETHOD_(void, OnFoundSuspicious)(ObjID suspobj);
    STDMETHOD_(void, OnDamage)(const sDamageMsg * pMsg, ObjID realCulpritID);
    STDMETHOD_(void, OnFastObj)(ObjID firer, ObjID projectile, const mxs_vector & velocity);
    
