@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phppscpt.h,v 1.1 1998/07/16 18:25:40 CCAROLLO Exp $
 //
