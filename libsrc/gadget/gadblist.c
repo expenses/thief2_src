@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadblist.c 1.6 1997/11/06 17:05:13 mahk Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/gadblist.c,v 1.6 1997/11/06 17:05:13 mahk Exp $
 #include <string.h>
 
 #include <uigadget.h>

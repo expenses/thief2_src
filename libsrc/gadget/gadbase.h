@@ -1,4 +1,9 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadbase.h 1.3 1996/12/04 15:56:34 xemu Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/t2repos/thief2/libsrc/gadget/gadbase.h,v 1.3 1996/12/04 15:56:34 xemu Exp $
 
 #ifndef __GADBASE_H
 #define __GADBASE_H
