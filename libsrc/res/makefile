@@ -23,7 +23,7 @@ LIB_TARGETS = res
 INST_TARGETS = res resdump respack
 EXTRA_TARGET =
 
-RES_OBJS = lzw.obj res.obj resbuild.obj
+RES_OBJS = lzw.obj res.obj restypes.obj resbuild.obj
 RES_HDRS = lzw.h res.h restypes.h
 
 RESDUMP_OBJS	= resdump.obj
@@ -62,3 +62,6 @@ respack.obj: datapath.h dbg.h io.h lg.h lgalt.h libdbg.h malloc.h memall.h \
 restest.obj: conio.h ctype.h datapath.h dbg.h fcntl.h io.h lg.h lgalt.h \
 	 libdbg.h lzw.h malloc.h memall.h mprintf.h res.h restypes.h stat.h \
 	 stdio.h stdlib.h string.h types.h
+
+restypes.obj: datapath.h dbg.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 res.h restypes.h stdio.h stdlib.h types.h
