@@ -139,11 +139,30 @@ END_SCRIPT(BlueLightSensor)
 
 BEGIN_SCRIPT(MrCavador, RootScript)
 MESSAGES:
+  
+   OnSim()
+   {
+      if (message.starting)
+         SetOneShotTimer("SpewPos",20.0);
+      DefaultOnSim();
+   }
+
    OnSlain()
    {
       Quest.Set(GoalStateVarName(CAVADOR_LIVE_GOAL),kGoalFailed);
       DefaultOnSlain();
    }
+
+   OnTimer()
+   {
+      if (message.name == "SpewPos")
+      {
+         Debug.MPrint("Cavador's(",self,") X,Y,Z = ",Object.Position(self));
+         SetOneShotTimer("SpewPos",20.0);
+      }   
+      DefaultOnTimer();
+   }
+
 END_SCRIPT(MrCavador)
 
 
