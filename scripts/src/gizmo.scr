@@ -1690,6 +1690,16 @@ MESSAGES:
   
 END_SCRIPT(Clock)
 
+/* For "locks" that want to model-swap when unlocked, as when the
+   "key" is really a missing part that slots into the locked object.
+   */
+BEGIN_SCRIPT(TransformLock, RootScript)
 
+MESSAGES:
+   OnNowUnlocked()
+   {
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoActivate);
+      DefaultOnNowUnlocked();
+   }
 
-
+END_SCRIPT(TransformLock)
