@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicbridl.h 1.3 1999/04/16 17:02:57 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicbridl.h,v 1.4 1999/12/09 20:10:25 BODISAFA Exp $
 //
 //
 //
@@ -29,7 +29,8 @@ public:
    virtual int SuggestApplicability(void);
    virtual int GetPriority(void);
    virtual cAIAction* SuggestAction(void);
-
+   
+   virtual void OnGainingControl(void);
 private:
 };
 
