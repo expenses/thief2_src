@@ -1,0 +1,117 @@
+BEGIN_SCRIPT(ListenClosely, Room)
+
+METHODS:
+
+  METHOD void PlayConversation(object target)
+  {
+    linkset sounds=Link.GetAll("SoundDescription",target);
+    while (sounds.AnyLinksLeft())
+    {
+      //I'm the callback object, it's the target object.
+      Sound.PlaySchema(self,sounds.Link().To(),target);
+      sounds.NextLink();
+    }
+  }
+
+  METHOD object ScriptParamPropagate(object source,string testdata)
+  {
+    linkset splinks = Link.GetAll("ScriptParams",source);
+    object found = (object)0;
+    while ((splinks.AnyLinksLeft()) && (found==(object)0))
+    {
+      link splinkex = splinks.Link();
+      if ((string)splinkex.GetData() == testdata)
+        {
+	  found = splinkex.To();
+        }
+      splinks.NextLink();
+    }
+    return found;
+  }
+
+  METHOD void ConversationCheckStep(integer convstate)
+  {
+    if ((InConversationRoom()) && (convstate<3) &&
+	((integer)GetData("ConversationObject")==0) &&
+	((integer)GetData("FinishedConversation")<=convstate))
+      {
+        Debug.MPrint("In conversation room");
+	string linkinfo = "convobj"+(string)(convstate+1);
+        object convsource = ScriptParamPropagate(message.ToObjId,linkinfo);
+        if (convsource != (object)0)
+          {
+	    convstate = convstate + 1;
+            Debug.MPrint("Starting conversation ",convstate," on ",convsource);
+            PlayConversation(convsource);
+	    //set the object
+            SetData("ConversationObject",(integer)convsource);
+	    //update the count
+	    SetData("StartedConversation",convstate);
+          }
+      }
+  }
+
+  METHOD boolean InConversationRoom()
+  {
+    integer currentroom = (integer)GetData("PlayerRoomLocation");
+    if (Link.AnyExist("ScriptParams",(object)currentroom,(object)currentroom))
+      {
+        link valuelink = Link.GetOne("ScriptParams",(object)currentroom,(object)currentroom);
+        if ((string)valuelink.GetData() == "convroom")
+          return TRUE;
+      }
+    return FALSE;
+  }
+
+MESSAGES:
+
+  OnSim()
+  {
+    if (message.starting)
+      {
+        SetData("PlayerRoomLocation",0); //what room I'm in
+        SetData("StartedConversation",0); //last conv started
+        SetData("FinishedConversation",0); //last conv finished
+	SetData("ConversationObject",0); //current conv object.
+      }
+    DefaultOnSim();
+  }
+
+  OnBeginScript()
+  {
+    if (!IsDataSet("PlayerRoomLocation"))
+      SetData("PlayerRoomLocation",0);
+    DefaultOnBeginScript();
+  }
+
+  OnSchemaDone()
+  {
+    integer convid = (integer)GetData("ConversationObject");
+    if (convid == (integer)message.targetObject)
+      { 
+        Debug.MPrint("Finished conversation on ",convid);
+        SetData("FinishedConversation",(integer)GetData("StartedConversation"));
+	SetData("ConversationObject",0);
+	ConversationCheckStep((integer)GetData("StartedConversation"));
+      }
+    DefaultOnSchemaDone();
+  }
+
+  OnObjRoomTransit()
+  {
+    if ((integer)GetData("PlayerRoomLocation") != message.ToObjId)
+    {
+      Debug.MPrint("Switching rooms to ",message.ToObjId);
+      SetData("PlayerRoomLocation",message.ToObjId);
+    }
+    ConversationCheckStep((integer)GetData("StartedConversation"));
+    DefaultOnObjRoomTransit();
+  }
+
+
+END_SCRIPT(ListenClosely)
+
+
+
+
+
