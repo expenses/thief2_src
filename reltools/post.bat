@@ -198,11 +198,7 @@ rem **************************************************************
 
 cd %_DAILYCD_%\thief
 
-perl5 r:\prj\campatch\reltools\mkitype.pl 
-
-cd %_DAILYTHIEFCD2_%
-
-perl5 r:\prj\campatch\reltools\mkitype.pl -cd2
+perl5 r:\prj\thief2\reltools\mkitype.pl r:\prj\thief2\reltools\thief2.ist
 
 rem **************************************************************
 rem Done!
