@@ -3,6 +3,15 @@
 
 #define GOAL_ESCAPE 0
 
+#define WEAP_UI_QVAR "WeapUI"
+#define WEAP_ID_QVAR "WeapID"
+#define INV_UI_QVAR "InvUI"
+#define INV_ID_QVAR "InvID"
+#define kUnready 0
+#define kReady 1
+#define kCocked 2
+
+
 BEGIN_SCRIPT(ExtractionZone, Room)
 
 METHODS:
@@ -87,17 +96,151 @@ END_SCRIPT(AwakeToEscape)
    */
 
 
-/* This script goes on the player, to track any state changes that will affect
-   our training messages.
-   */
-BEGIN_SCRIPT(TrainPlayer, RootScript)
+
+/*
+  Many of these scripts will have in common the need to display information on
+  uses of various key and mouse button commands.  We define a script for them
+  to inherit a method for this.
+  */
+BEGIN_SCRIPT(KeyPrompter,RootScript)
+
+METHODS:
+
+   /* Action is the full description of the action to be attempted (e.g.
+      "USE Door to open"), while Key describes only the interface binding
+      to be prompted (e.g. the identity of the USE key).
+
+      The quest variable tracking successful completion of the lesson
+      is derived from the name of the Action string by prepending "tr_".
+      */
+   METHOD boolean LessonDone(const string ref Action)
+   {
+      integer difficulty=Quest.Get("difficulty");
+      boolean done=(difficulty>0) || Quest.Get(string("tr_")+Action);
+
+      return done;
+   }      
+   METHOD void KeyString(const string ref Action, const string ref Key, 
+                         const string ref Key2=string(""))
+   {
+      string DisplayOutput = "";
+      string Command = Data.GetString("PlayCmd",Key+"_command");
+      string Command2 = Data.GetString("PlayCmd",Key2+"_command");
+      boolean done=LessonDone(Action);
+
+      if(!done)
+      {
+         if (Key!="" && DarkUI.IsCommandBound(Command))
+         {
+            /* Build string of the form (e.g.) "USE = Mouse2" */
+            DisplayOutput = Data.GetString("PlayAct",Key) + " = " 
+                          + DarkUI.DescribeKeyBinding(Command);
+         }
+         if (Key2!="" && DarkUI.IsCommandBound(Command2))
+            DisplayOutput = DisplayOutput + "\n"
+                          + Data.GetString("PlayAct",Key2) + " = " 
+                          + DarkUI.DescribeKeyBinding(Command2);
+         /* Tack string descriptive of action in question on front */
+         DisplayOutput = Data.GetString("PlayHint",Action)
+                          + DisplayOutput;
+         DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
+      }
+      else
+         Debug.MPrint("Already done lesson: ",Action);
+   }
+   // derived scripts will override this.  In particular, the Prompt()
+   // method on the player should handle anything other than world focus
+   // hints, basically.
+   METHOD void Prompt()
+   {
+      ;
+   }
+   // Note that since NewHint messages to elicit further prompting (on other
+   // lessons), Prompt() should not call NewHint() (or, for that matter, Score()).
+   METHOD void NewHint(void)
+   {
+      DarkUI.TextMessage("");
+      PostMessage(object("Player"),"Prompt?");
+   }
+   METHOD void Score(const string ref Action)
+   {
+      Quest.Set(string("tr_")+Action,TRUE);
+      NewHint();
+   }
 
 MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("Prompt?"))
+         Prompt();
+      DefaultOnMessage();
+   }
+
+END_SCRIPT(KeyPrompter)
+
+
+/* This script goes on the player, to track any state changes that will affect
+   our training messages.  It also handles training of inventory objects (although
+   we need scripts on those objects themselves to score the lesson).
+   */
+BEGIN_SCRIPT(TrainPlayer, KeyPrompter)
+
+METHODS:
+   METHOD void Prompt()
+   {
+      object invobj=object(Quest.Get(INV_ID_QVAR));
+
+      Debug.MPrint("TrainPlayer.  inv obj=",invobj);
+
+      if(Object.Exists(invobj))
+      {
+         if(Object.InheritsFrom(invobj,"HealingPotion"))
+         {
+            integer hp=Property.Get(self,"HitPoints");
+            integer max=Property.Get(self,"MAX_HP");
+
+            if(hp<max)
+            {
+               KeyString("UsePotionHeal","Use");
+            }
+         }
+         else if(Object.InheritsFrom(invobj,"Flashbomb"))
+         {
+            KeyString("UseFlashbomb","Use","Drop");
+         }
+      }
+   }
+MESSAGES:
+
+   OnBeginScript()
+   {
+      // don't want starting point to bother with these messages.
+      if(!IsDataSet("Init") && Object.InheritsFrom(self,"Avatar"))
+      {
+         SetData("Init",TRUE);
+         Quest.SubscribeMsg(self,INV_UI_QVAR);
+         Quest.SubscribeMsg(self,INV_ID_QVAR);
+      }
+   }
+
+   OnQuestChange()
+   {
+      Prompt();
+      DefaultOnQuestChange();
+   }
+
+   OnDamage()
+   {
+      Prompt();
+      DefaultOnDamage();
+   }
+
+
 /*
-   To track the interface state of the player's arrows, we will
+   To track the interface state of the player's arrows and such, we will
    add a script to them.  We'll do this when the player contains them
    so that water crystals work correctly and so we have no chance for
-   error.
+   error.  He claimed.
    */
    OnContainer()
    {
@@ -119,57 +262,6 @@ MESSAGES:
 END_SCRIPT(TrainPlayer)
       
 
-/*
-  Many of these scripts will have in common the need to display information on
-  uses of various key and mouse button commands.  We define a script for them
-  to inherit a method for this.
-  */
-BEGIN_SCRIPT(KeyPrompter,RootScript)
-
-METHODS:
-
-   /* Action is the full description of the action to be attempted (e.g.
-      "USE Door to open"), while Key describes only the interface binding
-      to be prompted (e.g. the identity of the USE key).
-
-      The quest variable tracking successful completion of the lesson
-      is derived from the name of the Action string by prepending "tr_".
-      */
-   METHOD void KeyString(const string ref Action, const string ref Key)
-   {
-      string DisplayOutput = "";
-      string Command = Data.GetString("PlayCmd",Key+"_command");
-      integer difficulty=Quest.Get("difficulty");
-      boolean done=(difficulty>0) || Quest.Get(string("tr_")+Action);
-
-      if(!done)
-      {
-         if (Key!="" && DarkUI.IsCommandBound(Command))
-         {
-            /* Build string of the form (e.g.) "USE = Mouse2" */
-            DisplayOutput = Data.GetString("PlayAct",Key) + " = " 
-                          + DarkUI.DescribeKeyBinding(Command);
-         }
-         /* Tack string descriptive of action in question on front */
-         DisplayOutput = Data.GetString("PlayHint",Action)
-                          + DisplayOutput;
-         DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
-      }
-      else
-         Debug.MPrint("Already done lesson: ",Action);
-   }
-   METHOD void ClearHint(void)
-   {
-      DarkUI.TextMessage("");
-   }
-   METHOD void Score(const string ref Action)
-   {
-      Quest.Set(string("tr_")+Action,TRUE);
-      ClearHint();
-   }
-
-END_SCRIPT(KeyPrompter)
-
 
 BEGIN_SCRIPT(EntryDoor, KeyPrompter)
 MESSAGES:
@@ -180,7 +272,7 @@ MESSAGES:
    }
    OnWorldDeSelect()
    {
-      ClearHint();
+      NewHint();
       DefaultOnWorldDeSelect();
    }
    OnFrobWorldEnd()
@@ -200,7 +292,7 @@ MESSAGES:
    }
    OnWorldDeSelect()
    {
-      ClearHint();
+      NewHint();
       DefaultOnWorldDeSelect();
    }
    OnFrobWorldEnd()
@@ -221,7 +313,7 @@ MESSAGES:
    }
    OnWorldDeSelect()
    {
-      ClearHint();
+      NewHint();
       DefaultOnWorldDeSelect();
    }
    OnFrobWorldEnd()
@@ -231,6 +323,7 @@ MESSAGES:
    }
 
 END_SCRIPT(TakeLoot)
+
 
 
 /* The prompter about shooting out the torch does not score
@@ -245,13 +338,6 @@ END_SCRIPT(TakeLoot)
    messages because we can subscribe to the quest vars.
    */
 
-#define WEAP_UI_QVAR "WeapUI"
-#define WEAP_ID_QVAR "WeapID"
-#define INV_UI_QVAR "InvUI"
-#define INV_ID_QVAR "InvID"
-#define kUnready 0
-#define kReady 1
-#define kCocked 2
 
 BEGIN_SCRIPT(TrainWeapon, RootScript)
 
@@ -353,7 +439,7 @@ METHODS:
 
       if(GetData("On")==FALSE)
       {
-         ClearHint();
+         NewHint();
          return;
       }
       if(!Object.Exists(CurrentWeapon) ||
@@ -394,7 +480,7 @@ MESSAGES:
    }
    OnDestroy()
    {
-      // Just to be tidy.  At least it will call ClearHint();
+      // Just to be tidy.
       Score("SelectWaterArrow");
       Score("PullArrow");
       Score("ReleaseArrow");
@@ -435,7 +521,7 @@ METHODS:
 
       if(GetData("On")==FALSE)
       {
-         ClearHint();
+         NewHint();
          return;
       }
       if(Object.Exists(CurrentItem) &&
@@ -491,7 +577,7 @@ MESSAGES:
    }
    OnWorldDeSelect()
    {
-      ClearHint();
+      NewHint();
       SetData("On",FALSE);
       DefaultOnWorldDeSelect();
    }
@@ -510,4 +596,36 @@ MESSAGES:
 END_SCRIPT(TrainLockedDoors)
 
 
+/* Script goes on the metaproperty that all of our inventory objects
+   get.  Handles various training messages depending on object type.
+   */
+BEGIN_SCRIPT(TrainInvent, KeyPrompter)
+MESSAGES:
+   OnFrobInvEnd()
+   {
+      object frobber=message.Frobber;
+      integer hp=0, max=0;
+
+      if(Object.InheritsFrom(self,"HealingPotion"))
+      {
+         if(Property.Possessed(frobber,"HitPoints"))
+            hp=Property.Get(frobber,"HitPoints");
+         if(Property.Possessed(frobber,"MAX_HP"))
+            max=Property.Get(frobber,"MAX_HP");
+         if(hp<max)
+            Score("UsePotionHeal");
+      }
+      DefaultOnFrobInvEnd();
+   }
+   OnContained()
+   {
+      if(Object.InheritsFrom(self,"Flashbomb") &&
+         message.event==kContainRemove &&
+         Object.InheritsFrom(message.container,"Avatar"))
+      {
+         Score("UseFlashbomb");
+      }
+      DefaultOnContained();
+   }
+END_SCRIPT(TrainInvent);
 
