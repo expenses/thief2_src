@@ -1592,28 +1592,24 @@ MESSAGES:
  
 END_SCRIPT(Odometer)
 
-/* Each clock tracks its _desired_ face setting in a quest variable defined in
-   its TrapQVar property, represented as a number of minutes past 12:00.
+/* Each clock tracks its _desired_ face setting in its ScriptTiming
+   property, represented as a number of minutes past 12:00.
    Clocks can be frobbed to advance the time shown on their faces to the
-   next whole hour.  This is reflected in the quest variable.
-   @TODO: Damn shame these axle values are hard-coded.
+   next whole hour.
    */
-#define MINUTE_AXLE 5
-#define HOUR_AXLE 4
 BEGIN_SCRIPT(Clock, RootScript)
 
 METHODS:
    METHOD integer GetClockTime()
    {
-      string qvar=Property.Get(self,"TrapQVar");
-      integer minutes=Quest.Get(qvar);
+      integer minutes=Property.Get(self,"ScriptTiming");
       return minutes;
    }
    METHOD void SetClockTime(integer minutes)
    {
-      string qvar=Property.Get(self,"TrapQVar");
       minutes=minutes%(12*60);
-      Quest.Set(qvar,minutes);
+      Property.Set(self,"ScriptTiming",minutes);
+      SetFace();
    }
 
    // @TODO: Animate nicely when changing face setting instead of changing instantly.
@@ -1623,10 +1619,14 @@ METHODS:
       float hours=float(minutes)/60.0; // float to preserve angle precision
       float minjoint=(minutes*360)/60;
       float hourjoint=(hours*360)/12;
+      const integer minaxle=5; // @TODO: Magic numbers must die.
+      const integer houraxle=4;
 
       minutes=minutes%60;
-      Property.Set(self,"JointPos",string("Joint ")+string(MINUTE_AXLE),minjoint);
-      Property.Set(self,"JointPos",string("Joint ")+string(HOUR_AXLE),hourjoint);
+      if(minaxle!=0)
+         Property.Set(self,"JointPos",string("Joint ")+string(minaxle),minjoint);
+      if(houraxle!=0)
+         Property.Set(self,"JointPos",string("Joint ")+string(houraxle),hourjoint);
    }
 
    METHOD void ResetBaseTime()
@@ -1635,7 +1635,6 @@ METHODS:
 
       SetData("BaseSetting",GetClockTime());
       SetData("BaseTime",GetTime());
-      // @TODO: Reset tock timer
       if(IsDataSet("TockTimer"))
       {
          tock=GetData("TockTimer");
@@ -1656,25 +1655,11 @@ METHODS:
 MESSAGES:
    OnBeginScript()
    {
-      string qvar=Property.Get(self,"TrapQVar");
-      Quest.SubscribeMsg(self,qvar);
       SetFace();
-
       if(!IsDataSet("BaseSetting"))
          ResetBaseTime();
 
       DefaultOnBeginScript();
-   }
-   OnEndScript()
-   {
-      string qvar=Property.Get(self,"TrapQVar");
-      Quest.UnsubscribeMsg(self,qvar);
-      DefaultOnEndScript();
-   }
-   OnQuestChange()
-   {
-      SetFace();
-      DefaultOnQuestChange();
    }
    OnTimer()
    {
