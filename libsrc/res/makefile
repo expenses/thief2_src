@@ -2,7 +2,7 @@
 # $Source: x:/prj/tech/libsrc/res/RCS/makefile $
 # $Revisiion: $
 # $Author: TOML $
-# $Date: 1996/04/08 16:54:37 $
+# $Date: 1996/08/30 10:25:13 $
 
 MAKETOP = $(CWD)
 
@@ -16,7 +16,7 @@ LIBTARGS = res
 
 res_OBJS = lzw lzwfd2bf res restypes resfile resacc refacc \
 	resload resmem rescum resbuild resmake resexblk \
-        resmisc
+        resmisc resarq resthred
 
 res_HDRS = lzw.h res.h restypes.h resrect.h
 
