@@ -1,8 +1,8 @@
 /*
- * $Source: t:/prj/tech/libsrc/3d/rcs/3d.h $
- * $Revision: 1.59 $
- * $Author: ept $
- * $Date: 1995/10/23 20:08:22 $
+ * $Source: x:/prj/tech/libsrc/3d/RCS/3d.h $
+ * $Revision: 1.69 $
+ * $Author: TOML $
+ * $Date: 1996/11/02 15:23:29 $
  *
  * Header file for LookingGlass 3D library
  *
@@ -16,6 +16,12 @@
 
 //new types:
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 typedef short sfix;
 
 #define sfix_make(a,b) ((((short)(a))<<8)|(b))
@@ -23,6 +29,7 @@ typedef short sfix;
 
 #define g3_set_i(pnt,ii) do {pnt->i = sfix_make(ii,0); } while (0);
 #define g3_set_rgb(pnt,r,g,b) do {pnt->rgb = gr_bind_rgb(r,g,b); } while (0);
+
 
 //constants
 
@@ -59,6 +66,9 @@ typedef struct g3s_vector {
 #endif
 } g3s_vector;
 
+#define g3_vec_copy(dest,src) memcpy(dest,src,sizeof(g3s_vector))
+
+
 typedef struct g3s_angvec {fixang tx,ty,tz;} g3s_angvec;
 
 typedef struct g3s_matrix {
@@ -77,7 +87,7 @@ typedef struct g3s_point {
 	fix x,y,z;
 #else
 	union {                                         //rotated 3d coords, use as vector or elements
-		g3s_vector vec; 
+		g3s_vector vec;
 		struct {fix x,y,z;};
 		fix xyz[3];
       g3s_phandle next; //next in free list, when point is unused
@@ -91,7 +101,7 @@ typedef struct g3s_point {
 #else
 	union {
 		struct {sfix u,v;};     //for texturing, etc.
-      g3s_fix_uv *fix_uv;     //Kill everyone. 
+      g3s_fix_uv *fix_uv;     //Kill everyone.
 		grs_rgb rgb;            //for RGB-space gouraud shading
 	};
 #endif
@@ -102,7 +112,7 @@ typedef struct g3s_point {
 
 //clip codes
 #define CC_OFF_LEFT  1
-#define CC_OFF_RIGHT 2 
+#define CC_OFF_RIGHT 2
 #define CC_OFF_BOT   4
 #define CC_OFF_TOP   8
 #define CC_BEHIND               128
@@ -125,20 +135,19 @@ typedef struct g3s_point {
 #define LT_DIFF    2
 #define LT_SPEC    4
 #define LT_GOUR    128
- 
+
 #define LT_NEAR_LIGHT 16  // TRUE if light is near and has to be evaluated
 #define LT_NEAR_VIEW  8  // TRUE if viewing point is near, and has to be reevaled
 #define LT_LOC_LIGHT  32  // TRUE if light is a local point, not a vector
 #define LT_TABSIZE 24  // size of the shading table
 #define LT_BASELIT 15  // table entry of normal intensity (before saturating)
 
-#define FT_LIGHT     0
-#define FT_FLAT_LIGHT 1
-#define FT_NO_LIGHT   2
-#define FT_SHADOW    3
-#define FT_SHADOWED  4
-#define FT_WIRE      5
-#define FT_SOLID     6
+
+// don't even pretend these are private
+// everyone wants them, ooh yeah.
+extern g3s_vector view_position;
+extern g3s_matrix view_matrix;
+extern fix        view_zoom;
 
 extern fix scrw,scrh;
 extern fix biasx,biasy;
@@ -153,6 +162,7 @@ extern g3s_matrix g3d_o2w_mat;
 extern g3s_vector g3d_o2w_pos;
 extern fix  g3d_ltab_max;
 extern ubyte g3d_ltab_shift;
+extern ubyte g3d_flat_shift,g3d_flat_mask; // for flat shaded polys
 extern ubyte g3d_clipflags;
 
 extern fix  g3d_w_scale;
@@ -221,11 +231,13 @@ void g3_set_stoffset(fix off);
 
 short g3_init(short max_points,int user_x_axis,int user_y_axis,int user_z_axis);
 	//the three axis vars describe your coordintate system.  Use the constants
-	//      X_AXIS,Y_AXIS,Z_AXIS, or negative of these, to describe what your 
+	//      X_AXIS,Y_AXIS,Z_AXIS, or negative of these, to describe what your
 	// coordinates mean. For each of width_,height_, and depth_axis, specify
 	//      which of your axes goes in that dimension. Depth is into the screen,
 	//      height is up, and width is to the right
 	//returns number actually allocated
+
+void g3_make_writable(void);
 
 
 void g3_shutdown(void);                         //frees allocated points, and whatever else
@@ -259,6 +271,10 @@ g3s_phandle g3_transform_point(g3s_vector *v);
 	//returns point handle
 
 void g3_rotate_o2w(g3s_vector *src,g3s_vector *dest);
+   // rotate point in object space into world space yaay!
+   // d can equal s
+
+void g3_rotate_w2o(g3s_vector *src,g3s_vector *dest);
    // rotate point in object space into world space yaay!
    // d can equal s
 
@@ -315,6 +331,7 @@ void g3_free_list(int n_points,g3s_phandle *p); //adds to free list
 // Frame setup commands
 
 void g3_start_frame();          //mark all points as unused
+void g3_start_fake_frame(int width,int height,fix aspect);   // pretend
 void g3_set_view_matrix(g3s_vector *pos,g3s_matrix *m,fix zoom);
 void g3_set_view_angles(g3s_vector *pos,g3s_angvec *angles,int rotation_order,fix zoom);        //takes ptr to angles
 
@@ -328,22 +345,22 @@ fix g3_h_pixsize(fix size, fix pz);
 
 // Lighting commands
 fix g3_light_diff(g3s_vector *norm,g3s_vector *pos); // takes normal vector transformed, dots with the light vec, puts light val in norm
-#pragma aux g3_light_diff "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_light_diff "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi];
 
 fix g3_light_spec(g3s_vector *norm,g3s_vector *pos); // takes norm and point position, lights point
-#pragma aux g3_light_spec "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_light_spec "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi];
 
 fix g3_light_dands(g3s_vector *norm,g3s_vector *pos); // lights with both both
-#pragma aux g3_light_dands "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_light_dands "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi];
 
 // farms out a point based on flags
 fix g3_light(g3s_vector *norm,g3s_vector *pos);
-#pragma aux g3_light "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_light "*" parm [eax] [edx] modify [eax edx ebx ecx esi edi];
 
 // sets a light vector in source space directly
 // this light vector has to be in user space so we can dot it with
 // other vector.  This is either a point source (LT_LOC_LIGHT == TRUE)
-// or a vector.  
+// or a vector.
 void g3_set_light_src(g3s_vector *l);
 #pragma aux g3_set_light_src "*" parm [eax] modify [esi edi];
 
@@ -358,20 +375,20 @@ void g3_set_ltab_max(int a);  // set max row of the ltab
 // When lighting "modes" get set up, this will be called automagically
 // when necessary.
 void g3_eval_vec_light(void) ;
-#pragma aux g3_eval_vec_light "*" modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_eval_vec_light "*" modify [eax edx ebx ecx esi edi];
 
 // transforms light point into viewer coords with all scaling intact
 // this prepares it to be subtracted from loc light points in eval_loc
 // _light.  Call this after start_frame and before an object.
 void g3_trans_loc_light(void);
-#pragma aux g3_trans_loc_light "*" modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_trans_loc_light "*" modify [eax edx ebx ecx esi edi];
 
 // evaluates light point relative to another point, uses light point
 // this is only for local lighting, inside an object.  If its not local
 // lighting, you don't need to call this one.  This assumes you'll want
 // to set NEAR_LIGHT to zero.
 void g3_eval_loc_light(g3s_phandle pos);
-#pragma aux g3_eval_loc_light "*" parm [eax] modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_eval_loc_light "*" parm [eax] modify [eax edx ebx ecx esi edi];
 
 // Evaluates and sets light vectors as necessary at the start of
 // an object.  Does view vec if SPEC is set.  Transforms light
@@ -381,26 +398,26 @@ void g3_eval_loc_light(g3s_phandle pos);
 // Evaluates at the object center.  If necessary, evaluates the
 // ldotv for light and view
 void g3_eval_light_obj_cen(void);
-#pragma aux g3_eval_light_obj_cen "*" modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_eval_light_obj_cen "*" modify [eax edx ebx ecx esi edi];
 
 // evaluates the light vector straight ahead pointing in
 // at you, then evaluates ldotv as well.  Use after light vec
 // has been evaluated.  Only need for specular
 void g3_eval_view_ahead(void);
-#pragma aux g3_eval_view_ahead "*" modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_eval_view_ahead "*" modify [eax edx ebx ecx esi edi];
 
 
 // takes the dot product of view and light, for specular light
 void g3_eval_ldotv(void);
-#pragma aux g3_eval_ldotv "*" modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_eval_ldotv "*" modify [eax edx ebx ecx esi edi];
 
 // evaluate the view vector relative to a point
 void g3_eval_view(g3s_phandle pos);
-#pragma aux g3_eval_view "*" parm [eax] modify [eax edx ebx ecx esi edi]; 
+#pragma aux g3_eval_view "*" parm [eax] modify [eax edx ebx ecx esi edi];
 
 // Horizon
 
-void g3_draw_horizon(int sky_color,int ground_color);  
+void g3_draw_horizon(int sky_color,int ground_color);
 
 // Misc commands
 
@@ -421,15 +438,18 @@ fix g3_get_zoom(char axis,fixang angle,int window_width,int window_height);
 	//returns zoom factor to achieve the desired view angle. axis is 'y' or 'x'
 
 void g3_get_view_pyramid(g3s_vector *corners);
-	//fills in 4 vectors, which unit vectors from the eye that describe the 
+	//fills in 4 vectors, which unit vectors from the eye that describe the
 	//view pyramid.  first vector is upper right, then clockwise
 
 void g3_get_slew_step(fix step_size,g3s_vector *x_step,g3s_vector *y_step,g3s_vector *z_step);
 	//fills in three vectors, each of length step_size, in the specified
-	//direction in the viewer's frame of reference.  any (or all) of the 
+	//direction in the viewer's frame of reference.  any (or all) of the
 	//vector pointers can be NULL to skip that axis.
 
 // Instancing. These all return true if everything ok
+
+bool g3_start_o2w(); // start a context that converts to world space
+void g3_end_o2w();   // end that context
 
 bool g3_start_object(g3s_vector *p);    //position only (no orientation).
 
@@ -445,7 +465,7 @@ bool g3_start_object_angles_xy(g3s_vector *p,fixang tx,fixang ty,int rotation_or
 bool g3_start_object_angles_xz(g3s_vector *p,fixang tx,fixang tz,int rotation_order);
 bool g3_start_object_angles_yz(g3s_vector *p,fixang ty,fixang tz,int rotation_order);
 
-// you can use this to scale things like make small boxes and the like.  The effect is to 
+// you can use this to scale things like make small boxes and the like.  The effect is to
 // shrink or expand the points in their SOURCE coordinate system.  Only call this after
 // calling one of the start_object routines.  You can do it within a frame as well, the
 // effect will be to make surrounding space smaller or bigger.  This will make you shoot
@@ -550,7 +570,7 @@ int g3_check_and_light_lmap_quad_tile(g3s_phandle *vp,grs_bitmap *bm,int width_c
 int g3_draw_tmap_tile(g3s_phandle upperleft,g3s_vector *u_vec,g3s_vector *v_vec,int nverts,g3s_phandle *vp,grs_bitmap *bm);
 #pragma aux g3_draw_tmap_tile "*" parm [eax] [ebx] [ecx] [edx] [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi];
 	//this will tile a texture map over an arbitrary polygon. upperleft is the
-	//point in 3-space the matches the upper left corner of the texture map. 
+	//point in 3-space the matches the upper left corner of the texture map.
 	//u_vec and v_vec are the u and v basis vectors respectively.
 	//upperleft need not be in the polygon.  If upperleft is 0, the warp matrix
 	//from the last texture map that drew (i.e. was at least partly on screen)
@@ -561,12 +581,6 @@ int g3_draw_lmap_tile(g3s_phandle upperleft,g3s_vector *u_vec,g3s_vector *v_vec,
 #pragma aux g3_draw_lmap_tile "*" parm [eax] [ebx] [ecx] [edx] [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi];
 int g3_light_lmap_tile(g3s_phandle upperleft,g3s_vector *u_vec,g3s_vector *v_vec,int nverts,g3s_phandle *vp,grs_bitmap *bm);
 #pragma aux g3_light_lmap_tile "*" parm [eax] [ebx] [ecx] [edx] [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi];
-
-// Fill type functions
-void g3_push_fill(int ftype);
-#pragma aux g3_push_fill "*" parm [eax] modify [eax ebx ecx edx esi edi];
-void g3_pop_fill();
-#pragma aux g3_pop_fill "*" modify [eax ebx ecx edx esi edi];
 
 //Pragmas for all these functions
 
@@ -598,6 +612,7 @@ void g3_pop_fill();
 #pragma aux g3_rotate_light_norm "*" parm [esi] value [edi] modify [eax ebx ecx edx esi edi];
 
 #pragma aux g3_rotate_o2w "*" parm [esi] [edi] modify [eax ebx ecx edx esi];
+#pragma aux g3_rotate_w2o "*" parm [esi] [edi] modify [eax ebx ecx edx esi];
 
 #pragma aux g3_rotate_list "*" parm [ecx] [edi] [esi] value [ax] modify [eax ebx ecx edx esi edi];
 #pragma aux g3_project_list "*" parm [ecx] [esi] value [ax] modify [eax ebx ecx edx esi edi];
@@ -646,6 +661,7 @@ void g3_pop_fill();
 #pragma aux g3_set_view_angles "*" parm [esi] [ebx] [ecx] [eax] modify [eax ebx ecx edx esi edi];
 
 #pragma aux g3_start_frame "*" modify [eax ebx ecx esi edi];
+#pragma aux g3_start_fake_frame "*" parm [eax] [ebx] [ecx] modify [eax ebx ecx esi edi];
 #pragma aux g3_end_frame "*" value [eax] modify [ecx esi edi];
 
 #pragma aux g3_draw_horizon "*" parm [eax] [edx] modify [eax ebx ecx edx esi edi];
@@ -669,7 +685,7 @@ void g3_pop_fill();
 #pragma aux g3_scale_object "*" parm [eax] modify [ecx eax edx];
 
 #pragma aux g3_draw_line "*" parm [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi];
-#pragma aux g3_draw_cline "*" parm [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi]; 
+#pragma aux g3_draw_cline "*" parm [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi];
 #pragma aux g3_draw_sline "*" parm [esi] [edi] value [eax] modify [eax ebx ecx edx esi edi];
 #pragma aux g3_draw_point "*" parm [esi] value [eax] modify [eax ecx edx esi];
 
@@ -682,8 +698,8 @@ void g3_pop_fill();
 
 #pragma aux g3_compute_normal "*" parm [edi] [eax] [edx] [ebx] modify exact [eax ebx ecx edx esi edi];
 
-#pragma aux g3_transpose parm [esi] modify exact [eax];
-#pragma aux g3_copy_transpose parm [edi] [esi] modify exact [eax];
+#pragma aux g3_transpose "*" parm [esi] modify exact [eax];
+#pragma aux g3_copy_transpose "*" parm [edi] [esi] modify exact [eax];
 
 #pragma aux g3_matrix_x_matrix parm [ebx] [esi] [edi] modify exact [eax ebx ecx edx];
 
@@ -693,10 +709,10 @@ void g3_pop_fill();
 //annoying.  For starters, I shouldn't even have to specifiy the number of
 //parms, since C obviously knows this number.  Secondly,  if I have varargs,
 //C forces me to put all the args on the stack, when I really want the
-//count in register and the rest on the stack.  Lastly, since these are 
+//count in register and the rest on the stack.  Lastly, since these are
 //inline functions, C won't do the stack fixup, and since I don't have
 //access, once again, to the parameter count, I have to use the variable
-//to fixup the stack.  This is really ugly since a wrong count supplied to 
+//to fixup the stack.  This is really ugly since a wrong count supplied to
 //the function will mess up the stack.  Too bad C doesn't have a constant
 //defined to be the parameter count for the current function.
 
@@ -749,6 +765,11 @@ void g3_pop_fill();
 	"pop ecx"                               \
 	"lea esp,[esp+ecx*4]"   \
 	parm [ecx] [esi] value [eax] modify [eax ebx ecx edx esi edi];
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif /* __3D_H */
