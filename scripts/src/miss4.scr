@@ -19,10 +19,12 @@ METHODS:
 
       for(difficulty=0;difficulty<3;difficulty++)
       {
+         string qvar=GoalStateVarName(CASUALTY_GOAL_NORMAL+difficulty);
+
          limit=Quest.Get(string("casualty_limit_")+string(difficulty));
 
-         if(casualties>limit)
-            Quest.Set(GoalStateVarName(CASUALTY_GOAL_NORMAL+difficulty),kGoalFailed);
+         if(casualties>limit && Quest.Get(qvar)!=kGoalFailed)
+            Quest.Set(qvar,kGoalFailed);
       }
    }
 MESSAGES:
@@ -35,7 +37,15 @@ MESSAGES:
    }
    OnQuestChange()
    {
-      CheckCasualties();
+      // For the love of God, whatever you do, don't go about setting the
+      // goal state quest variable if it's not KO's that have changed.  You'll
+      // stand to get another OnQuestChange() message (from a _diffferent_
+      // script on the _same_ object's subscription to a _different_ quest
+      // variable) and infinitely recurse.
+
+      if(stricmp(message.m_pName,kDarkStatKnockouts)==0) // i.e. if it was KO's state changing
+         CheckCasualties();
+      DefaultOnQuestChange();
    }
    OnMessage()
    {
