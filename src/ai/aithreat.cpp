@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aithreat.cpp,v 1.4 1999/11/22 17:49:12 henrys Exp $
 //
