@@ -140,6 +140,10 @@ rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss12.mis %_DAILYTHIEFCD2_%\miss12.mis
 rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss13.mis %_DAILYTHIEFCD2_%\miss13.mis
 rem %_PRJPATH_%\bin\misstrip %_MISPATH_%\miss14.mis %_DAILYTHIEFCD2_%\miss14.mis
 
+rem well we have some, but we aren't going to strip them yet.
+
+xcopy /D %_MISPATH_%\*.mis %_DAILYTHIEF_%\*.*
+
 xcopy /D %_MISPATH_%\*.gam %_DAILYTHIEF_%\*.*
 
 rem **************************************************************
