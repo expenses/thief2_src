@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/stimbase.h,v 1.7 1998/10/02 01:10:09 mahk Exp $
 
 #ifndef __STIMBASE_H

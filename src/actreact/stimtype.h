@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/stimtype.h,v 1.2 1997/09/29 16:24:22 mahk Exp $
 
 #ifndef __STIMTYPE_H
