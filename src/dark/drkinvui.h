@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkinvui.h,v 1.7 1998/12/15 11:14:23 mahk Exp $
 #pragma once  
 #ifndef __DRKINVUI_H
