@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.10 $
+# $Revision: 1.11 $
 # $Author: rex $
-# $Date: 1993/11/04 11:06:32 $
+# $Date: 1993/11/11 13:51:41 $
 #
 
 COMPILER = watcom95
@@ -22,7 +22,7 @@ HDR_TARGETS = fix
 INST_TARGETS = fix
 
 FIX_HDRS = fix.h fix.inc
-FIX_OBJS = fix.obj fixsprnt.obj fix_asm.obj
+FIX_OBJS = fix.obj fixsprnt.obj fix_asm.obj atofix.obj
 
 FIXTEST_OBJS = $(FIX_OBJS) fixtest.obj
 
@@ -45,6 +45,8 @@ fixtest.obj: fix.h
 
 fix24tst.obj: fix.h
 ### OPUS MKMF:  Do not remove this line!  Generated dependencies follow.
+
+atofix.obj: fix.h stdio.h stdlib.h types.h
 
 fix.obj: fix.h stdio.h stdlib.h trigtab.h types.h
 
