@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lgalloc/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1997/07/08 10:47:59 $
+# $Date: 1997/07/10 11:26:41 $
 #
 #
 
@@ -14,21 +14,22 @@ PROJECT = tech
 
 %include $(MRC)\init.rc
 
-LIBTARGS = multheap
+LIBTARGS = memcore
 
-EXETARGS = mhtest heapperf
+EXETARGS = memtest
+#heapperf
 
 EXETYPE = con
 
-multheap_OBJS = memcore heap poolcore pool poolimp
+memcore_OBJS = allcguid memcore membase primallc stdalloc
 #heapimp
 
-multheap_HDRS =
+memcore_HDRS = allocapi.h allcguid.h allocovr.h
 
-mhtest_objs = mhtest
-mhtest_libs = multheap
+memtest_objs = memtest
+memtest_libs = memcore
 
-heapperf_objs = heapperf
-heapperf_libs = multheap lg mprintf
+#heapperf_objs = heapperf
+#heapperf_libs = multheap lg mprintf
 
 %include $(MRC)\make.rc
