@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.17 1993/11/03 18:30:29 tjs Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.18 1993/11/03 19:06:12 tjs Exp $
 # $Log: makefile $
-# Revision 1.17  1993/11/03 18:30:29  tjs
-# Added lgsprntf
+# Revision 1.18  1993/11/03 19:06:12  tjs
+# Dependencies
 #
+# Revision 1.17  1993/11/03  18:30:29  tjs
+# Added lgsprntf
+# 
 # Revision 1.16  1993/09/30  18:37:28  rex
 # Added memgrow.obj
 # 
@@ -121,6 +124,8 @@ dbgtest.obj: conio.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
 
 exit.obj: dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h memmacro.h \
 	 stdio.h stdlib.h types.h
+
+lgsprntf.obj: ctype.h fix.h limits.h stdarg.h string.h types.h
 
 memall.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
 	 stdio.h string.h types.h
