@@ -64,3 +64,18 @@ MESSAGES:
    }
 
 END_SCRIPT(ExtractionZone)
+
+/* Basso and Jenivere must remain awake if they're to Escape.
+   If they're knocked out or killed, fail the goal.
+   */
+BEGIN_SCRIPT(AwakeToEscape, AI)
+MESSAGES:
+   OnAIModeChange()
+   {
+      if(message.mode==kAIM_Dead)
+         Quest.Set(GoalStateVarName(GOAL_ESCAPE),kGoalFailed);
+      DefaultOnAIModeChange();
+   }
+END_SCRIPT(AwakeToEscape)
+
+         
