@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.22 $
+# $Revision: 1.23 $
 # $Author: KEVIN $
-# $Date: 1997/08/28 15:23:55 $
+# $Date: 1997/09/23 14:01:30 $
 #
 
 MAKETOP = $(CWD)
@@ -44,6 +44,10 @@ INNER_LOOP_OBJS = \
         gen8il gen16il \
         o88il o88bil lo88il co88il n88il 
 
+PTMAP_OBJS = \
+        ptmap ptmapper ptfloat ptmap_8 ptmap_n ptpersp ptlinear \
+        pt_main pt_map pt_duv
+
 # function tables compiled from .tbl's
 TABLE_OBJS = gencnv fl8cnv f16cnv \
         genlmf genllmf gensf genusf \
@@ -57,7 +61,7 @@ MISC_OBJS = blend init svgainit setdrv g2d g2makewr \
 OLD_CRUFTY_TN_OBJS = chkply chkedges chkedgeb 
 
 G2_OBJS = $(POLY_OBJS) $(SCALE_OBJS) $(LINE_OBJS) $(INNER_LOOP_OBJS) \
-        $(TABLE_OBJS) $(MISC_OBJS) $(OLD_CRUFTY_TN_OBJS)
+        $(TABLE_OBJS) $(PTMAP_OBJS) $(MISC_OBJS) $(OLD_CRUFTY_TN_OBJS)
 
 G2_HDRS= g2.h icanvas.inc
 
