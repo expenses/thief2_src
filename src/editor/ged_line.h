@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/editor/RCS/ged_line.h 1.5 1998/08/09 13:33:21 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/editor/ged_line.h,v 1.6 2000/01/29 13:12:11 adurant Exp $
 // line overlay system for gedit
+#pragma once
 
 // this system is responsible for overlaying lines in ged wireframe views
 // it contains methods for adding lines to current lists, activating and deactivating them,

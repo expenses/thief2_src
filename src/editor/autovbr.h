@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/autovbr.h 1.1 1998/07/01 12:04:24 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/editor/autovbr.h,v 1.2 2000/01/29 13:11:10 adurant Exp $
+#pragma once
 
 #ifndef __AUTOVBR_H
 #define __AUTOVBR_H

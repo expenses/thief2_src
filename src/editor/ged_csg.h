@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/ged_csg.h 1.9 1999/11/16 13:00:03 henrys Exp $
+// $Header: r:/t2repos/thief2/src/editor/ged_csg.h,v 1.10 2000/01/29 13:12:09 adurant Exp $
+#pragma once
 
 #ifndef __GED_CSG_H
 #define __GED_CSG_H

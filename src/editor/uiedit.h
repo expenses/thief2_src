@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/uiedit.h 1.7 1998/09/18 22:33:31 mahk Exp $
+// $Header: r:/t2repos/thief2/src/editor/uiedit.h,v 1.8 2000/01/29 13:13:20 adurant Exp $
+#pragma once
 
 #ifndef __UIEDIT_H
 #define __UIEDIT_H

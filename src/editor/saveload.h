@@ -1,6 +1,7 @@
-// $Header: r:/prj/cam/src/editor/RCS/saveload.h 1.7 1998/08/26 14:11:11 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/editor/saveload.h,v 1.8 2000/01/29 13:13:08 adurant Exp $
 // a few simple saveload system functions
 // in particular, too minimize code duplication/bit rot across our saveload in cow and bl and stuff
+#pragma once
 
 #ifndef __SAVELOAD_H
 #define __SAVELOAD_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/editor/RCS/edmedmo.h 1.3 1998/11/05 01:23:41 mahk Exp $
+// $Header: r:/t2repos/thief2/src/editor/edmedmo.h,v 1.4 2000/01/29 13:11:58 adurant Exp $
+#pragma once
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
    edmedmo.h

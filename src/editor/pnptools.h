@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/editor/RCS/pnptools.h 1.14 1998/08/08 17:42:43 mahk Exp $
+// $Header: r:/t2repos/thief2/src/editor/pnptools.h,v 1.15 2000/01/29 13:12:52 adurant Exp $
 // header for PnP maintenance tools
+#pragma once
 
 // the PnP has 7 virtual lines
 
