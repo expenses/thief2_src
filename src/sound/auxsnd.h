@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/auxsnd.h,v 1.6 1999/03/18 14:33:59 mwhite Exp $
 // memory sound source stuff from Pat
 
