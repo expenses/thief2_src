@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.19 $
-# $Author: KEVIN $
-# $Date: 1996/12/06 15:46:47 $
+# $Revision: 1.20 $
+# $Author: TOML $
+# $Date: 1996/12/13 16:02:23 $
 #
 
 MAKETOP = $(CWD)
@@ -72,7 +72,8 @@ dev2d_OBJS = \
         comdfcn nulldfcn \
         vesac vesaasm vsastate \
         vgaasm vgasmod vgastate \
-        clpfl8
+        clpfl8 \
+        ddevcnv ddevblt
 
 gdtest_OBJS = gdtest
 
@@ -103,7 +104,7 @@ dev2d.h .REREAD :\
 .PATH.tbl = $(.PATH.c)
 
 %.c .MISER .NODEFAULT: %.tbl
-        @%setenv INCLUDE=$(IPATH)        
+        @%setenv INCLUDE=$(IPATH)
 	$(eko1) $(@,F) \<-- nonexistent
         @tblmunge $(<,F) $(MAKETOP)\$(@,F)
 
