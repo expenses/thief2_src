@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/hsrc/RCS/grspoint.h 1.7 1997/10/01 13:38:46 KEVIN Exp $
 
 #ifndef __GRSPOINT_H
