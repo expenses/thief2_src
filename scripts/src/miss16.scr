@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.23 2000/03/08 18:00:39 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.24 2000/03/09 21:35:54 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -1401,7 +1401,7 @@ END_SCRIPT (MachineSlot)
 
 #define kRollingExtra1  "FlareMixture"
 #define kRollingExtra2  "PlateO'Metal"
-#define kRollingExtra3  "CombatBotBoiler"
+#define kRollingExtra3  "AcidMixture"
 #define kRollingResult1 "Flare"
 #define kRollingResult2 "QuoteList"
 
