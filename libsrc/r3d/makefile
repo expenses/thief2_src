@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.7 $
-# $Author: dc $
-# $Date: 1996/05/12 00:39:17 $
+# $Revision: 1.8 $
+# $Author: JAEMZ $
+# $Date: 1996/05/12 03:09:52 $
 #
 # Makefile for r3d library
 #
@@ -17,7 +17,10 @@ PROJECT = tech
 
 LIBTARGS = r3d 
 
-EXETARGS = r3dtest1
+EXETARGS = r3dtest1 frank
+
+frank_objs = frank 
+frank_libs = lg mprintf matrix 2d r3d
 
 r3dtest1_LIBS = r3d 2d lg matrix mprintf
 r3dtest1_OBJS = testcore test1
