@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.11 $
-# $Author: mahk $
-# $Date: 1996/10/14 19:23:35 $
+# $Revision: 2.12 $
+# $Author: TOML $
+# $Date: 1996/11/05 14:28:54 $
 #
 
 MAKETOP = $(CWD)
@@ -36,7 +36,7 @@ test_LIBS = input
 input_OBJS = \
 	     joystick kbstart kbshut kbasctab mousesys \
         kbsys kbdev kbcook kbwin defehand joywin hatcal fanjoy \
-        recinput inpinit inpguid
+        recinput inpinit inpguid inpcompo
 
 input_LIBS = compapis recorder mprintf
 
