@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.22 1999/12/02 15:44:44 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.23 1999/12/07 20:12:36 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -816,6 +816,40 @@ END_SCRIPT(GasMine)
    clean up bounds trigger.
 */
 BEGIN_SCRIPT(ActiveMine,Physics)
+
+   METHOD void CleanUpBounds()
+   {
+      linkset triggers=Link.GetAll("~ControlDevice",self);
+      for(;triggers.AnyLinksLeft();triggers.NextLink())
+      {
+	 Debug.MPrint("Slaying mine ",self,", deleting bounds ",triggers.Link().To());
+         Object.Destroy(triggers.Link().To());
+      }
+   }
+
+   // What object type am I when I'm disarmed (@HACK!)
+   METHOD object DisarmType()
+   {
+      return(object("Mine"));
+   }
+
+   METHOD void Disarm()
+   {
+      // @TODO: Would prefer to determine what we transform into some
+      // other way than by overloading this method.
+      object newmine=Object.Create(DisarmType());
+      vector z=vector(0,0,0);
+
+      Object.Teleport(newmine,z,z,self);
+
+      // unlike Arm, we lose the culpability links here.  It's as if the
+      // mine were just laying here.  It won't arm and the player isn't
+      // treated anymore as the one who threw it.
+
+      CleanUpBounds();
+      Object.Destroy(self);
+   }
+
 MESSAGES:
    OnBeginScript()
    {
@@ -877,6 +911,20 @@ MESSAGES:
         Reply(kPM_Slay);
       DefaultOnPhysCollision();
    }
+   OnPickStateChange()
+   {
+      if (message.currentstate == 7)
+	{
+	   PostMessage(self,"TurnOn");
+	   Debug.MPrint("You've set off the mine! ",self," is going to blow.");
+	}
+      if (message.currentstate == 8)
+	{
+	   Debug.MPrint("Mine disarmed.\n");
+	   Disarm();
+	}
+      DefaultOnPickStateChange();
+   }
    OnMessage()
    {
       if(MessageIs("TurnOn"))
@@ -885,17 +933,21 @@ MESSAGES:
    }
    OnSlain()
    {
-      linkset triggers=Link.GetAll("~ControlDevice",self);
-      for(;triggers.AnyLinksLeft();triggers.NextLink())
-      {
-         Object.Destroy(triggers.Link().To());
-      }
+      CleanUpBounds();
       DefaultOnSlain();
    }
 
 END_SCRIPT(ActiveMine);
 
+// Just like a regular mine, only it turns into a different object when active.
+BEGIN_SCRIPT(ActiveGasMine, ActiveMine)
 
+METHODS:
+   METHOD object DisarmType()
+   {
+      return(object("GasMine"));
+   }
+END_SCRIPT(ActiveGasMine)
 
 // Script: MossLump
 /* When the moss lump falls asleep, create a moss launcher */
