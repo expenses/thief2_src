@@ -274,6 +274,32 @@ MESSAGES:
 END_SCRIPT(StdDoor)
 
 
+BEGIN_SCRIPT(SubDoorJoints, Door)
+METHODS:
+   METHOD void TweqDoor(integer flags)
+   {
+      integer joint=1;
+      for(joint=1;joint<=6;joint++)
+      {
+         string animSstr="Joint"+string(joint)+"AnimS";
+         Property.Set(self,"StTweqJoints",animSstr,flags);
+      }
+      Property.Set(self,"StTweqJoints","AnimS",flags);
+   }
+MESSAGES:
+   OnDoorOpening()
+   {
+      TweqDoor(TWEQ_AS_ONOFF|TWEQ_AS_REVERSE);
+      DefaultOnDoorOpening();
+   }
+   OnDoorClose()
+   { 
+      TweqDoor(TWEQ_AS_ONOFF);
+      DefaultOnDoorClose();
+   }
+END_SCRIPT(SubDoorJoints)
+
+
 BEGIN_SCRIPT(ToggleDoor, StdDoor)
 
 MESSAGES:
