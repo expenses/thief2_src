@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/editor/userpnp.c,v 1.2 2000/02/19 13:13:41 toml Exp $
 #include <config.h>
 
