@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.1 1999/07/05 15:07:22 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.2 1999/07/05 15:08:25 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -62,10 +62,29 @@ door can simply be absent a "scripts" flag in its "FrobInfo" property
 have absolutely no scripted Frob response.  The other option is to have
 a special-purpose script for that door, though possibly one which
 inherits from StdDoor but declines to chain up with DefaultOnFrobWorldEnd()
+
+This script includes synchronizing behavior for double doors, indicated
+by a ScriptParams link (in either direction) with the data "Double."
+Such doors will attempt to open and close as a unit, and keep the same
+lock state.
+
 */
 BEGIN_SCRIPT(StdDoor,Door)
 
    METHODS:
+
+      METHOD void PingDoubles(void)
+      {
+         Link.BroadcastOnAllLinks(self,"SynchUp","ScriptParams","Double");
+         Link.BroadcastOnAllLinks(self,"SynchUp","~ScriptParams","Double");
+      }
+
+      METHOD integer TargState(integer state)
+      {
+         if(state==kDoorClosing) return kDoorClosed;
+         if(state==kDoorOpening) return kDoorOpen;
+         return state;
+      }
 
       METHOD string StateChangeTags(integer Status, integer OldStatus)
       {
@@ -92,11 +111,13 @@ MESSAGES:
     // will also close and open it.  -TJS
     OnNowLocked()
     {
+       PingDoubles();
        Door.CloseDoor(self);
        DefaultOnNowLocked();
     }
     OnNowUnlocked()
     {
+       PingDoubles();
        Door.OpenDoor(self);
        DefaultOnNowUnlocked();
     }
@@ -124,11 +145,13 @@ MESSAGES:
     }
     OnDoorOpening()
     {
+       PingDoubles();
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
        DefaultOnDoorOpening();
     }
     OnDoorClosing()
     {
+       PingDoubles();
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
        DefaultOnDoorClosing();
     }
@@ -194,9 +217,28 @@ MESSAGES:
        {
           SetData("PlayerFrob",0);
        }
+       else if(MessageIs("SynchUp"))
+       {
+          object otherdoor=message.from;
+          integer othertargstate=TargState(Door.GetDoorState(otherdoor));
+          integer mytargstate=TargState(Door.GetDoorState(self));
+          
+          if(mytargstate!=othertargstate)
+          {
+             if(othertargstate==kDoorClosed)
+                Door.CloseDoor(self);
+             else
+                Door.OpenDoor(self);
+          }
+          if(Property.Possessed(otherdoor,"Locked"))
+          {
+             Property.Set(self,"Locked",Property.Get(otherdoor,"Locked"));
+          }
+       }
     }
 
 END_SCRIPT(StdDoor)
+
 
 BEGIN_SCRIPT(ToggleDoor, StdDoor)
 
@@ -1788,11 +1830,12 @@ MESSAGES:
 
       if(CanAttachTo(WhatIHit))
       {
-         object MyRope=Object.Create("RopeArrowRope");
+         object MyRope=Object.BeginCreate("RopeArrowRope");
 
          SetData("DontTimeout",TRUE);
          Link.Create("Owns",self,MyRope);
          Object.Teleport(MyRope,vector(-1.0,0,0),vector(0,0,0),self);
+         Object.EndCreate(MyRope);
       }
       DefaultOnPhysCollision();
    }
@@ -2275,6 +2318,7 @@ METHODS:
         
         // activate/reverse the motion of the lever
         ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
+        Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
      }  
 
      /* Sends the tweq device towards the specified state if it's
@@ -2286,6 +2330,7 @@ METHODS:
            return;
         else // get moving, then
            TweqActivate();
+        Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
      }  // end of Method: GoTowardsState
 
 
@@ -2302,6 +2347,14 @@ MESSAGES:
         }
         else if (MessageIs("Target?"))
            Reply(TargetState(self));
+        else if (MessageIs("SynchUp"))
+        {
+           // synch up with another lever, for when multiple levers
+           // are frob proxied to control a single two-state mechanism
+           // and you want to keep all levers in the same animation
+           // state.
+           GoTowardsState(TargetState(message.from));
+        }
      }
      OnTweqComplete()
      {
