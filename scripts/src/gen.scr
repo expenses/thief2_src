@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.31 2000/01/06 10:50:17 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.32 2000/01/10 12:01:40 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1525,6 +1525,86 @@ METHODS:
    }
 END_SCRIPT(LoGravPotion)
 
+/* Potion manhandles player's visibility property, and postdates it
+   so it doesn't get recalculated from the environment while potion
+   is active.  We also add a metaproperty to the player to handle
+   script events.  That metaproperty handles some of the actual 
+   consequences of visibility and invisibility, since even while under
+   an invisibility potion other factors can make the player visible
+   (such as holding a flare).
+   */
+BEGIN_SCRIPT(InvisiPotion, TimedPotion)
+METHODS:
+   METHOD void PotionEffect(object imbiber, boolean start)
+   {
+      object invis=object("M-Invisible");
+      if(!Object.InheritsFrom(imbiber,Object.Named("Avatar")))
+         return;
+      if(start)
+      {
+         // note that this will need to be converted to milliseconds for the property
+         float time=GetTime();
+         integer timeout=8600;
+
+         if(Property.Possessed(self,"ScriptTiming"))
+            timeout=Property.Get(self,"ScriptTiming");
+
+         if(!Object.HasMetaProperty(imbiber,invis))
+            Object.AddMetaProperty(imbiber,invis);
+         // Postdate the property so as to disable updates
+         Property.Set(imbiber,"AI_Visibility","Last update time",
+                      integer(time*1000)+timeout);
+
+         // Actually handles the transition in visibility
+         SendMessage(imbiber,"Invisible");
+      }
+      else
+      {
+         float time=GetTime();
+
+         SendMessage(imbiber,"Visible");
+         Object.RemoveMetaProperty(imbiber,invis);
+         // Just to make sure, enable updates again.
+         Property.Set(imbiber,"AI_Visibility","Last update time",
+                      integer(time*1000));
+      }
+   }
+END_SCRIPT(InvisiPotion)
+
+/* Script which goes on the player while under the influence of 
+   invisibility potion.  Handles potion start and end, and visibility
+   start end end due to flare manipulation.
+   */
+BEGIN_SCRIPT(Invisible,RootScript)
+MESSAGES:
+   // @TODO: Handle container messages and such, for evidence.
+   OnMessage()
+   {
+      if(MessageIs("Invisible"))
+      {
+         linkkind kind("~AIAttack");
+
+         Property.Set(self,"AI_Visibility","Level",0);
+         Property.Set(self,"AI_Visibility","Light rating",0);
+         Property.Set(self,"AI_Visibility","Movement rating",0);
+         Property.Set(self,"AI_Visibility","Exposure rating",0);
+
+         // break all AI attack links explicitly, as per System Shock
+         // psi invisibility script.
+         if (Link.AnyExist(kind, self))
+         {
+            linkset myLinks = Link.GetAll(kind, self);
+            link currLink = myLinks.Link();
+            while (myLinks.AnyLinksLeft())
+            {
+               currLink = myLinks.Link();
+               Link.Destroy(currLink);
+               myLinks.NextLink();
+            }
+         }
+      }
+   }
+END_SCRIPT(Invisible)
 
 
 BEGIN_SCRIPT (Arrow, RootScript)
@@ -2224,26 +2304,44 @@ END_SCRIPT(LightFlare)
 */
 BEGIN_SCRIPT(IllumeBearer, RootScript)
 
-MESSAGES:
-   OnContained()
+METHODS:
+   METHOD void Illume(boolean on, object container)
    {
-      object container=message.container;
-
-      if(Property.Possessed(self,"SelfLit"))
+      /* Add or remove properties on my bearer, as appropriate */
+      if(!on)
       {
-         /* Add or remove this property on my bearer, as appropriate */
-         if(message.event==kContainRemove)
+         Property.Remove(container,"SelfLit");
+         Property.Remove(container,"LightColor");
+
+         // Note that this only gets handled if bearer is under influence
+         // of invisibility potion.
+         SendMessage(container,"Invisible");
+      }
+      else
+      {
+         if(Property.Possessed(self,"SelfLit"))
          {
-            Property.Remove(container,"SelfLit");
-            Property.Remove(container,"LightColor");
-         }
-         else
-         {
+            integer light=Property.Get(self,"SelfLit");
+
             Property.CopyFrom(container,"SelfLit",self);
             if(Property.Possessed(self,"LightColor"))
                Property.CopyFrom(container,"LightColor",self);
+
+            // Invisible bearer needs new visibility property values.
+            if(Object.HasMetaProperty(container,"M-Invisible"))
+            {
+               Property.Set(container,"AI_Visibility","Level",light);
+               Property.Set(container,"AI_Visibility","Light rating",light);
+               SendMessage(container,"Visible");
+            }
          }
-      }
+      }  
+   }
+
+MESSAGES:
+   OnContained()
+   {
+      Illume(message.event!=kContainRemove,message.container);
       DefaultOnContained();
    }
    OnSlain()
@@ -2251,8 +2349,7 @@ MESSAGES:
       if(Link.AnyExist("~Contains",self))
       {
          object container=Link.GetOne("~Contains",self).To();
-         Property.Remove(container,"SelfLit");
-         Property.Remove(container,"LightColor");
+         Illume(FALSE,container);
       }
       DefaultOnSlain();
    }
