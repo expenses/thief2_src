@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.17 $
+# $Revision: 1.18 $
 # $Author: dfan $
-# $Date: 1994/08/11 12:14:50 $
+# $Date: 1994/08/30 15:52:20 $
 #
 
 COMPILER = watcom
@@ -38,8 +38,8 @@ TRIGERR_OBJS = $(FIX_OBJS) trigerr.obj
 
 !include $(INIT)/make.rc
 
-trigtab.cc: fmaketab.exe
-	fmaketab > trigtab.cc
+trigtab.c: fmaketab.exe
+	fmaketab > trigtab.c
 
 fix.obj: fix.h trigtab.h
 
