@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 /* wrobj.h
 **
 ** Object system stuff that needs to know about the World Rep at compile time
