@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/ui/RCS/makefile $
-# $Revision: 1.28 $
-# $Author: mahk $
-# $Date: 1994/07/09 20:04:14 $
+# $Revision: 1.29 $
+# $Author: xemu $
+# $Date: 1994/10/13 16:20:35 $
 
 DEBUG_ON = 1
 SPEW_ON = 1
@@ -29,12 +29,12 @@ UI_OBJS = gadgets.obj region.obj cursors.obj curdrw.obj event.obj slab.obj \
         pushbutt.obj butarray.obj qboxgadg.obj textgadg.obj slider.obj \
         texttool.obj tngfont.obj tng.obj  hotkey.obj\
         tngqbox.obj tngtextg.obj tngpushb.obj tngslidr.obj tngbarry.obj \
-        plain.obj tngplain.obj menu.obj tngmenu.obj
+        plain.obj tngplain.obj menu.obj tngmenu.obj vmouse.obj
 UI_HDRS = gadgets.h region.h cursors.h event.h slab.h pushbutt.h \
         butarray.h qboxgadg.h textgadg.h slider.h texttool.h \
         tngqbox.h tngtextg.h tngpushb.h tngslidr.h tngbarry.h tng.h \
         tngapp.h hotkey.h plain.h tngplain.h menu.h tngmenu.h \
-        curdat.h curtyp.h
+        curdat.h curtyp.h vmouse.h
 
 UITEST_OBJS = uitest.obj
 UITEST_LIBS = _lg.lib _2d.lib _input.lib _res.lib _fix.lib \
@@ -60,18 +60,18 @@ cursors.obj objo\cursors.obj objd\cursors.obj: 2d.h _2d.h _3d.h _babl2.h _dstruc
 	 _network.h _parse.h _res.h _sound.h _testlib.h _ui.h array.h \
 	 cursors.h curtyp.h dbg.h dbgmacro.h error.h fix.h lg.h lgalt.h \
 	 libdbg.h malloc.h memall.h memmacro.h mouse.h rect.h region.h \
-	 slab.h slist.h stdio.h stdlib.h string.h types.h
+	 slab.h slist.h stdio.h stdlib.h string.h types.h vmouse.h
 
 event.obj objo\event.obj objd\event.obj: 2d.h _ui.h array.h ctype.h cursors.h dbg.h dbgmacro.h error.h \
 	 event.h fix.h kb.h kbcook.h lg.h lgalt.h malloc.h memall.h \
 	 memmacro.h mouse.h rect.h region.h slab.h slist.h stdio.h stdlib.h \
-	 types.h
+	 types.h vmouse.h
 
 gadgets.obj objo\gadgets.obj objd\gadgets.obj: 2d.h 2dres.h _ui.h array.h ctype.h cursors.h datapath.h dbg.h \
 	 dbgmacro.h error.h event.h fix.h gadgets.h kb.h kbcook.h lg.h \
-	 lgalt.h malloc.h memall.h memmacro.h mouse.h rect.h region.h res.h \
-	 restypes.h slab.h slist.h stdio.h stdlib.h string.h tng.h tngapp.h \
-	 types.h
+	 lgalt.h lgsprntf.h malloc.h memall.h memmacro.h mouse.h rect.h \
+	 region.h res.h restypes.h slab.h slist.h stdarg.h stdio.h stdlib.h \
+	 string.h tng.h tngapp.h types.h
 
 hotkey.obj objo\hotkey.obj objd\hotkey.obj: _dstruct.h _ui.h array.h ctype.h dbg.h dbgmacro.h error.h \
 	 hash.h hotkey.h kb.h kbcook.h lg.h lgalt.h malloc.h memall.h \
@@ -194,3 +194,6 @@ uitest.obj objo\uitest.obj objd\uitest.obj: 2d.h 2dres.h _dstruct.h array.h buta
 	 slab.h slider.h slist.h stat.h stdio.h stdlib.h string.h \
 	 textgadg.h texttool.h tng.h tngapp.h tngbarry.h tngplain.h \
 	 tngpushb.h tngqbox.h tngslidr.h tngtextg.h types.h
+
+vmouse.obj objo\vmouse.obj objd\vmouse.obj: dbg.h dbgmacro.h error.h lg.h lgalt.h malloc.h memall.h \
+	 memmacro.h mouse.h mprintf.h stdio.h types.h
