@@ -716,14 +716,10 @@ MESSAGES:
    OnBeginScript()
    {
       // don't want starting point to bother with these messages.
-      if((Quest.Get("difficulty")==0) && 
-         !IsDataSet("Init") && 
-         Object.InheritsFrom(self,"Avatar"))
+      if(Object.InheritsFrom(self,"Avatar") &&
+         (Quest.Get("difficulty")==0))
       {
-         integer objmax=0;
-
-         SetData("Init",TRUE);
-         // Create quest vars.
+         // Create quest vars, if not already there.
          Quest.Set(WEAP_ID_QVAR,Quest.Get(WEAP_ID_QVAR));
          Quest.Set(INV_ID_QVAR,Quest.Get(INV_ID_QVAR));
          Quest.Set(WORLD_ID_QVAR,Quest.Get(WORLD_ID_QVAR));
@@ -734,35 +730,41 @@ MESSAGES:
          Quest.SubscribeMsg(self,WORLD_ID_QVAR);
          Quest.SubscribeMsg(self,WEAP_UI_QVAR);
 
-         // Woo hoo.  Put tracking scripts on all world-frobbable items,
-         // and set their FrobInfo to make sure they send select messages to
-         // scripts.
-         if(DarkGame.ConfigIsDefined("obj_max"))
-            DarkGame.ConfigGetInt("obj_max",objmax);
-
-         if(objmax>0)
+         if(!IsDataSet("Init"))
          {
-            integer object_id=1;
-            integer frobinfo=0;
+            integer objmax=0;
 
-            for(object_id=1;object_id<=objmax;object_id++)
+            SetData("Init",TRUE);
+            // Woo hoo.  Put tracking scripts on all world-frobbable items,
+            // and set their FrobInfo to make sure they send select messages to
+            // scripts.
+            if(DarkGame.ConfigIsDefined("obj_max"))
+               DarkGame.ConfigGetInt("obj_max",objmax);
+
+            if(objmax>0)
             {
-               if(Object.Exists(object_id))
-               {
-                  frobinfo=Property.Get(object_id,"FrobInfo","World Action");
+               integer object_id=1;
+               integer frobinfo=0;
 
-                  if(frobinfo!=0)
+               for(object_id=1;object_id<=objmax;object_id++)
+               {
+                  if(Object.Exists(object_id))
                   {
-                     if(!(frobinfo & kFrobFocusScript))
+                     frobinfo=Property.Get(object_id,"FrobInfo","World Action");
+
+                     if(frobinfo!=0)
                      {
-                        frobinfo=frobinfo|kFrobFocusScript;
-                        Property.Set(object_id,"FrobInfo","World Action",frobinfo);
+                        if(!(frobinfo & kFrobFocusScript))
+                        {
+                           frobinfo=frobinfo|kFrobFocusScript;
+                           Property.Set(object_id,"FrobInfo","World Action",frobinfo);
+                        }
+                        if(IsDoor(object_id) && 
+                           !Object.HasMetaProperty(object_id,"M1_TrackDoor"))
+                           Object.AddMetaProperty(object_id,"M1_TrackDoor");
+                        else if(!Object.HasMetaProperty(object_id,"M1_TrackWorld"))
+                           Object.AddMetaProperty(object_id,"M1_TrackWorld");
                      }
-                     if(IsDoor(object_id) && 
-                        !Object.HasMetaProperty(object_id,"M1_TrackDoor"))
-                        Object.AddMetaProperty(object_id,"M1_TrackDoor");
-                     else if(!Object.HasMetaProperty(object_id,"M1_TrackWorld"))
-                        Object.AddMetaProperty(object_id,"M1_TrackWorld");
                   }
                }
             }
