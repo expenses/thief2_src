@@ -494,6 +494,7 @@ MESSAGES:
         Debug.MPrint("I think my work here is done");
         //hack, explicit schema name call
         Sound.PlaySchema(self,Object.Named("gar0618"),self);
+        SetData("PlayedWon",1);
       }
     }
     DefaultOnQuestChange();
