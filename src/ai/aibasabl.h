@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aibasabl.h,v 1.14 1999/11/29 12:27:45 BFarquha Exp $
 //
