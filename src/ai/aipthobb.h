@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthobb.h 1.3 1999/03/10 12:58:06 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthobb.h,v 1.5 2000/03/06 17:19:24 toml Exp $
 //
 // AI OBB pathfinding header
 //
+#pragma once
 
 #ifndef __AIPTHOBB_H
 #define __AIPTHOBB_H
@@ -14,12 +15,27 @@
 F_DECLARE_INTERFACE(IAIManager);
 F_DECLARE_INTERFACE(IBoolProperty);
 
-struct sAIObjCell : public sAIExternCell
+struct sAIObjCell // (toml 03-06-00) : public sAIExternCell
 {
+   sAIObjCell()
+   {
+      memset(this, 0, sizeof(*this));
+   }
+   
+   ~sAIObjCell()
+   {
+      if (pAIExternCell)
+         delete pAIExternCell;
+   }
+   
    sAIExternCell *pAIExternCell;
-   ObjID  objID;
+   ObjID          objID;
    void  *data;
 };
+
+////////////////////////////////////////
+
+typedef cDynClassArray<sAIObjCell> cAIObjCells;
 
 ////////////////////////////////////////
 
@@ -30,8 +46,8 @@ EXTERN IBoolProperty *g_pObjPathableProperty;
 EXTERN void AIInitObjectPathable(IAIManager *);
 EXTERN void AITermObjectPathable();
 
-EXTERN void AIGetAllMovingTerrainCells(cDynArray<sAIObjCell> *pCellList);
-EXTERN void AIGetAllPathableOBBCells(cDynArray<sAIObjCell> *pCellList);
+EXTERN void AIGetAllMovingTerrainCells(cAIObjCells *pCellList);
+EXTERN void AIGetAllPathableOBBCells(cAIObjCells *pCellList);
 
 EXTERN void AIGetAllMovingTerrainObjs(cDynArray<ObjID> *pObjList);
 
