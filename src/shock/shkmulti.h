@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkmulti.h 1.18 1999/08/05 17:53:47 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmulti.h,v 1.19 2000/01/31 09:58:06 adurant Exp $
+#pragma once
 
 #ifndef __SHKMULTI_H
 #define __SHKMULTI_H

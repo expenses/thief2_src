@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkprjpr.h 1.2 1999/11/19 14:53:08 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkprjpr.h,v 1.3 2000/01/31 09:58:40 adurant Exp $
 // Shock projectile related properties
+#pragma once
 
 This file has been moved to projprop.h AMSD
 

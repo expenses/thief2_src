@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkproj.h 1.16 1999/11/19 14:52:47 adurant Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkproj.h,v 1.17 2000/01/31 09:58:41 adurant Exp $
+#pragma once
 
 This file has been moved to gunproj.h  AMSD
 

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkuitul.h 1.1 1999/08/05 18:03:19 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkuitul.h,v 1.2 2000/01/31 09:59:31 adurant Exp $
+#pragma once
 
 #ifndef __SHKUITUL_H
 #define __SHKUITUL_H

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkmelee.h 1.5 1999/04/28 13:44:51 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmelee.h,v 1.6 2000/01/31 09:57:56 adurant Exp $
 // Melee weapons
+#pragma once
 
 #ifndef __SHKMELEE_H
 #define __SHKMELEE_H

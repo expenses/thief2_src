@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpsamp.h 1.2 1998/11/23 15:57:11 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpsamp.h,v 1.3 2000/01/31 09:58:44 adurant Exp $
+#pragma once
 
 #ifndef __SHKPSAMP_H
 #define __SHKPSAMP_H

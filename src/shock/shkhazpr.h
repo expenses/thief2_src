@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkhazpr.h 1.1 1998/10/26 13:28:35 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkhazpr.h,v 1.2 2000/01/31 09:56:35 adurant Exp $
+#pragma once
 
 #include <propfac_.h>
 #include <propbase.h>

@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/shock/RCS/shkpick.h 1.1 1998/12/19 13:43:57 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpick.h,v 1.2 2000/01/31 09:58:28 adurant Exp $
 //
+#pragma once
 
 #ifndef __SHKPICK_H
 #define __SHKPICK_H

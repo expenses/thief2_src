@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkrsrch.h 1.5 1999/05/16 19:35:27 Justin Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkrsrch.h,v 1.6 2000/01/31 09:59:07 adurant Exp $
+#pragma once
 
 #ifndef __SHKRSRCH_H
 #define __SHKRSRCH_H

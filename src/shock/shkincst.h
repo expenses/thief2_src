@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkincst.h 1.2 1999/01/02 13:53:18 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkincst.h,v 1.3 2000/01/31 09:56:47 adurant Exp $
+#pragma once
 
 #ifndef __SHKINCST_H
 #define __SHKINCST_H

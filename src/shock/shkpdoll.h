@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpdoll.h 1.3 1998/12/08 00:07:44 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpdoll.h,v 1.4 2000/01/31 09:58:25 adurant Exp $
+#pragma once
 
 #ifndef __SHKPDOLL_H
 #define __SHKPDOLL_H

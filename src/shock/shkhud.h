@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkhud.h 1.2 1999/05/19 20:26:50 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkhud.h,v 1.3 2000/01/31 09:56:41 adurant Exp $
+#pragma once
 
 #ifndef __SHKHUD_H
 #define __SHKHUD_H

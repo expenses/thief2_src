@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkscapi.h 1.1 1998/12/08 00:07:57 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkscapi.h,v 1.2 2000/01/31 09:59:08 adurant Exp $
+#pragma once
 
 #ifndef __SHKSCAPI_H
 #define __SHKSCAPI_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkreprt.h 1.1 1999/04/08 18:51:15 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkreprt.h,v 1.2 2000/01/31 09:59:02 adurant Exp $
+#pragma once
 
 #ifndef __SHKREPRT_H
 #define __SHKREPRT_H

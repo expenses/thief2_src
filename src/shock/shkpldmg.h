@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpldmg.h 1.2 1999/03/07 20:44:15 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpldmg.h,v 1.3 2000/01/31 09:58:32 adurant Exp $
+#pragma once
 
 #ifndef __SHKPLDMG_H
 #define __SHKPLDMG_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkmfddm.h 1.2 1998/12/16 20:50:24 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmfddm.h,v 1.3 2000/01/31 09:58:00 adurant Exp $
+#pragma once
 
 #ifndef __SHKMFDDM_H
 #define __SHKMFDDM_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkminig.h 1.11 1999/06/23 18:37:20 dc Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkminig.h,v 1.12 2000/01/31 09:58:01 adurant Exp $
+#pragma once
 
 #ifndef __SHKMINIG_H
 #define __SHKMINIG_H

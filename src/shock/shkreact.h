@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkreact.h 1.2 1998/10/26 13:27:59 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkreact.h,v 1.3 2000/01/31 09:58:59 adurant Exp $
+#pragma once
 
 #ifndef __SHKREACT_H
 #define __SHKREACT_H

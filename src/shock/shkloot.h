@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkloot.h 1.2 1999/04/12 21:49:56 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkloot.h,v 1.3 2000/01/31 09:57:52 adurant Exp $
+#pragma once
 
 #ifndef __SHKLOOT_H
 #define __SHKLOOT_H

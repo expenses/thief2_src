@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkmel_.h 1.2 1999/03/10 16:00:32 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmel_.h,v 1.3 2000/01/31 09:57:58 adurant Exp $
+#pragma once
 
 #ifndef __SHKMEL__H
 #define __SHKMEL__H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkmap.h 1.3 1999/01/25 18:23:02 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmap.h,v 1.4 2000/01/31 09:57:54 adurant Exp $
+#pragma once
 
 #ifndef __SHKMAP_H
 #define __SHKMAP_H

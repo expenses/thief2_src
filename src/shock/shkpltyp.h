@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkpltyp.h 1.1 1998/08/30 18:37:50 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkpltyp.h,v 1.2 2000/01/31 09:58:39 adurant Exp $
+#pragma once
 
 #ifndef __SHKPLTYP_H
 #define __SHKPLTYP_H

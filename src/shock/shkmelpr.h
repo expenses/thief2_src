@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkmelpr.h 1.1 1998/08/17 16:50:31 JON Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkmelpr.h,v 1.2 2000/01/31 09:57:57 adurant Exp $
 // Shock melee weapon related properties
+#pragma once
 
 #ifndef __SHKMELPR_H
 #define __SHKMELPR_H

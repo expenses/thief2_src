@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkiface.h 1.11 1999/01/08 12:15:17 XEMU Exp $
+// $Header: r:/t2repos/thief2/src/shock/shkiface.h,v 1.12 2000/01/31 09:56:42 adurant Exp $
+#pragma once
 
 #ifndef __SHKIFACE_H
 #define __SHKIFACE_H
