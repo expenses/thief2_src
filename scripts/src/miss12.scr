@@ -21,6 +21,27 @@ METHODS:
       PostMessage(self,"ReSubscribe");
    }
 
+   METHOD void TallyCombine(object obj)
+   {
+      string combine="";
+      integer count=0;
+
+      if(Property.Possessed(obj,"CombineType"))
+         combine=Property.Get(obj,"CombineType");
+      else
+         return;
+
+      if(Property.Possessed(obj,"StackCount"))
+         count=Property.Get(obj,"StackCount");
+      else
+         // InvCache takes care of not actually giving a stack count to anything
+         // that shouldn't have one.
+         count=1;
+      
+      if(count!=0)
+         Quest.Set(string("CarryInv")+combine,count,kQuestDataCampaign);
+   }
+
 MESSAGES:
    OnBeginScript()
    {
@@ -54,14 +75,12 @@ MESSAGES:
             {
                // a key.  Use combine type encoding (hashed from keysrc info
                // into a string in StdKey when we were contained) for quest var.
-               string combine=Property.Get(obj,"CombineType");
-               integer count=0;
-
-               if(Property.Possessed(obj,"StackCount"))
-                  count=Property.Get(obj,"StackCount");
-
-               Quest.Set(string("M12Inv")+combine,count,kQuestDataCampaign);
+               TallyCombine(obj);
             }
+            else 
+               // Hmm, how _really_ to decide whether to tally?
+               // if(boolean(SendMessage(obj,"Tally?")))
+               TallyCombine(obj);
             contains.NextLink();
          }
       }
@@ -71,32 +90,98 @@ MESSAGES:
 END_SCRIPT(SpecialGoals)
 
 
+
 /* Give the player whatever keys and such the quest vars say he got in previous mission. */
+
 BEGIN_SCRIPT(InvCache, LoadoutCache)
 METHODS:
-   METHOD boolean Cleared(object obj)
+   METHOD boolean Clear(object obj)
    {
       // Note that we don't just clear the object or not, but can mutate the
       // objects we clear.  Woo hoo.
       
-      // Note that key should have had its CombineType set appropriately when it
+      // Note keys should have had its CombineType set appropriately when it
       // got Contained in the Cache, due to the OnContained handler in the StdKey
       // script.  Don't try this at home.
-      string combine=Property.Get(obj,"CombineType");
-      integer count=Quest.Get(string("M12Inv")+combine);
+      string combine="";
+      integer count=0;
 
-      Debug.MPrint("Clearing ",obj," (",combine,")");
+      Debug.MPrint(self," clearing ",obj);
 
-      if(count!=0)
+      if(!Property.Possessed(obj,"CombineType"))
       {
-         // we have the key.  Make sure counts match
-         Property.Set(obj,"StackCount",count);
+         Debug.MPrint("It's out of here.");
+         Object.Destroy(obj);
+         return FALSE;
+      }
+
+      combine=Property.Get(obj,"CombineType");
+      count=Quest.Get(string("CarryInv")+combine);
+
+      if(count>0)
+      {
+         // we have the item.  Make sure counts match
+         // if we didn't have a stack count already, though, don't give one.
+         if(Property.Possessed(obj,"StackCount"))
+            Property.Set(obj,"StackCount",count);
+         Quest.Set(string("CarryInv")+combine,0);
          return TRUE;
       }
       else
+      {
+         Debug.MPrint("It's out of here.");
+         Object.Destroy(obj);
          return FALSE;
+      }
    }
+   METHOD void CleanUp(object obj)
+                                  {
+      // Can set Slay Result to determine whether you really want this.
+      Damage.Slay(obj,self);
+   }
+MESSAGES:
+   OnDifficulty()
+   {
+      Unload();
+   }
+   // Default behavior for OnSim is okay, since really OnDifficulty will have
+   // cleared it out anyway.  But KeyCache wants the default OnSim.
+   OnSim()
+   {
+      if(message.starting)
+      {
+         // We may have been unloading to the starting point.  If the OnDifficulty case
+         // doesn't get called (as when going in from editor mode)  we'll end up in the 
+         // OnSim case, where we want to be sure to unload to the player object.
+         // This will be the LoadoutCache behavior if we aren't contained.
+         Container.Remove(self);
+         DefaultOnSim();
+      }
+   }
+
 END_SCRIPT(InvCache)
+
+// Check whether it can Clear anything OnDifficulty, and delete self if not.
+// Otherwise a normal LoadoutCache, pretty much
+BEGIN_SCRIPT(KeyCache, InvCache)
+MESSAGES:
+   OnDifficulty()
+   {
+      linkset MyContents=Link.GetAll("Contents",self);
+      boolean clear=FALSE;
+
+      while(MyContents.AnyLinksLeft())
+      {
+         clear=Clear(MyContents.Link().To())||clear;
+            
+         MyContents.NextLink();
+      }
+      // Did _anything_ survive being cleared?
+      if(!clear)
+         Object.Destroy(self);
+      // And _don't_ do default on difficulty.
+   }
+END_SCRIPT(KeyCache)
 
 
 /* Two goals states can carry over from mission to mission.
