@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.22 2000/03/08 03:57:32 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.23 2000/03/08 18:00:39 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -973,15 +973,15 @@ OnMessage()
             PlayList.NextLink();
          }
 
-         if (Link.AnyExist("ControlDevice", self))
+         if (Object.Exists(Object.Named("LoudspeakerRelay")))
          {
-	    // get the LoudspeakerRelay object
+				// get the LoudspeakerRelay object
             object LoudspeakerRelay = Object.Named("LoudspeakerRelay");
-	    // tell it to play the schema we've selected
+				// tell it to play the schema we've selected
             PostMessage(LoudspeakerRelay,"PlaySchema",PlayList.Link().To());
          }
          else
-            Debug.MPrint(" *** WARNING: ",self," not CD-linked to a LoudspeakerRelay");
+            Debug.MPrint(" *** WARNING: object named LoudspeakerRelay does not exist.");
 
          // Adjust its link data
          PlayList.Link().SetData(1);
