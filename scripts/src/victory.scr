@@ -1,4 +1,4 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.4 1999/12/02 19:08:18 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.5 1999/12/16 18:26:15 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
@@ -74,24 +74,6 @@ METHODS:
       }
    }
 
-   // returns a bitfield of the "goal visible" questvar values,
-   // in order to encapsulate that data and facilitate comparisons,
-   // so we an do the "New Goal" pop-up.
-   METHOD integer GoalVisibleMask()
-   {
-      integer objective, mask=0;
-      boolean done = FALSE; 
-      for(objective=0;!done;objective++)
-      {
-         string var = GoalVisibleVarName(objective); 
-         if (Quest.Exists(var))
-            mask|=(!!integer(Quest.Get(var))<<objective);
-         else
-            done = TRUE; 
-      }
-      // Debug.MPrint("GoalVisibleMask() returning ",mask);
-      return mask;
-   }
    METHOD void ObjectiveSet(integer objective, integer value)
    {
       Quest.Set(GoalStateVarName(objective),value,kQuestDataMission);
@@ -211,6 +193,42 @@ METHODS:
       return FALSE;
    }
 
+   // Whenever goal quest vars change, check for popup messages we want to show
+   METHOD void CheckPopup(string qvar, integer oldval, integer newval)
+   {
+      integer goal;
+      integer completepopup=FALSE;
+      string popup="";
+      object schem=object(NULL);
+
+      if(DarkGame.ConfigIsDefined("GoalCompletePopup"))
+         DarkGame.ConfigGetInt("GoalCompletePopup",completepopup);
+
+      for(goal=0; ObjectiveExists(goal); goal++)
+      {
+         if(stricmp(qvar,GoalVisibleVarName(goal))==0)
+         {
+            if(newval && !oldval)
+            {
+               popup=Data.GetString("PlayHint.str","NewGoal");
+               schem=Object.Named("new_obj");
+               break;
+            }
+         }
+         else if(stricmp(qvar,GoalStateVarName(goal))==0 &&
+                 completepopup)
+         {
+            if(newval==kGoalComplete)
+            {
+               popup=Data.GetString("PlayHint.str","DoneGoal");
+               schem=Object.Named("new_obj"); // @TODO: Or something
+            }
+         }
+      }
+      if(popup!="") DarkUI.TextMessage(popup);
+      if(schem!=object(NULL)) Sound.PlaySchemaAmbient(self,schem);
+   }
+
    METHOD void DoubleCheckFinalGoals()
    {
       integer goal;
@@ -274,22 +292,6 @@ METHODS:
          ObjectiveShow(objective,goalstate==kGoalComplete);
    }
 
-   METHOD void CheckNewGoal()
-   {
-      integer oldgoalvis=GetData("VisGoals");
-      integer goalmask=GoalVisibleMask();
-
-      // Any newly-visible goals?
-      if(goalmask & ~oldgoalvis)
-      {
-         string NewGoal=Data.GetString("PlayHint.str","NewGoal");
-         object schem=Object.Named("new_obj");
-         DarkUI.TextMessage(NewGoal);
-         if(schem!=object(0)) Sound.PlaySchemaAmbient(self,schem);
-      }
-      SetData("VisGoals",goalmask);
-   }
-
    // Overload this if you want picking up certain objects to automatically
    // be reflected in complete goals. Set any goal which corresponds to getting
    // the object in question.
@@ -310,7 +312,6 @@ MESSAGES:
    OnBeginScript()
    {
       SubscribeToGoalChanges(TRUE);
-      SetData("VisGoals",GoalVisibleMask());
       if(!Object.InheritsFrom(self,Object.Named("M-GarrettDiffSettings")))
       {
          integer diff=Quest.Get("difficulty");
@@ -340,7 +341,7 @@ MESSAGES:
    OnQuestChange()
    {
       CheckComplete();
-      CheckNewGoal();
+      CheckPopup(message.m_pName,message.m_oldValue,message.m_newValue);
       DefaultOnQuestChange();
    }
    OnSlain()
