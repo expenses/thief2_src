@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/libsrc/script/RCS/scrpttyp.h 1.18 1998/12/16 11:51:59 ccarollo Exp $
+// $Header: r:/t2repos/thief2/libsrc/script/scrpttyp.h,v 1.20 2000/02/22 19:49:48 toml Exp $
 //
 //
 //
@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <matrixs.h>
+#include <scrptobj.h>
 #include <multparm.h>
 #include <lg.h> // for assertmsg
 
@@ -26,16 +27,28 @@
 #include <allocapi.h>
 
 #ifndef SCRIPT
+#include <dbmem.h>
 #define ScrAlloc(n)      malloc(n)
 #define ScrRealloc(p, n) realloc(p, n)
 #define ScrFree(p)       free(p)
+#ifdef SHIP
 #define ScrStrDup(p)     strdup(p)
 #else
+inline char * ScrStrDup(const char * pszSource)
+{
+   char * p = (char *)ScrAlloc(strlen(pszSource) + 1);
+   strcpy(p, pszSource);
+   return p;
+}
+#endif
+#else
+// @Q (toml 02-22-00): is there a way to get allocator credit here? unfortunately, string literal not 
+// permanent in memory. Could if changed allocator to copy strings.
 EXTERN IMalloc * g_pAppAlloc;
 #define ScrAlloc(n)     g_pAppAlloc->Alloc(n)
 #define ScrRealloc(p, n)   g_pAppAlloc->Realloc(p, n)
 #define ScrFree(p)      g_pAppAlloc->Free(p)
-char * ScrStrDup(const char * pszSource)
+inline char * ScrStrDup(const char * pszSource)
 {
    char * p = (char *)ScrAlloc(strlen(pszSource) + 1);
    strcpy(p, pszSource);
@@ -43,7 +56,6 @@ char * ScrStrDup(const char * pszSource)
 }
 #endif
 
-typedef int ObjID;
 typedef int (*tScriptPrintFunc)(const char *pszFormatString, ...);
 
 #define string       cScrStr
@@ -124,7 +136,11 @@ private:
    char * m_pszData;
 };
 
+#ifndef SCRIPT
+extern cScrStr NULL_STRING;
+#else
 const cScrStr NULL_STRING;
+#endif
 
 inline const cScrStr & cScrStr::operator=(const sMultiParm & parm)
 {
@@ -275,12 +291,14 @@ inline BOOL operator>=(const char* s1, const cScrStr& s2)
    return strcmp(s2, s1) <= 0;
 }
 
- 
-
 
 #else
 typedef struct cScrStr cScrStr;
 #endif
 ///////////////////////////////////////////////////////////////////////////////
+
+#ifndef SCRIPT
+#include <undbmem.h>
+#endif
 
 #endif /* !__SCRPTTYP_H */
