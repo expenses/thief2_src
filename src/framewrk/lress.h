@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/lress.h,v 1.2 2000/01/29 13:21:14 adurant Exp $
 // structures and defines for lresname
 #pragma once
