@@ -1,7 +1,10 @@
-#	----------------------------------
-#	Makefile for DBG library
-#	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.22 1994/07/29 01:22:43 dc Exp $
+#
+# $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
+# $Revision: 1.23 $
+# $Author: kaboom $
+# $Date: 1994/08/04 22:27:03 $
+#
+# makefile for lg library.
 #
 
 DEBUG_ON = 1
@@ -23,13 +26,14 @@ LIB_TARGETS = lg
 INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
 
-LG_SRCS = bugtrak.c dbg.c dbgcfg.c datapath.c exit.c memall.c memgrow.c \
-		memstat.c stack.c lgsprntf.c tmpalloc.c oheapwal.asm
-LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj datapath.obj exit.obj memall.obj \
-		memgrow.obj memstat.obj stack.obj lgsprntf.obj \
-                tmpalloc.obj oheapwal.obj
+LG_SRCS = bugtrak.c dbg.c dbgcfg.c datapath.c exit.c \
+                lgprntf.c lgsprntf.c memall.c memgrow.c memstat.c \
+                stack.c oheapwal.asm tmpalloc.c
+LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj datapath.obj exit.obj \
+                lgsprntf.obj memall.obj memgrow.obj memstat.obj \
+                lgprntf.obj stack.obj oheapwal.obj tmpalloc.obj
 LG_HDRS = lg.h lgalt.h dbg.h datapath.h memmacro.inc dbgmacro.inc \
-	memall.h memstat.h bugtrak.h lgsprntf.h tmpalloc.h 
+	memall.h memstat.h bugtrak.h lgprntf.h lgsprntf.h tmpalloc.h 
 LG_H2I  = lg.inc memall.inc dbg.inc
 
 DBGMAKEH_SRCS = dbgmakeh.c
@@ -43,7 +47,7 @@ DBGTEST_LIBS = _lg.lib _input.lib _mprintf.lib
 STACKTST_OBJS = stacktst.obj
 STACKTST_LIBS = lg.lib mprintf.lib
 
-!include $(INIT)/make.rc
+%include $(INIT)\make.rc
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
@@ -72,6 +76,9 @@ dbgtest.obj objo\dbgtest.obj objd\dbgtest.obj: conio.h datapath.h dbg.h dbgmacro
 exit.obj objo\exit.obj objd\exit.obj: dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h memmacro.h \
 	 stdio.h stdlib.h types.h
 
+lgprntf.obj objo\lgprntf.obj objd\lgprntf.obj: dbg.h dbgmacro.h io.h lgsprntf.h malloc.h memall.h memmacro.h \
+	 stat.h stdarg.h stdio.h tmpalloc.h types.h
+
 lgsprntf.obj objo\lgsprntf.obj objd\lgsprntf.obj: ctype.h fix.h limits.h stdarg.h string.h types.h
 
 memall.obj objo\memall.obj objd\memall.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
@@ -80,10 +87,11 @@ memall.obj objo\memall.obj objd\memall.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h m
 memgrow.obj objo\memgrow.obj objd\memgrow.obj: malloc.h stdio.h string.h
 
 memstat.obj objo\memstat.obj objd\memstat.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h lg.h lgalt.h malloc.h \
-	 memall.h memmacro.h memstat.h stdio.h string.h types.h
+	 memall.h memmacro.h memstat.h mprintf.h stdio.h string.h types.h
 
 stack.obj objo\stack.obj objd\stack.obj: dbg.h dbgmacro.h malloc.h memall.h memmacro.h stdio.h types.h
 
 stacktst.obj objo\stacktst.obj objd\stacktst.obj: malloc.h memall.h memmacro.h stdio.h types.h
 
-tmpalloc.obj objo\tmpalloc.obj objd\tmpalloc.obj: dbg.h dbgmacro.h malloc.h stdio.h tmpalloc.h types.h
+tmpalloc.obj objo\tmpalloc.obj objd\tmpalloc.obj: _lg.h dbg.h dbgmacro.h malloc.h memall.h memmacro.h stdio.h \
+	 tmpalloc.h types.h
