@@ -21,10 +21,6 @@ MESSAGES:
       {
          if(Property.Possessed(message.container,"AI"))
          {
-            // @TODO: Object should not be frobbable while "in hand" unless
-            // carrying AI is dead/unconscious.  You can't pickpocket something
-            // out of someone's left hand!!
-
             // This should _necessarily_ be true, but check anyway
             if(Link.AnyExist("~Contains",self))
             {
