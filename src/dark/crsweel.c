@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/crsweel.c,v 1.3 1998/09/20 15:57:00 CCAROLLO Exp $
 
 #include <creatur_.h>
