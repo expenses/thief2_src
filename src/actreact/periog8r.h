@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/actreact/periog8r.h,v 1.1 1998/08/21 00:00:53 mahk Exp $
 #pragma once  
 #ifndef __PERIOG8R_H
