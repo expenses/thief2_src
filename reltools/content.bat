@@ -179,7 +179,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog %_ZIPDIR_%\bitmap.crf  | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\bitmap.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\bitmap.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\bitmap.crf
 del %_ZIPDIR_%\elog
 
@@ -196,7 +196,7 @@ pkzip25 -add  -path=current -recurse -nozipextension -exclude=@%_ZIPDIR_%\elog %
 
 cd ..
 
-copy %_ZIPDIR_%\books.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\books.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\books.crf
 
 rem **************************************************************
@@ -212,7 +212,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension  -exclude=@%_ZIPDIR_%\elog %_ZIPDIR_%\default.crf | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\default.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\default.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\default.crf
 
 rem **************************************************************
@@ -227,7 +227,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension  -exclude=@%_ZIPDIR_%\elog %_ZIPDIR_%\editor.crf  | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\editor.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\editor.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\editor.crf
 
 rem **************************************************************
@@ -241,7 +241,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension  -exclude=@%_ZIPDIR_%\elog %_ZIPDIR_%\fam.crf | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\fam.crf %_DAILYTHIEFCD2_%
+copy %_ZIPDIR_%\fam.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\fam.crf
 
 cd INTRFACE
@@ -253,7 +253,7 @@ pkzip25 -add  -recurse -path=current -nozipextension  -exclude=@%_ZIPDIR_%\elog 
 
 cd ..
 
-copy %_ZIPDIR_%\intrface.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\intrface.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\intrface.crf
 
 cd mesh
@@ -264,7 +264,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog  %_ZIPDIR_%\mesh.crf  | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\mesh.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\mesh.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\mesh.crf
 
 rem **************************************************************
@@ -280,7 +280,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog  %_ZIPDIR_%\obj.crf  | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\obj.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\obj.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\obj.crf
 
 rem **************************************************************
@@ -295,7 +295,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog  %_ZIPDIR_%\pal.crf  | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\pal.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\pal.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\pal.crf
 
 rem **************************************************************
@@ -310,7 +310,7 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog  %_ZIPDIR_%\camera.crf  | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\camera.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\camera.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\camera.crf
 
 rem **************************************************************
@@ -328,7 +328,7 @@ pkzip25 -add  -path=current -recurse -store  -nozipextension  -exclude=@%_ZIPDIR
 
 cd ..
 
-copy %_ZIPDIR_%\snd.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\snd.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\snd.crf
 
 rem **************************************************************
@@ -344,13 +344,13 @@ find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
 pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog  %_ZIPDIR_%\strings.crf | tee /A r:\prj\thief2\reltools\ziplog 
 cd ..
 
-copy %_ZIPDIR_%\strings.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\strings.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\strings.crf
 
 cd motions
 pkzip25 -add -recurse -path=current -nozipextension %_ZIPDIR_%\motions.crf | tee /A r:\prj\thief2\reltools\ziplog 
  
-copy %_ZIPDIR_%\motions.crf %_DAILYTHIEF_%
+copy %_ZIPDIR_%\motions.crf %_MAINCRFPATH_%
 del %_ZIPDIR_%\motions.crf
 
 cd ..
