@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dispdev/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1996/05/08 17:38:38 $
+# $Date: 1996/05/11 14:48:42 $
 #
 # Makefile for windisp library
 #
@@ -17,7 +17,7 @@ PROJECT = tech
 
 LIBTARGS = windisp
 
-windisp_OBJS = wdisp wdispdd wdispgdi
+windisp_OBJS = wdisp wdspprov wdspmode wdispdd wdispgdi wdcreate
 
 windisp_HDRS =
 
