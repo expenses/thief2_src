@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/physics/collide.h,v 1.17 1998/07/16 13:29:32 mahk Exp $
 
 #ifndef __COLLIDE_H
