@@ -11,7 +11,7 @@ LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = . $(RELDIR)
-PROG_TARGETS = mortimer joytest
+PROG_TARGETS = 
 LIB_TARGETS = input
 HDR_TARGETS =  
 INST_TARGETS = input
@@ -54,10 +54,10 @@ kb.h: kbdecl.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-mouse.obj: 2d.h dbg.h dos.h error.h fix.h grindex.h i86.h lg.h lgalt.h \
+mouse.obj: dbg.h dos.h error.h fix.h  i86.h lg.h lgalt.h \
 	 libdbg.h malloc.h math.h memall.h mouse.h stdarg.h stdio.h types.h
 
-mousetst.obj: 2d.h dbg.h error.h fix.h grindex.h lg.h lgalt.h libdbg.h \
+mousetst.obj: dbg.h error.h fix.h  lg.h lgalt.h libdbg.h \
 	 malloc.h math.h memall.h mouse.h stdarg.h stdio.h stdlib.h types.h
 
 
