@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: r:/prj/lib/src/h/rcs/base.h 1.2 1993/09/28 01:12:42 kaboom Exp $
  *
  * Freefall Base header file
