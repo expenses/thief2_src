@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/proplist.h 1.2 1999/04/21 11:38:57 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/object/proplist.h,v 1.6 1998/03/26 13:52:47 mahk Exp $
 #pragma once  
 #ifndef __PROPLIST_H
 #define __PROPLIST_H
@@ -87,18 +87,6 @@ public:
       if (pair)
       {
          mOps.Delete(pair->Value().val); 
-         mList.Delete(*pair); 
-         return S_OK; 
-      }
-      return S_FALSE; 
-   }
-
-   STDMETHOD(Release)(ObjID obj, sDatum* pdat)
-   {
-      cList::cNode* pair = mList.Search(obj);
-      if (pair)
-      {
-         *pdat = pair->Value().val;
          mList.Delete(*pair); 
          return S_OK; 
       }
