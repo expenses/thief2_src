@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/portal/char.c,v 1.2 2000/02/19 12:32:41 toml Exp $
 
 // dumb character renderer

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/portal/mapper.c,v 1.26 2000/02/19 12:32:43 toml Exp $
 //
 // Setup/initialization etc. for port demo
