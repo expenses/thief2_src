@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.12 1993/07/09 09:35:12 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.13 1993/08/06 11:00:03 rex Exp $
 # $Log: makefile $
-# Revision 1.12  1993/07/09 09:35:12  rex
+# Revision 1.13  1993/08/06 11:00:03  rex
 # Dependencies
 #
+# Revision 1.12  1993/07/09  09:35:12  rex
+# Dependencies
+# 
 # Revision 1.11  1993/05/01  20:33:02  xemu
 # added bugtrak to the LG library
 # 
@@ -80,8 +83,8 @@ DBGTEST_LIBS = lg.lib kb.lib mprintf.lib
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
 bugtrak.obj: array.h bugtrak.h dbg.h dbgmacro.h env.h error.h fcntl.h io.h \
-	 lg.h lgalt.h libdbg.h malloc.h memall.h memmacro.h mprintf.h \
-	 stat.h stdio.h string.h time.h types.h
+	 lg.h lgalt.h malloc.h memall.h memmacro.h mprintf.h stat.h stdio.h \
+	 string.h time.h types.h
 
 datapath.obj: datapath.h dos.h fcntl.h i86.h malloc.h memall.h memmacro.h \
 	 stdarg.h stdio.h stdlib.h string.h types.h
@@ -90,21 +93,21 @@ dbg.obj: dbg.h dbgmacro.h malloc.h memall.h memmacro.h mprintf.h stdarg.h \
 	 stdio.h stdlib.h string.h types.h
 
 dbgcfg.obj: conio.h ctype.h datapath.h dbg.h dbgmacro.h error.h kb.h \
-	 kbcook.h lg.h lgalt.h libdbg.h malloc.h memall.h memmacro.h \
-	 mprintf.h stdarg.h stdio.h stdlib.h string.h types.h
+	 kbcook.h lg.h lgalt.h malloc.h memall.h memmacro.h mprintf.h \
+	 stdarg.h stdio.h stdlib.h string.h types.h
 
 dbgmakeh.obj: conio.h ctype.h dbg.h dbgmacro.h stdarg.h stdio.h stdlib.h \
 	 string.h types.h
 
-dbgtest.obj: conio.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h libdbg.h \
-	 malloc.h memall.h memmacro.h memstat.h mprintf.h stdarg.h stdio.h \
-	 stdlib.h string.h types.h
+dbgtest.obj: conio.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h memstat.h mprintf.h stdarg.h stdio.h stdlib.h \
+	 string.h types.h
 
-exit.obj: dbg.h dbgmacro.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 memmacro.h stdio.h stdlib.h types.h
+exit.obj: dbg.h dbgmacro.h lg.h lgalt.h malloc.h memall.h memmacro.h \
+	 stdio.h stdlib.h types.h
 
 memall.obj: dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
 	 stdio.h string.h types.h
 
-memstat.obj: dbg.h dbgmacro.h dos.h i86.h lg.h lgalt.h libdbg.h malloc.h \
-	 memall.h memmacro.h memstat.h stdio.h string.h types.h
+memstat.obj: dbg.h dbgmacro.h dos.h i86.h lg.h lgalt.h malloc.h memall.h \
+	 memmacro.h memstat.h stdio.h string.h types.h
