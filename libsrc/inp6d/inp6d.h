@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/inp6d/RCS/inp6d.h $
  * $Revision: 1.22 $
  * $Author: TOML $
