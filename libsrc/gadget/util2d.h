@@ -1,12 +1,15 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/util2d.h 1.8 1998/07/02 11:45:14 PATMAC Exp $
+// $Header: x:/prj/tech/libsrc/gadget/RCS/util2d.h 1.9 1998/08/04 14:09:51 JAEMZ Exp $
 
 #ifndef __UTIL2D_H
 #define __UTIL2D_h
+#pragma once
 
 #include <res.h>
 #include <2d.h>
 #include <utilcomp.h>
 #include <rect.h>
+#include <datasrc.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,7 +19,7 @@ extern grs_bitmap *UtilGetCompressedPartial(Ref bmap_id, uchar *uncomp_buf, int 
                                             UtilCompressState *state, UtilCompressCallback cb, grs_bitmap *bmp);
 extern grs_bitmap *UtilLockBitmap(Id bmap_id);
 extern int UtilDrawBitmapRef(Ref bmap_id, short x, short y);
-extern int UtilRefAnchor(Ref r, Point *anchor);
+
 extern grs_canvas *UtilScreen(short push);
 extern void UtilClearCliprect();
 extern void UtilSetCliprect(short x1, short y1, short x2, short y2);
@@ -33,7 +36,7 @@ extern void UtilSetPalConvList(Ref palref, int n);
 extern void UtilClearPalConv(Ref palref);
 extern void UtilSetPal(Ref palref);
 
-extern int UtilStringWrap16(char *s, short x, short y, char pal, short color, Id font, short width);
+extern int UtilStringWrap16(char *s, short x, short y, char pal, short color, IDataSource *pFont, short width);
 
 #define UtilString16(s,x,y,pal,color,font) (UtilStringWrap16(s,x,y,pal,color,font,0))
 

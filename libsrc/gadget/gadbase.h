@@ -1,7 +1,8 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadbase.h 1.3 1996/12/04 15:56:34 xemu Exp $
+// $Header: x:/prj/tech/libsrc/gadget/RCS/gadbase.h 1.4 1998/08/04 14:09:36 JAEMZ Exp $
 
 #ifndef __GADBASE_H
 #define __GADBASE_H
+#pragma once
 
 #include <cursors.h>
 #include <slab.h>
@@ -11,6 +12,9 @@
 #include <2d.h>
 #include <lgadover.h>
 #include <guistyle.h>
+
+#include <datasrc.h>
+
 
 //////////////////////////////////////////////////////////////
 // BASE-LEVEL GADGET API/INFRASTRUCTURE
@@ -67,8 +71,8 @@ EXTERN void (*lgad_free)(char *ptr);
 // Other globals/defaults
 //
 
-// default font
-EXTERN Id lgad_default_font;
+EXTERN void LGadSetDefaultFont(IDataSource *pFont);
+EXTERN IDataSource *LGadGetDefaultFont(void);
 
 // Xemu, what do these do? 
 EXTERN Id lgad_btype_ids[MAX_BTYPES]; 
@@ -92,10 +96,24 @@ EXTERN int LGadTerm(void);
 EXTERN int LGadFrame(void);
 EXTERN void LGadSimplePoll(void);
 
+
+
 // Other useful stuff!
-EXTERN int LGadPushCursor(Ref r, int paltype);
+
+// This works in conjunction with 
+// LGadPopCursor which is how the ref count is freed.
+// So if you push, don't forget to pop.
+// We might want to consider having the shutdown routine
+// do an auto-pop without the other stuff on exit
+EXTERN int LGadPushCursor(IDataSource *pCurs, Point anchor,int paltype);
 EXTERN int LGadPopCursor();
-EXTERN int LGadSetCursor(Ref r, int paltype, Cursor *c);
+
+// The user is in charge of all the memory management here,
+// this just puts it together for them.
+EXTERN int LGadSetCursor(grs_bitmap *bm,Point anchor, int paltype, Cursor *c);
 EXTERN int LGadFlush();
 
 #endif // __GADBASE_H
+
+
+

@@ -2,15 +2,14 @@
 #define __GCOMPOSE_H
 /*
  * $Source: x:/prj/tech/libsrc/gadget/RCS/gcompose.h $
- * $Revision: 1.5 $
- * $Author: mahk $
- * $Date: 1996/09/20 22:03:20 $
+ * $Revision: 1.6 $
+ * $Author: JAEMZ $
+ * $Date: 1998/08/04 14:09:38 $
  *
  */
 
 #include <2d.h>
 #include <rect.h>
-#include <res.h>
 #include <error.h>
 
 
