@@ -1866,6 +1866,150 @@ END_SCRIPT(Gong)
 BEGIN_SCRIPT(Odometer, RootScript)
 
 METHODS:
+  
+   METHOD integer GetDisplayedNumber()
+   {
+      integer retval = 0;
+      integer place, digit, dial, mod=1, dispval=0;
+      vector jointparams;
+      boolean dialing=FALSE, reverse=FALSE;
+
+      if(! (Property.Possessed(self,"JointPos") && 
+            Property.Possessed(self,"CfgTweqJoints")))
+         return -1;
+
+      // hard-coded to four joints. kinda sad.
+      // we go down, not up, to make math easier.
+      for(place=3;place>=0;place--)
+      {
+         string field="    rate-low-high";
+         vector jointrange;
+
+         // fill in for appropriate field, noting that first one has no suffix
+         if(place>0) 
+            field=field+string(place+1);
+         // get old property so we can use the same rate.  The range we'll set.
+         jointrange=Property.Get(self,"CfgTweqJoints",field);
+
+         dial=Property.Get(self,"JointPos",string("Joint ")+string(place+1));
+         // by default, leave this dial as is
+         jointrange.y=dial; jointrange.z=dial;
+
+         dispval = (360+dial+18)%360; //scale dispval to 0-360
+                                      //we add 18 to deal with rounding.
+                                      //so 359 becomes 17, as it should.
+         dispval = (dispval)/36; //divide by 36 to get digit
+         digit=((dispval)%10); //change 10 to 0.
+         
+         retval = retval * 10; //first time it's 0, so this works.
+         retval = retval + digit;  //put in the digit.
+      }
+      return retval;      
+   }
+
+   METHOD integer GetFirstDiff(integer numone, integer numtwo)
+   {
+      integer place = 0;
+      integer tenmod = 1;
+      //hardcoded to 4 places
+      for (place = 0; place<4; place++)
+      {
+         tenmod = tenmod * 10;
+         if ((numone % tenmod) != (numtwo % tenmod))
+            return place;
+      }
+      return -1;
+   }
+
+   METHOD boolean IsValidCombo(integer prevnum, integer curnum)
+   {
+      //MakeClickSound does the property possessed check for us.
+      string qvar = Property.Get(self,"TrapQVar");
+      integer varval = Quest.Get(qvar);
+      boolean valid = FALSE;
+      object relayobj = (object)0;
+      //we haven't arrived at our combo yet.
+      if (GetFirstDiff(varval,curnum) != -1) 
+         return FALSE;
+      //we are already valid
+      if (GetFirstDiff(varval,prevnum) == -1)
+         return FALSE;
+      if (Link.AnyExist("ScriptParams",self));
+      {
+         linkset splinks = Link.GetAll("ScriptParams",self);
+         while (splinks.AnyLinksLeft())
+         {
+            link cursplink = splinks.Link();
+            if ((string)cursplink.GetData()=="CodeRelay")                
+               relayobj = cursplink.To();
+            splinks.NextLink();
+         }
+      }
+      if (relayobj == (object)0)
+         return FALSE;
+      Debug.MPrint("Relay obj ",relayobj," found.");
+      if (Link.AnyExist("ScriptParams",relayobj))
+      {
+         linkset splinks = Link.GetAll("ScriptParams",relayobj);
+         while (splinks.AnyLinksLeft())
+         {
+            link cursplink = splinks.Link();
+            if ((string)cursplink.GetData()=="CodeRelay")
+               relayobj = cursplink.To();
+            if (Property.Possessed(relayobj,"TrapQVar"))
+            {
+               string tval = Property.Get(relayobj,"TrapQVar");
+               if (strstr(tval,qvar))
+               {
+                  integer ArgInd;
+                  integer lookforval = 0;
+                  for (ArgInd = 1; (tval[ArgInd]>='0') && (tval[ArgInd]<='9'); ArgInd++)
+                  {
+                     lookforval = lookforval*10 + (tval[ArgInd]-'0');
+                  }
+                  Debug.MPrint("TrapQvar looks for val ",lookforval);
+                  if (ArgInd == 5) //always want 4 digits
+                  {
+                     if ((lookforval % 10000) == (varval % 10000))
+                        valid = TRUE;
+                  }                  
+               }
+            }
+            splinks.NextLink();
+         }
+      }
+      return valid;
+   }
+
+   METHOD boolean NewDigitClicked(integer prevnum, integer curnum)
+   {
+      //MakeClickSound verifies that the property is possessed
+      string qvar = Property.Get(self,"TrapQVar");
+      integer varval = Quest.Get(qvar);
+      integer oldfirstwrong = GetFirstDiff(varval,prevnum);
+      integer newfirstwrong = GetFirstDiff(varval,curnum);
+      //something has changed.
+      if (oldfirstwrong != newfirstwrong)
+         return TRUE;
+      else
+         return FALSE;
+   }
+
+   METHOD void MakeClickSound() 
+   {
+      integer prevnumber = (integer)GetData("CurrentNumber");
+      integer curnumber = GetDisplayedNumber();
+      SetData("CurrentNumber",curnumber);
+      if (!Property.Possessed(self,"TrapQVar"))
+         return;
+      object schmtoplay = (object)0;
+      if (IsValidCombo(prevnumber,curnumber))
+         schmtoplay = Object.Named("digisuc");
+      else if (NewDigitClicked(prevnumber,curnumber))
+         schmtoplay = Object.Named("digiclk");
+      if (schmtoplay != (object)0);
+         Sound.PlaySchema(self,schmtoplay,self);
+   }
    METHOD void RollNextDigit()
    {
       if(!Property.Possessed(self,"TrapQVar"))
@@ -1939,6 +2083,8 @@ MESSAGES:
 
    OnBeginScript()
    {
+      if (!IsDataSet("CurrentNumber"))
+         SetData("CurrentNumber",GetDisplayedNumber());
       if(Property.Possessed(self,"TrapQVar"))
       {
          string qvar=Property.Get(self,"TrapQVar");
@@ -1949,6 +2095,7 @@ MESSAGES:
    }
    OnTweqComplete()
    {
+      MakeClickSound();
       RollNextDigit();
       DefaultOnTweqComplete();
    }
