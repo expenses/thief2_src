@@ -23,7 +23,7 @@ INPUT_OBJS = mouse.obj  mousedev.obj kbclose.obj kbcstat.obj \
         kblnext.obj \
         kbnext.obj kbphnd.obj kbrhnd.obj \
         kbsflag.obj kbssig.obj kbsstat.obj \
-        kbstate.obj kbcook.obj kbasctab.obj  joyflat.obj
+        kbstate.obj kbcook.obj kbasctab.obj  joyflat.obj kbbflush.obj
 
 
 INPUT_HDRS = mouse.h kb.h kbcook.h joystick.h
