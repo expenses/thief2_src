@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/fltloop/RCS/loopsys.h 1.1 1998/06/02 14:34:41 JAEMZ Exp $
+// $Header: x:/prj/tech/libsrc/fltloop/RCS/loopsys.h 1.2 1999/05/04 18:04:44 darrenl Exp $
 
 #pragma once
 #ifndef __LOOPSYS_H
@@ -115,6 +115,15 @@ extern void loopsys_bury(cLoopMode* mode);
 // returning from loopsys_go();
 
 extern void loopsys_unwind(int retval);
+
+
+
+// ----------------------------------------------------------
+// loopsys_getcur()
+//
+// Returns pointer to current cLoopMode
+
+extern cLoopMode *loopsys_getcur ();
 
 
 // Returns the stack depth, good for debugging...
