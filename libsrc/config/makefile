@@ -1,33 +1,22 @@
-DEBUG_ON = 1
-SPEW_ON = 1
-WARN_ON = 1
-DBG_ON = 1
+# $Source: x:/prj/tech/libsrc/config/RCS/makefile $
+# $Revision: 2.1 $
+# $Author: JON $
+# $Date: 1995/10/02 19:53:54 $
 
+MAKETOP = $(CWD)
 
-COMPILER = watcom
-SRCDIR = r:\prj\lib\src\config
-RELDIR = r:\prj\lib\rel
+PROJECT = windex 
 
-OBJDIR = obj
-BINDIR =
-LIBDIR = $(RELDIR)
-INCDIR = $(RELDIR)
-INCPATH = . $(SRCDIR) $(RELDIR)
-LIBPATH = . $(RELDIR)
-PROG_TARGETS = cnfgtest
-LIB_TARGETS = config
-HDR_TARGETS =  
-INST_TARGETS = config
+%include $(MRC)\env.rc
 
-CNFGTEST_OBJS = cnfgtest.obj
-CNFGTEST_LIBS = _config.lib _dstruct.lib _lg.lib _mprintf.lib
+%include $(MRC)\init.rc
 
-CONFIG_OBJS = config.obj
-CONFIG_HDRS = config.h
+LIBTARGS = config
 
-first_target: config _config
+config_OBJS = config
 
-!include $(INIT)/make.rc
+config_HDRS = config.h cfgdbg.h
 
-### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
+%include $(MRC)\make.rc
+
 
