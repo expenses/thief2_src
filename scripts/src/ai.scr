@@ -673,7 +673,7 @@ void DoSearch ()
 // remove the "searching" metaprop
 void StopSearching ()
 {
-	Debug.MPrint(" Stop searching");
+//	Debug.MPrint(" Stop searching");
 	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
 		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-Searching"));
 }
@@ -681,7 +681,7 @@ void StopSearching ()
 // remove the "camera out" metaprop
 void PutCameraAway()
 {
-	Debug.MPrint(" Put camera away");
+//	Debug.MPrint(" Put camera away");
 	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
 		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
 }
