@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/sound/ambient.c,v 1.29 1999/04/26 15:12:00 mwhite Exp $
 // ambient sound object initial cut
 // actual system which do things sound things
