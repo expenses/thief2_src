@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/aitag.h 1.4 1997/10/04 17:11:52 TOML Exp $
 
 #ifndef __AITAG_H
