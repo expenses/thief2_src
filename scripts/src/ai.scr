@@ -613,42 +613,83 @@ END_SCRIPT(QuaffHeal)
 
 /* WorkerRobot:
 
-  Upon receiving "DoISearch?" msg, it returns F if the robot already has either of
-  the metaprops "M-WorkBot-Searching" or "M-WorkBot-CameraOut" or T otherwise.
-  When prompted by msg "DoSearch" from AlertResponse pseudoscript, the robot
-  gives itself the "M-WorkBot-Searching" metaprop and plays searching motions
-  (defined by GetSearchMotion()) for GetSearchDuration() seconds.
-  If the robot achieves high alertness, it removes the searching metaprop.
-  If the robot ramps down to low alertness, it prompts the SignalResponse
-  pseudoscript to put the robots camera away.
+	===WorkerBot metaprops===
+  
+	 "searching"  - alert cap: max = 3, min = 2; don't fidget; don't return-to-origin 
+	 "camera out" - shape::model of "robot with camera out",  vision = average (not NULL like usual)
+
+	A robot can have "camera out" but not be "searching" in the case where it has seen the 
+	player, ramped up to alert 3, and run away.
+	A robot should never be "searching" unless it has "camera out", however.
+
+	===WorkerBot pseudoscripts===
+
+	Alert response 2: 
+	  * ScriptMessage "DoISearch?" to make sure I'm not already searching
+	  * If that passes, add "searching" and "camera out" metaprops
+	  * ScriptMessage "DoSearch" to trigger script-controlled search behavior
+	  * Some cosmetic stuff, too
+
+	Signal Response "TurnAround":
+	  * Play a "TurnAround" motion
+	  * Call back to this script with a "DoneATurnAround" msg
+
+	===WorkerBot scripted behavior===
+
+  -> Upon receiving "DoISearch?" msg, it returns F if the robot already has either of
+     the metaprops "M-WorkBot-Searching" or "M-WorkBot-CameraOut" or T otherwise.
+
+  -> When prompted by msg "DoSearch" from AlertResponse pseudoscript, the robot
+	  plays searching motions (by sending itself "TurnAround" signals) for 
+	  GetSearchDuration() seconds.  It also gives itself the "searching" and "camera out"
+	  metaprop (which it should already have anyway, but just to be safe) 
+
+  -> If the robot achieves high alertness, it removes the "searching" metaprop.
+     It retains the "camera out" metaprop.  The default AI fleeing behavior
+	  is assumed to take over.
+
+  -> If the robot ramps down to low alertness, it removes the "camera out" metaprop.  
+	  Since the robot cannot ramp down below moderate alert while it has the "searching" 
+	  metaprop, we know that since the robot has just ramped down it is not "searching".
 
 */
 BEGIN_SCRIPT (WorkerRobot, AI)
 
 METHODS:
+// Start a chain of "TurnAround" events that lasts
+// for GetSearchDuration() seconds and terminates with a "DoneSearching" timer.
 void DoSearch ()
 {
+	// I should already have these metaprop, but just in case I don't
 	while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
 		Object.AddMetaProperty(self,Object.Named("M-WorkBot-Searching"));
+	while (!Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+		Object.AddMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
 
-	AI.SetScriptFlags(self, kMotionOff);  // disallow new motions
-	Puppet.PlayMotion(self,GetSearchMotion());
+	AI.Signal(self,"TurnAround");
 	SetOneShotTimer("DoneSearching",GetSearchDuration());
 }
+
+// remove the "searching" metaprop
 void StopSearching ()
 {
-	AI.SetScriptFlags(self, 0x00); 		// Allow new motions again 
-
+	Debug.MPrint(" Stop searching");
 	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
 		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-Searching"));
 }
-string GetSearchMotion ()
+
+// remove the "camera out" metaprop
+void PutCameraAway()
 {
-	return "BH111210";  // turn 90 deg to left
+	Debug.MPrint(" Put camera away");
+	while (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+		Object.RemoveMetaProperty(self,Object.Named("M-WorkBot-CameraOut"));
 }
+
+// return search duration in seconds (see DoSearch, above)
 float GetSearchDuration ()
 {
-	return 15.0;
+	return 16.0;
 }
 
 MESSAGES:
@@ -662,33 +703,50 @@ OnMessage()
 	}
 	else if (MessageIs("DoSearch"))
 	{
+		// I get this message at the end of my alert response 
+		// pseudoscript (after it passes "DoISearch?", above)
 		DoSearch();
+	}
+	else if (MessageIs("DoneATurnAround"))
+	{
+		// call back from pseudoscript at the termination of one "TurnAround" event
+		// if we are still "searching", then start another
+		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
+			SetOneShotTimer ("TurnNow",1.0);
+	}
+	else if (MessageIs("test"))
+	{
+		// spew which metaprops I have
+		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching")))
+			Debug.MPrint(self," has metaprop Searching");
+		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+			Debug.MPrint(self," has metaprop CameraOut");
 	}
 	DefaultOnMessage();
 }
-OnMotionEnd()
-{
-	if (	(message.MotionName == GetSearchMotion()) && 
-			(Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching"))) )
-	{
-		SetOneShotTimer ("TurnNow",1.0);
-	}
-	DefaultOnMotionEnd();
-}
+
 OnTimer()
 {
+	// "DoneSearching"
 	if (	(message.name == "DoneSearching") && 
 			(Object.HasMetaProperty(self,Object.Named("M-WorkBot-Searching"))) )
 	{
 		StopSearching ();
-		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
-		{
-			AI.Signal(self, "PutCameraAway");
-		}
+
+		// @NOTE: uncomment the below to force the robot to put his camera away 
+		// when he gets done searching.
+		// (consider the case when, while searching, the robot doesn't find enough evidence of the
+		// player to go to alert 3, but does find enough evidence to keep him at alert 1 or 2 
+		// uncommenting this code makes him put his camera away anyway, commenting it 
+		// out makes him wait til he ramps down to put it away.
+/*		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
+			PutCameraAway ();*/
 	}
+
 	else if (message.name == "TurnNow")
 	{
-		Puppet.PlayMotion(self,GetSearchMotion());
+		// do another "TurnAround" iteration
+		AI.Signal(self,"TurnAround");
 	}
 	DefaultOnTimer();
 }
@@ -696,19 +754,28 @@ OnAlertness()
 {
 	if (message.level == kHighAlert)
 	{
+		// since the "searching" metaprop is about not idling and being capped at 2, remove this 
+		// and let the natural AI take over and flee - but don't remove the robots
+		// "camera out" metaprop
 		StopSearching();
 	}
-	else if ( (message.level == kLowAlert) && (message.oldLevel > kLowAlert) )
+	// if you ramp down to or below level 1, when you had been at a higher than 1 alert,
+	// you can put your camera away now
+	else if ( (message.level <= kLowAlert) && (message.oldLevel > kLowAlert) )
 	{
 		if (Object.HasMetaProperty(self,Object.Named("M-WorkBot-CameraOut")))
 		{
-			AI.Signal(self, "PutCameraAway");
+			PutCameraAway ();
 		}
 	}
 	DefaultOnAlertness();
 }
 
 END_SCRIPT (WorkerRobot)
+
+
+
+
 
 const float kTransluceFreq=0.1;
 const float kTransluceTime=1.0; // total time to fade in/out
@@ -806,4 +873,82 @@ MESSAGES:
 END_SCRIPT(Phantom)
 
 
+
+
+// Script: NoticesPlayerBumps
+
+// The Plan: If the player collides with me and if I don't already have an
+// alertness cap, give myself one for a second - long enough to get to alert 2.
+// Also, stuff the AIAwarenessLink to the player with data about where the player is, so
+// I can logically look in basically the right place for what bumped into me.
+// The Reality: In practice, this script is not effective.  The AI only turns to investigate
+// the player's former location occasionally for some reason known only the underlying AI.  
+// Therefore this script is being used only by WorkerBots at present (1/29/00).  
+// For them, they just go to alert 2 temporarily when bumped into if they are not already alert.
+
+BEGIN_SCRIPT(NoticesPlayerBumps ,Physics)
+
+METHODS:
+// stuff my info about where I last contacted the player with the
+// player's current position
+void StuffLinkInfo()
+{
+	if (!Link.AnyExist("AIAwareness",self,Object.Named("Player")))
+	{
+		Link.Create("AIAwareness",self,Object.Named("Player"));
+	}
+
+	vector player_pos = Object.Position(Object.Named("Player"));
+	Link.GetOne("AIAwareness",self,Object.Named("Player")).SetData("Pos last contact",player_pos);
+}
+
+MESSAGES:
+OnBeginScript()
+{
+	Physics.SubscribeMsg(self, kCollisionMsg);
+	DefaultOnBeginScript();
+}
+OnEndScript()
+{
+	Physics.UnsubscribeMsg(self, kCollisionMsg);
+	DefaultOnEndScript();
+}
+OnPhysCollision()
+{
+	//@NOTE: bad multiplayer assumption
+	// If I collided with the player
+	if ((object)message.collObj == Object.Named("Player"))
+	{
+		// if my alertness < 2
+		if ((int)Property.Get(self,"AI_Alertness","Level") < 2)
+		{
+			// if I have standard Alert Cap properties
+/*			if ( (Property.Get(self,"AI_AlertCap","Max level") == 3) &&
+				(Property.Get(self,"AI_AlertCap","Min level") == 0) &&
+				(Property.Get(self,"AI_AlertCap","Min relax after peak") == 1) ) */
+			{
+				// stuff my info about where I last contacted the player with the
+				// player's current position
+//				StuffLinkInfo();
+
+				// cap my alert then upcap it 1 second later
+				Property.Set (self,"AI_AlertCap","Min level",2);
+				SetOneShotTimer("Uncap",1.0);
+			}
+		}
+	}
+	DefaultOnPhysCollision();
+}
+
+OnTimer()
+{
+	if (message.name == "Uncap")
+	{
+//		Property.Set (self,"AI_AlertCap","Min level",0);
+		Property.Remove (self,"AI_AlertCap");
+	}
+	DefaultOnTimer();
+}
+
+END_SCRIPT(NoticesPlayerBumps)
 
