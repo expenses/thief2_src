@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.17 1999/10/27 15:04:45 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.18 1999/11/07 14:41:33 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -748,7 +748,8 @@ MESSAGES:
    // placed in levels and settling to rest don't arm...
    OnPhysFellAsleep()
    {
-      if(Link.AnyExist("~CulpableFor",self))
+      boolean arming = GetData("Arming");
+      if ((Link.AnyExist("~CulpableFor",self)) && (!arming))
       {
          // Start playing our arming sound.  When we're done with the
          // sound, become Live.
@@ -821,17 +822,58 @@ BEGIN_SCRIPT(ActiveMine,Physics)
 MESSAGES:
    OnBeginScript()
    {
-      Physics.SubscribeMsg(self, kCollisionMsg);
+      //so now we wait for the active mine to first come to rest... THEN
+      //we subscribe to collision.  The only case I can think of where
+      //this could be a problem is if the mine comes to rest initially
+      //(and therefore starts activating), then starts falling while
+      //activating, the mine won't explode when it hits the ground, it
+      //will just sit there and be active.  But that seems ok.
+      Physics.SubscribeMsg(self, kFellAsleepMsg);
+//      Physics.SubscribeMsg(self, kCollisionMsg);
       DefaultOnBeginScript();
    }
    OnEndScript()
    {
+      //possible to endscript without having subscribed to these... so we
+      //are trying to unsubscribe when not subscribed.  But that's just a 
+      //warning, and can't tell how to check subscription.  AMSD<-the guy
+      //to blame here. :)
+      //since it's highly unlikely that we will NOT have fallen asleep by end
+      //script...  it might be better to not bother unsubscribing to 
+      //fall asleep.  But leaving a subscription open seems bad.
       Physics.UnsubscribeMsg(self, kCollisionMsg);
+      Physics.UnsubscribeMsg(self, kFellAsleepMsg);
       DefaultOnEndScript();
    }
+   OnPhysFellAsleep()
+	{
+	  //now we subscribe to collision and unsubscribe to sleep so that
+	  //this doesn't trigger again.
+	  Physics.SubscribeMsg(self, kCollisionMsg);   
+	  Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+	}
    OnPhysCollision()
    {
-      Reply(kPM_Slay);
+      //really, a mine shouldn't trigger itself...  just bad form.
+      object WhatHitMe = message.collObj;
+      bool   fakeout = FALSE;
+      if (Object.Exists(WhatHitMe))
+	{
+	  vector selfvel(0,0,0);
+	  vector hitmevel(0,0,0);
+	  if (Physics.HasPhysics(self))
+            Physics.GetVelocity(self,selfvel);
+	  if (Physics.HasPhysics(WhatHitMe))
+	    Physics.GetVelocity(WhatHitMe,hitmevel);
+	  //make sure that I don't trigger myself, and make sure that
+	  //at least one of us is actually moving and this isn't some 
+	  //wierd spoof collision...
+	  if ((Link.AnyExist("ControlDevice",self,WhatHitMe)) ||
+	      ( (selfvel == vector(0,0,0)) && (hitmevel == vector(0,0,0))))
+	    fakeout = TRUE;
+	} 
+      if (!fakeout)
+        Reply(kPM_Slay);
       DefaultOnPhysCollision();
    }
    OnMessage()
