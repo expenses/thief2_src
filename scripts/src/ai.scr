@@ -785,7 +785,7 @@ MESSAGES:
          {
             vector pos=Property.Get(self,"AI_IdleOrgn","Original Location");
             float fac=Property.Get(self,"AI_IdleOrgn","Original Facing");
-            vector orient=vector(fac,0,0);
+            vector orient=vector(0,0,fac);
 
             Object.Teleport(self,pos,orient);
          }
@@ -804,6 +804,7 @@ MESSAGES:
          // halt all schemas on object
          Sound.HaltSchema(self);
       }
+      Reply(TRUE);
       DefaultOnMessage();
    }
    OnTimer()
