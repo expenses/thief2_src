@@ -1,0 +1,55 @@
+
+// Script file for Thief 2 - Mission 10 - Trail of Blood
+
+
+BEGIN_SCRIPT(ParticleFillPhysOBB, RootScript)
+
+   METHOD void FillPhysOBB(void)
+   {
+      vector dims, launchmin, launchmax;
+      integer density;
+      float volume;
+
+      if(!Property.Possessed(self,"PhysDims"))
+         return;
+
+      Property.Remove(self,"ParticleGroup");
+      Property.Remove(self,"PGLaunchInfo");
+      Property.Add(self,"PGLaunchInfo");
+      Property.Add(self,"ParticleGroup");
+
+      dims=Property.Get(self,"PhysDims","Size");
+
+      // Debug.MPrint("dims ",dims);
+
+      launchmin.x=dims.x/-2.0;
+      launchmin.y=dims.y/-2.0;
+      launchmin.z=dims.z/-2.0;
+      launchmax.x=-launchmin.x;
+      launchmax.y=-launchmin.y;
+      launchmax.z=-launchmin.z;
+
+      volume=dims.x*dims.y*dims.z;
+      density=Property.Get(self,"ParticleGroup","number of particles");
+
+      Property.Set(self,"PGLaunchInfo","Box Min",launchmin);
+      Property.Set(self,"PGLaunchInfo","Box Max",launchmax);
+      Property.Set(self,"ParticleGroup","number of particles",density*volume);
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      FillPhysOBB();
+      DefaultOnBeginScript();
+   }
+   OnMessage()
+   {
+      if(MessageIs("Test"))
+      {
+         FillPhysOBB();
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(ParticleFillPhysOBB)
+
