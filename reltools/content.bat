@@ -83,6 +83,7 @@ xcopy /D /s /I %_ARTPATH_%\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
 xcopy /D /s /I %_ARTPATH_%\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
 xcopy /D /s /I %_ARTPATH_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
 xcopy /D /s /I %_ARTPATH_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
+xcopy /D /s /I %_ARTPATH_%\finals\camera %_BLDDRV_%\prj\cam\art\finals\camera
 xcopy /D /s /I %_ARTPATH_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
 
 
@@ -284,6 +285,21 @@ cd ..
 
 copy %_ZIPDIR_%\pal.crf %_DAILYTHIEF_%
 del %_ZIPDIR_%\pal.crf
+
+rem **************************************************************
+rem   CAMERA
+rem **************************************************************
+
+cd camera
+
+find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE1_% > %_ZIPDIR_%\elog
+find . -print | sed 1,$s~./~~ | grep -i %_EXCLUDE2_%  >> %_ZIPDIR_%\elog
+
+pkzip25 -add -recurse -path=current -nozipextension -exclude=@%_ZIPDIR_%\elog  %_ZIPDIR_%\camera.crf  | tee /A r:\prj\thief2\reltools\ziplog 
+cd ..
+
+copy %_ZIPDIR_%\camera.crf %_DAILYTHIEF_%
+del %_ZIPDIR_%\camera.crf
 
 rem **************************************************************
 rem   SND
