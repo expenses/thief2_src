@@ -265,32 +265,34 @@ BEGIN_SCRIPT(StdKey,RootScript)
      // back into inventory so as to combine.  Lets go:
      OnContained()
      {
-        if(message.event==kContainAdd &&
-           object(message.container)==Object.Named("Player"))
+        if(message.event==kContainAdd)
         {
-           object schem=Object.Named("pickup_key");
-
            if(!Property.Possessed(self,"CombineType") &&
               Property.Possessed(self,"KeySrc"))
            {
-              string combine="key";
               boolean master=Property.Get(self,"KeySrc","MasterBit");
               integer region=Property.Get(self,"KeySrc","RegionMask");
               integer id=Property.Get(self,"KeySrc","LockID");
+              string combine="key";
 
               combine=combine+(master?"T":"F");
               combine=combine+string(region)+"i"+string(id);
               
               Property.Set(self,"CombineType",(const char*)(combine));
-              // Not clear if this is safe to do inside the OnContained handler...
-              // the point is to force the combination now that combine type
-              // has been set.  Since we check for the CombineType property
-              // above, we recurse, but trivially.
-              Container.Remove(self);
-              Container.Add(self,Object.Named("Player"));
+           
+              if(object(message.container)==Object.Named("Player"))
+              {
+                  object schem=Object.Named("pickup_key");
 
-              if(Object.Exists(schem))
-                 Sound.PlaySchemaAmbient(self,schem);
+                  if(Object.Exists(schem))
+                     Sound.PlaySchemaAmbient(self,schem);
+                  // Not clear if this is safe to do inside the OnContained handler...
+                  // the point is to force the combination now that combine type
+                  // has been set.  Since we check for the CombineType property
+                  // above, we recurse, but trivially.
+                  Container.Remove(self);
+                  Container.Add(self,Object.Named("Player"));
+              }
            }
         }
         DefaultOnContained();
