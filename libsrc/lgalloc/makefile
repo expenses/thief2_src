@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/lgalloc/RCS/makefile $
-# $Revision: 1.3 $
+# $Revision: 1.4 $
 # $Author: TOML $
-# $Date: 1997/07/10 17:12:30 $
+# $Date: 1997/07/15 21:27:47 $
 #
 #
 
@@ -21,12 +21,16 @@ EXETARGS = memtest
 
 EXETYPE = con
 
-lgalloc_OBJS = allcguid memall memcore membase primallc pool poolimp \
-               multpool dbgalloc
+lgalloc_OBJS = allcguid memall memcore membase pool poolimp \
+               multpool dbgalloc nonover heap memtimer primallc \
+               stdalloc
+
+lgalloc_opt_objs = pool poolimp multpool heap memtimer stdalloc
+
 #heapimp
 
 lgalloc_HDRS = allocapi.h allcguid.h allocovr.h memall.h virtmem.h \
-               pool.h poolimp.h
+               pool.h poolimp.h mallocdb.h dbmem.h
 
 memtest_objs = memtest
 memtest_libs = lgalloc lg mprintf
