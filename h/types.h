@@ -1,8 +1,8 @@
 /*
  * $Source: x:/prj/tech/hsrc/RCS/types.h $
- * $Revision: 1.22 $
- * $Author: JAEMZ $
- * $Date: 1997/08/14 11:13:50 $
+ * $Revision: 1.27 $
+ * $Author: TOML $
+ * $Date: 1997/12/09 20:46:54 $
  *
  * extra typedefs and macros for use by all code.
  *
@@ -10,6 +10,15 @@
 
 #ifndef __TYPES_H
 #define __TYPES_H
+
+//
+// Include any compiler headers that get messed up by this file...
+//
+
+// Microsoft
+#if defined(_MSC_VER)
+   #include <yvals.h>
+#endif
 
 //
 // COMPILER VENDOR SPECIFIC ADJUSTEMENTS (placed first so will affect this file)
@@ -27,10 +36,6 @@
         #pragma warning 689 9
         #pragma warning 656 9
         #pragma warning 657 9
-        #if defined(WAT110)
-           // crashes w106 compiler
-           #pragma warning 726 9 
-        #endif
     #else
         // Preprocessing symbol 'X' has not been declared in Watcom C front end only
         #pragma warning 203 9
@@ -68,6 +73,8 @@
         #pragma warning (disable:4761)
         // (bool-op) : signed/unsigned mismatch (op is ==, >=, so on)
         #pragma warning (disable:4018)
+
+        #pragma warning (3:4706)
 
     #endif
 
@@ -130,6 +137,24 @@ typedef unsigned long   DWORD;
 typedef int BOOL;                       // Microsoft-style
 typedef unsigned char sbool;            // small bool
 
+// "True" bool that is own type and matches C++ standard behavior
+#ifndef NO_TRUE_BOOL
+#ifdef __cplusplus
+struct true_bool
+{
+   true_bool()         : value(0)        {}
+   true_bool(int v)    : value(v != 0)   {}
+   true_bool & operator=(int v)          { value = (v != 0); return (*this); }
+   operator int() const                  { return (value); }
+
+private:
+   int value;
+};
+#else
+typedef int true_bool;
+#endif
+#endif
+
 #if defined(_MSC_VER) || defined(WAT110)
 #define bool sbool
 #else
@@ -162,6 +187,23 @@ typedef struct  _GUID
     BYTE  Data4[ 8 ];
     }	GUID;
 
+#define MAKE_GUID(p, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+   do \
+   { \
+      const GUID _temp = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }; \
+      *p = _temp; \
+   } while (0)
+
+#if !defined(_MSC_VER) && !defined(WAT110)
+   #define DEFINE_GUID_UNCONDITIONAL(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+            EXTERN_C const GUID CDECL name \
+                     = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+#else
+   #define DEFINE_GUID_UNCONDITIONAL(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+            EXTERN_C const GUID name \
+                     = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+#endif
+
 // VC 4.2 changed the definition of DEFINE_GUID.  Other compilers are sure to follow (toml 11-19-96)
 #if !defined(_MSC_VER) && !defined(WAT110)
    #ifndef INITGUID
@@ -190,10 +232,22 @@ typedef struct  _GUID
 //
 #ifndef NO_LG_GUID
 
-#define MAKE_LG_GUID_HIGH_DWORD(number) ((((ulong)number & 0xff) << 24) | (((ulong)number & 0xff00) << 8) | ((ulong)number & 0xffff))
+#define MAKE_LG_GUID_HIGH_DWORD(number) ((((ulong)number & 0xff) << 24) | (((ulong)number & 0xff00) << 16) | ((ulong)number & 0xffff))
 
 #define DEFINE_LG_GUID(ident, number) \
     DEFINE_GUID(ident, MAKE_LG_GUID_HIGH_DWORD((number)), \
+                       (0x7a80 + (number)), \
+                       (0x11cf + (number)), \
+                       0x83, 0x48, 0x00, 0xaa, 0x00, 0xa8, 0x2b, 0x51)
+
+#define DEFINE_LG_GUID_UNCONDITIONAL(ident, number) \
+    DEFINE_GUID_UNCONDITIONAL(ident, MAKE_LG_GUID_HIGH_DWORD((number)), \
+                       (0x7a80 + (number)), \
+                       (0x11cf + (number)), \
+                       0x83, 0x48, 0x00, 0xaa, 0x00, 0xa8, 0x2b, 0x51)
+
+#define MAKE_LG_GUID(p, number) \
+    MAKE_GUID(p, MAKE_LG_GUID_HIGH_DWORD((number)), \
                        (0x7a80 + (number)), \
                        (0x11cf + (number)), \
                        0x83, 0x48, 0x00, 0xaa, 0x00, 0xa8, 0x2b, 0x51)
