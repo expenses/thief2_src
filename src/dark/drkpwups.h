@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkpwups.h 1.4 1998/08/08 23:33:37 dc Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkpwups.h,v 1.5 1999/12/21 10:53:13 adurant Exp $
 // Dark Specific Powerup Code and Script Services
 
 #pragma once
@@ -23,6 +23,8 @@ EXTERN BOOL DrkObjTryDeploy(ObjID src_obj, ObjID deploy_arch);
 EXTERN void TryCleanBlood(ObjID water_src, float rad);
 
 EXTERN void FungusizeSound(struct sESndEvent* ev); 
+
+EXTERN void FlashOnlyPlayer(float intensity);
 
 //////////////
 // initializers
