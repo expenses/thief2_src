@@ -1,6 +1,56 @@
 #include "phprops.h"
 #include "tfint.h" // for trap flags.
 
+/* Traps in general derive from this script and in so doing get the following
+   basic infrastructure:
+   * Handling of "TurnOn" and "TurnOff" messages, dispatched to an activation method.
+   * Interpretation of locked or unlocked traps.
+   * Interpretation of trap flags, such as Invert (reverse sense of on and off)
+     NoOn and NoOff (intercept the handling of certain messages) and Once (destroy
+     object after completion, or just lock it?)
+*/
+
+BEGIN_SCRIPT(StdTrap, RootScript)
+
+METHODS:
+   METHOD void Activate(boolean on, object sender)
+   {
+      ; // overload me
+   }
+
+MESSAGES:
+   OnMessage()
+   {
+      integer flags=0;
+      boolean invert=FALSE, activated=FALSE;
+
+      if(Property.Possessed(self,"TrapFlags"))
+         flags=Property.Get(self,"TrapFlags");
+
+      invert=flags&TRAPF_INVERT;
+
+      if(!Locked.IsLocked(self) && message.from!=self)
+      {
+         if(MessageIs("TurnOn") && !(flags & TRAPF_NOON))
+         {
+            Activate(!invert,message.from); activated=TRUE;
+         }
+         else if(MessageIs("TurnOff") && !(flags & TRAPF_NOOFF))
+         {
+            Activate(invert,message.from); activated=TRUE;
+         }
+      }
+
+      DefaultOnMessage();
+
+      if(activated && flags&TRAPF_ONCE)
+         Property.Set(self,"Locked",TRUE);
+         // Object.Destroy(self); // dicey. May just want to lock
+   }
+
+END_SCRIPT(StdTrap)
+
+
 BEGIN_SCRIPT(TrigDoorOpen, Door)
 MESSAGES:
     OnDoorOpening()
@@ -453,18 +503,17 @@ MESSAGES:
    }
 END_SCRIPT(TrapConverse)
 
+
 // Script:	TrapFindSecret
 /* When this trap is triggered, the player is credited with finding a secret.
    One secret per trap, please, as the service call marks anything we say
    is "found" as no longer being "hidden"!
    */
-BEGIN_SCRIPT(TrapFindSecret, RootScript)
-MESSAGES:
-   OnMessage()
+BEGIN_SCRIPT(TrapFindSecret, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if (MessageIs("TurnOn"))
-         DarkGame.FoundObject(self);
-      DefaultOnMessage();
+      if (on) DarkGame.FoundObject(self);
    }
 END_SCRIPT(TrapFindSecret)
 
@@ -480,76 +529,28 @@ END_SCRIPT(TrapFindSecret)
    @TODO: Should AIs reset their idle origin when patrolling is
    turned off?
 */
-BEGIN_SCRIPT(TrapPatrol, RootScript)
-MESSAGES:
-   OnMessage()
+BEGIN_SCRIPT(TrapPatrol, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if (MessageIs("TurnOn"))
-         Property.Set(self,"AI_Patrol",TRUE);
-      else if (MessageIs("TurnOff"))
-         Property.Set(self,"AI_Patrol",FALSE);
-      DefaultOnMessage();
+      Property.Set(self,"AI_Patrol",on);
    }
 END_SCRIPT(TrapPatrol)
 
-
-BEGIN_SCRIPT(TrapInverter,RootScript)
-MESSAGES:
-   OnMessage()
+BEGIN_SCRIPT(TrapRelay, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if(message.from!=self)
-      {
-         if(!Locked.IsLocked(self))
-         {
-            if(MessageIs("TurnOn"))
-               Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-            else if(MessageIs("TurnOff"))
-               Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-         }
-      }
-      DefaultOnMessage();
-   }
-END_SCRIPT(TrapInverter)
-
-
-BEGIN_SCRIPT(TrapRelay, RootScript)
-MESSAGES:
-   OnMessage()
-   {
-      if(message.from!=self)
-      {
-         if(!Locked.IsLocked(self))
-         {
-            integer percent_filter=100;
-         
-            if(Property.Possessed(self,"scriptTiming"))
-               percent_filter=Property.Get(self,"scriptTiming");
-
-            if(Data.RandFlt0to1()<=(float(percent_filter)/100.0))
-               Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
-         }
-      }
-      DefaultOnMessage();
+      integer percent_filter=100;
+      string msg=on?"TurnOn":"TurnOff";
+      
+      if(Property.Possessed(self,"scriptTiming"))
+         percent_filter=Property.Get(self,"scriptTiming");
+      
+      if(Data.RandFlt0to1()<=(float(percent_filter)/100.0))
+         Link.BroadcastOnAllLinks(self,msg,"ControlDevice",NULL);
    }
 END_SCRIPT(TrapRelay)
-
-
-BEGIN_SCRIPT(TrapOnFilter,RootScript)
-MESSAGES:
-   OnMessage()
-   {
-      if(message.from!=self)
-      {
-         if(!Locked.IsLocked(self))
-         {
-            if(MessageIs("TurnOn"))
-               Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-         }
-      }
-      DefaultOnMessage();
-   }
-END_SCRIPT(TrapOnFilter)
-
 
 
 BEGIN_SCRIPT(TrigPPlate, PressurePlate)
@@ -583,7 +584,7 @@ END_SCRIPT(TrigPPlateImmed)
 //
 // Note that this is only _really_ designed for the case where
 // the trap contains exactly one object.
-BEGIN_SCRIPT(TrapRelease, RootScript)
+BEGIN_SCRIPT(TrapRelease, StdTrap)
 
 METHODS:
 
@@ -625,42 +626,24 @@ METHODS:
       }
    }
 
-MESSAGES:
-
-   OnMessage()
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn"))
+      if(on)
          ReplaceLinks("Contains","Owns");
-      else if(MessageIs("TurnOff"))
+      else
          ReplaceLinks("Owns","Contains");
-      DefaultOnMessage();
    }
 
 END_SCRIPT(TrapRelease)
 
 
-
-// Actually doesn't create the object, just puts its existing contents into the world.
-// Differs from TrapRelease only in that it cannot later dephysicalize the object.
-BEGIN_SCRIPT(TrapCreate, TrapRelease)
-MESSAGES:
-   OnMessage()
+BEGIN_SCRIPT(TrapTweqEmit, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if(!MessageIs("TurnOff"))
-         DefaultOnMessage();
-   }
-END_SCRIPT(TrapCreate)
-
-
-BEGIN_SCRIPT(TrapTweqEmit, RootScript)
-
-MESSAGES:
-   OnMessage()
-   {
-      if(MessageIs("TurnOn"))
+      if(on)
          ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoActivate);
-      DefaultOnMessage();
-   }      
+   }   
 
 END_SCRIPT(TrapTweqEmit)
 
@@ -707,7 +690,8 @@ END_SCRIPT(ReloadTweqEmit)
 /* Trigger to be associated with a TweqFlicker-ing fnord.
    Sends a TurnOn on every tweq flicker event.
    */
-BEGIN_SCRIPT(TrigFlicker, RootScript)
+// @TODO: Reconsider all of this.
+BEGIN_SCRIPT(TrigFlicker, StdTrap)
 
 METHODS:
    METHOD void Fire(boolean on)
@@ -715,6 +699,17 @@ METHODS:
       SetData("IsOn",on);
       SetData("LastFiring",GetTime());
       Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice",NULL);
+   }
+
+   METHOD void Activate(boolean on, object sender)
+   {
+      if(on)
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
+      else
+      {
+         Fire(FALSE);
+         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
+      }
    }
 
 MESSAGES:
@@ -737,18 +732,6 @@ MESSAGES:
          boolean on=GetData("IsOn");
          on=!on;
          Fire(on);
-      }
-   }
-   OnMessage()
-   {
-      if(MessageIs("TurnOn"))
-         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
-      else if(MessageIs("TurnOff"))
-      {
-         // Send a final "off." Don't want to leave controlled thing in an on state,
-         // generally.
-         Fire(FALSE);
-         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
       }
    }
    OnTimer()
@@ -780,21 +763,21 @@ END_SCRIPT(TrigFlicker)
    breaking the link if it gets a "TurnOff"
    */
    
-BEGIN_SCRIPT(TrapRequirement, RootScript)
-MESSAGES:
+BEGIN_SCRIPT(TrapRequirement, StdTrap)
+METHODS:
 
-   OnMessage()
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn"))
+      if(on)
       {
-         if(!Link.AnyExist("ScriptParams",self,message.from))
+         if(!Link.AnyExist("ScriptParams",self,sender))
          {
-            Link.Create("ScriptParams",self,message.from);
+            Link.Create("ScriptParams",self,sender);
          }
       }
-      else if(MessageIs("TurnOff"))
+      else
       {
-         linkset tally=Link.GetAll("ScriptParams",self,message.from);
+         linkset tally=Link.GetAll("ScriptParams",self,sender);
 
          while(tally.AnyLinksLeft())
          {
@@ -802,7 +785,6 @@ MESSAGES:
             tally.NextLink();
          }
       }
-      DefaultOnMessage();
    }
 END_SCRIPT(TrapRequirement)
 
@@ -833,25 +815,20 @@ METHODS:
          return TRUE;
    }
 
-MESSAGES:
-   OnMessage()
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn"))
+      if(on)
       {
-         DefaultOnMessage();
-
+         Base::Activate(on,sender);
          if(CheckForAllLinked())
                Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
       }
-      else if(MessageIs("TurnOff"))
+      else
       {
          if(CheckForAllLinked())
             Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-
-         DefaultOnMessage();
+         Base::Activate(on,sender);
       }
-      else
-         DefaultOnMessage();
    }
 END_SCRIPT(TrapRequireAll)
 
@@ -866,26 +843,22 @@ BEGIN_SCRIPT(TrapRequireAny, TrapRequirement)
 
 METHODS:
 
-MESSAGES:
-   OnMessage()
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn"))
+      if(on)
       {
          if(!Link.AnyExist("ScriptParams",self))
                Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-
-         DefaultOnMessage();
+         Base::Activate(on,sender);
       }
-      else if(MessageIs("TurnOff"))
+      else
       {
          boolean waslinked=Link.AnyExist("ScriptParams",self);
 
-         DefaultOnMessage();
+         Base::Activate(on,sender);
          if(waslinked && !Link.AnyExist("ScriptParams",self))
                Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
       }
-      else
-         DefaultOnMessage();
    }
 END_SCRIPT(TrapRequireAny)
 
@@ -895,12 +868,12 @@ END_SCRIPT(TrapRequireAny)
 /* Destroys all objects it controls.  Obviously, this is rather a one-shot trap.
    Destroys itself when it's done, just to be tidy.
  */
-BEGIN_SCRIPT(TrapDestroy, RootScript)
+BEGIN_SCRIPT(TrapDestroy, StdTrap)
 
-MESSAGES:
-   OnMessage()
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-     if(MessageIs("TurnOn"))
+     if(on)
      {
        linkset victims=Link.GetAll("ControlDevice",self);
        while(victims.AnyLinksLeft())
@@ -920,12 +893,12 @@ END_SCRIPT(TrapDestroy)
 /* Trap which teleports its controlled object to its own location.
    No response to "TurnOff"
    */
-BEGIN_SCRIPT(TrapTeleporter, RootScript)
+BEGIN_SCRIPT(TrapTeleporter, StdTrap)
 
-MESSAGES:
-   OnMessage()
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn"))
+      if(on)
       {
          // Let's don't do a Link.GetAll, since I really don't think we
          // want to teleport several objects to the same location...
@@ -953,7 +926,7 @@ END_SCRIPT(TrapTeleporter)
 /* When triggered, makes its controlled object(s) no longer rotation-
    or location-controlled.  You'd better know what you're doing!
 */
-BEGIN_SCRIPT(TrapDeadfall, RootScript)
+BEGIN_SCRIPT(TrapDeadfall, StdTrap)
 
 METHODS:
   METHOD void Uncontrol(object targ)
@@ -966,10 +939,9 @@ METHODS:
         Property.Set(targ,"PhysControl","Controls Active",controls);
      }
   }
-MESSAGES:
-  OnMessage()
+  METHOD void Activate(boolean on, object sender)
   {
-     if(MessageIs("TurnOn"))
+     if(on)
      {
         linkset controls=Link.GetAll("ControlDevice",self);
 
@@ -1007,7 +979,7 @@ END_SCRIPT(TrigBrainDead)
 
 // Script to derive from with basic parsing routines for
 // TrapQVar properties.
-BEGIN_SCRIPT(QVarTrapTrigBase, RootScript)
+BEGIN_SCRIPT(QVarTrapTrigBase, StdTrap)
 
 METHODS:
 
@@ -1228,14 +1200,9 @@ METHODS:
       Debug.MPrint("New value = ",qvarval);
    }
 
-MESSAGES:
-   OnMessage()
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn") || MessageIs("Parse"))
-         ParseOperation(FALSE);
-      else if(MessageIs("TurnOff"))
-         ParseOperation(TRUE);
-      DefaultOnMessage();
+      ParseOperation(!on);
    }
 
 END_SCRIPT(TrapSetQVar)
@@ -1245,8 +1212,8 @@ END_SCRIPT(TrapSetQVar)
    and triggers to go in this module.
 
    Ignores Op.  Looks at the nth digit of the quest variable, where
-   n=arg.  Sets this object's model name properties o a display an
-   appropriate digit (how? tweq joints?).
+   n=arg.  Sets this object's properties to display an appropriate digit 
+   (how? tweq joints?).
    */
 BEGIN_SCRIPT(QVarDigit, QVarTrapTrigBase)
 
@@ -1294,31 +1261,13 @@ END_SCRIPT(QVarDigit)
    the "TurnOn" and "TurnOff" cases.  This could then be implemented
    as one of those, as could inverter traps.
    */
-BEGIN_SCRIPT(TrapDirection, RootScript)
-MESSAGES:
-   OnMessage()
+BEGIN_SCRIPT(TrapDirection, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if(message.from!=self)
-      {
-         integer direction=0;
-
-         if(!Locked.IsLocked(self))
-         {
-            if(MessageIs("TurnOn"))
-               direction=1;
-            else if(MessageIs("TurnOff"))
-               direction=-1;
-         }
-         if(Property.Possessed(self,"TrapFlags") &&
-            (Property.Get(self,"TrapFlags") & TRAPF_INVERT))
-            direction=-direction;
-
-         if(direction==1)
-            Link.BroadcastOnAllLinks(self,"GoForward","ControlDevice",NULL);
-         else if(direction==-1)
-            Link.BroadcastOnAllLinks(self,"GoReverse","ControlDevice",NULL);
-      }
-      DefaultOnMessage();
+      integer direction=0;
+      
+      Link.BroadcastOnAllLinks(self,on?"GoForward":"GoReverse","ControlDevice",NULL);
    }
 END_SCRIPT(TrapDirection)
 
@@ -1331,11 +1280,11 @@ END_SCRIPT(TrapDirection)
 	X is defined by the data hanging off a ScriptParams link from the object
 	to itself, or 30.0 by default if that data does not exist.
 
-   @TODO: This should use the existing ScriptTiming property, not
+   @TODO: This should probably use the existing ScriptTiming property, not
    the ScriptParams data.
 */
 
-BEGIN_SCRIPT (TrapCapacitor, RootScript)
+BEGIN_SCRIPT (TrapCapacitor, StdTrap)
 
 States
 {
@@ -1354,39 +1303,34 @@ float GetCapacitorTime ()
 	return delay;
 }
 
+METHOD void Activate(boolean on, object sender)
+{
+   if (StateIs((int)Charged))
+   {
+      SetData("LastMsg",on?"TurnOn":"TurnOff");
+   }
+   else if (StateIs((int)Uncharged))
+   {
+      if (on)
+      {
+         SetState(Charged);
+         Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         SetOneShotTimer("Decharge",GetCapacitorTime());
+         SetData("LastMsg","NONE");
+      }
+      else
+      {
+         Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
+   }
+}
+
 MESSAGES:
 OnSim()
 {
 	if (message.starting)
 		SetState(Uncharged);
 	DefaultOnSim();
-}
-
-OnMessage()
-{
-	if(!Locked.IsLocked(self))
-	{
-		if (StateIs((int)Charged))
-		{
-			if ( (MessageIs("TurnOn")) || (MessageIs("TurnOff")) )
-				SetData("LastMsg",message.message);
-		}
-		else if (StateIs((int)Uncharged))
-		{
-			if (MessageIs("TurnOn"))
-			{
-				SetState(Charged);
-				Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
-				SetOneShotTimer("Decharge",GetCapacitorTime());
-				SetData("LastMsg","NONE");
-			}
-			else if (MessageIs("TurnOff"))
-			{
-				Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
-			}
-		}
-	}
-	DefaultOnMessage();
 }
 
 OnTimer()
@@ -1428,21 +1372,26 @@ METHODS:
       PostMessage(self,alert==kHighAlert?"GoForward":"GoBackward");
    }
 
-MESSAGES:
-   OnMessage()
+   METHOD void Activate(boolean on, object sender)
    {
-      if(MessageIs("TurnOn"))
+      if(on)
       {
          ClampAlert(kHighAlert);
-         DefaultOnMessage();
+         Base::Activate(on,sender);
       }
-      else if(MessageIs("TurnOff"))
+      else
       {
-         DefaultOnMessage();
+         Base::Activate(on,sender);
          if(!Link.AnyExist("ScriptParams",self))
             ClampAlert(kNoAlert);
       }
    }
 
 END_SCRIPT(TurretAlert)
+
+
+
+
+
+
 
