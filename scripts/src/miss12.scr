@@ -469,6 +469,7 @@ MESSAGES:
       Catch();
       DefaultOnHighAlert();
    }
+#ifdef WRONG_THING
    // @TODO: Well, this is really the wrong thing, but it will do until the
    // right thing (above) actually works.
    OnAlertness()
@@ -479,6 +480,7 @@ MESSAGES:
       }
       DefaultOnAlertness();
    }
+#endif
 
 END_SCRIPT(AICatchPlayer)
 
