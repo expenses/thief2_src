@@ -1480,6 +1480,106 @@ MESSAGES:
 END_SCRIPT(TrigRoomDelivery)
 
 
+/* TrigRoomDeposit
+   Like TrigRoomObject, but the Object must not be contained by anything.
+   Doesn't inherit from TrigRoomObject because I need different methods
+   and messages.
+*/
+
+BEGIN_SCRIPT(TrigRoomDeposit, Room)
+METHODS:
+   METHOD boolean RoomIsDest(object room)
+   {
+      boolean inroom=FALSE;
+      object routeroom=OBJ_NULL;
+      linkset dest=Link.GetAll("Route",self);
+
+      // am I now in any of the rooms I have route links to?
+      while(!inroom && dest.AnyLinksLeft())
+      {
+         object thisroom=dest.Link().To();
+
+         if(Object.InheritsFrom(room,thisroom))
+         {
+            inroom=TRUE;
+            routeroom=thisroom;
+         }
+         dest.NextLink();
+      }
+      return inroom;
+   }
+
+   METHOD boolean CheckContained()
+   {
+      return (Link.AnyExist("~Contains",self));
+   }
+   
+   METHOD void CheckSuccess()
+   {
+      int oldsat = (integer)GetData("Satisfied");
+      SetData("Satisfied",(integer)GetData("RightRoom") &&
+                          !CheckContained());
+      int newsat = (integer)GetData("Satisfied");
+      if (newsat != oldsat)
+      {
+         if (newsat)
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         else
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+      }
+   }
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+      if (!IsDataSet("Contained"))
+         SetData("Contained",CheckContained());
+      if (!IsDataSet("RightRoom"))
+         SetData("RightRoom",0); //assume not
+      if (!IsDataSet("Satisfied"))
+         SetData("Satisfied",0);
+      DefaultOnBeginScript();
+   }
+
+   OnContained()
+   {
+      if (message.event == kContainRemove)
+      {
+         CheckSuccess();
+         SetData("Contained",CheckContained());
+//         Debug.MPrint("Trap Drop ",CheckContained());
+      }
+      if (message.event == kContainAdd)
+      {
+         CheckSuccess();
+         SetData("Contained",CheckContained());
+//         Debug.MPrint("Trap Grab ",CheckContained());
+      }
+      DefaultOnContained();
+   }
+
+   OnObjRoomTransit()
+   {
+      string msg;
+      boolean wasin=RoomIsDest(message.FromObjId);
+      boolean amin=RoomIsDest(message.ToObjId);
+
+      if(amin!=wasin)
+      {
+         if(amin)
+         {
+            SetData("RightRoom",1);
+         }
+         else
+            SetData("RightRoom",0);
+         CheckSuccess();
+      }
+      DefaultOnObjRoomTransit();
+   }
+END_SCRIPT(TrigRoomDeposit)
+
+
 
 /* TrapCapacitor:
 	When it receives a "TurnOn", it relays it, then refuses to relay any more 
