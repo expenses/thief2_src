@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.3 1999/07/06 14:28:31 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.4 1999/07/15 15:59:12 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -8,7 +8,8 @@
 #include "animlgte.h"
 #include "drscrpt.h"
 #include "tweqflgs.h"
-#include "aitype.h" // for alertness levels
+#include "aitype.h"
+#include "aiscrt.h" // for alertness levels
 #include "rendprop.h" // for render types
 #include "dmgprop.h" // for slay results
 #include "ambbase.h" // for ambient hack flags
@@ -17,6 +18,10 @@
 #include <stdio.h> // for sprintf, because damn, why not. 
 
 #include "evidence.scr"
+
+/* @TODO: Break this bad boy up into individual files, one for traps,
+   one for standard AI, and such.
+*/
 
 /* GEN.SCR
   This file contains "generic" object behavior scripts of various sorts.
@@ -796,8 +801,19 @@ MESSAGES:
 END_SCRIPT(DoFlameSource)
 
 
-// really, this script is specific to torches, not Extinguishable
-// lights in general...
+/* Script for any light that can be extinguished with water and gas, or
+   lit with fire.  Assumes that the model is animating via a TweqModels.
+
+   We commit the following gruesome hack to avoid hard-coding in the model
+   to swap to when the light is extinguished:  since TweqModels animates until
+   the first empty entry of its Tweq Config model list, we count on this and
+   support no more than 4 models in the animation, when actually there are
+   spaces for six in the property.  The sixth is the "dead" version of the
+   model, and the fifth is left empty as a separator, so the normal animation
+   does not include the "dead" version.
+
+ */
+
 BEGIN_SCRIPT(Extinguishable, AnimLight)
 
    METHODS:
@@ -810,11 +826,15 @@ BEGIN_SCRIPT(Extinguishable, AnimLight)
       }
       METHOD void TurnOff()
       {
+         string deadmodel="Newt01"; // default from Thief1 standard torches.
+
          // turn off our TweqModels animation
          ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoHalt);
          // change our model
-         // @TODO: don't really want the model new model name coded into this
-         ActReact.React("set_model",1.0,self,0,"Newt01");
+         if(Property.Possessed(self,"CfgTweqModels"))
+            deadmodel=Property.Get(self,"CfgTweqModels","Model 5");
+
+         Property.Set(self,"ModelName",(const char*)deadmodel);
          Base::TurnOff();
       } 
 
@@ -3235,9 +3255,56 @@ END_SCRIPT(StdParticleGroup)
 
 
 /* CREATURE SCRIPTS
+   Cameras green-yellow-red swapping and triggers.
    Fire Elementals
    Undead vs. Holy Water
  */
+
+
+/* Cameras send a "TurnOn" when they reach high alertness,
+   and a "TurnOff" when they stand down from high alertness.
+   They also animate their models to reflect alertness,
+   and when slain.  The TweqModels config property is used to
+   parametrize the models used (so, cameras which use TweqModels
+   animation are not supported).  Model number 0 is used for the
+   dead camera, while 1 and up are used for alertness levels.
+   */
+BEGIN_SCRIPT(CameraAlert, AI)
+
+MESSAGES:
+   OnAlertness()
+   {
+      string model=Property.Get(self,"ModelName");
+
+         if(message.level==kHighAlert)
+         {
+            Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+         }
+         else if(message.oldLevel==kHighAlert)
+         {
+            Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+         }
+
+         if(Property.Possessed(self,"CfgTweqModels"))
+            model=Property.Get(self,"CfgTweqModels",
+                               string("Model ")+string(message.level+1));
+
+         Property.Set(self,"ModelName",(const char*)model);
+
+      DefaultOnAlertness();
+   }
+   /* Note that if a camera is slain while at Alertness 3, it can
+      never send the all-clear "TurnOff".  This is intentional. */
+   OnSlain()
+   {
+      if(Property.Possessed(self,"CfgTweqModels"))
+         Property.Set(self,"ModelName",
+                      Property.Get(self,"CfgTweqModels","Model 0"));
+      DefaultOnSlain();
+   }
+END_SCRIPT(CameraAlert)
+
+
 
 // Behaviors of the fire elemental's particle group to reflect
 // AI state and such.
