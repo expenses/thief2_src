@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/physics.h 1.16 1997/09/05 17:21:35 CCAROLLO Exp $
 
 #ifndef __PHYSICS_H

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/labtab/RCS/labtab.h 1.1 1999/04/27 18:14:48 JAEMZ Exp $
 
 // Label table
