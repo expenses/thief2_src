@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #include "gen.scr" // we want to inherit from quest var traps...
 #include "drkgoalt.h"
 

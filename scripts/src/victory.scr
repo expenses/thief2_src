@@ -1,4 +1,9 @@
-// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.16 2000/03/07 19:24:53 TJS Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: r:/prj/thief2/scripts/src/RCS/victory.scr 1.16 1970/01/01 00:00:00 TJS Exp $
 
 #include "drkgoalt.h"
 #include "drkscrs.h"
