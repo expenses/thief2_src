@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkinvpr.h,v 1.5 1999/10/20 16:36:39 Justin Exp $
 #pragma once  
 #ifndef __INVNTPRP_H
