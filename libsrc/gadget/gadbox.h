@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/gadget/RCS/gadbox.h 1.3 1996/09/20 22:03:04 mahk Exp $
+// $Header: r:/t2repos/thief2/libsrc/gadget/gadbox.h,v 1.4 1998/09/09 14:59:07 KEVIN Exp $
 
 #ifndef __GADBOX_H
 #define __GADBOX_H
@@ -94,6 +94,7 @@ struct _LGadBox {
 #define BOXFLAG_BUFFERED   0x0 // Use normal compose methods
 #define BOXFLAG_DIRECT     0x1 // draw straight to screen
 #define BOXFLAG_ACTIVE     0x2 // (internal) box has been initialized
+#define BOXFLAG_FLIP       0x4
 
 //------------------------------------------------------------
 // ACCESSORS
