@@ -160,9 +160,13 @@ MESSAGES:
             Property.Set(inv,"CombineType","LCMask");
             // Note that this will cause a combine event, thus implicitly recursing.
             // That should be okay because it will recurse into the above LCMask
-            // combine type case, not the LCMaskSpecial case.
+            // combine type case, not the LCMaskSpecial case.  This recursive case
+            // will handle the Expert goal to get all the masks if the special one
+            // is last.
             if(found)
                Container.Add(masks,self);
+            // Normal goal: get a mask
+            Quest.Set(GoalStateVarName(M13_MASK_GOAL_0),kGoalComplete);
             // Got special mask, the Hard goal
             Quest.Set(GoalStateVarName(M13_MASK_GOAL_1),kGoalComplete);
          }
