@@ -1,16 +1,16 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.13 $
+# $Revision: 1.14 $
 # $Author: mahk $
-# $Date: 1994/06/21 05:34:20 $
+# $Date: 1994/08/14 17:57:52 $
 #
 
 DEBUG_ON= 1
 
 COMPILER= watcom
-SRCDIR= n:\project\lib\src\input
+SRCDIR= R:\prj\lib\src\input
 RELDIR= R:\prj\lib\rel
-BUILD_DIR= n:\project\lib\build\input
+BUILD_DIR= R:\prj\lib\build\input
 
 OBJDIR= objo
 BINDIR=
