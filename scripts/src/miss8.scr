@@ -126,13 +126,11 @@ METHODS:
             if(note!=NULLOBJ)
                Object.RemoveMetaProperty(note,"FrobInert");
             break;
-#ifdef COMBAT_MODE_CHECK
          case kAIM_Combat:
             // Player loses the mission if we currently have the note.
             if(note!=NULLOBJ)
                Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
             break;
-#endif
       }
          
       DefaultOnAIModeChange();
