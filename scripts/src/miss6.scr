@@ -78,10 +78,11 @@ METHODS:
         ObjectiveShow(3,TRUE);
       }
 
+      SetOneShotTimer(self,"DummySounds",1.5);
+
       if (HaveTheKey())
       {
         PostMessage(KeyObj(),"heardit");
-        SetOneShotTimer(self,"DummySounds",1.5);
       }
     }
   }
@@ -264,6 +265,90 @@ METHODS:
     return retval;
   }
 
+  METHOD boolean AllGoalsComplete()
+  {
+    int i;
+    boolean nonloot = TRUE;
+    boolean lootyes = FALSE;
+    for (i=0;i<4;i++)
+    {
+      if (Quest.Get(GoalStateVarName(i))!=kGoalComplete)
+      {
+        Debug.MPrint("All goals complete failed on goal ",i);
+        nonloot = FALSE;
+      }
+    }
+    for (i=4;i<6;i++)
+    {
+      if (Quest.Get(GoalStateVarName(i))==kGoalComplete)
+      {
+        lootyes = TRUE;
+        Debug.MPrint("Satisfied loot goal ",i);
+      }
+    }
+    return (lootyes && nonloot);
+  }
+
+  METHOD void KeyLogic(integer which)
+  {
+    boolean heardcon = (Quest.Get(GoalStateVarName(0))==kGoalComplete);
+    boolean pressedwax = (Quest.Get(GoalStateVarName(1))==kGoalComplete);
+    boolean havewax = (Quest.Get(GoalStateVarName(2))==kGoalComplete);
+    boolean putkey = (Quest.Get(GoalStateVarName(3))==kGoalComplete);
+    boolean havekey = HaveTheKey();
+
+    //should always have heardcon here.
+
+    Debug.MPrint("Key logic called.  Heardcon:",heardcon," Pressedwax:",pressedwax);
+    Debug.MPrint("Havewax:",havewax," PutKey:", putkey);
+    Debug.MPrint("Havekey:",havekey);
+
+    if ((heardcon) && (!pressedwax))   //so I don't havewax or meaningfully
+				       //putkey
+    {
+      if (!havekey)
+      {
+        if (which == 1) //ok, play I'd like to get a copy of that key.
+        {
+          //hack, schema name input directly
+          Sound.PlaySchema(self,Object.Named("gar0607"),self);
+          //no further schemas.
+        }
+      }
+      else  //I do have the key
+      {
+        if (which == 1)
+        {
+          //hack, schema name input directly
+          Sound.PlaySchema(self,Object.Named("gar0607"),self);
+          SetOneShotTimer(self,"DummySounds2",1.5);
+        }
+        if (which == 2)
+        {
+          PlayRightKey(1);
+        }
+      }
+      return;
+    }
+
+    //assume heardcon and pressedwax at this point
+    if ((havewax) && (!putkey))
+    {
+       if (which == 1)
+       {
+         object schmname = ScriptParamPropagate((object)GetData("HaveWaxObj"),"havewax");
+	 Debug.MPrint("Trying to play good think I've got wax schema");
+         if (schmname != (object)0)
+         {
+           Sound.PlaySchema(self,schmname,self);
+         }
+         else
+           Debug.MPrint("But schema load failed");
+       }
+       return;
+    }
+  }
+
 
 MESSAGES:
 
@@ -279,6 +364,8 @@ MESSAGES:
         SetData("TheKeyObj",0);       //obj id of real key
         SetData("PlayedHaveKey",0);   //played this vo already.
         SetData("HaveWaxObj",0); //wax object
+        SetData("PlayedWon",0); //played the work here is done schema
+        SetData("OughtaDoIt",0);
 	if ((object)self != object("Player"))
         {
 	  SetData("PathNumber",Data.RandInt(1,KEYPATHS)); //which key we're 
@@ -298,6 +385,26 @@ MESSAGES:
     if (!IsDataSet("PlayerRoomLocation"))
       SetData("PlayerRoomLocation",0);
     DefaultOnBeginScript();
+  }
+
+  OnQuestChange()
+  {
+    if (message.m_oldValue != message.m_newValue)
+    {
+      if ((message.m_pName == GoalStateVarName(2)) && (message.m_newValue==kGoalComplete) && ((integer)GetData("OughtaDoIt")==0))
+      {
+        Debug.MPrint("That oughtta do it");
+	//hack, explicit schema name call
+        Sound.PlaySchema(self,Object.Named("gar0617"),self);
+      }
+      if ((AllGoalsComplete()) && ((integer)GetData("PlayedWon")==0))
+      {
+        Debug.MPrint("I think my work here is done");
+        //hack, explicit schema name call
+        Sound.PlaySchema(self,Object.Named("gar0618"),self);
+      }
+    }
+    DefaultOnQuestChange();
   }
 
   OnSchemaDone()
@@ -328,7 +435,6 @@ MESSAGES:
       Debug.MPrint("Picked up correct key, ",message.from);
       if ((integer)GetData("PathNumber")!=0)
       {
-        PlayRightKey(3); //meaning, this isn't just after eavesdropping bit.
         PostMessage(message.from,"heardit"); //tell the key we know we've
 				             //eavesdropped
       }
@@ -377,8 +483,13 @@ MESSAGES:
   {
     if (message.name=="DummySounds")
     {
-      Debug.MPrint("Dummy sounds timer triggered.");
-      PlayRightKey(1);  //1 means should do wax check afterwards.        
+      Debug.MPrint("Dummy sounds timer triggered. 1");
+      KeyLogic(1);
+    }
+    if (message.name=="DummySounds2")
+    {
+      Debug.MPrint("Dummy sounds 2 timer triggered. 2");
+      KeyLogic(2);
     }
   }
 
@@ -510,6 +621,25 @@ METHODS:
 
   }
 
+  METHOD void SayReturn(object onwhom)
+  {
+    Debug.MPrint("Trying to play SayReturn");
+  
+    SetData("SaidReturn",1);
+
+    if (!Quest.Get(GoalStateVarName(0))==kGoalComplete)
+      return;
+   
+    linkset splinks = Link.GetAll("ScriptParams",self);
+    while (splinks.AnyLinksLeft())
+    {
+      link cursplink = splinks.Link();
+      if (cursplink.GetData()=="returnme")
+        Sound.PlaySchema(self,cursplink.To(),onwhom);
+      splinks.NextLink();
+    }
+  }
+
 MESSAGES:
 
   OnSim()
@@ -519,6 +649,7 @@ MESSAGES:
       SetData("Eavesdropped",0); //haven't eavesdropped yet.
       SetData("RightRoom",0);  //room where it should end up.
       SetData("CurrentRoom",0); //current room
+      SetData("SaidReturn",0);
     }
     DefaultOnSim();
   }
@@ -561,6 +692,8 @@ MESSAGES:
       if ((integer)GetData("Eavesdropped")==1)
         PlayDropMe(message.container);
     }
+    if ((integer)GetData("SaidReturn")==0)
+      SayReturn(message.container);
     DefaultOnContained();
   }
 
@@ -659,6 +792,17 @@ METHODS:
     string ctype = GetCombType(wrongobj);
     SetData("PrintName",(cMultiParm)((string)ctype+"wax"));
     Debug.MPrint("Setting next combine type to ",GetData("PrintName"));
+    if ((Quest.Get(GoalStateVarName(0))==1) && ((integer)GetData("ScrewedUp")==0))
+    {
+      Debug.MPrint("Playing screwed up sound");
+      object schmname = ScriptParamPropagate(self,"screwed");
+      if (schmname != (object)0)
+        Sound.PlaySchema(self,schmname,self);
+      else
+        Debug.MPrint("But schema load failed");
+    }
+    SetData("ScrewedUp",1);
+    
   }
 
   METHOD void PressGoodKey(object goodkey)
@@ -705,6 +849,13 @@ METHODS:
       object goodwax = Object.Create("GoodWax");
       SetCombType(goodwax);
       Container.Add(goodwax,clink.To());
+      object schmname = ScriptParamPropagate(self,"havewax");
+      if (schmname != (object)0)
+      {
+        Debug.MPrint("Propagating havewax link");
+        link splink = Link.Create("ScriptParams",goodwax,schmname);
+        splink.SetData("havewax");
+      }
     }
     ResetWaxModel(knifeobj);
     return;
@@ -748,6 +899,7 @@ MESSAGES:
 			       //1 is bad key
                                //2 is good key
       SetData("PrintName","blank");
+      SetData("ScrewedUp",0); //have I screwed up before?
     }
     DefaultOnSim();
   }
