@@ -1,12 +1,21 @@
 /*
- * $Source: x:/prj/windex/libsrc/mprintf/RCS/mprintf.h $
- * $Revision: 1.7 $
- * $Author: JACOBSON $
- * $Date: 1996/02/14 14:49:39 $
+ * $Source: x:/prj/tech/libsrc/mprintf/RCS/mprintf.h $
+ * $Revision: 1.10 $
+ * $Author: TOML $
+ * $Date: 1997/07/28 18:44:39 $
  * 
  * Defines and prototypes for monochrome print stuff.
  *
  * $Log: mprintf.h $
+ * Revision 1.10  1997/07/28  18:44:39  TOML
+ * output debug string support
+ * 
+ * Revision 1.9  1997/06/24  18:12:24  TOML
+ * made mprintf take const char *
+ * 
+ * Revision 1.8  1996/08/03  16:32:39  dc
+ * mono_win_init
+ * 
  * Revision 1.7  1996/02/14  14:49:39  JACOBSON
  * Cplusplus support
  * 
@@ -99,11 +108,14 @@ extern "C" {
 // this brutal hack is to support the idea of adding functions to the low level write chain in _mprint
 extern void (*mono_spc_func)(char *,int);
 
+extern bool mono_to_debugger;
+
 extern bool mono_detect (void);            
-extern bool mono_init (void);              
+extern bool mono_init (void);
+extern bool mono_win_init (bool have_screen);
 extern int  mono_setmode (int mode);        /* set the mode */
-extern int  mprint(char *s);                /* print a string */
-extern int  mprintf (char *f, ...);         /* print a formatted string */
+extern int  mprint(const char *s);                /* print a string */
+extern int  mprintf (const char *f, ...);         /* print a formatted string */
 /* notice mget and mput do not reset cursor positon... ret -1 if off screen or no mono screen */
 extern int  mget(uchar *s, int x, int y);   /* get current character (at x,y specified w/o moving cursor ) */
 extern int  mput(uchar s, int x, int y);    /* put single character  ( or a -1 for x means at current loc) */
