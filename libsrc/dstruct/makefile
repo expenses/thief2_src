@@ -14,15 +14,15 @@ LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
 INCPATH = . $(SRCDIR) $(RELDIR)
 LIBPATH = . $(RELDIR)
-PROG_TARGETS = hashtest arraytst fnamtest symtest
+PROG_TARGETS = hashtest arraytst fnamtest symtest pqtest
 LIB_TARGETS = dstruct
 HDR_TARGETS =  
 INST_TARGETS = dstruct
 
 DSTRUCT_OBJS = array.obj fname.obj hash.obj hheap.obj lllist.obj llist.obj \
-	rect.obj strall.obj symtab.obj
+	rect.obj strall.obj symtab.obj pqueue.obj
 DSTRUCT_HDRS = array.h fname.h hash.h hheap.h llist.h rect.h slist.h \
-	strall.h symtab.h
+	strall.h symtab.h  pqueue.h
 
 ARRAYTST_OBJS = arraytst.obj array.obj
 ARRAYTST_LIBS = _lg.lib _mprintf.lib
@@ -36,6 +36,9 @@ HASHTEST_LIBS = lg.lib mprintf.lib
 SYMTEST_OBJS  = symtest.obj
 SYMTEST_LIBS  = lg.lib mprintf.lib fix.lib dstruct.lib
 
+PQTEST_OBJS   = pqtest.obj
+PQTEST_LIBS   = lg.lib dstruct.lib mprintf.lib
+
 hashtest.c: hashtest.y 
 	 yacc -D hashtok.h -o hashtest.c hashtest.y
 
@@ -46,38 +49,48 @@ hashlex.c: hashlex.lex hashtok.h
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h string.h types.h
+array.obj: array.h dbg.h dbgmacro.h error.h lg.h lgalt.h malloc.h memall.h \
+	 memmacro.h stdio.h string.h types.h
 
-arraytst.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h stdlib.h types.h
+arraytst.obj: array.h dbg.h dbgmacro.h error.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h stdio.h stdlib.h types.h
 
 fname.obj: fname.h string.h types.h
 
 fnamtest.obj: conio.h ctype.h fname.h stdio.h stdlib.h types.h
 
-hash.obj: dbg.h error.h hash.h lg.h lgalt.h libdbg.h malloc.h memall.h \
-	 stdio.h stdlib.h string.h types.h
+hash.obj: _dstruct.h dbg.h dbgmacro.h error.h hash.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h stdio.h stdlib.h string.h types.h
 
-hashtest.obj: dbg.h error.h hash.h hashtest.h lg.h lgalt.h libdbg.h \
-	 malloc.h memall.h mprintf.h stdio.h stdlib.h string.h types.h
+hashlex.obj: dbg.h dbgmacro.h hashtest.h hashtok.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h stdio.h stdlib.h string.h types.h
 
-hheap.obj: dbg.h hheap.h lg.h lgalt.h libdbg.h llist.h malloc.h memall.h \
-	 stdio.h stdlib.h string.h types.h
+hashtest.obj: _dstruct.h dbg.h dbgmacro.h error.h hash.h hashtest.h lg.h \
+	 lgalt.h malloc.h memall.h memmacro.h mprintf.h stdio.h stdlib.h \
+	 string.h types.h
 
-llist.obj: llist.h malloc.h memall.h string.h types.h
+hheap.obj: dbg.h dbgmacro.h hheap.h lg.h lgalt.h llist.h malloc.h memall.h \
+	 memmacro.h stdio.h stdlib.h string.h types.h
+
+llist.obj: llist.h malloc.h memall.h memmacro.h string.h types.h
 
 lllist.obj: llist.h types.h
 
+pqtest.obj: dbg.h dbgmacro.h error.h fcntl.h io.h lg.h lgalt.h malloc.h \
+	 memall.h memmacro.h pqueue.h stat.h stdio.h stdlib.h types.h
+
+pqueue.obj: dbg.h dbgmacro.h error.h io.h lg.h lgalt.h malloc.h memall.h \
+	 memmacro.h pqueue.h stat.h stdio.h string.h types.h
+
 rect.obj: rect.h
 
-strall.obj: dbg.h hheap.h lg.h lgalt.h libdbg.h llist.h malloc.h memall.h \
-	 stdio.h strall.h string.h types.h
+strall.obj: dbg.h dbgmacro.h hheap.h lg.h lgalt.h llist.h malloc.h memall.h \
+	 memmacro.h stdio.h strall.h string.h types.h
 
-symtab.obj: ctype.h dbg.h fix.h hheap.h lg.h lgalt.h libdbg.h llist.h \
-	 malloc.h memall.h slist.h stdio.h strall.h string.h symtab.h \
-	 types.h
-
-symtest.obj: conio.h ctype.h dbg.h fix.h hheap.h lg.h lgalt.h libdbg.h \
-	 llist.h malloc.h memall.h slist.h stdio.h stdlib.h strall.h \
+symtab.obj: ctype.h dbg.h dbgmacro.h fix.h hheap.h lg.h lgalt.h llist.h \
+	 malloc.h memall.h memmacro.h slist.h stdio.h strall.h string.h \
 	 symtab.h types.h
+
+symtest.obj: conio.h ctype.h dbg.h dbgmacro.h fix.h hheap.h lg.h lgalt.h \
+	 llist.h malloc.h memall.h memmacro.h slist.h stdio.h stdlib.h \
+	 strall.h symtab.h types.h
