@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/matrix/RCS/mxmats.h 1.10 1999/02/22 11:32:38 JAEMZ Exp $
+// $Header: x:/prj/tech/libsrc/matrix/RCS/mxmats.h 1.11 1999/07/21 15:44:10 JAEMZ Exp $
 
 #ifndef __MXMATS_H
 #define __MXMATS_H
@@ -376,11 +376,14 @@ struct sMxMatrix : mxs_matrix
    // Create a matrix from an unormalized vector v, which points
    // in the direction of something (x vector) and takes a z vector.
    // returns |v|
+   // Safe looks at x and y components first and uses an x vector
+   // if its looking straight down
    inline float LookAtZ(const sMxVector &v,const sMxVector &z)
    { return mx_mat_look_at_z(this,&v,&z); }
    inline float LookAt(const sMxVector &v)
    { return mx_mat_look_at(this,&v); }
-
+   inline float LookAtSafe(const sMxVector &v)
+   { return mx_mat_look_at_safe(this,&v); }
 };
 
 struct sMxTrans : mxs_trans
