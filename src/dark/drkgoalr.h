@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkgoalr.h,v 1.2 1998/09/18 19:50:49 mahk Exp $
 #pragma once  
 #ifndef __DRKGOALR_H
