@@ -13,7 +13,11 @@ METHODS:
     while (sounds.AnyLinksLeft())
     {
       //I'm the callback object, it's the target object.
-      Sound.PlaySchema(self,sounds.Link().To(),target);
+      if (!Sound.PlaySchema(self,sounds.Link().To(),target))
+      {
+	SetOneShotTimer(self,"convtimer",120); //if no schema, make sure we're ok.
+        Debug.MPrint("Couldn't hear sound start, doing timer backup.");
+      }
       sounds.NextLink();
     }
   }
@@ -563,6 +567,16 @@ MESSAGES:
     {
       Debug.MPrint("Dummy sounds 2 timer triggered. 2");
       KeyLogic(2);
+    }
+    if (message.name == "convtimer")
+    {
+      object convobj = GetConversationObject();
+      Debug.MPrint("Schema fail timer called.  Current obj is ",convobj);
+      SetData("FinishedConversation",(integer)GetData("StartedConversation"));
+      SetConversationObject((object)0);
+      ConversationGoalComplete(convobj);
+      if (!ConversationContinue(convobj))
+        ConversationCheckStep((integer)GetData("StartedConversation"));
     }
     DefaultOnTimer();
   }
