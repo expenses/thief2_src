@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/traitman.cpp,v 1.35 1999/05/19 16:06:08 mahk Exp $
 #include <appagg.h>
 #include <allocapi.h>
