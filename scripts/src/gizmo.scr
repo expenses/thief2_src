@@ -65,20 +65,34 @@ BEGIN_SCRIPT(StdDoor,Door)
 
 MESSAGES:
 
+    OnSim()
+    {
+       if(message.starting)
+          SetData("Sim",TRUE);
+       else
+          ClearData("Sim");
+       DefaultOnSim();
+    }
     // Since we know we probably have our hands full with a key
     // when we unlock a door, and using the key and door are now
     // on the same mouse button, locking and unlocking a door
     // will also close and open it.  -TJS
     OnNowLocked()
     {
-       PingDoubles();
-       Door.CloseDoor(self);
+       if(IsDataSet("Sim"))
+       {
+          PingDoubles();
+          Door.CloseDoor(self);
+       }
        DefaultOnNowLocked();
     }
     OnNowUnlocked()
     {
-       PingDoubles();
-       Door.OpenDoor(self);
+       if(IsDataSet("Sim"))
+       {
+          PingDoubles();
+          Door.OpenDoor(self);
+       }
        DefaultOnNowUnlocked();
     }
 
@@ -381,16 +395,30 @@ BEGIN_SCRIPT(LockSounds,RootScript)
          return tagset;
       }
    MESSAGES:
+      OnSim()
+      {
+         if(message.starting)
+            SetData("Sim",TRUE);
+         else
+            ClearData("Sim");
+         DefaultOnSim();
+      }
       OnNowLocked()
       {
-         string tags="Event StateChange, LockState Locked";
-         Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         if(IsDataSet("Sim"))
+         {
+            string tags="Event StateChange, LockState Locked";
+            Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         }
          DefaultOnNowLocked();
       }
       OnNowUnlocked()
       {
-         string tags="Event StateChange, LockState Unlocked";
-         Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         if(IsDataSet("Sim"))
+         {
+            string tags="Event StateChange, LockState Unlocked";
+            Sound.PlayEnvSchema(self,CritterTag(tags),self,NULL,kEnvSoundAtObjLoc);
+         }
          DefaultOnNowUnlocked();
       }
       OnMessage()
