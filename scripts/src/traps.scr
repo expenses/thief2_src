@@ -419,6 +419,18 @@ MESSAGES:
 
 END_SCRIPT(TrigRoomCreature)
 
+
+/* Sends a TurnOn whenever the population of the room changes, and keeps
+   population links for future reference.
+   */
+BEGIN_SCRIPT(TrigRoomPopChange,TrigRoomCreature)
+METHODS:
+   METHOD void UpdatePop()
+   {
+      TurnOn();
+   }
+END_SCRIPT(TrigRoomPopChange)
+
 /* Used by population-tracking rooms (and OBB's) to get notification of creature
    death within their bounds.  This script is put on the creature via a metaprop
    while so contained.
