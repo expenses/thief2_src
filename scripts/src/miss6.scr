@@ -492,6 +492,7 @@ MESSAGES:
       Debug.MPrint("Dummy sounds 2 timer triggered. 2");
       KeyLogic(2);
     }
+    DefaultOnTimer();
   }
 
 
@@ -548,6 +549,7 @@ MESSAGES:
       if (MessageIs(teststr))
         DoSoundSetup(i);
     }
+    DefaultOnMessage();
   }
 
 END_SCRIPT(SoundGuy)
