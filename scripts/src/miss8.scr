@@ -204,12 +204,18 @@ MESSAGES:
    }
   OnAIModeChange()
   {
-     if(message.mode==kAIM_Combat)
+     if(message.mode==kAIM_Combat || message.mode==kAIM_Dead)
      {
         if(TheNote()!=NULLOBJ)
            Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
      }
      DefaultOnAIModeChange();
+  }
+  OnHighAlert()
+  {
+     if(TheNote()!=NULLOBJ)
+           Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+     DefaultOnHighAlert();
   }
 END_SCRIPT(Moseley)
 
@@ -251,9 +257,14 @@ MESSAGES:
            if(note!=NULLOBJ)
               Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
            break;
-     }  
-
+     } 
      DefaultOnAIModeChange();
+  }
+  OnHighAlert()
+  {
+     if(!IsDataSet("AttackStarted"))
+        Quest.Set(GoalStateVarName(FOLLOW_NOTE_GOAL),kGoalFailed);
+     DefaultOnHighAlert();
   }
   OnMessage()
   {
@@ -297,6 +308,7 @@ MESSAGES:
      }
      else if(MessageIs("StartAttack"))
      {
+        SetData("AttackStarted",TRUE);
         // Change in team will help precipitate attack
         Property.Set(self,"AI_Team",kAIT_Bad2);
         // @TODO: Spring open the doors, alert the mechanists
