@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.6 2000/02/25 16:47:48 ccarollo Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.7 2000/02/26 06:04:21 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -724,3 +724,42 @@ OnMessage()
 END_SCRIPT(BroadcastSchemaListNoRep)
 
 
+
+
+// Script:  TrapAddMetaProp
+
+// On "TurnOn": Iterates over all outgoing ControlDevice links and
+// adds a Metaprop to the linked objects.  Metaprop to add should
+// be ScriptParams linked to the trap.
+
+BEGIN_SCRIPT (TrapAddMetaProp, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+	{
+		if (Link.AnyExist("ScriptParams",self))
+		{
+			object MP=Link.GetOne("ScriptParams",self).To();
+			if (Object.Exists(MP))
+			{
+				if (Link.AnyExist("ControlDevice",self))
+				{
+					linkset CDs=Link.GetAll("ControlDevice",self);
+					while(CDs.AnyLinksLeft())
+					{
+//						Debug.MPrint(" Adding ",MP," to ",CDs.Link().To());
+						Object.AddMetaProperty (CDs.Link().To(),MP);
+
+						CDs.NextLink();
+					}  // while
+				}  // if - ControlDevice
+			}  // if - ObjectExists
+		}   // if - ScriptParams
+	}  // if - TurnOn
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (TrapAddMetaProp)
