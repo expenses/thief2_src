@@ -1,14 +1,7 @@
 #
 # $Source: x:/prj/tech/libsrc/mprintf/RCS/makefile $
-# $Revision: 1.1 $
 # $Author: kaboom $
-# $Date: 1992/11/25 14:57:22 $
-#
-# Makefile for Watcom C/Micosoft ASM targets.
-#
-# $Log: makefile $
-# Revision 1.1  1992/11/25 14:57:22  kaboom
-# Initial revision
+# $Date: 1992/12/14 18:39:11 $
 #
 
 COMPILER = watcom
@@ -25,8 +18,9 @@ LIB_TARGETS = mprintf
 HDR_TARGETS =
 INST_TARGETS = mprintf
 
-MPRINTF_OBJS = \
-  mprintf.obj
+MPRINTF_OBJS = mprintf.obj
+
+MPRINTF_HDRS = mprintf.h
 
 !include n:/etc/make.rc
 
