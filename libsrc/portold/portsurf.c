@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //  $Header: r:/t2repos/thief2/libsrc/portold/portsurf.c,v 1.28 1998/04/17 14:46:05 KEVIN Exp $
 //
 //  PORTAL

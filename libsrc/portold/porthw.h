@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/porthw.h,v 1.3 1998/02/20 17:09:18 KEVIN Exp $
 #ifndef __PORTHW_H
 #define __PORTHW_H
