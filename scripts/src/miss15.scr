@@ -152,4 +152,88 @@ END_SCRIPT(MrCavador)
 
 
 
+// Script: FaceWaypoint
+/* Put on a moving terrain object, will manhandle its tweq rotate
+   property whenever it gets to a waypoint, so as to cause it to
+   try to face the orientation of the waypoint.
+   */
+BEGIN_SCRIPT(FaceWaypoint, MovingTerrain)
+METHODS:
+   // returns true if already close enough to desired facing
+   METHOD bool TweqToFace()
+   {
+      // cast all facings to ints to simplify things, since
+      // that's the precision we're interested in anyway.
+      integer facing=Object.Facing(self).z;
+      integer face_targ=GetData("FaceTarg");
+      vector tweqparams;
+      boolean forward;
+
+      if(((360+facing-face_targ)%360)<4)
+         return TRUE;
+      // at/near zero, wrap around to whatever's closer to target.
+      if(facing>=359 || facing <=1)
+      {
+         if(face_targ<180)
+            facing=0;
+         else
+            facing=360;
+      }
+      forward=(face_targ>facing);
+      if(fabs(real(facing-face_targ))>175.0)
+      {
+         if(forward)
+            face_targ=0;
+         else
+            face_targ=360;
+         forward=!forward;
+      }
+
+      if(!Property.Possessed(self,"CfgTweqRotate"))
+         Property.Add(self,"CfgTweqRotate");
+
+      // Debug.MPrint(self," facing ",facing," wants ",face_targ);
+      // Debug.MPrint("Desired facing change=",fabs(real(facing-face_targ)));
+
+      tweqparams=Property.Get(self,"CfgTweqRotate","z rate-low-high");
+      tweqparams.y=facing;
+      tweqparams.z=face_targ;
+
+      Property.Set(self,"CfgTweqRotate","z rate-low-high",tweqparams);
+      
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeRotate,
+                     (forward)?kTweqDoForward:kTweqDoReverse);
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeRotate,kTweqDoActivate);
+      return FALSE;
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      if(!IsDataSet("FaceTarg"))
+      {
+         integer facing=Object.Facing(self).z;
+         SetData("FaceTarg",facing);
+      }
+      DefaultOnBeginScript();
+   }      
+   OnTweqComplete()
+   {
+      TweqToFace(); // will re-activate if necessary
+      DefaultOnTweqComplete();
+   }
+   OnMovingTerrainWaypoint()
+   {
+      object point=message.waypoint;
+      // Interested in heading, our rotation around z axis.
+      integer face_targ=Object.Facing(point).z;
+
+      SetData("FaceTarg",face_targ);
+      TweqToFace();
+
+      DefaultOnMovingTerrainWaypoint();
+   }
+END_SCRIPT(FaceWaypoint)
+
+
 
