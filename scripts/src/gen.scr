@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.42 2000/01/22 16:50:32 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.43 2000/01/22 19:09:56 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1859,7 +1859,12 @@ END_SCRIPT(CollisionStick)
 // script for rope arrows, to be used _in addition to_ the usual "Arrow" script.
 // this script is only responsible for the rope-deploying behavior.
 BEGIN_SCRIPT(DeployRope, CollisionStick)
-
+METHODS:
+   METHOD object ProduceRope()
+   {
+      return(Object.BeginCreate("RopeArrowRope"));
+   }
+             
 MESSAGES:
 
    OnPhysCollision()
@@ -1868,7 +1873,7 @@ MESSAGES:
 
       if(CanAttachTo(WhatIHit))
       {
-         object MyRope=Object.BeginCreate("RopeArrowRope");
+         object MyRope=ProduceRope();
 
          Link.Create("Owns",self,MyRope);
          Object.Teleport(MyRope,vector(-1.0,0,0),vector(0,0,0),self);
@@ -1893,6 +1898,10 @@ END_SCRIPT(DeployRope)
 // Different script for vine arrow is kinda dumb, but expedient.
 BEGIN_SCRIPT(DeployVine, DeployRope)
 METHODS:
+   METHOD object ProduceRope()
+   {
+      return(Object.BeginCreate("VineArrowVine"));
+   }
    METHOD boolean CanAttachToSurface(object targ)
    {
       // If a rope arrow could attach, so can a vine arrow.
@@ -1933,9 +1942,16 @@ MESSAGES:
    }
    OnSlain()
    {
-      object FX=Object.BeginCreate("ExRope");
+      object FX;
       integer len=0, particles=0;
       vector lenvec=vector(0,0,0);
+
+      // hack
+      if(Property.Possessed(self,"ModelName") &&
+         string(Property.Get(self,"ModelName"))=="ropevine")
+         FX=Object.BeginCreate("ExVine");
+      else
+         FX=Object.BeginCreate("ExRope");
 
       if(Property.Possessed(self,"PhysRope"))
          len=Property.Get(self,"PhysRope","Length");
