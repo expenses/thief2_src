@@ -66,10 +66,31 @@ OnMessage()
 END_SCRIPT (SummonableGuard)
 
 
+// Script:  LobbyCamera
 
-// Script: TattleTale
+// Lobby camera sends a "TurnOn" when slain, and a "TurnOff" 60 seconds later.
+// @TODO:	This timer is a little kooky (the alarm will shut off even if the other 
+//				cameras can still see the player, but it will do for now).
+BEGIN_SCRIPT (LobbyCamera, RootScript)
 
-// DoorTranslator
+MESSAGES:
+OnSlain()
+{
+	Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+	SetOneShotTimer("Deactivate",60.0); 
+//	DefaultOnSlain();
+}
+OnTimer()
+{
+	if (message.name == "Deactivate")
+		Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+	DefaultOnTimer();
+}
+END_SCRIPT(LobbyCamera)
+
+
+
+// Script: DoorTranslator
 
 // Meta trap that converts 
 //		TurnOn to TrapLock
@@ -95,6 +116,7 @@ OnMessage()
 }
 
 END_SCRIPT (DoorTranslator)
+
 
 
 
@@ -124,6 +146,41 @@ OnMessage()
 
 END_SCRIPT (TrapDoorLock)
 
+
+
+// Script: LeverNoSETranslator
+
+// Meta trap that converts 
+//		"ToggleNoSE" to TurnOn-or-TurnOff depending on state of device the msg is from.
+
+// These are interpreted by TrapDoorLock
+
+// purpose - use standard TripTrap functionality to 
+// have the TimeLock knobs be controlled by a RequireAllTrap.
+
+BEGIN_SCRIPT (LeverNoSETranslator, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("ToggleNoSE"))
+	{
+		// 2 = reverse (just turned on), 0 = normal (just turned off)
+		if (Property.Get(message.from,"StTweqJoints","AnimS")==0x02)
+			Link.BroadcastOnAllLinks(self,"TurnOn","ControlDevice",NULL);
+		else
+			Link.BroadcastOnAllLinks(self,"TurnOff","ControlDevice",NULL);
+	}
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (LeverNoSETranslator)
+
+
+//  @ TODO:	I have 4 scripts which kill different (conceptual) classes of AIs based 
+//				on diff levels and quest vars.  Really there should be a base of such scripts
+//				and other scripts which inherit from it, overriding relevant methods.
 
 
 // Script:		CameraKiller
@@ -240,3 +297,297 @@ OnSim()
 }
 
 END_SCRIPT (CameraKiller)
+
+
+
+// Script:		AIKillerWork
+
+//  Same as CameraKiller, above, but kills WorkerBots and uses these quest vars:
+//  Normal	work_kill_n
+//  Hard		work_kill_h
+//  Expert	work_kill_x
+
+// Cleans up after the AI by destroying Contains linked stuff
+
+BEGIN_SCRIPT (AIKillerWork, RootScript)
+
+METHODS:
+
+// the primary method, called on sim start
+void KillAIs ()
+{
+	int rand_max,i,j,current_victim;
+
+	int num_victims = GetNumVictims();
+
+	for (i=0; i<num_victims; i++)
+	{
+		rand_max = CountLinks(Link.GetAll("ControlDevice",self));
+		current_victim = Data.RandInt(1,rand_max);
+
+		linkset Victims = Link.GetAll("ControlDevice",self);
+		for (j=0; j< (current_victim-1) ; j++)
+			Victims.NextLink();
+
+		CleanUp(Victims.Link().To());
+		Object.Destroy(Victims.Link().To());
+	}  // num_victims for loop
+}
+
+
+// destroys Contains-linked objects
+// call before destroying AI
+void CleanUp (object target)
+{
+	linkset Conts = Link.GetAll("Contains",target);
+	while(Conts.AnyLinksLeft())
+	{
+		Object.Destroy(Conts.Link().To());
+		Conts.NextLink();
+	}
+}
+
+// returns a value based on mission quest vars,
+// reads the appropriate one per diff
+int GetNumVictims()
+{
+	int num;
+
+	int difficulty = Quest.Get("difficulty");
+
+	// EXPERT
+	if (difficulty == 2)
+	{
+		num = Quest.Get("work_kill_x");
+	}
+	// HARD
+	else if (difficulty == 1)
+	{
+		num = Quest.Get("work_kill_h");
+	}
+	// NORMAL
+	else // if (difficulty == 0)  - best to return something
+	{
+		num = Quest.Get("work_kill_n");
+	}
+
+	Debug.MPrint(" Killing ",num," workerbots.");
+	return num;
+}
+
+// returns # links in passed-in linkset
+int CountLinks(linkset tocount)
+{
+	int N=0;
+	while(tocount.AnyLinksLeft())
+	{
+		N++;
+		tocount.NextLink();
+	}
+	return N;
+}
+
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+		KillAIs();
+	DefaultOnSim();
+}
+
+END_SCRIPT (AIKillerWork)
+
+
+// Script:		AIKillerLong
+
+//  Same as CameraKiller, above, but kills "long range patrollers" and uses these quest vars:
+//  Normal	long_kill_n
+//  Hard		long_kill_h
+//  Expert	long_kill_x
+
+// Cleans up after the AI by destroying Contains linked stuff
+
+BEGIN_SCRIPT (AIKillerLong, RootScript)
+
+METHODS:
+
+// the primary method, called on sim start
+void KillAIs ()
+{
+	int rand_max,i,j,current_victim;
+
+	int num_victims = GetNumVictims();
+
+	for (i=0; i<num_victims; i++)
+	{
+		rand_max = CountLinks(Link.GetAll("ControlDevice",self));
+		current_victim = Data.RandInt(1,rand_max);
+
+		linkset Victims = Link.GetAll("ControlDevice",self);
+		for (j=0; j< (current_victim-1) ; j++)
+			Victims.NextLink();
+
+		CleanUp(Victims.Link().To());
+		Object.Destroy(Victims.Link().To());
+	}  // num_victims for loop
+}
+
+
+// destroys Contains-linked objects
+// call before destroying AI
+void CleanUp (object target)
+{
+	linkset Conts = Link.GetAll("Contains",target);
+	while(Conts.AnyLinksLeft())
+	{
+		Object.Destroy(Conts.Link().To());
+		Conts.NextLink();
+	}
+}
+
+// returns a value based on mission quest vars,
+// reads the appropriate one per diff
+int GetNumVictims()
+{
+	int num;
+
+	int difficulty = Quest.Get("difficulty");
+
+	// EXPERT
+	if (difficulty == 2)
+	{
+		num = Quest.Get("long_kill_x");
+	}
+	// HARD
+	else if (difficulty == 1)
+	{
+		num = Quest.Get("long_kill_h");
+	}
+	// NORMAL
+	else // if (difficulty == 0)  - best to return something
+	{
+		num = Quest.Get("long_kill_n");
+	}
+
+	Debug.MPrint(" Killing ",num," long range patrollers.");
+	return num;
+}
+
+// returns # links in passed-in linkset
+int CountLinks(linkset tocount)
+{
+	int N=0;
+	while(tocount.AnyLinksLeft())
+	{
+		N++;
+		tocount.NextLink();
+	}
+	return N;
+}
+
+MESSAGES:
+OnSim()
+{
+	if (message.starting)
+		KillAIs();
+	DefaultOnSim();
+}
+
+END_SCRIPT (AIKillerLong)
+
+
+
+// Script:		AIKillerHX
+
+//  Same as CameraKiller, above, but kills "hard-expert-only patrollers" and uses these quest vars:
+//  Normal	N/A (they are all diff destroyed)
+//  Hard		hx_kill_h
+//  Expert	hx_kill_x
+
+// Cleans up after the AI by destroying Contains linked stuff
+
+BEGIN_SCRIPT (AIKillerHX, RootScript)
+
+METHODS:
+
+// the primary method, called on sim start
+void KillAIs ()
+{
+	int rand_max,i,j,current_victim;
+
+	int num_victims = GetNumVictims();
+
+	for (i=0; i<num_victims; i++)
+	{
+		rand_max = CountLinks(Link.GetAll("ControlDevice",self));
+		current_victim = Data.RandInt(1,rand_max);
+
+		linkset Victims = Link.GetAll("ControlDevice",self);
+		for (j=0; j< (current_victim-1) ; j++)
+			Victims.NextLink();
+
+		CleanUp(Victims.Link().To());
+		Object.Destroy(Victims.Link().To());
+	}  // num_victims for loop
+}
+
+
+// destroys Contains-linked objects
+// call before destroying AI
+void CleanUp (object target)
+{
+	linkset Conts = Link.GetAll("Contains",target);
+	while(Conts.AnyLinksLeft())
+	{
+		Object.Destroy(Conts.Link().To());
+		Conts.NextLink();
+	}
+}
+
+// returns a value based on mission quest vars,
+// reads the appropriate one per diff
+int GetNumVictims()
+{
+	int num;
+
+	int difficulty = Quest.Get("difficulty");
+
+	// EXPERT
+	if (difficulty == 2)
+	{
+		num = Quest.Get("hx_kill_x");
+	}
+	// HARD
+	else // if (difficulty == 1) - best to return something
+	{
+		num = Quest.Get("hx_kill_h");
+	}
+
+	Debug.MPrint(" Killing ",num," H-X  patrollers.");
+	return num;
+}
+
+// returns # links in passed-in linkset
+int CountLinks(linkset tocount)
+{
+	int N=0;
+	while(tocount.AnyLinksLeft())
+	{
+		N++;
+		tocount.NextLink();
+	}
+	return N;
+}
+
+MESSAGES:
+OnSim()
+{
+	// don't do this on normal
+	if ( (message.starting) && (Quest.Get("difficulty")!=0) )
+	{
+		KillAIs();
+	}
+	DefaultOnSim();
+}
+
+END_SCRIPT (AIKillerHX)
