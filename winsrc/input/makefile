@@ -1,13 +1,16 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.7 $
-# $Author: TOML $
-# $Date: 1996/05/18 13:16:39 $
+# $Revision: 2.8 $
+# $Author: dc $
+# $Date: 1996/08/14 21:32:25 $
 #
 
 MAKETOP = $(CWD)
 
 PROJECT = tech
+
+COMP ?= W105
+SYS ?= WIN32
 
 %include $(MRC)\env.rc
 
