@@ -3,6 +3,8 @@
 
 // Script file for Thief 2 - Mission 15 - Kidnap
 
+#include "loadup.scr"
+
 const int CAVADOR_LIVE_GOAL=1;
 
 /* Randomizes the given quest var at the beginning of time,
