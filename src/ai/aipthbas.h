@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthbas.h 1.11 1999/06/26 18:35:07 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthbas.h,v 1.14 2000/01/31 18:20:33 bfarquha Exp $
 //
 //
 //
@@ -40,8 +40,8 @@ struct sZoneOkBitsMap
 {
    long key;
    tAIPathOkBits okBits;
-   char pad[3];
-   
+   char pad[2];
+
    DECLARE_POOL();
 };
 
@@ -166,6 +166,8 @@ struct sAIMovableCell // 28 bytes
 
 ///////////////////////////////////////
 
+#define IDWRAP_Cell2Cell 0x01
+
 struct sAIPathCell // 32 bytes
 {
                                  // what vertices am I made of?
@@ -189,10 +191,10 @@ struct sAIPathCell // 32 bytes
 
 /*14*/   uchar cellCount;   // in pathCell2CellLink array
 
-/*15*/   sbool pad15;
+/*15*/   uchar wrapFlags; // set if any ID's have wrapped. Only used in processing, not in game!
 
 /*16*/   cMxsVector center;
-   
+
          // extra info needed for each cell, to help decide what motions to
          // play & whatever; all handled in terms of bits
 
@@ -201,7 +203,7 @@ struct sAIPathCell // 32 bytes
          #define kAIPathCellNumStairSizes 4
 
          // Each group of fields represents one byte.  4 bytes total.
-         
+
          uint m_LightLevel : 4;
          uint m_IsRamp : 1;    // Is it slanted?
          uint m_IsStair : 1;   // Are nearby surfaces a little lower?
