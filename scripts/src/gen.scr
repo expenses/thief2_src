@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.59 2000/02/11 18:34:12 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.60 2000/02/14 17:51:31 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -1081,11 +1081,25 @@ END_SCRIPT(ActiveFlashMine)
 /* When the moss lump falls asleep, create a moss launcher */
 BEGIN_SCRIPT(MossLump, Physics)
 MESSAGES:
+
+
+   OnBeginScript()
+   {
+     Physics.SubscribeMsg(self, kFellAsleepMsg);
+     DefaultOnBeginScript();
+   }
+
+   OnEndScript()
+   {
+     Physics.UnsubscribeMsg(self, kFellAsleepMsg);
+     DefaultOnEndScript();
+   }
+
    // when we come to rest, destroy ourselves and create the launcher
    // Better count on moss lumps only being created as part of the moss
    // arrow firing sequence, since we can't do the Firer-link check we
    // do for mines.
-   OnPhysMadeNonPhysical()
+   OnPhysFellAsleep()
    {
       object launcher=Object.Create("Mosslauncher");
       Object.Teleport(launcher,vector(0,0,0),vector(0,0,0),self);
@@ -1094,10 +1108,20 @@ MESSAGES:
       // launch.  Difference is, we turn its tweq _on_.
       Property.CopyFrom(launcher,"CfgTweqEmit",self);
       Property.CopyFrom(launcher,"StTweqEmit",self);
-      ActReact.React("tweq_control",1.0,launcher,0,kTweqTypeEmitter,kTweqDoActivate);
-
-      DefaultOnPhysMadeNonPhysical();
+      ActReact.React("tweq_control",1.0,launcher,0,kTweqTypeEmitter,kTweqDoActivate); 
+      SetOneShotTimer(self,"KillMyPhys",0.1);
+      DefaultOnPhysFellAsleep();
    }
+  
+   OnTimer()
+   {
+      if (message.name == "KillMyPhys")
+	{
+	  Property.Remove(self,"PhysType");
+	}
+      DefaultOnTimer();
+   }
+
 END_SCRIPT(MossLump)
 
 
