@@ -1,105 +1,27 @@
 #
 # $Source: x:/prj/tech/libsrc/lg/RCS/makefile $
-# $Revision: 1.25 $
+# $Revision: 2.1 $
 # $Author: ept $
-# $Date: 1994/11/13 13:22:40 $
-#
-# makefile for lg library.
+# $Date: 1995/10/02 20:07:18 $
 #
 
-DEBUG_ON = 1
-SPEW_ON = 1
-WARN_ON = 1
-DBG_ON = 1
+MAKETOP = $(CWD)
+PROJECT = windex
 
-COMPILER = watcom
-SRCDIR = r:\prj\lib\src\lg
-RELDIR = r:\prj\lib\rel
-OBJDIR = obj
-LIBDIR = $(RELDIR)
-INCDIR = $(RELDIR)
-BINDIR = n:\bin
-INCPATH = . $(SRCDIR) $(RELDIR)
-LIBPATH = $(RELDIR)
-PROG_TARGETS = dbgmakeh dbgtest stacktst mfreetst
-LIB_TARGETS = lg
-INST_TARGETS = lg dbgmakeh
-EXTRA_TARGETS =
+%include $(MRC)\env.rc
+%include $(MRC)\init.rc
 
-LG_SRCS = bugtrak.c dbg.c dbgcfg.c dbgpp.cc datapath.c exit.c \
-                lgprntf.c lgsprntf.c memall.c memgrow.c memstat.c \
-                stack.c oheapwal.asm tmpalloc.c
-LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj dbgpp.obj datapath.obj exit.obj \
-                lgsprntf.obj memall.obj memgrow.obj memstat.obj \
-                lgprntf.obj stack.obj oheapwal.obj tmpalloc.obj
-LG_HDRS = lg.h lgalt.h dbg.h dbgpp.h datapath.h memmacro.inc dbgmacro.inc \
-	memall.h memstat.h bugtrak.h lgprntf.h lgsprntf.h tmpalloc.h
-LG_H2I  = lg.inc memall.inc dbg.inc
+LIBTARGS = lg
 
-DBGMAKEH_SRCS = dbgmakeh.c
-DBGMAKEH_OBJS = dbgmakeh.obj
-DBGMAKEH_LIBS = lg.lib
+lg_OBJS = bugtrak datapath dbg dbgcfg dbgpp exit lgprntf lgsprntf \
+	memall memgrow memstat oheapwal stack tmpalloc
 
-DBGTEST_SRCS = dbgtest.c
-DBGTEST_OBJS = dbgtest.obj
-DBGTEST_LIBS = _lg.lib _input.lib _mprintf.lib
+lg_HDRS = bugtrak.h datapath.h dbg.h dbgmacro.inc dbgpp.h lg.h \
+	lgalt.h lgprntf.h lgsprntf.h memall.h memmacro.inc memstat.h \
+	tmpalloc.h lg.inc memall.inc dbg.inc
 
-STACKTST_OBJS = stacktst.obj
-STACKTST_LIBS = lg.lib mprintf.lib
+# can't do
+# h2i_files = lg.inc memall.inc dbg.inc
 
-MFREETST_OBJS = mfreetst.obj
-MFREETST_LIBS = _lg.lib mprintf.lib
-MFREETST_CFLAGS = -d2
-MFREETST_LDFLAGS = debug all
+%include $(MRC)/make.rc
 
-%include $(INIT)\make.rc
-
-### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
-
-bugtrak.obj objo\bugtrak.obj objd\bugtrak.obj: array.h bugtrak.h dbg.h dbgmacro.h env.h error.h fcntl.h io.h \
-	 lg.h lgalt.h lgsprntf.h malloc.h memall.h memmacro.h stat.h \
-	 stdarg.h stdio.h string.h time.h types.h
-
-datapath.obj objo\datapath.obj objd\datapath.obj: datapath.h dos.h fcntl.h i86.h malloc.h memall.h memmacro.h \
-	 stdarg.h stdio.h stdlib.h string.h types.h
-
-dbg.obj objo\dbg.obj objd\dbg.obj: conio.h ctype.h dbg.h dbgmacro.h error.h kb.h kbcook.h keydefs.h \
-	 lg.h lgalt.h lgsprntf.h malloc.h memall.h memmacro.h mprintf.h \
-	 stdarg.h stdio.h stdlib.h string.h types.h
-
-dbgcfg.obj objo\dbgcfg.obj objd\dbgcfg.obj: conio.h ctype.h datapath.h dbg.h dbgmacro.h error.h kb.h \
-	 kbcook.h keydefs.h lg.h lgalt.h malloc.h memall.h memmacro.h \
-	 mprintf.h stdarg.h stdio.h stdlib.h string.h types.h
-
-dbgmakeh.obj objo\dbgmakeh.obj objd\dbgmakeh.obj: conio.h ctype.h dbg.h dbgmacro.h stdarg.h stdio.h stdlib.h \
-	 string.h types.h
-
-dbgpp.obj objo\dbgpp.obj objd\dbgpp.obj: dbg.h dbgmacro.h dbgpp.h iostream.h mout.h mprintf.h stddef.h \
-	 stdio.h streambu.h string.h strstrea.h types.h
-
-dbgtest.obj objo\dbgtest.obj objd\dbgtest.obj: conio.h datapath.h dbg.h dbgmacro.h lg.h lgalt.h malloc.h \
-	 memall.h memmacro.h memstat.h mprintf.h stdarg.h stdio.h stdlib.h \
-	 string.h types.h
-
-exit.obj objo\exit.obj objd\exit.obj: dbg.h dbgmacro.h io.h lg.h lgalt.h malloc.h memall.h memmacro.h \
-	 stat.h stdio.h stdlib.h string.h types.h
-
-lgprntf.obj objo\lgprntf.obj objd\lgprntf.obj: dbg.h dbgmacro.h io.h lgsprntf.h malloc.h memall.h memmacro.h \
-	 stat.h stdarg.h stdio.h tmpalloc.h types.h
-
-lgsprntf.obj objo\lgsprntf.obj objd\lgsprntf.obj: ctype.h fix.h limits.h stdarg.h string.h types.h
-
-memall.obj objo\memall.obj objd\memall.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h malloc.h memall.h memmacro.h \
-	 stdio.h string.h types.h
-
-memgrow.obj objo\memgrow.obj objd\memgrow.obj: malloc.h stdio.h string.h
-
-memstat.obj objo\memstat.obj objd\memstat.obj: _lg.h dbg.h dbgmacro.h dos.h i86.h lg.h lgalt.h malloc.h \
-	 memall.h memmacro.h memstat.h mprintf.h stdio.h string.h types.h
-
-stack.obj objo\stack.obj objd\stack.obj: dbg.h dbgmacro.h malloc.h memall.h memmacro.h stdio.h types.h
-
-stacktst.obj objo\stacktst.obj objd\stacktst.obj: malloc.h memall.h memmacro.h stdio.h types.h
-
-tmpalloc.obj objo\tmpalloc.obj objd\tmpalloc.obj: _lg.h dbg.h dbgmacro.h malloc.h memall.h memmacro.h stdio.h \
-	 tmpalloc.h types.h
