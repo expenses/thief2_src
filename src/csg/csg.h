@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/csg/RCS/csg.h 1.15 1998/10/10 23:03:32 dc Exp $
+// $Header: r:/t2repos/thief2/src/csg/csg.h,v 1.16 2000/01/29 12:58:24 adurant Exp $
+#pragma once
 #ifndef __CSG_H
 #define __CSG_H
 
@@ -7,10 +8,10 @@
   // private version of real so we can try both float and double
 #if 0
   typedef float Real;
-  #define CODE "%g"
+  #define CODE "0"
 #else
   typedef double Real;
-  #define CODE "%lg"
+  #define CODE "0"
 #endif
 
 typedef struct
