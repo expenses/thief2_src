@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.20 $
+# $Revision: 1.21 $
 # $Author: KEVIN $
-# $Date: 1997/05/16 09:53:42 $
+# $Date: 1997/08/28 11:54:26 $
 #
 
 MAKETOP = $(CWD)
@@ -25,7 +25,7 @@ POLY_OBJS = \
         tmsetup tf \
         genlm fl8lm \
         genfl8l genf16l genrsdtm \
-        o88 lo88 co88 t88oc \
+        o88 lo88 co88 t88oc r88 \
         lht816 lh816 dlh816 \
         golftmap shadtmap drytmap shadhack area \
         trigrad trirast \
