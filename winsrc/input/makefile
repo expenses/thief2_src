@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.3 $
+# $Revision: 2.4 $
 # $Author: TOML $
-# $Date: 1996/02/02 10:08:59 $
+# $Date: 1996/02/07 12:21:35 $
 #
 
 MAKETOP = $(CWD)
@@ -28,11 +28,11 @@ test_LIBS = input
 
 #input_win32_OBJS = \
 # 	joystick kbstart kbshut kbasctab mousesys mousedev \
-#        kbsys kbdev kbcook
+#        kbsys kbdev kbcook defehand joywin
 
 input_OBJS = \
  	joystick kbstart kbshut kbasctab mousesys mousedev \
-        kbsys kbdev kbcook kbwin defehand
+        kbsys kbdev kbcook kbwin defehand joywin hatcal fanjoy
 
 # kbcntry?
 
