@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/engfeat/questprp.h,v 1.2 1999/06/02 16:55:28 XEMU Exp $
 #pragma once  
 #ifndef __QUESTPRP_H
