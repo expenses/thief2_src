@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.3 $
+# $Revision: 1.4 $
 # $Author: KEVIN $
-# $Date: 1996/04/11 14:31:18 $
+# $Date: 1996/04/22 14:56:52 $
 #
 
 MAKETOP = $(CWD)
@@ -88,7 +88,11 @@ dev2d.h .REREAD :\
 %include $(MRC)\make.rc
 
 # this rule generates foo.c files from foo.tbl
+
+.PATH.tbl = $(.PATH.c)
+
 %.c .MISER .NODEFAULT: %.tbl
         @%setenv INCLUDE=$(IPATH)        
 	$(eko1) $(@,F) \<-- nonexistent
         @tblmunge $(<,F) $(MAKETOP)\$(@,F)
+
