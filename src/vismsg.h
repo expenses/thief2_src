@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/vismsg.h 1.1 1997/01/08 22:51:50 mahk Exp $
+// $Header: r:/t2repos/thief2/src/vismsg.h,v 1.2 2000/01/29 12:41:53 adurant Exp $
+#pragma once
 
 #ifndef VISMSG_H
 #define VISMSG_H

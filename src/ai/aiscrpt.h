@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiscrpt.h 1.8 1998/10/20 00:09:00 mahk Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiscrpt.h,v 1.10 2000/01/29 12:45:52 adurant Exp $
 //
 //
+#pragma once
 
 #ifndef __AISCRPT_H
 #define __AISCRPT_H
@@ -63,6 +64,9 @@ DECLARE_SCRIPT_SERVICE(AI, 0xe5)
 #define OnAlertness()                 SCRIPT_MESSAGE_HANDLER_SIGNATURE_(Alertness, sAIAlertnessMsg)
 #define DefaultOnAlertness()          SCRIPT_CALL_BASE(Alertness)
 
+#define OnHighAlert()                 SCRIPT_MESSAGE_HANDLER_SIGNATURE_(HighAlert, sAIHighAlertMsg)
+#define DefaultOnHighAlert()          SCRIPT_CALL_BASE(HighAlert)
+
 #define OnObjActResult()              SCRIPT_MESSAGE_HANDLER_SIGNATURE_(ObjActResult, sAIObjActResultMsg)
 #define DefaultOnObjActResult()       SCRIPT_CALL_BASE(ObjActResult)
 
@@ -99,6 +103,10 @@ BEGIN_SCRIPT(AI, RootScript)
       {
       }
 
+      SCRIPT_DEFINE_MESSAGE_(HighAlert, sAIHighAlertMsg)
+      {
+      }
+
       SCRIPT_DEFINE_MESSAGE_(ObjActResult, sAIObjActResultMsg)
       {
       }
@@ -114,6 +122,7 @@ BEGIN_SCRIPT(AI, RootScript)
          SCRIPT_MSG_MAP_ENTRY(PatrolPoint)
          SCRIPT_MSG_MAP_ENTRY(AIModeChange)
          SCRIPT_MSG_MAP_ENTRY(Alertness)
+         SCRIPT_MSG_MAP_ENTRY(HighAlert)
          SCRIPT_MSG_MAP_ENTRY(ObjActResult)
 #if 0
          SCRIPT_MSG_MAP_ENTRY(ManeuverResult)

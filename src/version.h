@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/version.h 1.4 1998/07/24 12:34:12 TOML Exp $
+// $Header: r:/t2repos/thief2/src/version.h,v 1.5 2000/01/29 12:41:51 adurant Exp $
+#pragma once
 
 #ifndef __VERSION_H
 #define __VERSION_H

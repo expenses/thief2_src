@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicmds.h 1.1 1998/04/26 18:13:01 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicmds.h,v 1.2 2000/01/29 12:45:08 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AICMDS_H
 #define __AICMDS_H

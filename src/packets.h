@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/packets.h 1.8 1997/01/18 17:24:40 mahk Exp $
+// $Header: r:/t2repos/thief2/src/packets.h,v 1.9 2000/01/29 12:41:40 adurant Exp $
+#pragma once
 
 #ifndef __PACKETS_H
 #define __PACKETS_H

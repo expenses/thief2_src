@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aigests.h 1.1 1998/05/19 17:13:42 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aigests.h,v 1.2 2000/01/29 12:45:18 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIGESTS_H
 #define __AIGESTS_H

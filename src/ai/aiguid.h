@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/ai/RCS/aiguid.h 1.34 1999/05/10 10:45:42 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiguid.h,v 1.37 2000/01/29 12:45:25 adurant Exp $
+#pragma once
 
 DEFINE_LG_GUID(LOOPID_AI, 0x39);
 DEFINE_LG_GUID(IID_IAIManager, 0xe3);
@@ -66,3 +67,5 @@ DEFINE_LG_GUID(IID_IAIRangedWoundSoundProperty, 0x27c);
 DEFINE_LG_GUID(IID_IAICombatTimingProperty, 0x299);
 DEFINE_LG_GUID(IID_IAINetManager, 0x2af);
 DEFINE_LG_GUID(IID_IAINetServices, 0x2b0);
+DEFINE_LG_GUID(IID_IAIFrustratedProperty, 0x37d);
+DEFINE_LG_GUID(IID_IAISuspiciousResponseProperty, 0x414);

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapinet.h 1.4 1999/06/15 18:23:22 dc Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapinet.h,v 1.5 2000/01/29 12:45:01 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIAPINET_H
 #define __AIAPINET_H

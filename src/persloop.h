@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/persloop.h 1.2 1998/04/24 14:13:16 TOML Exp $
+// $Header: r:/t2repos/thief2/src/persloop.h,v 1.3 2000/01/29 12:41:41 adurant Exp $
+#pragma once
 #ifndef __PERSLOOP_H
 #define __PERSLOOP_H
 

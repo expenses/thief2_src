@@ -2,6 +2,7 @@
 //
 // Stupid debug stuff
 //
-// $Header: r:/prj/cam/src/RCS/miscdbg.h 1.1 1996/09/04 09:52:49 DFAN Exp $
+// $Header: r:/t2repos/thief2/src/miscdbg.h,v 1.2 2000/01/29 12:41:38 adurant Exp $
+#pragma once
 
 void DfanTest (void);

@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/ai/RCS/aireport.h 1.1 1998/10/17 21:01:58 dc Exp $
+// $Header: r:/t2repos/thief2/src/ai/aireport.h,v 1.2 2000/01/29 12:45:49 adurant Exp $
 // woo woo
+#pragma once
 
 #ifndef __AIREPORT_H
 #define __AIREPORT_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/keycmd.h 1.3 1998/10/08 12:30:22 DARRENL Exp $
+// $Header: r:/t2repos/thief2/src/keycmd.h,v 1.4 2000/01/29 12:41:33 adurant Exp $
+#pragma once
 
 //game specific input binding variable/commands
 

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/sampprop.h 1.1 1997/01/23 18:15:22 mahk Exp $
+// $Header: r:/t2repos/thief2/src/sampprop.h,v 1.2 2000/01/29 12:41:45 adurant Exp $
+#pragma once
 
 #ifndef SAMPPROP_H
 #define SAMPPROP_H

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiscrt.h 1.4 1998/11/05 01:44:44 TJS Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiscrt.h,v 1.5 2000/01/29 12:45:53 adurant Exp $
 //
 // Base Ai scripting types
 //
+#pragma once
 
 #ifndef __AISCRT_H
 #define __AISCRT_H

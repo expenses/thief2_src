@@ -1,5 +1,6 @@
-// $Header: r:/prj/cam/src/RCS/findhack.h 1.1 1997/08/22 20:39:09 dc Exp $
+// $Header: r:/t2repos/thief2/src/findhack.h,v 1.2 2000/01/29 12:41:15 adurant Exp $
 // misc silliness for abstracting the find stuff
+#pragma once
 
 #ifndef __FINDHACK_H
 #define __FINDHACK_H
