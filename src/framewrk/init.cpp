@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/framewrk/init.cpp,v 1.107 2000/02/25 22:58:18 mwhite Exp $
 
 #include <float.h>
