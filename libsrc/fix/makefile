@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/fix/RCS/makefile $
-# $Revision: 1.12 $
-# $Author: dfan $
-# $Date: 1993/11/30 13:02:29 $
+# $Revision: 1.13 $
+# $Author: kaboom $
+# $Date: 1994/02/02 12:50:14 $
 #
 
 COMPILER = watcom
@@ -21,6 +21,7 @@ LIB_TARGETS = fix
 HDR_TARGETS = fix
 INST_TARGETS = fix
 
+FIX.C_CFLAGS= -zu -s
 FIX_HDRS = fix.h fix.inc
 FIX_OBJS = fix.obj fixsprnt.obj fix_asm.obj atofix.obj
 
