@@ -71,20 +71,21 @@ rem do the individual directories to save copying movies.
 
 rem temporary hack for thief2 split art tree.
 
-xcopy /D /s /I %_ARTPATH_%\finals\bitmap %_BLDDRV_%\prj\cam\art\finals\bitmap
-xcopy /D /s /I %_ARTPATH_%\finals\fam %_BLDDRV_%\prj\cam\art\finals\fam
-xcopy /D /s /I %_ARTPATH_%\finals\books %_BLDDRV_%\prj\cam\art\finals\books
-xcopy /D /s /I %_ARTPATH_%\finals\default %_BLDDRV_%\prj\cam\art\finals\default
-xcopy /D /s /I %_ARTPATH_%\finals\editor %_BLDDRV_%\prj\cam\art\finals\editor
-xcopy /D /s /I %_ARTPATH_%\finals\intrface %_BLDDRV_%\prj\cam\art\finals\intrface
-xcopy /D /s /I %_ARTPATH_%\finals\mesh %_BLDDRV_%\prj\cam\art\finals\mesh
-xcopy /D /s /I %_ARTPATH_%\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
-xcopy /D /s /I %_ARTPATH_%\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
-xcopy /D /s /I %_ARTPATH_%\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
-xcopy /D /s /I %_ARTPATH_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
+rem xcopy /D /s /I %_ARTPATH_%\finals\bitmap %_BLDDRV_%\prj\cam\art\finals\bitmap
+rem xcopy /D /s /I %_ARTPATH_%\finals\fam %_BLDDRV_%\prj\cam\art\finals\fam
+rem xcopy /D /s /I %_ARTPATH_%\finals\books %_BLDDRV_%\prj\cam\art\finals\books
+rem xcopy /D /s /I %_ARTPATH_%\finals\default %_BLDDRV_%\prj\cam\art\finals\default
+rem xcopy /D /s /I %_ARTPATH_%\finals\editor %_BLDDRV_%\prj\cam\art\finals\editor
+rem xcopy /D /s /I %_ARTPATH_%\finals\intrface %_BLDDRV_%\prj\cam\art\finals\intrface
+rem xcopy /D /s /I %_ARTPATH_%\finals\mesh %_BLDDRV_%\prj\cam\art\finals\mesh
+rem xcopy /D /s /I %_ARTPATH_%\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
+rem xcopy /D /s /I %_ARTPATH_%\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
+rem xcopy /D /s /I %_ARTPATH_%\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
+rem xcopy /D /s /I %_ARTPATH_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal 
+
 xcopy /D /s /I %_ARTPATH_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
-xcopy /D /s /I %_ARTPATH_%\finals\camera %_BLDDRV_%\prj\cam\art\finals\camera
-xcopy /D /s /I %_ARTPATH_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
+
+rem xcopy /D /s /I %_ARTPATH_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
 
 
 rem so now we grab the separate thief 2 stuff
@@ -100,6 +101,7 @@ xcopy /D /s /I %_ARTPATH2_%\finals\motions %_BLDDRV_%\prj\cam\art\finals\motions
 xcopy /D /s /I %_ARTPATH2_%\finals\mschema %_BLDDRV_%\prj\cam\art\finals\mschema
 xcopy /D /s /I %_ARTPATH2_%\finals\obj %_BLDDRV_%\prj\cam\art\finals\obj
 rem xcopy /D /s /I %_ARTPATH2_%\finals\pal %_BLDDRV_%\prj\cam\art\finals\pal
+xcopy /D /s /I %_ARTPATH2_%\finals\camera %_BLDDRV_%\prj\cam\art\finals\camera
 xcopy /D /s /I %_ARTPATH2_%\finals\snd %_BLDDRV_%\prj\cam\art\finals\snd
 xcopy /D /s /I %_ARTPATH2_%\finals\strings %_BLDDRV_%\prj\cam\art\finals\strings
 
