@@ -1009,6 +1009,12 @@ METHODS:
  
      Debug.MPrint("Running Other Linked");  
 
+     if (AI.GetAlertLevel(self) >= kAIAL_Moderate)
+     {
+        Debug.MPrint("Alert 2 or higher.  Aborting RunOtherLinked");
+        return; //abort.
+     }
+
      while ((susplinks.AnyLinksLeft()) && (GetData("DoingSuspicious")==0))
      { //links left, and semaphore not blocking us.
        link cursusplink = susplinks.Link();
@@ -1146,21 +1152,29 @@ METHODS:
 	 SetData("SuspiciousQueueType","door");
        return;
      }
-     SetData("DoingSuspicious",2);  //semaphore for doing a door 
-     SetData("CurrentObj",suspobj);
+     if (!Link.AnyExist("AIDoor",self,suspobj)) //we opened it
+     {  
+        SetData("DoingSuspicious",2);  //semaphore for doing a door 
+        SetData("CurrentObj",suspobj);
      //Our plan here is to walk over to the door and frob it to open/close
      //it.  If we can lock it(we have the key), we will.  Then we reset
      //our semaphore and look for more.
      //Of course we have a semaphore problem here.  How do I decide between
      //the gaslights and the doors?  If I'm doing one and I start doing
      //the other, I lose the fact that I was working on gaslights...
-     if (!GotoObjLoc(suspobj,kNormalSpeed,kNormalPriorityAction,"godoor"))
+        if (!GotoObjLoc(suspobj,kNormalSpeed,kNormalPriorityAction,"godoor"))
+        {
+           Debug.MPrint(self," failed suspicious Goto reaction to ",suspobj," (door?)");
+	   SetData("DoingSuspicious",0);
+           SetData("CurrentObj",0);
+	   //don't runotherlinked, because we don't want to loop back and
+	   //forth.  Let this just be a failure case.
+        }
+     }
+     else
      {
-        Debug.MPrint(self," failed suspicious Goto reaction to ",suspobj," (door?)");
-	SetData("DoingSuspicious",0);
-        SetData("CurrentObj",0);
-	//don't runotherlinked, because we don't want to loop back and
-	//forth.  Let this just be a failure case.
+        return; //we opened the door we weren't supposed to, something
+                //important must be up, abort this suspicious stuff.
      }
    }
 
@@ -1230,7 +1244,10 @@ MESSAGES:
      if (MessageIs("Suspicious"))
      {
        Debug.MPrint(self," got suspicious message ",message.data,", ",message.data2,".");
-       TypeParser((ObjID)message.data,(string)message.data2);
+       if (AI.GetAlertLevel(self) < kAIAL_Moderate)
+          TypeParser((ObjID)message.data,(string)message.data2);
+       else
+          Debug.MPrint("Alert 2, aborting suspicious reaction.");
      }
      DefaultOnMessage();
    }
