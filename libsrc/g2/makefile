@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.3 $
+# $Revision: 1.4 $
 # $Author: KEVIN $
-# $Date: 1996/05/20 10:43:13 $
+# $Date: 1996/06/11 14:44:41 $
 #
 
 MAKETOP = $(CWD)
@@ -42,7 +42,7 @@ G2_OBJS = \
         genil gensil genlil \
         genply gensply \
         genlm genlmf genllmf \
-        g2poly g2tm \
+        g2poly g2tm g2rot \
         g2circ g2el g2ov g2ring \
         grwater \
         lmap \
@@ -56,7 +56,7 @@ g2.h .REREAD :\
         stupid.h \
 	icanvas.h plytyp.h \
         sftype.h lftype.h tftype.h pftype.h \
-        g2d.h \
+        g2d.h g2clip.h \
 	grlin.h grtm.h grcurv.h \
 	grply.h grscale.h init.h \
         buffer.h blnfcn.h \
