@@ -1205,7 +1205,20 @@ METHODS:
      Property.Add(myboiler,"PhysType");
      Property.Set(myboiler,"HasRefs",TRUE); //reref ourselves.
      SetData("MyBoiler",(integer)myboiler);
+   }
 
+   METHOD object FindBoiler()
+   {
+     object toreturn = self;  //failure case
+     linkset contlinks = Link.GetAll("Contains",self);
+     while (contlinks.AnyLinksLeft())
+     {
+       Debug.MPrint("Searching for Boiler for ",self);
+       if ((integer)contlinks.Link().GetData()==kContainTypeAlt)
+         toreturn = contlinks.Link().To();
+       contlinks.NextLink();
+     }
+     return toreturn;
    }
 
 MESSAGES:
@@ -1222,9 +1235,12 @@ MESSAGES:
      if (message.mode==kAIM_Dead)   
      {
        Debug.MPrint(self," destroying boiler.");
-       if ((integer)GetData("MyBoiler")!=0)
-         if (Object.Exists((object)GetData("MyBoiler")))
-           Object.Destroy((object)GetData("MyBoiler"));
+       object myboiler = FindBoiler();
+       Debug.MPrint("Found boiler ",myboiler);
+       if ((object)myboiler!=(object)self)
+           Object.Destroy(myboiler);
+       else
+           Debug.MPrint("No boiler to destroy, really.");
      }
      DefaultOnAIModeChange();
    }
