@@ -1,6 +1,7 @@
 #include "tfint.h" //trapflags
 #include "tweqflgs.h" //tweq flags
 #include "ambbase.h" //ambient hack flags
+#include "aiavoid.h" // for path avoid flags.
 
 /* ====== StdDoor ======
 script for basic door behavior.  The door opens, closes, or changes
@@ -88,13 +89,128 @@ BEGIN_SCRIPT(StdDoor,Door)
          }
       }
 
+     /* Double doors are confusing to AIs, who can get stuck going down the seam.
+        Such doors want to path repel from their seam.  Not requiring designers to
+        do this for all double doors, we set it up on sim start.  Note the failure
+        cases here are failing to set up a repellant where we should (in which case
+        we're no worse off than before) and creating a repellant where there should
+        be none (which should be a rare case, and is considered far better than
+        AIs getting stuck in the seams of doors. -TJS 3/18/00
+        */
+     METHOD void InitDoublePair(object obj, object other)
+     {
+        integer myroom_1=-1, myroom_2=-1, otherroom_1=-1, otherroom_2=-1;
+
+        if(integer(obj)>integer(other)) return;
+
+        // Debug.MPrint("Considering repel marker between ",self," and ",other);
+
+        // First, check that we're both really doors, and get our room IDs
+        if(GetRoomIDs(self,myroom_1,myroom_2) &&
+           GetRoomIDs(other,otherroom_1,otherroom_2) &&
+           myroom_1==otherroom_1 &&
+           myroom_2==otherroom_2 &&
+           Property.Possessed(self,"PhysDims") &&
+           Property.Possessed(other,"PhysDims"))
+        {
+           // Note that since we only look at size, not offset, this could fail   
+           // on giant doors with wacky offsets.  Which are damn few.
+           vector mydims=Property.Get(self,"PhysDims","Size");
+           vector otherdims=Property.Get(other,"PhysDims","Size");
+           vector midpoint=(Object.Position(self)+Object.Position(other))/2;
+           float dist=(Object.Position(self)-midpoint).Magnitude();
+           
+           // scale to compare against half-dims (by scaling up and comparing
+           // against dims) and fudge.
+           dist=(dist*2.0)+0.5;
+           
+           if((dist<mydims.x || dist<mydims.y || dist<mydims.z) &&
+              (dist<otherdims.x || dist<otherdims.y || dist<otherdims.z))
+           { 
+              // Debug.MPrint("Put marker at ",midpoint," between ",self," and ",other);
+              object seam_marker=Object.Create("Marker");
+              Object.Teleport(seam_marker,midpoint,vector(0,0,0));
+              Property.Set(seam_marker,"AI_ObjAvoid","Flags",kAIOA_Repel);
+           }
+        } 
+     }
+     METHOD void InitDoubles()
+     {
+        // First, double doors only need to be linked one way, and being linked
+        // both ways would cause us to create redundant markers.  So, we don't want that.
+        // Note that we don't check for the "Double" ScriptParams link data, since
+        // BroadcastOnAllLinks has been basically ignoring link data ever since
+        // multiplayer was implemented, meaning most double doors probably don't have it.
+
+        // Also, only actually initialize if we're the lower-obj-id'd of the pair,
+        // since these messages are getting sent in both directions and only
+        // one door of each pair wants to initialize
+
+        // So, each lower-numbered object will synch up once with each object with
+        // which it has either a ScriptParams or ~ScriptParams link, but won't do the
+        // ~ScriptParams one if it's already checked ScriptParams (avoiding duplication)
+
+        // -TJS 3/18/00
+
+        if(Link.AnyExist("ScriptParams",self))
+        {
+           linkset scriptlinks=Link.GetAll("ScriptParams",self);
+           while(scriptlinks.AnyLinksLeft())
+           {
+              object other=scriptlinks.Link().To();
+              InitDoublePair(self,other);
+              scriptlinks.NextLink();
+           }
+        }
+        if(Link.AnyExist("~ScriptParams",self))
+        {
+           linkset scriptlinks=Link.GetAll("~ScriptParams",self);
+           while(scriptlinks.AnyLinksLeft())
+           {
+              object other=scriptlinks.Link().To();
+              if(!Link.AnyExist("ScriptParams",self,other))
+              {
+                 InitDoublePair(self,other);
+              }
+              scriptlinks.NextLink();
+           }
+        }
+     }
+     METHOD boolean GetRoomIDs(object obj, integer &room1, integer &room2)
+     {
+        if(Property.Possessed(obj,"RotDoor"))
+        {
+           room1=Property.Get(obj,"RotDoor","Room ID #1");
+           room2=Property.Get(obj,"RotDoor","Room ID #2");
+        }
+        else if(Property.Possessed(obj,"TransDoor"))
+        {
+           room1=Property.Get(obj,"TransDoor","Room ID #1");
+           room2=Property.Get(obj,"TransDoor","Room ID #2");
+        }
+        else
+           return FALSE;
+
+        // enforce a standard order so we can compare.
+        if(room1<room2)
+        {
+           room1=room1^room2; // Good ol' XOR-swap.
+           room2=room1^room2;
+           room1=room1^room2;
+        }
+        return TRUE;
+     }
+
 MESSAGES:
 
         
     OnSim()
     {
        if(message.starting)
+       {
+          InitDoubles();
           SetData("Sim",TRUE);
+       }
        else
           ClearData("Sim");
        DefaultOnSim();
