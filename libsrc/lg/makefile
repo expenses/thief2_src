@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.18 1993/11/03 19:06:12 tjs Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.19 1994/02/28 10:53:02 rex Exp $
 # $Log: makefile $
-# Revision 1.18  1993/11/03 19:06:12  tjs
-# Dependencies
+# Revision 1.19  1994/02/28 10:53:02  rex
+# Changed kb.lib to input.lib
 #
+# Revision 1.18  1993/11/03  19:06:12  tjs
+# Dependencies
+# 
 # Revision 1.17  1993/11/03  18:30:29  tjs
 # Added lgsprntf
 # 
@@ -92,7 +95,7 @@ DBGMAKEH_LIBS = lg.lib
 
 DBGTEST_SRCS = dbgtest.c
 DBGTEST_OBJS = dbgtest.obj
-DBGTEST_LIBS = lg.lib kb.lib mprintf.lib
+DBGTEST_LIBS = _lg.lib _input.lib _mprintf.lib
 
 STACKTST_OBJS = stacktst.obj
 STACKTST_LIBS = lg.lib mprintf.lib
