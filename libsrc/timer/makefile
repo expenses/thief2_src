@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/timer/RCS/makefile $
-# $Revision: 2.1 $
-# $Author: MBAER $
-# $Date: 1995/10/02 19:57:21 $
+# $Revision: 2.2 $
+# $Author: JACOBSON $
+# $Date: 1996/01/30 11:45:22 $
 #
 
 MAKETOP = $(CWD)
@@ -20,7 +20,8 @@ irrupt_OBJS = tmrt
 timer_OBJS = tmact tmadd tmclose tmd \
              tmdeact tmfast tminit tmphnd \
              tmrate tmrem tmsden tmrt \
-             tmsfreq tmsper tmftab tmlibt tmail
+             tmsfreq tmsper tmftab tmlibt tmail \
+             tmwin32
 
 timer_HDRS = timer.h tminit.h
 
