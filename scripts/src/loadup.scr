@@ -27,9 +27,9 @@ METHODS:
          }
       }
 
-      if(descend && Link.AnyExist("~MetaProp",self))
+      if(descend && Link.AnyExist("~MetaProp",arch))
       {
-         linkset subtypes=Link.GetAll("~MetaProp",self);
+         linkset subtypes=Link.GetAll("~MetaProp",arch);
          while(subtypes.AnyLinksLeft())
          {
             LoadInventoryFrom(subtypes.Link().To(),TRUE);
