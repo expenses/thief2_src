@@ -523,6 +523,10 @@ BEGIN_SCRIPT(Training, RootScript)
           DoLesson("VisGem","","");
        }
        else return FALSE;
+
+       // Keep tip up for at least 5 seconds.
+       SetData("TipLock",TRUE);
+       SetOneShotTimer(self,"TipUnlock",5.0);
        return TRUE;
     }
     METHOD boolean TrainHealing (object world, object inv, object weap)
@@ -700,9 +704,101 @@ BEGIN_SCRIPT(Training, RootScript)
       return FALSE;
    }
 
+   METHOD boolean Populating(object room)
+   {
+      if(Link.AnyExist("~Population",self))
+      {
+         linkset habitations=Link.GetAll("~Population",self);
+         while(habitations.AnyLinksLeft())
+         {
+            if(habitations.Link().To()==room)
+               return TRUE;
+            habitations.NextLink();
+         }
+      }
+      return FALSE;
+   }
+
+   METHOD boolean TrainBlackjack (object world, object inv, object weap)
+   {
+      boolean retval=FALSE;
+      object kenny=object("CoshTarget");
+
+      // This way, we only have to score the one thing to shut down all
+      // of this logic:
+      if(LessonDone("SelectBlackjack"))
+         return FALSE;
+      if(kenny==NO_OBJ) return FALSE;
+      if(!Populating("CoshPromptRoom"))
+         return FALSE;
+
+      if(Property.Possessed(kenny,"AI_Mode") &&
+         integer(Property.Get(kenny,"AI_Mode"))==kAIM_Dead)
+         return FALSE;
+      
+      vector delta=Object.Position(kenny)-Object.Position(self);
+      // figure angle from me to Kenny
+      double angle=atan2(delta.y,delta.x)*180.0/3.14159;
+
+      {
+         float kennyface=Object.Facing(kenny).z;
+         double deltang=fmod(1080.0+angle-kennyface,360.0);
+         const float KENNYFACE_TOLERANCE=45.0;
+
+         // IS his back turned?  The lesson claims it is.
+         if(angle>KENNYFACE_TOLERANCE && angle<(360.0-KENNYFACE_TOLERANCE))
+            return FALSE;
+
+         // @TODO: Check that our pigeon cannot see you?
+         if(Object.InheritsFrom(weap,"Blackjack"))
+         {
+            // got the blackjack selected
+            integer weapui=Quest.Get(WEAP_UI_QVAR);
+         
+            if(weapui==kReady)
+            {
+               retval=DoLesson("PullBackArm","Attack");
+            }  
+            else if(weapui==kCocked)
+            {
+               float distance=1000.0;
+               const float COSH_RANGE=4.5; // pretty safe guestimate
+               const float FACE_TOLERANCE=10.0;
+               float facing=Object.Facing(self).z;
+               distance=delta.Magnitude();
+               angle=fmod(1080.0+angle-facing,360.0);
+
+               if(distance>COSH_RANGE)
+                  retval=DoLesson("ReleaseArm","Attack");
+               else
+               {
+                  if(angle<FACE_TOLERANCE || angle>(360.0-FACE_TOLERANCE))
+                     retval=DoLesson("ReleaseArmClose","Attack");
+                  else
+                     retval=DoLesson("ReleaseArm","Attack");
+               }
+            }
+            else
+               return FALSE; // how did we get here anyway?
+         }
+         else
+         {
+            retval=DoLesson("SelectBlackjack","ReadyBlackjack");
+         }
+      }
+      if(retval)
+      {
+         // while we have this lesson up, check back _often_
+         SetOneShotTimer(self,"Update",0.25);
+         Sound.PlayVoiceOver(self,"gar0108");
+      }
+      return retval;
+   }
+
    METHOD boolean TrainShootTorch (object world, object inv, object weap)
    {
       boolean positioned=FALSE;
+      boolean retval=FALSE;
 
       // This way, we only have to score the one thing to shut down all
       // of this logic:
@@ -710,19 +806,8 @@ BEGIN_SCRIPT(Training, RootScript)
          return FALSE;
 
       // Are we even in position to do this lesson?
-      if(Link.AnyExist("~Population",self))
-      {
-         linkset habitations=Link.GetAll("~Population",self);
-         while(!positioned && habitations.AnyLinksLeft())
-         {
-            if(habitations.Link().To()==object("TorchPromptRoom"))
-               positioned=TRUE;
-            habitations.NextLink();
-         }
-         if(!positioned) return FALSE;
-      }
-      else
-         return FALSE;
+      if(!Populating("TorchPromptRoom"))
+            return(FALSE);
       if(Object.InheritsFrom(weap,"water"))
       {
          // got a water arrow selected
@@ -730,11 +815,11 @@ BEGIN_SCRIPT(Training, RootScript)
          
          if(weapui==kReady)
          {
-            return DoLesson("PullArrow","Attack");
+            return retval=DoLesson("PullArrow","Attack");
          }
          else if(weapui==kCocked)
          {
-            return DoLesson("ReleaseArrow","Attack");
+            return retval=DoLesson("ReleaseArrow","Attack");
          }
          else
             return FALSE; // how did we get here anyway?d
@@ -742,9 +827,12 @@ BEGIN_SCRIPT(Training, RootScript)
       else
       {
          if(ObjContainsAny("Player","water"))
-            return DoLesson("SelectWaterArrow","ReadyWater");
+            retval=DoLesson("SelectWaterArrow","ReadyWater");
       }
-      return FALSE;
+
+      if(retval)
+         Sound.PlayVoiceOver(self,"gar0106");
+      return retval;
    }
 
    METHOD void Prompt()
@@ -753,11 +841,14 @@ BEGIN_SCRIPT(Training, RootScript)
       object weap=Quest.Get(WEAP_ID_QVAR);
       object world=Quest.Get(WORLD_ID_QVAR);
 
-      Debug.MPrint("Checking prompt.  Objects=",world,",",inv,",",weap);
+      // Debug.MPrint("Checking prompt.  Objects=",world,",",inv,",",weap);
+
+      if(IsDataSet("TipLock") && TrainTransientTip()) return;
 
       if(
          (Quest.Get("difficulty") > 0) ||
          TrainHealing(world,inv,weap) ||
+         TrainBlackjack(world,inv,weap) ||
          TrainShootTorch(world,inv,weap) ||
          TrainDoor(world,inv,weap) ||
          TrainPickpocket(world,inv,weap) ||
@@ -917,6 +1008,8 @@ MESSAGES:
 
       if(MessageIs("CheckMap"))
          TransientTip(kM1TipCheckMap);
+      else if(MessageIs("VisGem"))
+         TransientTip(kM1TipCheckVisGem);
       else if(!MessageIs("Prompt"))
          prompt=FALSE;
       if(prompt)
@@ -929,6 +1022,15 @@ MESSAGES:
       {
          Prompt();
          SetOneShotTimer(self,"Prompt",25.0);
+      }
+      else if(message.name=="Update")
+      {
+         Prompt();
+      }
+      else if(message.name=="TipUnlock")
+      {
+         ClearData("TipLock");
+         Prompt();
       }
       DefaultOnTimer();
    }
@@ -951,6 +1053,23 @@ MESSAGES:
       DefaultOnMessage();
    }
 END_SCRIPT(MapTipster)
+
+
+BEGIN_SCRIPT(VisGemText, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         object player=object("Player"); // gruesomely single-player
+         if(player!=object(0))
+         {
+            PostMessage(player,"VisGem");
+         }
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(VisGemText)
 
 
 BEGIN_SCRIPT(WhistleCall, RootScript)
@@ -994,4 +1113,11 @@ MESSAGES:
    }
 
 END_SCRIPT(WhistleCall);
+
+
+
+
+
+
+
 
