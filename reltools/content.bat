@@ -329,8 +329,8 @@ mkdirs %_DAILYTHIEFCD2_%\movies
 xcopy  %_MOVIEPATH_%\%_movielang_% %_DAILYTHIEFCD2_%\movies
 
 mkdirs %_DAILYTHIEF_%\movies
-copy %_MOVIEPATH_%\movies\%_movielang_%\success.avi %_DAILYTHIEF_%\movies
-copy %_MOVIEPATH_%\movies\%_movielang_%\death.avi %_DAILYTHIEF_%\movies
+copy %_MOVIEPATH_%\%_movielang_%\success.avi %_DAILYTHIEF_%\movies
+copy %_MOVIEPATH_%\%_movielang_%\death.avi %_DAILYTHIEF_%\movies
 
 
 rem The motiondb.bin is kinda important
