@@ -1,0 +1,9 @@
+// $Header: r:/prj/cam/src/RCS/motcall.h 1.1 1997/02/14 17:30:25 JON Exp $
+
+#ifndef __MOTCALL_H
+#define __MOTCALL_H
+
+EXTERN void MotCallbacksRegister();
+
+#endif  // __MOTCALL_H
+
