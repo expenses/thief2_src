@@ -143,16 +143,19 @@ MESSAGES:
    {
       if(message.starting)
       {
-         /* Down with the iron cross.  Pose creature at sim start so you never
-            see iron-cross posed creatures, even if they've never come out of
-            efficiency.
-            */
-         // Don't interfere with existing pose, if any
-         if(!Property.Possessed(self,"CretPose"))
+         if(Property.Possessed(self,"Creature"))
          {
-            Property.CopyFrom(self,"CretPose","M-StandPose");
+            /* Down with the iron cross.  Pose creature at sim start so you never
+               see iron-cross posed creatures, even if they've never come out of
+               efficiency.
+               */
+            // Don't interfere with existing pose, if any
+            if(!Property.Possessed(self,"CretPose"))
+            {
+               Property.CopyFrom(self,"CretPose","M-StandPose");
+            }
+            Property.Remove(self,"CretPose"); //DAMN YOU!
          }
-         Property.Remove(self,"CretPose"); //DAMN YOU!
       }
       DefaultOnSim();
    }
