@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Source: x:/prj/tech/libsrc/darkloop/RCS/loopapi.h $
 // $Author: CCAROLLO $
 // $Date: 1998/10/05 08:33:09 $
