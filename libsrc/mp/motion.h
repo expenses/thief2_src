@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/mp/RCS/motion.h 1.20 1998/08/04 13:25:34 kate Exp $
 //
 // Motion.h -- structures and definitions used by multiped library.
