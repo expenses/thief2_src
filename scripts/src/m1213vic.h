@@ -1,0 +1,3 @@
+#define M13_LETTER_GOAL 3
+#define M13_CULTIVATOR_GOAL 4
+
