@@ -1,10 +1,9 @@
 #
-# $Header: x:/prj/tech/libsrc/gadget/RCS/makefile 1.9 1998/07/02 13:21:21 PATMAC Exp $
+# $Header: r:/t2repos/thief2/libsrc/gadget/makefile,v 1.10 1998/08/04 10:21:07 JAEMZ Exp $
 
 MAKETOP = $(CWD)
 
-PROJECT ?= TECH
-PRJBACK ?= x:\prj
+PROJECT = cam
 
 %include $(MRC)\env.rc
 
