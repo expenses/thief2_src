@@ -158,6 +158,11 @@ MESSAGES:
       if (message.name == "SpewPos")
       {
          Debug.MPrint("Cavador's(",self,") X,Y,Z = ",Object.Position(self));
+		 if (Object.Exists(Object.Named("BobJr")))
+	         Debug.MPrint("BobJr's(",Object.Named("BobJr"),") X,Y,Z = ",Object.Position(Object.Named("BobJr")));
+		 if (Object.Exists(Object.Named("BobJrII")))
+	         Debug.MPrint("BobJrII's(",Object.Named("BobJrII"),") X,Y,Z = ",Object.Position(Object.Named("BobJrII")));
+         Debug.MPrint("==============================");
          SetOneShotTimer("SpewPos",20.0);
       }   
       DefaultOnTimer();
