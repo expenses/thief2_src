@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.25 $
-# $Author: buzzard $
-# $Date: 1997/10/27 14:07:08 $
+# $Revision: 1.26 $
+# $Author: KEVIN $
+# $Date: 1998/03/03 12:13:48 $
 #
 
 MAKETOP = $(CWD)
@@ -69,6 +69,7 @@ g2.h .REREAD :\
         stupid.h \
 	icanvas.h plytyp.h \
         g2spoint.h \
+        scancvt.h \
         sftype.h lftype.h tftype.h pftype.h \
         g2d.h g2clip.h \
 	grlin.h grtm.h grcurv.h \
