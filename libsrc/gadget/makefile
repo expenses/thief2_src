@@ -1,5 +1,5 @@
 #
-# $Header: r:/t2repos/thief2/libsrc/gadget/makefile,v 1.8 1996/12/11 00:32:35 mahk Exp $
+# $Header: r:/t2repos/thief2/libsrc/gadget/makefile,v 1.9 1998/07/02 13:21:21 PATMAC Exp $
 
 MAKETOP = $(CWD)
 
@@ -17,7 +17,7 @@ gadget_OBJS=gadget drawelem util2d gcompose uibutton gadblist gadtext \
 
 gadget_HDRS=gadget.h drawelem.h util2d.h lgadover.h utilcomp.h \
         gcompose.h uibutton.h gadblist.h gadtext.h uitexted.h \
-        guistyle.h gadbase.h gadbutt.h gadbox.h gadscale.h gadmenu.h
+        guistyle.h gadbase.h gadbutt.h gadbox.h gadscale.h gadmenu.h gadint.h
 
 
 %include  $(MRC)\make.rc
