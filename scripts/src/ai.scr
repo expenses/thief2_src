@@ -1,6 +1,7 @@
 #include "dmgprop.h" //kslaynormal
 #include "aiaware.h"
 #include "invtype.h"
+#include "aitype.h"
 
 /* Causes damage done by "HolyStim" (holy water) stimulus to affect
    zombies permanently, while other types of damage will just put the
@@ -878,3 +879,29 @@ OnTimer()
 
 END_SCRIPT(NoticesPlayerBumps)
 
+BEGIN_SCRIPT(ShutUpYerDead, RootScript)
+
+MESSAGES:
+
+  OnBeginScript()
+  {
+    if (!IsDataSet("Snapped"))
+      SetData("Snapped",0);
+
+    if (GetData("Snapped")==0)
+    {
+      Debug.MPrint("Snapping awareness links on ",self);
+      linkset awlinks = Link.GetAll("AIAwareness",self);
+      while (awlinks.AnyLinksLeft())
+      {
+        Debug.MPrint("Lowering link to ",awlinks.Link().To());
+        awlinks.Link().SetData("flags",kAIAL_Lowest);
+        awlinks.NextLink();
+      }
+    }
+    
+    SetData("Snapped",1);
+    DefaultOnBeginScript();
+  }
+
+END_SCRIPT(ShutUpYerDead)
