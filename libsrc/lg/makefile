@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.16 1993/09/30 18:37:28 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.17 1993/11/03 18:30:29 tjs Exp $
 # $Log: makefile $
-# Revision 1.16  1993/09/30 18:37:28  rex
-# Added memgrow.obj
+# Revision 1.17  1993/11/03 18:30:29  tjs
+# Added lgsprntf
 #
+# Revision 1.16  1993/09/30  18:37:28  rex
+# Added memgrow.obj
+# 
 # Revision 1.15  1993/09/13  11:11:17  dfan
 # Add memstack stuff
 # 
@@ -73,11 +76,11 @@ INST_TARGETS = lg dbgmakeh
 EXTRA_TARGETS =
 
 LG_SRCS = bugtrak.c dbg.c dbgcfg.c datapath.c exit.c memall.c memgrow.c \
-		memstat.c stack.c
+		memstat.c stack.c lgsprntf.c
 LG_OBJS = bugtrak.obj dbg.obj dbgcfg.obj datapath.obj exit.obj memall.obj \
-		memgrow.obj memstat.obj stack.obj
+		memgrow.obj memstat.obj stack.obj lgsprntf.obj
 LG_HDRS = lg.h lgalt.h dbg.h datapath.h memmacro.inc dbgmacro.inc \
-	memall.h memstat.h bugtrak.h
+	memall.h memstat.h bugtrak.h lgsprntf.h
 LG_H2I  = lg.inc memall.inc dbg.inc
 
 DBGMAKEH_SRCS = dbgmakeh.c
