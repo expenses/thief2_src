@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/prj/cam/src/RCS/aitsktyp.h 1.2 1997/12/30 13:35:57 TOML Exp $
 //

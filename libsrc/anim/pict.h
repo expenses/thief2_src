@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //		PICT.H		Header file for PICT resources
 /*
 * $Header: r:/prj/lib/src/anim/rcs/pict.h 1.2 1993/10/12 12:57:53 dc Exp $
