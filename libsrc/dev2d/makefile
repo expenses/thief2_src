@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.5 $
+# $Revision: 1.6 $
 # $Author: KEVIN $
-# $Date: 1996/04/25 12:36:14 $
+# $Date: 1996/04/30 16:13:01 $
 #
 
 MAKETOP = $(CWD)
@@ -25,7 +25,7 @@ irrupt_OBJS = \
         gdbm gdgbm canvas bitmap grnull
 
 dev2d_OBJS = \
-        bitmap blend gr \
+        astring bitmap blend gr \
         bank canvas mxlatch screen grd \
         grnull grmalloc valloc \
         init svgainit cominit \
@@ -39,12 +39,13 @@ dev2d_OBJS = \
         fl8vlinf fl8hlinf fl8ubmf \
         fl8pix fl8lin fl8bm \
         fl8pix8 fl8hlin fl8vlin \
-        fl8fl8 fl8mono fl8bk8 fl8mx \
+        fl8fl8 fl8mono fl8bk8 fl8mx fl8rsd8 \
         f16cnv f16p8f f16p16f \
         f16hlinf f16ubmf \
         f16pix f16lin f16bm \
         f16pix8 f16pix16 f16hlin \
-        f16fl8 f16mono f16f16 fl8rsd8 \
+        f16fl8 f16mono f16f16 \
+        f16il \
         gdbm gdgbm gdrect gdlin gdpix \
         genbm \
         genlin genfl8u genf16u genmonou \
