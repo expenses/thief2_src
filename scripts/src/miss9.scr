@@ -1,0 +1,18 @@
+// Script file for Thief 2 - Mission 9 - Blackmail
+#include "drkgoalt.h"
+
+#define BLACKMAIL_GOAL 1
+#define INVESTIGATE_GOAL 2
+
+BEGIN_SCRIPT(OhMyGod, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("OhMyGod"))
+      {
+         Quest.Set(GoalVisibleVarName(INVESTIGATE_GOAL),TRUE);
+         Quest.Set(GoalStateVarName(BLACKMAIL_GOAL),kGoalInactive);
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(OhMyGod)
