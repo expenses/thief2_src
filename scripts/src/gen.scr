@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.37 2000/01/20 22:57:35 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.38 2000/01/21 14:44:05 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1711,6 +1711,63 @@ MESSAGES:
 END_SCRIPT(OutDamnSpot)
 
 
+
+
+// Starts the noisemaker schema when the arrow collides.
+// Stops it again (if necessary) if it's picked up.
+BEGIN_SCRIPT(PlayNoisemaker, Physics)
+
+METHODS:
+
+   METHOD void TurnOffSound()
+   {
+      Sound.HaltSchema(self);
+      ClearData("Playing");
+   }
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kCollisionMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      TurnOffSound();
+      Physics.UnsubscribeMsg(self, kCollisionMsg);
+      DefaultOnEndScript();
+   }
+
+   OnPhysCollision()
+   {
+      // @TODO: should probably be an activate envschema on
+      // the arrow, but don't know if we can do that and have it
+      // still track the arrow...
+      if(!IsDataSet("Playing"))
+      {
+         Sound.PlaySchema(self,"noisemaker",self);
+         SetData("Playing",NULL);
+      }
+      DefaultOnPhysCollision();
+   }
+   OnPhysMadeNonPhysical()
+   {
+      // either we've been picked up, or come to rest in the world
+      // turn off our special emit effect, if any
+      ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoHalt);
+      DefaultOnPhysMadeNonPhysical();
+   }
+   OnContainer()
+   {
+      if(message.containee==self)
+         TurnOffSound();
+      DefaultOnContainer();
+   }
+
+END_SCRIPT(PlayNoisemaker)
+
+
+
 /* Script which causes arrows and such to stick in wood.
    The "ScriptTiming" property is used for the chance of
    actually sticking, so not _all_ arrows will stick
@@ -1720,12 +1777,21 @@ BEGIN_SCRIPT(CollisionStick, Physics)
 
 METHODS:
 
-   METHOD boolean CanAttachTo(object targ)
+   // Considering only the type of surface, can I attach?
+   // This is the method you'd override to make distinctions
+   // between target surface types, as with the vine arrow.
+   METHOD boolean CanAttachToSurface(object targ)
    {
-      if(targ==object(0)) return FALSE;
       if(!(Property.Possessed(targ,"CanAttach")
            && boolean(Property.Get(targ,"CanAttach"))))
          return FALSE;
+      return TRUE;
+   }
+
+   METHOD boolean CanAttachTo(object targ)
+   {
+      if(targ==object(0)) return FALSE;
+      if(!CanAttachToSurface(targ)) return FALSE;
       if(Object.InheritsFrom(targ,"Texture"))
          return TRUE;
       // Objects which are not textures ought to be
@@ -1816,61 +1882,6 @@ MESSAGES:
    }
 END_SCRIPT(CollisionStick)
 
-
-// Starts the noisemaker schema when the arrow collides.
-// Stops it again (if necessary) if it's picked up.
-BEGIN_SCRIPT(PlayNoisemaker, Physics)
-
-METHODS:
-
-   METHOD void TurnOffSound()
-   {
-      Sound.HaltSchema(self);
-      ClearData("Playing");
-   }
-
-MESSAGES:
-   OnBeginScript()
-   {
-      Physics.SubscribeMsg(self, kCollisionMsg);
-      DefaultOnBeginScript();
-   }
-   OnEndScript()
-   {
-      TurnOffSound();
-      Physics.UnsubscribeMsg(self, kCollisionMsg);
-      DefaultOnEndScript();
-   }
-
-   OnPhysCollision()
-   {
-      // @TODO: should probably be an activate envschema on
-      // the arrow, but don't know if we can do that and have it
-      // still track the arrow...
-      if(!IsDataSet("Playing"))
-      {
-         Sound.PlaySchema(self,"noisemaker",self);
-         SetData("Playing",NULL);
-      }
-      DefaultOnPhysCollision();
-   }
-   OnPhysMadeNonPhysical()
-   {
-      // either we've been picked up, or come to rest in the world
-      // turn off our special emit effect, if any
-      ActReact.React("tweq_control",1.0,self,0,kTweqTypeEmitter,kTweqDoHalt);
-      DefaultOnPhysMadeNonPhysical();
-   }
-   OnContainer()
-   {
-      if(message.containee==self)
-         TurnOffSound();
-      DefaultOnContainer();
-   }
-
-END_SCRIPT(PlayNoisemaker)
-
-
 // script for rope arrows, to be used _in addition to_ the usual "Arrow" script.
 // this script is only responsible for the rope-deploying behavior.
 BEGIN_SCRIPT(DeployRope, CollisionStick)
@@ -1903,6 +1914,31 @@ MESSAGES:
    }
 
 END_SCRIPT(DeployRope)
+
+
+// Different script for vine arrow is kinda dumb, but expedient.
+BEGIN_SCRIPT(DeployVine, DeployRope)
+METHODS:
+   METHOD boolean CanAttachToSurface(object targ)
+   {
+      // If a rope arrow could attach, so can a vine arrow.
+      if(Base::CanAttachToSurface(targ))
+         return TRUE;
+      // _really_ dumb, and not even right.
+      // if(Object.InheritsFrom(targ,"MatMetal"))
+      //   return TRUE;
+
+      // This won't work, since we can't get Pore Size this way (probably since
+      // it's not in the default sDesc fields?). -TJS
+      if(Physics.IsOBB(targ) &&
+         Property.Possessed(targ,"PhysAttr") &&
+         float(Property.Get(targ,"PhysAttr","Pore Size")) > 0.0)
+      {
+         return TRUE;
+      }
+      return FALSE;
+   }
+END_SCRIPT(DeployVine)
 
 
 BEGIN_SCRIPT(RopeFX, RootScript)
@@ -2523,8 +2559,16 @@ MESSAGES:
                Container.Remove(Goodies);
                Container.Add(Goodies,MyContainer);
             }
-            else
-               Object.Destroy(Goodies);
+            MyContents.NextLink();
+         }
+         // Probably safer to remove the undistributed contents of the container
+         // after the intial pass.  Lord knows how safe destrying objects is
+         // during that initial link iteration when Cleared() could be having
+         // arbitrary other side-effects.  -TJS
+         MyContents=Link.GetAll("Contains",self);
+         while(MyContents.AnyLinksLeft())
+         {
+            Object.Destroy(MyContents.Link().To());
             MyContents.NextLink();
          }
       }
