@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/fltloop/RCS/loopmode.h 1.3 1999/05/04 18:55:09 darrenl Exp $
+// $Header: x:/prj/tech/libsrc/fltloop/RCS/loopmode.h 1.4 1999/08/20 04:13:16 mwhite Exp $
 
 #pragma once
 #ifndef __LOOPMODE_H
@@ -12,7 +12,7 @@ class cLoopBracket;
 // By all rights this should be private to the class, but you
 // can't actually do that, which is dumb.  You can do it in java!
 
-const kLMMaxBrackets=32;
+const kLMMaxBrackets=64;
 
 class cLoopMode {
 public:
