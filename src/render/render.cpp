@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/render/render.cpp,v 1.41 2000/02/08 13:38:55 zarko Exp $
 
 #include <wrtype.h>
