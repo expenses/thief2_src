@@ -761,14 +761,14 @@ BEGIN_SCRIPT(Training, RootScript)
       return FALSE;
    }
 
-   METHOD boolean Populating(object room)
+   METHOD boolean Populating(object room_or_obb)
    {
       if(Link.AnyExist("~Population",self))
       {
          linkset habitations=Link.GetAll("~Population",self);
          while(habitations.AnyLinksLeft())
          {
-            if(habitations.Link().To()==room)
+            if(habitations.Link().To()==room_or_obb)
                return TRUE;
             habitations.NextLink();
          }
@@ -863,7 +863,7 @@ BEGIN_SCRIPT(Training, RootScript)
          return FALSE;
 
       // Are we even in position to do this lesson?
-      if(!Populating("TorchPromptRoom"))
+      if(!Populating("TorchTrig"))
             return(FALSE);
       if(Object.InheritsFrom(weap,"water"))
       {
