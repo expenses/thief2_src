@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/palmnch/RCS/palmnch.h 1.5 1998/11/24 10:11:18 jaemz Exp $
 
 #ifndef __FIT_H

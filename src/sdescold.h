@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/sdescold.h 1.1 1997/12/18 23:06:37 mahk Exp $
 
 #ifndef SDESC_H
