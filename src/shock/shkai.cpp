@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkai.cpp,v 1.21 1999/11/19 14:56:39 adurant Exp $
 
 #include <shkai.h>
