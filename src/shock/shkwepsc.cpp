@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkwepsc.cpp,v 1.3 1999/04/07 13:43:49 JON Exp $
 
 #include <shkwepsc.h>
