@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.25 $
+# $Revision: 1.26 $
 # $Author: KEVIN $
-# $Date: 1997/07/29 16:13:18 $
+# $Date: 1997/10/01 13:33:28 $
 #
 # Makefile for r3d library
 #
@@ -60,7 +60,10 @@ r3d_HDRS= r3d.h r3ds.h r3dutil.h
 
 r3d_newline_hack=" "
 r3d_newline=$(r3d_newline_hack,W\n)
-r3d_dependent_includes="\#include \<matrix.h\>"$(r3d_newline)"\#include \<r3ds.h\>"$(r3d_newline)"\#include \<g2.h\>"
+r3d_dependent_includes="\#include \<matrix.h\>"$(r3d_newline)"\#include \<r3ds.h\>"
+
+#don't really need g2.h anymore!
+#$(r3d_newline)"\#include \<g2.h\>"
 
 r3d.h .REREAD :\
         xfrmtab.h xform.h \
