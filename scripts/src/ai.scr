@@ -1462,3 +1462,81 @@ MESSAGES:
    }
 
 END_SCRIPT(RobotSlayScript)
+
+
+/* Controls alertness-dependent smokestack steam effect on combat bots.
+ */
+BEGIN_SCRIPT(RoboSteam, AI)
+METHODS:
+   METHOD object MySteam()
+   {
+      object archi=object("RoboSteam");
+      if(!Object.Exists(archi))
+         return object(0);
+      if(Link.AnyExist("~ParticleAttachement",self))
+      {
+         linkset particles=Link.GetAll("~ParticleAttachement",self);
+         while(particles.AnyLinksLeft())
+         {
+            if(Object.InheritsFrom(particles.Link().To(),archi))
+               return particles.Link().To();
+            particles.NextLink();
+         }
+      }
+      return object(0);
+   }
+MESSAGES:
+   OnTweqComplete()
+   {
+      if(message.Type==kTweqTypeFlicker &&
+         message.Op==kTweqOpFrameEvent)
+      {
+         integer rate=Property.Get(self,"CfgTweqBlink","Rate");
+         integer turnoff=250;
+         object effect=MySteam();
+         if(effect!=object(0))
+         {
+            if(Property.Possessed(effect,"ScriptTiming"))
+               turnoff=Property.Get(effect,"ScriptTiming");
+            // turn off shouldn't come after next expected tweq.  In fact, limit it to 50%
+            // of that time.
+            if(turnoff*2>rate)
+               turnoff=rate/2;
+            PGroup.SetActive(effect,TRUE);
+            if(IsDataSet("SteamTimer"))
+            {
+               timer_handle steamt=GetData("SteamTimer");
+               KillTimer(steamt);
+            }
+            SetData("SteamTimer",SetOneShotTimer(self,"SteamOff",float(turnoff)/1000.0));
+         }
+      }
+      DefaultOnTweqComplete();
+   }
+   OnTimer()
+   {
+      if(message.name=="SteamOff")
+      {
+         object effect=MySteam();
+         ClearData("SteamTimer");
+         if(effect!=object(0))
+         {
+            PGroup.SetActive(effect,FALSE);
+         }
+      }
+      DefaultOnTimer();
+   }
+   OnAlertness()
+   {
+      integer divisor=message.level+1;
+      if(divisor!=0 && Property.Possessed(self,"CfgTweqBlink"))
+      {
+         integer newrate=2000/divisor;
+         Property.Set(self,"CfgTweqBlink","Rate",newrate);
+         Property.Set(self,"StTweqBlink","Cur Time",newrate-1);
+      }
+      DefaultOnAlertness();
+   }
+
+
+END_SCRIPT(RoboSteam)
