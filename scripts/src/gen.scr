@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.69 2000/03/02 23:49:48 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.70 2000/03/05 10:35:09 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -2980,6 +2980,8 @@ MESSAGES:
 
   OnBeginScript()
   {
+     if (!IsDataSet("PopTimer"))
+        SetData("PopTimer",0);
      Quest.SubscribeMsg(self,kDarkStatSecrets);
      if (!IsDataSet("SecretsFound"))
         SetData("SecretsFound",Quest.Get(kDarkStatSecrets));
@@ -2992,12 +2994,40 @@ MESSAGES:
      DefaultOnEndScript();
   }
 
+  OnMessage()
+  {
+     if (MessageIs("Popup"))
+     {
+        SetData("PopTimer",1);
+        SetOneShotTimer(self,"poptiming",3.0);
+     }
+     DefaultOnMessage();
+  }
+
+  OnTimer()
+  {
+     if (message.name == "poptiming")
+     {
+        SetData("PopTimer",0);
+     }
+     if (message.name == "DoSecret")
+     {
+        if ((integer)GetData("PopTimer")==0)
+           FoundASecret();
+        //else give up
+     }
+     DefaultOnTimer();
+  }
+
   OnQuestChange()
   {
      if (stricmp(message.m_pName,kDarkStatSecrets)==0) //make sure was secrets
         if (Quest.Get(kDarkStatSecrets)>(integer)GetData("SecretsFound"))
         {
-           FoundASecret(); 
+           if ((integer)GetData("PopTimer")==0)
+              SetOneShotTimer("DoSecret",0.2); 
+           else
+              SetOneShotTimer("DoSecret",3.0);
            SetData("SecretsFound",Quest.Get(kDarkStatSecrets));
         }
      DefaultOnQuestChange();
