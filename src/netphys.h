@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/netphys.h 1.7 1997/06/15 02:57:20 mahk Exp $
 // well, this will soon be the real home of dead reckoning and smoothing
 
