@@ -1,3 +1,5 @@
+#include "dmgprop.h" //kslaynormal
+
 // Script behaviors common to elementals, such
 // as changing size based on hit points.
 BEGIN_SCRIPT(Elemental, AI)
