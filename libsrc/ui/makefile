@@ -1,12 +1,12 @@
 #
 # $Source: x:/prj/tech/libsrc/ui/RCS/makefile $
-# $Revision: 2.1 $
-# $Author: ept $
-# $Date: 1995/10/18 12:30:51 $
+# $Revision: 2.2 $
+# $Author: TOML $
+# $Date: 1996/04/08 16:55:28 $
 
 MAKETOP = $(CWD)
 
-PROJECT = windex
+PROJECT = tech
 
 %include $(MRC)\env.rc
 
