@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/render/pgrpprop.cpp,v 1.27 2000/02/20 11:57:19 adurant Exp $
 //
