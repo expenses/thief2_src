@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.23 1999/12/07 20:12:36 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.24 1999/12/10 14:42:43 PATMAC Exp $
 //
 
 #include "frobscrt.h"
@@ -3337,3 +3337,61 @@ MESSAGES:
       DefaultOnFrobWorldEnd();
    }
 END_SCRIPT(FrobFind)
+
+
+#define degreesPerRadian 57.295779513
+/*
+ * Conveyor belt script
+ */
+BEGIN_SCRIPT(ConveyorBelt, Physics)
+
+MESSAGES:
+   OnBeginScript()
+   {
+      Physics.SubscribeMsg(self, kContactMsg);
+      DefaultOnBeginScript();
+   }
+   OnEndScript()
+   {
+      Physics.UnsubscribeMsg(self, kContactMsg);
+      DefaultOnEndScript();
+   }
+
+   // when an object contacts us, set their velocity to ???
+   OnPhysContactCreate()
+   {
+      vector convVel;
+      vector convFacing;
+      float speed;
+      object WhatTouchedMe = message.contactObj;
+
+      if ( Object.Exists(WhatTouchedMe) ) {
+         if ( Physics.HasPhysics(WhatTouchedMe) ) {
+            convFacing = Object.Facing( self );
+            speed = 5.0;   // replace this with property
+            // only pay attention to belt rotation around z axis (for now)
+            convVel.x = speed * cos( convFacing.z / degreesPerRadian );
+            convVel.y = speed * sin( convFacing.z / degreesPerRadian );
+            convVel.z = 0.0;
+            //Debug.MPrint("move obj ", WhatTouchedMe, " ", convVel.x, ",", convVel.y, ",", convVel.z);
+            //Debug.MPrint("facing obj ", WhatTouchedMe, " ", convFacing.x, ",", convFacing.y, ",", convFacing.z);
+            Physics.ControlVelocity( WhatTouchedMe, convVel );
+         }
+      }
+      DefaultOnPhysContactCreate();
+   }
+
+   // when an object breaks contact with us, set obj velocity to 0
+   OnPhysContactDestroy()
+   {
+      object WhatTouchedMe = message.contactObj;
+      if ( Object.Exists(WhatTouchedMe) ) {
+         if ( Physics.HasPhysics(WhatTouchedMe) ) {
+            Physics.StopControlVelocity( WhatTouchedMe );
+         }
+      }
+      DefaultOnPhysContactDestroy();
+   }
+END_SCRIPT(ConveyorBelt)
+
+
