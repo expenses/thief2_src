@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.26 $
+# $Revision: 1.27 $
 # $Author: KEVIN $
-# $Date: 1998/03/03 12:13:48 $
+# $Date: 1998/03/13 13:54:35 $
 #
 
 MAKETOP = $(CWD)
@@ -63,7 +63,7 @@ OLD_CRUFTY_TN_OBJS = chkply chkedges chkedgeb
 G2_OBJS = $(POLY_OBJS) $(SCALE_OBJS) $(LINE_OBJS) $(INNER_LOOP_OBJS) \
         $(TABLE_OBJS) $(PTMAP_OBJS) $(MISC_OBJS) $(OLD_CRUFTY_TN_OBJS)
 
-G2_HDRS= g2.h icanvas.inc
+G2_HDRS= g2.h g2pt.h icanvas.inc
 
 g2.h .REREAD :\
         stupid.h \
