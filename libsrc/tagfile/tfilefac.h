@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/tagfile/RCS/tfilefac.h 1.1 1998/09/28 13:50:45 CMONTER Exp $
 #pragma once  
 #ifndef __TFILEFAC_H
