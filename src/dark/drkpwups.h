@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/dark/drkpwups.h,v 1.5 1999/12/21 10:53:13 adurant Exp $
 // Dark Specific Powerup Code and Script Services
 
