@@ -571,13 +571,63 @@ METHODS:
       integer percent_filter=100;
       string msg=on?"TurnOn":"TurnOff";
       
-      if(Property.Possessed(self,"scriptTiming"))
-         percent_filter=Property.Get(self,"scriptTiming");
+      if(Property.Possessed(self,"ScriptTiming"))
+         percent_filter=Property.Get(self,"ScriptTiming");
       
       if(Data.RandFlt0to1()<=(float(percent_filter)/100.0))
          Link.BroadcastOnAllLinks(self,msg,"ControlDevice",NULL);
    }
 END_SCRIPT(TrapRelay)
+
+
+/* Like a Relay trap, but a certain amount of time after relaying any
+   message, it will relay the opposite message (if no new messages have
+   come in the mean time).  For many applications, you may well want
+   to set "NoOn" or "NoOff" for this one.
+   */
+BEGIN_SCRIPT(TrapRevert, StdTrap)
+METHODS:
+   METHOD void ClearTimer(boolean kill)
+   {
+      if(IsDataSet("RevertTimer"))
+      {
+         timer_handle timeh=GetData("RevertTimer");
+         if(kill) KillTimer(timeh);
+         ClearData("RevertTimer");
+      }
+   }
+   METHOD void Relay(boolean on)
+   {
+      string msg=on?"TurnOn":"TurnOff";
+      Link.BroadcastOnAllLinks(self,msg,"ControlDevice",NULL);
+   }
+   METHOD void Activate(boolean on, object sender)
+   {
+      integer time=-1;
+      
+      Relay(on);
+
+      if(Property.Possessed(self,"ScriptTiming"))
+         time=Property.Get(self,"ScriptTiming");
+
+      if(time>0)
+      {
+         timer_handle timeh=SetOneShotTimer(self,"Revert",float(time)/1000.0,!on);
+         ClearTimer(TRUE);
+         SetData("RevertTimer",timeh);
+      }
+   }
+MESSAGES:
+   OnTimer()
+   {
+      if(message.name=="Revert")
+      {
+         Relay(message.data);
+         ClearTimer(FALSE);
+      }
+      DefaultOnTimer();
+   }
+END_SCRIPT(TrapRevert)
 
 
 BEGIN_SCRIPT(TrigPPlate, PressurePlate)
@@ -713,72 +763,6 @@ MESSAGES:
    }
 
 END_SCRIPT(ReloadTweqEmit)
-
-/* Trigger to be associated with a TweqFlicker-ing fnord.
-   Sends a TurnOn on every tweq flicker event.
-   */
-// @TODO: Reconsider all of this.
-BEGIN_SCRIPT(TrigFlicker, StdTrap)
-
-METHODS:
-   METHOD void Fire(boolean on)
-   {
-      SetData("IsOn",on);
-      SetData("LastFiring",GetTime());
-      Link.BroadcastOnAllLinks(self,on?"TurnOn":"TurnOff","ControlDevice",NULL);
-   }
-
-   METHOD void Activate(boolean on, object sender)
-   {
-      if(on)
-         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoActivate);
-      else
-      {
-         Fire(FALSE);
-         ActReact.React("tweq_control",1.0,self,0,kTweqTypeFlicker,kTweqDoHalt);
-      }
-   }
-
-MESSAGES:
-
-   OnSim()
-   {
-      if(message.starting)
-      {
-         SetData("IsOn",FALSE);
-         SetData("LastFiring",0.0);
-         SetOneShotTimer(self,"check",15.0);
-      }
-      DefaultOnSim();
-   }
-   OnTweqComplete()
-   {
-      if(message.Type==kTweqTypeFlicker &&
-         message.Op==kTweqOpFrameEvent)
-      {
-         boolean on=GetData("IsOn");
-         on=!on;
-         Fire(on);
-      }
-   }
-   OnTimer()
-   {
-      // if we've had no activity in a while, then turn off, as a tweq sim
-      // radius may have left us undesirably on.
-      if(message.name=="check")
-      {
-         real time=GetTime();
-         real lasttime=GetData("LastFiring");
-         boolean on=GetData("IsOn");
-
-         if(on && (time-lasttime)>10.0)
-            Fire(FALSE);
-         SetOneShotTimer(self,"check",15.0);
-      }
-      DefaultOnTimer();
-   }
-
-END_SCRIPT(TrigFlicker)
 
 
 
@@ -1490,10 +1474,4 @@ METHODS:
    }
 
 END_SCRIPT(TurretAlert)
-
-
-
-
-
-
 
