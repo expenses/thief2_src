@@ -1,4 +1,4 @@
-# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.9 1997/10/13 14:38:31 KEVIN Exp $
+# 	$Header: x:/prj/tech/libsrc/lgd3d/RCS/makefile 1.10 1997/10/28 15:30:50 KEVIN Exp $
 
 MAKETOP = $(CWD)
 
@@ -15,7 +15,7 @@ LIBTARGS = lgd3d
 
 lgd3d_OBJS = tmgr tmgrold clip
 
-lgd3d_WIN32_OBJS = setup trifan blit texture enum
+lgd3d_WIN32_OBJS = setup render blit texture enum
 
 lgd3d_HDRS = lgd3d.h tmgr.h
 
