@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.19 $
+# $Revision: 1.20 $
 # $Author: KEVIN $
-# $Date: 1997/05/05 11:02:46 $
+# $Date: 1997/05/16 09:53:42 $
 #
 
 MAKETOP = $(CWD)
@@ -19,42 +19,45 @@ LIBTARGS = g2
 irrupt_OBJS = \
         init
 
-G2_OBJS = \
-        blend \
-        init svgainit \
-        setdrv g2d calcd \
-        chkply chkedges chkedgeb \
-        clplin clip clip2d \
-        fl8cnv \
-        fl8sf fl8usf fl8s \
-        fl8fl8s fl8il \
-        fl8lin fl8ulf fl8l \
-        fl8lm fl8lmf fl8llmf \
-        fl8fl8l fl8fl8ll \
-        f16cnv \
-        f16sf f16usf f16s \
-        f16llmf f16lmf f16lm f16fl8ll \
-        gencnv \
-        gensf genusf gens \
-        genline \
-        genfl8s genrsds genrsdtm \
-        genf16s genfl8l genf16l \
-        genil gensil genlil \
-        genply gensply genrast \
-        genlm genlmf genllmf \
-        g2poly g2tm g2rot \
-        g2circ g2el g2ov g2ring \
-        g2makewr grwater \
-        lmap permap point \
-        raster rastel scale \
-        sply tmapd trifan \
-        fl8o2ni fl8nni fl8o2wi fl8lo2wi \
+# all objs related to polygon rendering
+POLY_OBJS = \
+        grtm permap \
+        tmsetup tf \
+        genlm fl8lm \
+        genfl8l genf16l genrsdtm \
+        o88 lo88 co88 t88oc \
+        lht816 lh816 dlh816 \
+        golftmap shadtmap drytmap shadhack area \
         trigrad trirast \
-        golftmap shadtmap drytmap lht816 lh816 dlh816 \
-        cc816 scshell \
-        shadhack \
-        o2w88i area \
-        o88 o88il tf
+        genply gensply genrast \
+        tmapd clip 
+
+# all objs related to bitmap scaling
+SCALE_OBJS = scshell fl8s gens \
+        fl8fl8s genfl8s genrsds cc816
+
+# all objs related to sloped line rendering
+LINE_OBJS = clplin fl8lin fl8l genline 
+
+# all inner loops (assembly and c)
+INNER_LOOP_OBJS = \
+        gen8il gen16il \
+        o88il o88bil lo88il co88il n88il 
+
+# function tables compiled from .tbl's
+TABLE_OBJS = gencnv fl8cnv f16cnv \
+        genlmf genllmf gensf genusf \
+        fl8ulf fl8lmf fl8llmf fl8sf fl8usf
+
+# miscellaneous primitives, initialization code, and global data
+MISC_OBJS = blend init svgainit setdrv g2d g2makewr \
+        g2rot g2circ g2el g2ov g2ring point rastel
+
+# legacy code from terra nova; won't be linked into other apps
+OLD_CRUFTY_TN_OBJS = chkply chkedges chkedgeb 
+
+G2_OBJS = $(POLY_OBJS) $(SCALE_OBJS) $(LINE_OBJS) $(INNER_LOOP_OBJS) \
+        $(TABLE_OBJS) $(MISC_OBJS) $(OLD_CRUFTY_TN_OBJS)
 
 G2_HDRS= g2.h icanvas.inc
 
@@ -65,7 +68,7 @@ g2.h .REREAD :\
         sftype.h lftype.h tftype.h pftype.h \
         g2d.h g2clip.h \
 	grlin.h grtm.h grcurv.h \
-	grply.h grscale.h init.h \
+	grply.h grscale.h g2tm.h init.h \
         buffer.h blnfcn.h \
         water.h \
         grchkply.h setdrv.h frame.h point.h
