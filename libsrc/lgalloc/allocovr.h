@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/allocovr.h $
 // $Author: TOML $
-// $Date: 1997/07/15 21:27:48 $
-// $Revision: 1.3 $
+// $Date: 1998/06/10 13:58:05 $
+// $Revision: 1.5 $
 //
-// Include this file once in some C file in the executable to over
+// Include this file once in some C++ file in the executable to overload allocs
 //
 
 #ifdef _WIN32
@@ -13,7 +13,7 @@
 #error Allocator override must be used with a C++ source
 #endif
 
-#pragma message("Overriding standard allocator")
+// #pragma message("Overriding standard allocator")
 #pragma code_seg("lgalloc")
 
 #if defined(_MSC_VER)
@@ -33,7 +33,10 @@
 #include <allocapi.h>
 #include <mallocdb.h>
 
-BOOL g_fAllocOverride = TRUE;
+EXTERN BOOL LGAllocOverride()
+{
+   return TRUE;
+}
 
 #if defined(_MSC_VER)
 EXTERN int LGAPI HeapInit();
