@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.29 $
+# $Revision: 1.30 $
 # $Author: KEVIN $
-# $Date: 1998/04/09 09:59:55 $
+# $Date: 1998/04/28 14:52:20 $
 #
 
 MAKETOP = $(CWD)
@@ -31,7 +31,7 @@ POLY_OBJS = \
         golftmap shadtmap drytmap shadhack area \
         trigrad trirast \
         genply gensply genrast fl8sply \
-        tmapd clip 
+        tmapd clip uvgrad
 
 # all objs related to bitmap scaling
 SCALE_OBJS = scshell fl8s gens \
