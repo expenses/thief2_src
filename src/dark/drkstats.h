@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkstats.h 1.4 1999/10/13 14:46:53 BFarquha Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkstats.h,v 1.5 1999/11/30 14:57:46 adurant Exp $
 // dark specific stat gathering
 
 #pragma once
@@ -45,12 +45,16 @@
 #define kDarkStatGameCode         "DrSGameCode"
 #define kDarkStatTime             "DrSTime"
 
+#define kDarkStatRobotsKilled     "DrSRobotsKilled"
+#define kDarkStatRobotsDeactivated "DrSRobotsDeactivated"
+
 #define kDarkStatCampTime         "DrSCmTime"
 #define kDarkStatCampLoot         "DrSCmLoot"
 #define kDarkStatCampDamageDealt  "DrSCmDmgDeal"
 #define kDarkStatCampDamageTaken  "DrSCmDmgTake"
 #define kDarkStatCampKills        "DrSCmKills"
 #define kDarkStatCampReloads      "DrSCmReload"
+
 
 ////////////////////
 // values of the bits
@@ -59,6 +63,7 @@
 #define kDarkStatBitEnemy         (1<<1)
 #define kDarkStatBitHidden        (1<<2)
 #define kDarkStatBitFoundBody     (1<<3)
+#define kDarkStatBitRobot         (1<<4)
 
 EXTERN BOOL DarkStatCheckBit(ObjID obj, int bit);
 EXTERN void DarkStatSetBit(ObjID obj, int bit, BOOL val);
