@@ -48,3 +48,17 @@ LG_LIBS	= lg.lib mprintf.lib fix.lib 2d.lib 3d.lib range.lib mouse.lib \
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
+array.obj: array.h dbg.h error.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 memasm.h stdio.h string.h types.h
+
+gadgets.obj: 2d.h assert.h base.h conio.h dbg.h dos.h error.h fix.h \
+	 gadgets.h grindex.h i86.h lg.h lgalt.h libdbg.h malloc.h math.h \
+	 memall.h memasm.h projdbg.h rect.h region.h stdarg.h stdio.h \
+	 stdlib.h string.h types.h
+
+rect.obj: assert.h base.h conio.h dos.h i86.h rect.h stdio.h stdlib.h \
+	 string.h types.h
+
+region.obj: assert.h base.h conio.h dbg.h dos.h error.h i86.h lg.h lgalt.h \
+	 libdbg.h malloc.h memall.h memasm.h projdbg.h rect.h region.h \
+	 stdio.h stdlib.h string.h types.h
