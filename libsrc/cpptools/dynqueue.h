@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/dynqueue.h 1.2 1998/09/11 13:54:02 jaemz Exp $
 
 #ifndef __DYNQUEUE_H
