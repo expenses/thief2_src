@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/otreebas.h,v 1.5 1998/05/13 21:15:33 mahk Exp $
 #pragma once  
 #ifndef __OTREEBAS_H
