@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/gameshel/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1996/05/04 17:53:32 $
+# $Date: 1996/05/06 16:02:01 $
 #
 # Makefile for winshell library
 #
@@ -17,8 +17,9 @@ PROJECT = tech
 
 LIBTARGS = winshell
 
-winshell_OBJS =
+winshell_OBJS = WDISP wdispdd wdispgdi WGSHELL WINPUT
 
 winshell_HDRS =
 
 %include $(MRC)\make.rc
+
