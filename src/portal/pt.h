@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/pt.h 1.4 1997/08/05 12:11:37 TOML Exp $
+// $Header: r:/t2repos/thief2/src/portal/pt.h,v 1.5 2000/01/29 13:37:30 adurant Exp $
+#pragma once
 
 //  PORTAL TEXTURE MAPPING
 

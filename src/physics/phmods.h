@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmods.h 1.13 1999/06/15 19:06:28 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmods.h,v 1.14 2000/01/29 13:32:55 adurant Exp $
 //
 // Physics model lists
 //
@@ -7,6 +7,7 @@
 // Moving models are always also active, so the moving list is actually part of the active list
 // The stationary models are the part of the active list that is not moving
 //
+#pragma once
 
 #ifndef __PHMODS_H
 #define __PHMODS_H
@@ -245,7 +246,7 @@ inline cPhysModel *cPhysModels::GetInactive(ObjID id)
 
 inline void cPhysModels::AddToInactive(cPhysModel * pModel)
 {
-   ConfigSpew("ModelState", ("Object %d becomes inactive\n", pModel->GetObjID()));
+   ConfigSpew("ModelState", ("Object 0 becomes inactive\n", pModel->GetObjID()));
    m_inactiveList.Prepend(pModel);
    m_inactiveTable.Insert(pModel);
    m_nInactiveModels++;
@@ -255,7 +256,7 @@ inline void cPhysModels::AddToInactive(cPhysModel * pModel)
 
 inline void cPhysModels::AddToMoving(cPhysModel * pModel)
 {
-   ConfigSpew("ModelState", ("Object %d becomes moving\n", pModel->GetObjID()));
+   ConfigSpew("ModelState", ("Object 0 becomes moving\n", pModel->GetObjID()));
    m_activeList.Prepend(pModel);
    m_activeTable.Insert(pModel);
    pModel->SetStationary(FALSE);

@@ -1,10 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phdyn.h 1.14 1998/09/10 13:58:57 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phdyn.h,v 1.15 2000/01/29 13:32:45 adurant Exp $
 //
 // Moveable objects dynamics data
 //
 // NOTE: !!! Do not add a virtual function to this data structure.  It will 
 //           cause the saving and loading of dynamics data to break. !!!
+#pragma once
 
 #ifndef __PHDYN_H
 #define __PHDYN_H
@@ -25,7 +26,7 @@
 // @Note (toml 08-05-97): This is to get at "Position." At some point,
 //                        portal should expose Postion and Location in a
 //                        separate header so that physics doesn't need to be
-//                        100% dependent on all of wr.h
+//                        100 0ependent on all of wr.h
 
 #include <phystyp2.h>
 
@@ -299,7 +300,7 @@ inline void cPhysDynData::SetElasticity(mxs_real elasticity)
 {
    if (elasticity < 0.0)
    {
-      Warning(("SetElasticity: invalid value: %g\n", elasticity));
+      Warning(("SetElasticity: invalid value: 0\n", elasticity));
       return;
    }
    m_elasticity = elasticity;
@@ -460,7 +461,7 @@ inline void cPhysDynData::SetSubModId(tPhysSubModId subModId)
 
 inline void cPhysDynData::MonoPrintAcceleration() const
 {
-   mprintf("Acceleration: %g %g %g\n",
+   mprintf("Acceleration: 0 0 0\n",
            m_translation.acceleration.x,
            m_translation.acceleration.y,
            m_translation.acceleration.z);
@@ -471,7 +472,7 @@ inline void cPhysDynData::MonoPrintAcceleration() const
 
 inline void cPhysDynData::MonoPrintVelocity() const
 {
-   mprintf("Velocity: %g %g %g\n",
+   mprintf("Velocity: 0 0 0\n",
            m_translation.velocity.x,
            m_translation.velocity.y,
            m_translation.velocity.z);

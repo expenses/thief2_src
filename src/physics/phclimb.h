@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phclimb.h 1.4 1998/07/21 11:33:32 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phclimb.h,v 1.5 2000/01/29 13:32:37 adurant Exp $
 //
 // Physics Climbing API
 //
+#pragma once
 
 #ifndef __PHCLIMB_H
 #define __PHCLIMB_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/portal/RCS/porthw.h 1.4 1998/08/19 13:53:49 KEVIN Exp $
+// $Header: r:/t2repos/thief2/src/portal/porthw.h,v 1.5 2000/01/29 13:37:26 adurant Exp $
+#pragma once
 #ifndef __PORTHW_H
 #define __PORTHW_H
 

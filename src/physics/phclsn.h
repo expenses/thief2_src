@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phclsn.h 1.17 1998/07/29 08:26:33 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/physics/phclsn.h,v 1.18 2000/01/29 13:32:38 adurant Exp $
 //
 // Physics collisions
 //
+#pragma once
 
 #ifndef __PHCLSN_H
 #define __PHCLSN_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/portal/RCS/bspsphr.h 1.2 1998/05/19 18:35:17 MAT Exp $
+// $Header: r:/t2repos/thief2/src/portal/bspsphr.h,v 1.3 2000/01/29 13:37:12 adurant Exp $
+#pragma once
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
    bspsphr.h

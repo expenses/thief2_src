@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/oracle_.h 1.1 1996/10/21 21:41:11 buzzard Exp $
+// $Header: r:/t2repos/thief2/src/portal/oracle_.h,v 1.2 2000/01/29 13:37:16 adurant Exp $
+#pragma once
 
 // INTERFACE
 

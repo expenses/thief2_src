@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phmodutl.h 1.3 1997/08/18 17:43:44 TOML Exp $
+// $Header: r:/t2repos/thief2/src/physics/phmodutl.h,v 1.4 2000/01/29 13:32:58 adurant Exp $
 //
 // Model utility functions
 //
+#pragma once
 
 #ifndef __PHMODUTL_H
 #define __PHMODUTL_H

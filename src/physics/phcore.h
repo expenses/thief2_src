@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/phcore.h 1.22 1999/02/09 09:37:48 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/phcore.h,v 1.23 2000/01/29 13:32:42 adurant Exp $
 //
 // Core physics module
 //
+#pragma once
 
 #ifndef __PHCORE_H
 #define __PHCORE_H
