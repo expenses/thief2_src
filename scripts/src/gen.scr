@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.9 1999/08/03 20:18:42 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.10 1999/09/27 13:36:34 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -860,7 +860,11 @@ BEGIN_SCRIPT(Extinguishable, AnimLight)
          ActReact.React("tweq_control",1.0,self,0,kTweqTypeModels,kTweqDoHalt);
          // change our model
          if(Property.Possessed(self,"CfgTweqModels"))
-            deadmodel=Property.Get(self,"CfgTweqModels","Model 5");
+         {
+            string propmodel=Property.Get(self,"CfgTweqModels","Model 5");
+            if(propmodel!=string(""))
+               deadmodel=propmodel;
+         }
 
          Property.Set(self,"ModelName",(const char*)deadmodel);
          Base::TurnOff();
@@ -2361,7 +2365,7 @@ METHODS:
         // this method should be defined by scripts that derive from this one
      }
 
-     METHOD void TweqActivate()
+     METHOD void TweqActivateNoSE()
      {
         if(!TweqAnimStateHasVal(self,0x01)) // 0x01==ON, so if anims are OFF
         {
@@ -2375,8 +2379,19 @@ METHODS:
         // activate/reverse the motion of the lever
         ActReact.React("tweq_control",1.0,self,0, kTweqTypeJoints, kTweqDoDefault);
         Link.BroadcastOnAllLinks(self,"SynchUp","~FrobProxy");
-        Link.BroadcastOnAllLinks(self,"Toggle","ScriptParams","SideEffect");
      }  
+
+     /*
+       Like TweqActivateNoSE, but also causes side-effects on any other levers
+       that want to toggle along with this one.  This is MOST of the time
+       the desired behavior.  The exception is when the lever is toggling
+       _as_ a side effect: then it doesn't want to chain side effects.
+       */
+     METHOD void TweqActivate()
+     {
+        TweqActivateNoSE();
+        Link.BroadcastOnAllLinks(self,"ToggleNoSE","ScriptParams","SideEffect");
+     }
 
      /* Sends the tweq device towards the specified state if it's
         not already there.  
@@ -2387,6 +2402,7 @@ METHODS:
            return;
         else // get moving, then
            TweqActivate();
+
            // The TweqActivate call will take care of synching the frob proxies
      }  // end of Method: GoTowardsState
 
@@ -2399,6 +2415,12 @@ MESSAGES:
            GoTowardsState(kTweqDirReverse);
         else if (MessageIs("Toggle"))
            TweqActivate();
+        else if (MessageIs("ToggleNoSE"))
+        {
+           // Toggling as a side effect of another lever toggling.
+           // don't chain side effects.
+           TweqActivateNoSE();
+        }
         else if (MessageIs("Target?"))
            Reply(TargetState(self));
         else if (MessageIs("SynchUp"))
