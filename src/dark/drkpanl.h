@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkpanl.h 1.7 1999/05/27 12:57:37 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkpanl.h,v 1.8 1999/11/02 15:55:20 BODISAFA Exp $
 #pragma once  
 #ifndef __DRKPANL_H
 #define __DRKPANL_H
@@ -108,5 +108,6 @@ protected:
    guiStyle mStyle; 
 };
 
-
+// TRUE:  We're headed into Thief 2's game mode.
+EXTERN BOOL DarkIsToGameModeGUID(REFGUID rguid);
 #endif // __DRKPANL_H
