@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiactloc.h 1.5 1999/03/02 17:42:00 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiactloc.h,v 1.12 2000/03/05 15:50:23 toml Exp $
 //
 //
 //
@@ -99,6 +99,7 @@ public:
    void               SetSpeed(eAISpeed speed);
    float              GetAccuracy() const;
    float              ComputePathDist();
+   const cMxsVector & GetLogicalDest() const; // the destination as provided by client
 
    // Update the action.
    STDMETHOD_(eAIResult, Update)();
@@ -106,9 +107,18 @@ public:
    // Start the action. Instantaneous actions will return result
    STDMETHOD_(eAIResult, Enact)(ulong deltaTime);
 
+   STDMETHOD_(IAIPath *, GetPath)();
+
    // Do the pathfind. Note, you should only explicitly pathfind if you
    // really need to know success or failure *in advance*
-   BOOL Pathfind();
+   BOOL Pathfind(BOOL bTryNearEnough = FALSE, float fNearDist = -1);
+
+   // Set path. Does not AddRef.
+   void SetPath(IAIPath *pPath);
+
+   void SetPathNearDist(float fDist);
+
+   static void StrokeDest(mxs_vector *pDest, tAIPathCellID *hintCell, const ObjID id);
 
 protected:
    // Check progress
@@ -118,15 +128,18 @@ protected:
    void ClearPathAndMove();
 
    // Generate suggestions to continue on path
-   HRESULT GenerateSuggestions();
+   HRESULT GenerateSuggestions(tAIPathOkBits nStressBits);
 
 private:
    //
    // Client ability members
    //
 
-   // The goal location, if any
+   // The true action location, if any
    cMxsVector      m_dest;
+   
+   // The action location, as provided by client, if any
+   cMxsVector      m_logicalDest;
 
    // The goal object, if any
    ObjID           m_object;
@@ -149,6 +162,8 @@ private:
 
    // Cached Target cell
    tAIPathCellID   m_hintCell;
+
+   float fPathNearDist;
 };
 
 ///////////////////////////////////////
@@ -156,6 +171,7 @@ private:
 inline cAILocoAction::cAILocoAction(IAIActor * pOwner, DWORD data)
  : cAIAction(kAIAT_Locomote, pOwner, data),
    m_dest(kInvalidLoc),
+   m_logicalDest(kInvalidLoc),
    m_object(OBJ_NULL),
    m_speed(kAIS_Normal),
    m_accuracySq(kAILA_DefaultAccuracy),
@@ -163,20 +179,30 @@ inline cAILocoAction::cAILocoAction(IAIActor * pOwner, DWORD data)
    m_pMoveAction(NULL),
    m_moveSuggKind(kAIMS_Loco),
    m_pPath(NULL),
-   m_hintCell(0)
+   m_hintCell(0),
+   fPathNearDist(-1)
 {
 }
+
+///////////////////////////////////////
+
+inline void cAILocoAction::SetPathNearDist(float fDist)
+{
+   fPathNearDist = fDist;
+}
+
 
 ///////////////////////////////////////
 
 inline void cAILocoAction::Set(const cMxsVector & dest, ObjID hintObject, eAISpeed speed, float accuracySq, float accuracyZ)
 {
    ClearPathAndMove();
-   m_dest       = dest;
-   m_object     = hintObject;
-   m_speed      = speed;
-   m_accuracySq = accuracySq;
-   m_accuracyZ  = accuracyZ;
+   m_dest        = dest;
+   m_logicalDest = m_dest;
+   m_object      = hintObject;
+   m_speed       = speed;
+   m_accuracySq  = accuracySq;
+   m_accuracyZ   = accuracyZ;
 }
 
 ///////////////////////////////////////
@@ -185,10 +211,11 @@ inline void cAILocoAction::Set(ObjID object, eAISpeed speed, float accuracySq, f
 {
    ClearPathAndMove();
    GetObjLocation(object, &m_dest);
-   m_object     = object;
-   m_speed      = speed;
-   m_accuracySq = accuracySq;
-   m_accuracyZ  = accuracyZ;
+   m_object      = object;
+   m_speed       = speed;
+   m_accuracySq  = accuracySq;
+   m_accuracyZ   = accuracyZ;
+   m_logicalDest = m_dest;
 }
 
 ///////////////////////////////////////
@@ -196,11 +223,12 @@ inline void cAILocoAction::Set(ObjID object, eAISpeed speed, float accuracySq, f
 inline void cAILocoAction::Set(const cMxsVector & dest, eAISpeed speed, float accuracySq, float accuracyZ)
 {
    ClearPathAndMove();
-   m_dest       = dest;
-   m_object     = OBJ_NULL;
-   m_speed      = speed;
-   m_accuracySq = accuracySq;
-   m_accuracyZ  = accuracyZ;
+   m_dest        = dest;
+   m_object      = OBJ_NULL;
+   m_speed       = speed;
+   m_accuracySq  = accuracySq;
+   m_accuracyZ   = accuracyZ;
+   m_logicalDest = m_dest;
 }
 
 ///////////////////////////////////////
@@ -217,10 +245,11 @@ inline void cAILocoAction::Clear()
    ClearPathAndMove();
 
    m_dest.Set(0,0,0);
-   m_object     = OBJ_NULL;
-   m_speed      = kAIS_Normal;
-   m_accuracySq = kAILA_DefaultAccuracy;
-   m_hintCell   = 0;
+   m_object      = OBJ_NULL;
+   m_speed       = kAIS_Normal;
+   m_accuracySq  = kAILA_DefaultAccuracy;
+   m_hintCell    = 0;
+   m_logicalDest = m_dest;
 }
 
 ///////////////////////////////////////
@@ -256,6 +285,13 @@ inline void cAILocoAction::SetSpeed(eAISpeed speed)
 inline float cAILocoAction::GetAccuracy() const
 {
    return m_accuracySq;
+}
+
+///////////////////////////////////////
+
+inline const cMxsVector & cAILocoAction::GetLogicalDest() const
+{
+   return m_logicalDest;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
