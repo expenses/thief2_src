@@ -286,6 +286,34 @@ MESSAGES:
 END_SCRIPT(StdDoor)
 
 
+// Script: NonAutoDoor
+// Door which does not automatically open/close when unlocked/locked.
+BEGIN_SCRIPT(NonAutoDoor, StdDoor)
+
+MESSAGES:
+    OnNowLocked()
+    {
+       if(IsDataSet("Sim"))
+       {
+          PingDoubles();
+//          Door.CloseDoor(self);
+       }
+//       DefaultOnNowLocked();
+    }
+    OnNowUnlocked()
+    {
+       if(IsDataSet("Sim"))
+       {
+          PingDoubles();
+//          Door.OpenDoor(self);
+       }
+//       DefaultOnNowUnlocked();
+    }
+END_SCRIPT(NonAutoDoor)
+
+
+
+
 BEGIN_SCRIPT(SubDoorJoints, Door)
 METHODS:
    METHOD void TweqDoor(integer flags)
