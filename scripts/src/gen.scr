@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.32 2000/01/10 12:01:40 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.33 2000/01/10 12:24:02 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -1557,10 +1557,17 @@ METHODS:
 
          // Actually handles the transition in visibility
          SendMessage(imbiber,"Invisible");
+
+         // Note that this is a renderer property.  It thus depends on whether
+         // we're under the influence of the potion, not overriding visibility
+         // factors such as the flare.
+         Property.Set(imbiber,"INVISIBLE",-1);
       }
       else
       {
          float time=GetTime();
+
+         Property.Set(imbiber,"INVISIBLE",0);
 
          SendMessage(imbiber,"Visible");
          Object.RemoveMetaProperty(imbiber,invis);
@@ -1603,6 +1610,7 @@ MESSAGES:
             }
          }
       }
+      DefaultOnMessage();
    }
 END_SCRIPT(Invisible)
 
