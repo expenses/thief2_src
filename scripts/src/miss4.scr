@@ -62,8 +62,8 @@ MESSAGES:
             SetData("Kills",kills);
             CheckCasualties();
          }
-         DefaultOnMessage();
-      }
+      }        
+      DefaultOnMessage();
    }
 END_SCRIPT(SpecialGoals)
 
