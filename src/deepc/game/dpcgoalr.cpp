@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/deepc/game/dpcgoalr.cpp,v 1.1 2000/01/26 19:06:33 porges Exp $
 #include <dpcgoalr.h>
 #include <drkuires.h>
