@@ -108,3 +108,59 @@ OnObjActResult()
 
 END_SCRIPT (TattleTale)
 
+
+// DoorTranslator
+
+// Meta trap that converts 
+//		TurnOn to TrapLock
+//		TurnOff to TrapUnlock
+
+// These are interpreted by TrapDoorLock
+
+// purpose - use standard TripTrap functionality to 
+// make doors lock without having to make an new type
+// of StdDoor that doesn't interpret TurnOn/Off
+
+BEGIN_SCRIPT (DoorTranslator, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("TurnOn"))
+		Link.BroadcastOnAllLinks(self,"TrapLock","ControlDevice",NULL);
+	else if (MessageIs("TurnOff"))
+		Link.BroadcastOnAllLinks(self,"Close","ControlDevice",NULL);
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (DoorTranslator)
+
+
+
+// TrapDoorLock
+
+//		TrapLock - lock self
+//		TrapUnlock - unlock self
+
+// These are sent by DoorTranslator
+
+// purpose - use standard TripTrap functionality to 
+// make doors lock without having to make an new type
+// of StdDoor that doesn't interpret TurnOn/Off
+
+BEGIN_SCRIPT (TrapDoorLock, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if (MessageIs("TrapLock"))
+		Property.Set(self,"Locked",TRUE);
+	else if (MessageIs("TrapUnlock"))
+		Property.Set(self,"Locked",FALSE);
+
+	DefaultOnMessage();
+}
+
+END_SCRIPT (TrapDoorLock)
+
