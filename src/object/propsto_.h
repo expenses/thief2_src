@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/property/RCS/propsto_.h 1.1 1999/04/07 14:40:23 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/propsto_.h,v 1.2 1998/04/13 21:34:11 mahk Exp $
 #pragma once  
 #ifndef __PROPSTO__H
 #define __PROPSTO__H
