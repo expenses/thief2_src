@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/cpptools/RCS/makefile $
-# $Revision: 1.10 $
+# $Revision: 1.11 $
 # $Author: TOML $
-# $Date: 1996/06/10 14:24:01 $
+# $Date: 1996/07/12 11:02:10 $
 #
 #
 
@@ -19,12 +19,12 @@ LIBTARGS = cpptools
 EXETARGS =
 
 cpptools_OBJS = delmlist dynfunc filepath filespec fnamutil splitpat str \
-                ptrset hashset dlist dynarray relocptr
+                ptrset hashset dlist dynarray relocptr pdynarr
 
 cpptools_HDRS = delmlist.h dynfunc.h filekind.h filepath.h filespec.h  \
                 fnamutil.h splitpat.h str.h hashset.h hshsttem.h dlist.h \
                 dlisttem.h templexp.h ptrset.h dynarray.h relocptr.h \
-                hshstimp.h
+                hshstimp.h pdynarr.h
 
 
 %include $(MRC)\make.rc
