@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/object/objedit/RCS/otreebas.h 1.1 1999/04/07 14:39:40 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/otreebas.h,v 1.5 1998/05/13 21:15:33 mahk Exp $
 #pragma once  
 #ifndef __OTREEBAS_H
 #define __OTREEBAS_H
@@ -16,10 +16,6 @@ enum eObjTreeFlags
    kObjTreeNoAddButton        = 1 << 1, 
    kObjTreeNoDelButton        = 1 << 2, 
    kObjTreeNoCreateButton     = 1 << 3,
-
-   kObjTreeNoLoadButton       = 1 << 4,
-   kObjTreeNoSaveButton       = 1 << 5,
-   kObjTreeNoSaveLoadButtons  = kObjTreeNoLoadButton | kObjTreeNoSaveButton,
 }; 
 
 struct sObjTreeEditorDesc 
@@ -41,7 +37,7 @@ enum eTreeCBResult  // a bitmask for callback results
 struct sObjTreeDesc
 {
    char treename[32];  // human-readable name of tree
-   char rootname[16];  // obj name of root
+   Label rootname;     // obj name of root
    ulong flags;
 
    struct sObjTreeFuncs 
@@ -52,12 +48,6 @@ struct sObjTreeDesc
       eTreeCBResult (LGAPI * del)(ObjID obj); 
       // "create button" callback 
       eTreeCBResult (LGAPI * create)(ObjID obj);
-      // "edit button" callback
-      eTreeCBResult (LGAPI * edit)(ObjID obj);
-      // "load button" callback
-      eTreeCBResult (LGAPI * load)();
-      // "save button" callback
-      eTreeCBResult (LGAPI * save)();
    } func;
 };
 
