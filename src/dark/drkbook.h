@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkbook.h 1.1 1998/08/24 16:21:40 mahk Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkbook.h,v 1.2 2000/01/27 14:34:32 adurant Exp $
 #pragma once  
 #ifndef __DRKBOOK_H
 #define __DRKBOOK_H
@@ -17,6 +17,10 @@ EXTERN void DarkBookTerm(void);
 // Show a book, given a text resource and an art subdir, both under
 // "Books" 
 //
-EXTERN void SwitchToDarkBookMode(BOOL push, const char *text, const char* art); 
+EXTERN void SwitchToDarkBookMode(BOOL push, const char *text, const char* art);
+
+// should return TRUE if it can find the art (book.pcx) and text.
+// useful for PushMovieOrBookMode
+BOOL TestBookExists(const char* text, const char* art);
 
 #endif // __DRKBOOK_H
