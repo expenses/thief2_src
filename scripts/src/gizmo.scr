@@ -1,4 +1,3 @@
-
 #include "tfint.h" //trapflags
 
 /* ====== StdDoor ======
@@ -148,12 +147,24 @@ MESSAGES:
           {
              SetData("PlayerFrob",0);
           }
-          Door.ToggleDoor(self);
+          if(IsDataSet("BeforeHalt"))
+          {
+             integer before=GetData("BeforeHalt");
+             ClearData("BeforeHalt");
+             // @TODO: Fix magic number
+             if(before==2) // 2=kOpening, to which we have no access, no time to fix magic number.
+                Door.CloseDoor(self);
+             else
+                Door.OpenDoor(self);
+          }
+          else
+             Door.ToggleDoor(self);
        }
        DefaultOnFrobWorldEnd();
     }
     OnDoorHalt()
     {
+       SetData("BeforeHalt",message.PrevActionType);
        Sound.PlayEnvSchema(self,StateChangeTags(message.ActionType,message.PrevActionType),self);
        CheckTiming();
        DefaultOnDoorHalt();
