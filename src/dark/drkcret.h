@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/dark/RCS/drkcret.h 1.13 1998/10/24 19:50:08 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/dark/drkcret.h,v 1.18 2000/02/23 17:38:48 adurant Exp $
+#pragma once
 
 #ifndef __DRKCRET_H
 #define __DRKCRET_H
@@ -50,6 +51,10 @@ enum eDarkCreatureType
    kDCRTYPE_SpiderSmall,
    kDCRTYPE_Frog,
    kDCRTYPE_Cutty,
+   kDCRTYPE_Avatar,
+   kDCRTYPE_Robot,
+   kDCRTYPE_SmallRobot,
+   kDCRType_SpiderBot,
    kNumDarkCreatureTypes,
    kDCRTYPE_Invalid = 0xffffffffL // to ensure enum has size of int in all compilers
 };
@@ -67,6 +72,7 @@ enum eDarkActorType
    kDATYPE_Sweel,
    kDATYPE_Rope,
    kDATYPE_Apparition,
+   kDATYPE_Robot,
    kNumDarkActorTypes,
    kDATYPE_Invalid = 0xffffffffL // to ensure enum has size of int in all compilers
 };
