@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/object/propbool.h,v 1.1 1998/03/26 13:51:52 mahk Exp $
 #pragma once  
 #ifndef __PROPBOOL_H
