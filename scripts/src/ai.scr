@@ -152,6 +152,7 @@ MESSAGES:
          {
             Property.CopyFrom(self,"CretPose","M-StandPose");
          }
+	 Property.Remove(self,"CretPose"); //DAMN YOU!
       }
       DefaultOnSim();
    }
