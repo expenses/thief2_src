@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/libsrc/portold/char.c,v 1.1 1997/02/22 20:55:43 buzzard Exp $
 
 // dumb character renderer
