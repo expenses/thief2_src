@@ -54,3 +54,21 @@ MESSAGES:
    }
 END_SCRIPT(ParticleFillPhysOBB)
 
+BEGIN_SCRIPT(FixLootGoal, RootScript)
+
+MESSAGES:
+
+   OnDifficulty()
+   {
+      integer loot=Quest.Get("total_loot");
+      if (Property.Possessed(self,"TrapQVar"));
+      {
+         integer qnum=(integer)Property.Get(self,"TrapQVar");
+         integer oldtarg = (integer)Quest.Get("goal_loot_"+(string)qnum);
+         Quest.Set("goal_loot_"+(string)qnum,oldtarg+loot,kQuestDataMission);
+         Debug.MPrint("Upping loot goal on goal goal_loot_",qnum," from ",oldtarg," to ",oldtarg+loot);
+      }
+      DefaultOnDifficulty();
+   }
+
+END_SCRIPT(FixLootGoal)
