@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/r3d/RCS/makefile $
-# $Revision: 1.20 $
-# $Author: buzzard $
-# $Date: 1996/10/21 19:58:35 $
+# $Revision: 1.21 $
+# $Author: JAEMZ $
+# $Date: 1996/10/22 11:14:34 $
 #
 # Makefile for r3d library
 #
@@ -30,6 +30,7 @@ r3d_OBJS = \
   clipglob \
   clipplan \
   clipproj \
+  cliptest \
   clipunsc \
   ctxtguts \
   ctxtmang \
