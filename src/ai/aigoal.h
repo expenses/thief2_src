@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aigoal.h 1.12 1999/02/26 11:47:24 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aigoal.h,v 1.13 1999/11/29 12:28:25 BFarquha Exp $
 //
 // Definitions of AI Goals. Some goals are represented entirely using the
 // generic goal structure. Others, like "goto", use a derived specialization.
@@ -63,7 +63,7 @@ enum eAIGoalFlags
    // NoRetain: Set to indicate that the goal should not be assumed as the
    //           ability goal after the current decision process
    kAIGF_NoRetain = 0x02,
-   
+
    // FreeData: Set to free the owner data if the goal is deleted. Note that
    //           automatically freed data should not have any destructors, or
    //           contain any members with destructors.
@@ -126,16 +126,19 @@ public:
    // Update the location from the object
    BOOL LocFromObj();
 
+   // Return pOwner, no AddRef.
+   virtual IAIAbility *GetAbility();
+
    // Describe the goal, in human terms
    virtual void Describe(cStr * pStr) const;
-   
+
    // Save/load into client block -- "type" is client responsibility
    virtual void Save(ITagFile *);
    virtual void Load(ITagFile *);
-   
+
    // Notationally convenient check for progress, matching IAIAction model
    BOOL InProgress() const;
-   
+
    // Get the type of goal
    eAIGoalType GetType() const;
 
@@ -176,7 +179,7 @@ public:
 //
 
 inline cAIGoal::cAIGoal(IAIAbility * pOwner, eAIGoalType goalType, DWORD data)
- : type       (goalType), 
+ : type       (goalType),
    location   (kInvalidLoc),
    object     (OBJ_NULL),
    priority   (kAIP_Normal),
@@ -282,7 +285,7 @@ public:
       urgency(kAIP_Normal)
    {
    }
-   
+
    eAIPriority urgency;
 };
 

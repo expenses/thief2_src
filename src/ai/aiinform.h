@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiinform.h 1.3 1998/10/06 15:03:08 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiinform.h,v 1.4 1999/11/29 12:29:25 BFarquha Exp $
 //
 //
 //
@@ -19,6 +19,7 @@
 
 BOOL AIInitInformAbility(IAIManager *);
 BOOL AITermInformAbility();
+BOOL AIHasInformResponse(ObjID id);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +33,7 @@ public:
 
    STDMETHOD_(const char *, GetName)();
    STDMETHOD_(void, Init)();
-   
+
    STDMETHOD_(BOOL, Save)(ITagFile *);
    STDMETHOD_(BOOL, Load)(ITagFile *);
 
@@ -41,7 +42,7 @@ public:
    STDMETHOD_(void, OnGoalChange)(const cAIGoal * pPrevious, const cAIGoal * pGoal);
    STDMETHOD_(void, OnActionProgress)(IAIAction * pAction);
    STDMETHOD_(void, OnAlertness)(ObjID source,
-                                 eAIAwareLevel previous, 
+                                 eAIAwareLevel previous,
                                  eAIAwareLevel current,
                                  const sAIAlertness * pRaw);
 
@@ -61,11 +62,11 @@ private:
    sAIInform m_Current;
    sAIInform m_Received;
    cAITimer  m_RetellDelay;
-   
+
    cDynArray<ObjID> m_Passes;
-   
+
    BOOL      m_fTriggered;
-   
+
    static cDynArray<cAIInform *> gm_InformAbilities;
 };
 

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibasabl.h 1.13 1999/03/02 17:42:23 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibasabl.h,v 1.14 1999/11/29 12:27:45 BFarquha Exp $
 //
 // Base implementation of an AI ability
 //
@@ -36,57 +36,58 @@ public:
    // Save/load
    STDMETHOD_(BOOL, SaveGoal)(ITagFile * pTagFile, cAIGoal * pGoal);
    STDMETHOD_(BOOL, LoadGoal)(ITagFile * pTagFile, cAIGoal ** ppGoal);
-   
+
    // Set/Get whether this is the ability currently running the AI
    STDMETHOD_(void, SetControl)(BOOL);
    STDMETHOD_(BOOL, InControl)();
 
    // Base ability will automatically signal goal on sim start
    STDMETHOD_(void, OnSimStart)();
-   
+
    // Base ability will automatically signal goal on mode change greater than efficient
    STDMETHOD_(void, OnModeChange)(eAIMode previous, eAIMode mode);
 
    // Base ability will automatically signal action if winner of goal decision
    STDMETHOD_(void, OnGoalChange)(const cAIGoal * pPrevious, const cAIGoal * pGoal);
-   
+
    // Update the status of the current goal
    STDMETHOD_(eAIResult, UpdateGoal)(cAIGoal *);
 
    // Ability flow
    STDMETHOD (SuggestMode)   (sAIModeSuggestion *);
    STDMETHOD (SuggestGoal)   (cAIGoal * pPrevious, cAIGoal ** ppNew);
+   STDMETHOD_(BOOL, FinalizeGoal)(cAIGoal *pGoal);
 
 protected:
 
    //
    // Notification helpers
    //
-   
+
    // Did the goal come from this ability?
    BOOL IsOwn(const cAIGoal * pGoal) const;
-   
+
    // Is the goal message even relevant to this ability?
    BOOL IsRelevant(const cAIGoal * pPrevious, const cAIGoal * pGoal) const;
-   
+
    // Is the ability newly gaining control?
    BOOL IsGainingControl(const cAIGoal * pPrevious, const cAIGoal * pGoal) const;
-   
+
    // Is the ability losing control?
    BOOL IsLosingControl(const cAIGoal * pPrevious, const cAIGoal * pGoal) const;
-   
+
    // Did the action come from this ability? (have here as goal overload hides base)
    BOOL IsOwn(IAIAction * pAction) const;
 
    // Is the action message even relevant to this ability? (have here as goal overload hides base)
    BOOL IsRelevant(IAIAction * pPrevious, IAIAction * pAction) const;
-   
+
    //
    // Save/Load
    //
    void BaseAbilitySave(ITagFile *);
    void BaseAbilityLoad(ITagFile *);
-   
+
    //
    // Signalling protocol
    //
