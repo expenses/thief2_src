@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/gadget/RCS/gadbox.h 1.8 1999/12/28 12:13:07 JAEMZ Exp $
 
 #ifndef __GADBOX_H
