@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/abpstruc.h 1.3 1997/01/02 19:33:31 JON Exp $
 
 #ifndef __abpstruc_h
