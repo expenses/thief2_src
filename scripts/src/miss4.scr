@@ -1,0 +1,89 @@
+#include "drkgoalt.h"
+#include "drkstats.h"
+
+#define CASUALTY_GOAL_NORMAL 1
+
+BEGIN_SCRIPT(SpecialGoals, RootScript)
+METHODS:
+   METHOD void CheckCasualties()
+   {
+      // Only track the Kockouts stat here, instead of tracking knockouts
+      // _and_ kills.  We'll track kills separately using the existing
+      // J'Accuse script.  Tracking the kills stat doesn't tell us _who_
+      // got killed, which we need to know in order to discount kills of
+      // creatures who were _already_ knocked out, which we don't want to
+      // count twice.  -TJS, 8/1/99
+      integer KO=Quest.Get(kDarkStatKnockouts), kills=GetData("Kills");
+      integer casualties=KO+kills;
+      integer limit, difficulty;
+
+      for(difficulty=0;difficulty<3;difficulty++)
+      {
+         limit=Quest.Get("casualty_limit_"+string(difficulty));
+
+         if(casualties>limit)
+            Quest.Set(GoalStateVarName(CASUALTY_GOAL_NORMAL+difficulty),kGoalFailed);
+      }
+   }
+MESSAGES:
+   OnBeginScript()
+   {
+      Quest.SubscribeMsg(self,kDarkStatKnockouts);
+      if(!IsDataSet("Kills"))
+         SetData("Kills",0);
+      DefaultOnBeginScript();
+   }
+   OnQuestChange()
+   {
+      CheckCasualties();
+   }
+   OnMessage()
+   {
+      if(MessageIs("J'Accuse"))
+      {
+         object victim=message.from, metaprop=Object.Named("M-KnockedOut");
+
+         // Looks like the player killed somebody.  But have we already scored
+         // them as a knockout?
+         if(!Object.HasMetaProperty(victim,"M-WasKnockedOut"))
+         {
+            integer kills=GetData("Kills");
+            kills++;
+            SetData("Kills",kills);
+            CheckCasualties();
+         }
+         DefaultOnMessage();
+      }
+   }
+END_SCRIPT(SpecialGoals)
+
+
+/* TravellingMcGuffin
+   An object with this script send a TurnOn message when
+   taken to a specific room.  Link the object to the room, with a Route
+   link, to specify where it needs to go.  It'll also get a TurnOff
+   when removed from the room.
+   We intend that this will be used to score victory conditions, by
+   making the object also a Quest Var setting trap.
+   @TODO: This might actually be a good trigger to put in Gen.
+   */
+BEGIN_SCRIPT(TrigRoomObject, Room)
+MESSAGES:
+   OnObjRoomTransit()
+   {
+      string msg;
+      object newroom=message.ToObjId; // what room am I entering?
+
+      if(Link.AnyExist("Route",self,newroom))
+         msg="TurnOn";
+      else
+         msg="TurnOff";
+
+      Link.BroadcastOnAllLinks(self,msg,"ControlDevice");
+      DefaultOnObjRoomTransit();
+   }
+END_SCRIPT(TrigRoomObject)
+
+
+
+
