@@ -6,6 +6,7 @@ rem **************************************************************
 rem the path to dark 
 
 set _PRJPATH_=%_PRJDRV_%\prj\cam
+set _ALTPATH_=%_PRJDRV_%\prj\thief2
 
 rem **************************************************************
 rem the drive where the daily will be built (change when testing!)
