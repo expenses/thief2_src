@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/scaleup/RCS/scaleup.h 1.2 1998/07/07 16:19:51 JAEMZ Exp $
 
 #ifndef __SCALEUP_H
