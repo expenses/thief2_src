@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aisched.h 1.1 1999/04/09 11:30:50 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aisched.h,v 1.2 2000/01/29 12:45:50 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AISCHED_H
 #define __AISCHED_H

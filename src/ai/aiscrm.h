@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiscrm.h 1.4 1998/10/20 00:08:59 mahk Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiscrm.h,v 1.7 2000/01/29 12:45:51 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AISCRM_H
 #define __AISCRM_H
@@ -27,7 +28,7 @@
 struct sAISignalMsg : public sScrMsg
 {
    string signal;
-   
+
    sAISignalMsg()
    {
    }
@@ -52,7 +53,7 @@ struct sAISignalMsg : public sScrMsg
 struct sAIPatrolPointMsg : public sScrMsg
 {
    ObjID patrolObj;
-   
+
    sAIPatrolPointMsg()
     : patrolObj(0)
    {
@@ -95,6 +96,30 @@ struct sAIAlertnessMsg : public sScrMsg
    DECLARE_SCRMSG_PERSISTENT();
 };
 
+
+
+#define kAIHighAlertMsgVer 1
+
+struct sAIHighAlertMsg : public sScrMsg
+{
+   eAIScriptAlertLevel level;
+   eAIScriptAlertLevel oldLevel;
+
+   sAIHighAlertMsg()
+    : level(kNoAlert)
+   {
+   }
+
+   sAIHighAlertMsg(ObjID to_whom, eAIScriptAlertLevel level, eAIScriptAlertLevel oldLevel)
+    : sScrMsg(to_whom, "HighAlert"),
+      level(level),
+      oldLevel(oldLevel)
+   {
+   }
+
+   DECLARE_SCRMSG_PERSISTENT();
+};
+
 ///////////////////////////////////////
 //
 // MESSAGE: "AIModeChange" (AI)
@@ -104,8 +129,8 @@ struct sAIAlertnessMsg : public sScrMsg
 
 struct sAIModeChangeMsg : public sScrMsg
 {
-   eAIMode mode; 
-   eAIMode previous_mode; 
+   eAIMode mode;
+   eAIMode previous_mode;
 
    sAIModeChangeMsg()
     : mode(kAIM_Asleep),previous_mode(kAIM_Asleep)
@@ -139,7 +164,7 @@ enum eAIActionResult
 enum eAIAction
 {
    kAINoAction,
-   
+
    kAIGoto,
    kAIFrob,
    kAIManeuver,

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/gidprop.h 1.3 1998/03/26 13:51:47 mahk Exp $
+// $Header: r:/t2repos/thief2/src/gidprop.h,v 1.4 2000/01/29 12:41:18 adurant Exp $
+#pragma once
 
 #ifndef GIDPROP_H
 #define GIDPROP_H

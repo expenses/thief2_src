@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiactseq.h 1.2 1999/03/02 17:42:11 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiactseq.h,v 1.3 2000/01/29 12:44:59 adurant Exp $
 //
 // Sequenced actions
 //
+#pragma once
 
 #ifndef __AIACTSEQ_H
 #define __AIACTSEQ_H

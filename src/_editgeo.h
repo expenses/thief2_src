@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/_editgeo.h 1.1 1996/11/21 14:34:25 mahk Exp $
+// $Header: r:/t2repos/thief2/src/_editgeo.h,v 1.2 2000/01/29 12:41:55 adurant Exp $
+#pragma once
 
 #ifndef ___EDITGEO_H
 #define ___EDITGEO_H

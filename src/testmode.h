@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/testmode.h 1.1 1996/07/15 22:55:17 mahk Exp $
+// $Header: r:/t2repos/thief2/src/testmode.h,v 1.2 2000/01/29 12:41:48 adurant Exp $
+#pragma once
 #ifndef __TESTMODE_H
 #define __TESTMODE_H
 

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/testloop.h 1.2 1998/04/24 14:13:18 TOML Exp $
+// $Header: r:/t2repos/thief2/src/testloop.h,v 1.3 2000/01/29 12:41:47 adurant Exp $
+#pragma once
 
 #ifndef __TESTLOOP_H
 #define __TESTLOOP_H

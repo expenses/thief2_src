@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aisubabl.h 1.2 1999/03/04 13:31:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aisubabl.h,v 1.3 2000/01/29 12:45:56 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AISUBABL_H
 #define __AISUBABL_H

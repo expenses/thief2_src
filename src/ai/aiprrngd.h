@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiprrngd.h 1.6 1999/04/28 15:46:51 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiprrngd.h,v 1.7 2000/01/29 12:45:39 adurant Exp $
 //
 // Ranged-combat-related properties and relations
 //
+#pragma once
 
 #ifndef __AIPRRNGD_H
 #define __AIPRRNGD_H

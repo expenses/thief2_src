@@ -1,10 +1,11 @@
+#pragma once
 #ifndef __FLREGION_H
 #define __FLREGION_H
 /*
- * $Source: r:/prj/cam/src/RCS/reg.h $
- * $Revision: 1.1 $
- * $Author: mahk $
- * $Date: 1996/07/15 22:53:32 $
+ * $Source: r:/t2repos/thief2/src/reg.h,v $
+ * $Revision: 1.2 $
+ * $Author: adurant $
+ * $Date: 2000/01/29 12:41:42 $
  *
  */
 

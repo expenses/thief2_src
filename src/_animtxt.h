@@ -1,7 +1,8 @@
-// $Header: r:/prj/cam/src/RCS/_animtxt.h 1.2 1998/08/14 00:39:30 dc Exp $
+// $Header: r:/t2repos/thief2/src/_animtxt.h,v 1.3 2000/01/29 12:41:54 adurant Exp $
 //
 // Internals for anim_txt.c
 // Published here just so resapp.h can see the structure definition...
+#pragma once
 
 #ifndef ___ANIMTXT_H
 #define ___ANIMTXT_H

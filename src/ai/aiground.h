@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiground.h 1.1 1998/11/05 02:48:08 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiground.h,v 1.2 2000/01/29 12:45:21 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIGROUND_H
 #define __AIGROUND_H

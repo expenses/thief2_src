@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/ai/RCS/ailoop.h 1.6 1998/04/24 14:12:52 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/ailoop.h,v 1.7 2000/01/29 12:45:28 adurant Exp $
+#pragma once
 #ifndef __AILOOP_H
 #define __AILOOP_H
 

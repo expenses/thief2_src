@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicbrmpr.h 1.2 1999/04/22 17:53:29 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicbrmpr.h,v 1.3 2000/01/29 12:45:07 adurant Exp $
 //
 // Ranged-combat-mode related properties
 //
+#pragma once
 
 #ifndef __AICBRMPR_H
 #define __AICBRMPR_H

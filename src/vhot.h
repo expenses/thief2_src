@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/vhot.h 1.4 1998/10/29 17:40:33 CCAROLLO Exp $
+// $Header: r:/t2repos/thief2/src/vhot.h,v 1.6 2000/01/29 12:41:52 adurant Exp $
+#pragma once
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
    vhot.h
@@ -21,6 +22,7 @@
 #define kVHotParticle3    5     // for use in launch points for particles
 #define kVHotParticle4    6     // for use in launch points for particles
 #define kVHotParticle5    7     // for use in launch points for particles
+#define kVHotLightSource2 8     // Provide spotlight direction info relative to kVHotLightSource
 
 
 #endif // ~_VHOT_H_
