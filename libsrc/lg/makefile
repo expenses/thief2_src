@@ -1,12 +1,15 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.3 1993/03/04 11:51:27 rex Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.4 1993/03/04 18:45:27 rex Exp $
 # $Log: makefile $
-# Revision 1.3  1993/03/04 11:51:27  rex
+# Revision 1.4  1993/03/04 18:45:27  rex
+# Removed libdbg.h
+#
+# Revision 1.3  1993/03/04  11:51:27  rex
 # Added exit.c
 # /
-#
+# 
 # Revision 1.2  1993/01/29  17:31:52  rex
 # *** empty log message ***
 # 
@@ -31,11 +34,11 @@ LIBPATH = $(RELDIR)
 PROG_TARGETS = dbgmakeh dbgtest
 LIB_TARGETS = lg
 INST_TARGETS = lg dbgmakeh
-EXTRA_TARGETS = libdbg.h
+EXTRA_TARGETS =
 
 LG_SRCS = memall.c dbg.c dbgcfg.c datapath.c exit.c
 LG_OBJS = memall.obj dbg.obj dbgcfg.obj datapath.obj exit.obj
-LG_HDRS = lg.h lgalt.h memall.h dbg.h datapath.h libdbg.h
+LG_HDRS = lg.h lgalt.h memall.h dbg.h datapath.h
 
 DBGMAKEH_SRC = dbgmakeh.c
 DBGMAKEH_OBJS = dbgmakeh.obj
@@ -50,22 +53,21 @@ DBGTEST_LIBS = lg.lib mprintf.lib
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
 
-datapath.obj: malloc.h stdio.h string.h \
-	 datapath.h types.h
+datapath.obj: datapath.h malloc.h memall.h stdio.h string.h types.h
 
-dbg.obj: stdarg.h stdio.h stdlib.h \
-	 string.h dbg.h mprintf.h types.h
+dbg.obj: dbg.h malloc.h memall.h mprintf.h stdarg.h stdio.h stdlib.h \
+	 string.h types.h
 
-dbgcfg.obj: conio.h ctype.h stdarg.h \
-	 stdio.h stdlib.h string.h datapath.h \
-	 dbg.h mprintf.h types.h
+dbgcfg.obj: conio.h ctype.h datapath.h dbg.h mprintf.h stdarg.h stdio.h \
+	 stdlib.h string.h types.h
 
-dbgmakeh.obj: conio.h ctype.h stdarg.h \
-	 stdio.h stdlib.h string.h dbg.h types.h
+dbgmakeh.obj: conio.h ctype.h dbg.h stdarg.h stdio.h stdlib.h string.h \
+	 types.h
 
-dbgtest.obj: conio.h malloc.h stdarg.h \
-	 stdio.h string.h dbg.h lg.h lgalt.h libdbg.h \
-	 memall.h types.h
+dbgtest.obj: conio.h dbg.h lg.h lgalt.h libdbg.h malloc.h memall.h \
+	 mprintf.h stdarg.h stdio.h stdlib.h string.h types.h
 
-memall.obj: dos.h i86.h malloc.h \
-	 stdio.h dbg.h memall.h types.h
+exit.obj: dbg.h lg.h lgalt.h libdbg.h malloc.h memall.h stdio.h stdlib.h \
+	 types.h
+
+memall.obj: dbg.h dos.h i86.h malloc.h memall.h stdio.h string.h types.h
