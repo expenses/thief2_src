@@ -1069,18 +1069,33 @@ METHODS:
          return(highpoint);   
       }
    }
+
+   METHOD void Activate(boolean on)
+   {
+      SeekPoint(FindPoint(!on));
+   }
          
 MESSAGES:
 
    OnMessage()
    {
-      if(MessageIs("TurnOn"))
+      boolean on=MessageIs("TurnOn");
+      if(on || MessageIs("TurnOff"))
       {
-         SeekPoint(FindPoint(FALSE));
-      }
-      else if(MessageIs("TurnOff"))
-      {
-         SeekPoint(FindPoint(TRUE));
+         integer trapflags=0;
+         
+         if(Property.Possessed(self,"TrapFlags"))
+            trapflags=Property.Get(self,"TrapFlags");
+
+         if((on && !(trapflags & TRAPF_NOON)) ||
+            (!on && !(trapflags & TRAPF_NOOFF)))
+         {
+            if(trapflags & TRAPF_INVERT)
+               on=!on;
+
+            Activate(on);
+         }
+         // Not actually supporting TRAPF_ONCE for these.
       }
       else if(MessageIs("Call"))
       {
@@ -1091,6 +1106,21 @@ MESSAGES:
 
 END_SCRIPT(StdElevator)
 
+
+/* Overhead doors are actually moving terrain objects that tweq rotate when they move.
+ */
+
+BEGIN_SCRIPT(OverheadDoor, StdElevator)
+
+METHODS:
+   METHOD void Activate(boolean on)
+   {
+      ActReact.React("tweq_control",1.0,self,0, 
+                     kTweqTypeRotate, on?kTweqDoReverse:kTweqDoForward);
+      Base::Activate(on);
+   }
+
+END_SCRIPT(OverheadDoor)
 
 /* Pretty self-explanatory.  A moving terriain object with
    this script will deactivate when it gets to waypoints.
