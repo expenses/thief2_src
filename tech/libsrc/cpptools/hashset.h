@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/hashset.h $
-// $Author: TOML $
-// $Date: 1998/08/13 09:37:05 $
-// $Revision: 1.18 $
+// $Author: JAEMZ $
+// $Date: 1999/09/22 19:35:20 $
+// $Revision: 1.19 $
 //
 // (c) Copyright 1993-1996 Tom Leonard. All Rights Reserved. Unlimited license granted to Looking Glass Technologies Inc.
 //
@@ -79,6 +79,10 @@
 //
 //  #ifdef _MSC_VER
 //  template cMyTable;
+//
+//  Note that what you really appear to need to say is this:  -JF
+//  template cStrHashSet<sMyStruct *>;
+//
 //  #endif
 //
 // Iteration protocol for cHashSet
