@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.9 2000/02/28 06:04:55 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.10 2000/02/28 17:13:44 ccarollo Exp $
 //
 
 #include "animlgte.h"
@@ -705,22 +705,22 @@ OnMessage()
             PlayList.NextLink();
          }
 
-			if (Link.AnyExist("ControlDevice", self))
-			{
-				// get the LoudspeakerRelay object
-				object LoudspeakerRelay = Link.GetOne("ControlDevice", self).To();
-//				Debug.MPrint(" LoudspeakerRelay = object ",LoudspeakerRelay);
+         if (Link.AnyExist("ControlDevice", self))
+         {
+	    // get the LoudspeakerRelay object
+            object LoudspeakerRelay = Link.GetOne("ControlDevice", self).To();
+            // Debug.MPrint(" LoudspeakerRelay = object ",LoudspeakerRelay);
 
-				// Play the schema over all objects connected by ControlDevice links to the LoudspeakerRelay
-				linkset SpeakerList = Link.GetAll("ControlDevice", LoudspeakerRelay);
-				while (SpeakerList.AnyLinksLeft())
-				{
-					Sound.PlaySchema(SpeakerList.Link().To(), PlayList.Link().To(), SpeakerList.Link().To());
-					SpeakerList.NextLink();
-				}
-			}
-			else
-				Debug.MPrint(" *** WARNING: ",self," not CD-linked to a LoudspeakerRelay");
+	    // Play the schema over all objects connected by ControlDevice links to the LoudspeakerRelay
+            linkset SpeakerList = Link.GetAll("ControlDevice", LoudspeakerRelay);
+            while (SpeakerList.AnyLinksLeft())
+            {
+               Sound.PlaySchema(SpeakerList.Link().To(), PlayList.Link().To(), SpeakerList.Link().To());
+               SpeakerList.NextLink();
+            }
+         }
+         else
+            Debug.MPrint(" *** WARNING: ",self," not CD-linked to a LoudspeakerRelay");
 
          // Adjust its link data
          PlayList.Link().SetData(1);
@@ -873,4 +873,561 @@ OnMessage()
 END_SCRIPT (RenewableResource)
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: TransmogrifyMachine
+//
+// Base script for machine that converts one type of item or items into another.
+// Specific conversion behavior is specified on derived scripts.
+//
 
+BEGIN_SCRIPT (TransmogrifyMachine, RootScript)
+
+METHODS:
+
+void PlaceAtOutput(integer slot, object obj)
+{
+   if ((integer)obj == OBJ_NULL)
+      return;
+
+   vector facing;
+   vector position;
+
+   facing.x = position.x = 0;
+   facing.y = position.y = 0;
+   facing.z = position.z = 0;
+
+   object outputPoint = OBJ_NULL;
+
+   linkset OutputSet = Link.GetAll("ScriptParams", self);
+   while (OutputSet.AnyLinksLeft())
+   {
+      if (OutputSet.Link().GetData() == slot)
+      {
+         outputPoint = OutputSet.Link().To();
+         break;
+      }
+
+      OutputSet.NextLink();
+   }
+
+   if ((integer)outputPoint == OBJ_NULL)
+      return;
+
+   Object.Teleport(obj, position, facing, outputPoint);
+
+   vector velocity;
+   velocity.x = velocity.y = 0;
+   velocity.z = 0.1;
+   Physics.SetVelocity(obj, velocity);
+}
+
+// These methods should be overridden by deriving scripts
+virtual void Transmogrify()
+{
+}
+
+virtual void HandleInput(integer slot, object obj)
+{
+}
+
+virtual void HandleRemoval(integer slot, object obj)
+{
+}
+
+MESSAGES:
+
+OnMessage()
+{
+   if (MessageIs("TurnOn"))
+      Transmogrify();
+
+   if (MessageIs("Enter"))
+      HandleInput(message.data2, message.data);
+   if (MessageIs("Exit"))
+      HandleRemoval(message.data2, message.data);
+      
+   DefaultOnMessage();
+}
+
+END_SCRIPT(TransmogrifyMachine)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: MachineSlot
+//
+// Script for detecting entrance of an object, and notification of the
+// Transmogrify machine
+//
+
+BEGIN_SCRIPT(MachineSlot, Physics)
+
+MESSAGES:
+
+OnBeginScript()
+{
+   Physics.SubscribeMsg(self, kContactMsg);
+   DefaultOnBeginScript();
+}
+OnEndScript()
+{
+   Physics.UnsubscribeMsg(self, kContactMsg);
+   DefaultOnEndScript();
+}
+
+OnPhysContactCreate()
+{
+   // Filter on submodel 0, so we don't get multiple messages for each 
+   // submodel of a contacting model
+   if (message.contactSubmod == 0)
+   {
+      link toMachine = Link.GetOne("ScriptParams", self);
+      PostMessage(toMachine.To(), "Enter", message.contactObj, (integer)toMachine.GetData());
+   }
+
+   DefaultOnPhysContactCreate();
+}
+
+OnPhysContactDestroy()
+{
+   if (message.contactSubmod == 0)
+   {
+      link toMachine = Link.GetOne("ScriptParams", self);
+      PostMessage(toMachine.To(), "Exit", message.contactObj, (integer)toMachine.GetData());
+   }
+
+   DefaultOnPhysContactDestroy();
+}
+
+END_SCRIPT (MachineSlot)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Constants
+
+#define kBellowPlot   "Stage0"
+
+#define kRollingPlot  "Stage1"
+#define kRollingPlot2 "MetalPlate"
+
+#define kSealingPlot  "Stage2"
+#define kSealingPlot2 "RegulatingRound"
+
+#define kFusingPlot   "Stage3"
+
+#define kFinalPlot    "FinalObj"
+
+////////////////////////////////////////
+
+#define kBellowExtra1   "FluxOrb"
+#define kBellowExtra2   "BantamNode"
+#define kBellowResult   "CameraGrenade"
+
+#define kRollingExtra1  "FlareMixture"
+#define kRollingExtra2  "MetalPlate"
+#define kRollingResult  "Flare"
+
+#define kSealingExtra1  "MineBulb"
+#define kSealingExtra2  "MetalPlate"
+#define kSealingResult  "Mine"
+
+#define kLinkingExtra1  "Gauge"
+#define kLinkingExtra2  "BantamNode"
+#define kLinkingResult  "RegulatingRound"
+
+#define kFusingExtra1   "AcidicMixture"
+#define kFusingExtra2   "SpringWiring"
+#define kFusingResult   "FluxSpheroid"
+
+#define kAmalgExtra1    "IronChasis"
+#define kAmalgExtra2    "QuicklimeMixture"
+#define kAmalgExtra3    "AcidicMixture"
+#define kAmalgResult1   "MineBulb"
+#define kAmalgResult2   "FlareMixture"
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: BellowingMachine
+//
+
+BEGIN_SCRIPT (BellowingMachine, TransmogrifyMachine)
+
+METHODS:
+
+void Transmogrify()
+{
+   object obj = GetData("InputObj");
+   object newObj = OBJ_NULL;
+
+   if (Object.InheritsFrom(obj, Object.Named(kBellowPlot)))
+   {
+      newObj = Object.Create(Object.Named(kRollingPlot));
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kBellowExtra1)))
+   {
+      SetData("Extra1Count", (integer)GetData("Extra1Count") + 1);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kBellowExtra2)))
+   {
+      SetData("Extra2Count", (integer)GetData("Extra2Count") + 1);
+   }
+   else
+      newObj = obj;
+
+   // See if we should make a powerup
+   if (((integer)newObj == OBJ_NULL) && 
+       ((integer)GetData("Extra1Count") > 0) &&
+       ((integer)GetData("Extra2Count") > 0))
+   {
+      newObj = Object.Create(Object.Named(kBellowResult));
+
+      SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
+      SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
+   }
+
+   // If we're making a new object, destroy the old one
+   if (newObj != obj)
+      Object.Destroy(obj);
+
+   // Place any output object at our output location
+   PlaceAtOutput(1, newObj);
+}
+
+void HandleInput(integer slot, object obj)
+{
+   if (GetData("InputObj") == OBJ_NULL)
+      SetData("InputObj", obj);
+}
+
+void HandleRemoval(integer slot, object obj)
+{
+   if (obj == GetData("InputObj"))
+      SetData("InputObj", OBJ_NULL);
+}
+
+END_SCRIPT (BellowingMachine)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: RollingMachine
+//
+
+BEGIN_SCRIPT (RollingMachine, TransmogrifyMachine)
+
+METHODS:
+
+void Transmogrify()
+{
+   object obj1 = GetData("InputObj1");
+   object obj2 = GetData("InputObj2");
+   object newObj = OBJ_NULL;
+
+   if (Object.InheritsFrom(obj1, Object.Named(kRollingPlot)) &&
+       Object.InheritsFrom(obj2, Object.Named(kRollingPlot2)))
+   {
+      newObj = Object.Create(Object.Named(kSealingPlot));
+   }
+   else
+   if (Object.InheritsFrom(obj1, Object.Named(kRollingExtra1)) && 
+       Object.InheritsFrom(obj2, Object.Named(kRollingExtra2)))
+   {
+      newObj = Object.Create(Object.Named(kRollingResult));
+   }
+   else
+      newObj = obj1;
+
+   if (newObj != obj1)
+   {
+      Object.Destroy(obj1);
+      Object.Destroy(obj2);
+   }
+
+   PlaceAtOutput(1, newObj);
+}
+
+void HandleInput(integer slot, object obj)
+{
+   switch (slot)
+   {
+      case 1:
+      {
+         if (GetData("InputObj1") == OBJ_NULL)
+            SetData("InputObj1", obj);
+         break;
+      }
+
+      case 2:
+      {
+         if (GetData("InputObj2") == OBJ_NULL)
+            SetData("InputObj2", obj);
+         break;
+      }
+   }
+}
+
+void HandleRemoval(integer slot, object obj)
+{
+   switch (slot)
+   {
+      case 1:
+      {
+         if (GetData("InputObj1") == obj)
+            SetData("InputObj1", OBJ_NULL);
+         break;
+      }
+
+      case 2:
+      {
+         if (GetData("InputObj2") == obj)
+            SetData("InputObj2", OBJ_NULL);
+         break;
+      }
+   }
+}
+
+END_SCRIPT (RollingMachine)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: SealingMachine
+//
+
+BEGIN_SCRIPT (SealingMachine, TransmogrifyMachine)
+
+METHODS:
+
+void Transmogrify()
+{
+   object obj1 = GetData("InputObj1");
+   object obj2 = GetData("InputObj2");
+   object newObj = OBJ_NULL;
+   object newObj2 = OBJ_NULL;
+
+   if (Object.InheritsFrom(obj1, Object.Named(kSealingPlot)) &&
+       Object.InheritsFrom(obj2, Object.Named(kSealingPlot2)))
+   {
+      newObj = Object.Create(Object.Named(kFusingPlot));
+   }
+   else
+   if (Object.InheritsFrom(obj1, Object.Named(kSealingExtra1)) && 
+       Object.InheritsFrom(obj2, Object.Named(kSealingExtra2)))
+   {
+      newObj = Object.Create(Object.Named(kSealingResult));
+   }
+   else
+   {
+      newObj = obj1;
+      newObj2 = obj2;
+   }
+
+   if (newObj != obj1)
+   {
+      Object.Destroy(obj1);
+      Object.Destroy(obj2);
+   }
+
+   PlaceAtOutput(1, newObj);
+   PlaceAtOutput(2, newObj2);
+}
+
+void HandleInput(integer slot, object obj)
+{
+   switch (slot)
+   {
+      case 1:
+      {
+         if (GetData("InputObj1") == OBJ_NULL)
+            SetData("InputObj1", obj);
+         break;
+      }
+
+      case 2:
+      {
+         if (GetData("InputObj2") == OBJ_NULL)
+            SetData("InputObj2", obj);
+         break;
+      }
+   }
+}
+
+void HandleRemoval(integer slot, object obj)
+{
+   switch (slot)
+   {
+      case 1:
+      {
+         if (GetData("InputObj1") == obj)
+            SetData("InputObj1", OBJ_NULL);
+         break;
+      }
+
+      case 2:
+      {
+         if (GetData("InputObj2") == obj)
+            SetData("InputObj2", OBJ_NULL);
+         break;
+      }
+   }
+}
+ 
+END_SCRIPT (SealingMachine)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: LinkingMachine
+//
+
+BEGIN_SCRIPT (LinkingMachine, TransmogrifyMachine)
+
+METHODS:
+
+void Transmogrify()
+{
+   if (((integer)GetData("Extra1Count") > 0) &&
+       ((integer)GetData("Extra2Count") > 0))
+   {
+      SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
+      SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
+
+      object newObj = Object.Create(Object.Named(kLinkingResult));
+      PlaceAtOutput(1, newObj);
+   }
+}
+
+void HandleInput(integer slot, object obj)
+{
+   if (Object.InheritsFrom(obj, Object.Named(kLinkingExtra1)))
+   {
+      SetData("Extra1Count", (integer)GetData("Extra1Count") + 1);
+      Object.Destroy(obj);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kLinkingExtra2)))
+   {
+      SetData("Extra2Count", (integer)GetData("Extra2Count") + 1);
+      Object.Destroy(obj);
+   }
+   else
+      PlaceAtOutput(1, obj);
+}
+
+END_SCRIPT (LinkingMachine)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: FusingMachine
+//
+
+BEGIN_SCRIPT (FusingMachine, TransmogrifyMachine)
+
+METHODS:
+
+void Transmogrify()
+{
+   object obj = GetData("InputObj");
+   object newObj = OBJ_NULL;
+
+   if (Object.InheritsFrom(obj, Object.Named(kFusingPlot)))
+   {
+      Object.Destroy(obj);
+      newObj = Object.Create(Object.Named(kFinalPlot));
+   }
+
+   // See if we should make a powerup
+   if (((integer)newObj == OBJ_NULL) && 
+       ((integer)GetData("Extra1Count") > 0) &&
+       ((integer)GetData("Extra2Count") > 0))
+   {
+      newObj = Object.Create(Object.Named(kFusingResult));
+
+      SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
+      SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
+   }
+
+   // Place any output object at our output location
+   PlaceAtOutput(1, newObj);
+}
+
+void HandleInput(integer slot, object obj)
+{
+   if (Object.InheritsFrom(obj, Object.Named(kFusingPlot)))
+   {
+      if (GetData("InputObj") == OBJ_NULL)
+         SetData("InputObj", obj);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kFusingExtra1)))
+   {
+      SetData("Extra1Count", (integer)GetData("Extra1Count") + 1);
+      Object.Destroy(obj);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kFusingExtra2)))
+   {
+      SetData("Extra2Count", (integer)GetData("Extra2Count") + 1);
+      Object.Destroy(obj);
+   }
+   else
+      PlaceAtOutput(2, obj);
+}
+
+END_SCRIPT (FusingMachine)
+   
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Script: AmalgMachine
+//
+
+BEGIN_SCRIPT (AmalgMachine, TransmogrifyMachine)
+
+METHODS:
+
+void Transmogrify()
+{
+   if (((integer)GetData("Extra1Count") > 0) &&
+       ((integer)GetData("Extra2Count") > 0))
+   {
+      object newObj = Object.Create(Object.Named(kAmalgResult1));
+      PlaceAtOutput(1, newObj);
+
+      SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
+      SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
+   }
+   else
+   if (((integer)GetData("Extra2Count") > 0) &&
+       ((integer)GetData("Extra3Count") > 0))
+   {
+      object newObj = Object.Create(Object.Named(kAmalgResult2));
+      PlaceAtOutput(1, newObj);
+
+      SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
+      SetData("Extra3Count", (integer)GetData("Extra3Count") - 1);
+   }
+}
+
+void HandleInput(integer slot, object obj)
+{
+   if (Object.InheritsFrom(obj, Object.Named(kAmalgExtra1)))
+   {
+      Object.Destroy(obj);
+      SetData("Extra1Count", (integer)GetData("Extra1Count") + 1);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kAmalgExtra2)))
+   {
+      Object.Destroy(obj);
+      SetData("Extra2Count", (integer)GetData("Extra2Count") + 1);
+   }
+   else
+   if (Object.InheritsFrom(obj, Object.Named(kAmalgExtra3)))
+   {
+      Object.Destroy(obj);
+      SetData("Extra3Count", (integer)GetData("Extra3Count") + 1);
+   }
+   else
+      PlaceAtOutput(1, obj);
+}
+
+END_SCRIPT (AmalgMachine)
