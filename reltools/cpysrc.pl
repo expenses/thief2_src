@@ -37,7 +37,7 @@ if($targetroot eq "") {
         printf "using $dailydir as dailydir\n";
     }
 
-    $targetroot = $prjback . "\\cam\\$dailydir";
+    $targetroot = $prjback . "\\thief2\\$dailydir";
 }
 else {
     printf "using $targetroot as targetroot\n";

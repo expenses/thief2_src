@@ -5,7 +5,7 @@ set _PRJDRV_=r:
 rem **************************************************************
 rem the path to dark 
 
-set _PRJPATH_=%_PRJDRV_%\prj\cam
+set _PRJPATH_=%_PRJDRV_%\prj\thief2
 set _ALTPATH_=%_PRJDRV_%\prj\thief2
 
 rem **************************************************************
