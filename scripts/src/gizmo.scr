@@ -203,16 +203,6 @@ MESSAGES:
        Damage.Resurrect(self);
        Property.Set(self,"HitPoints",1);
 
-       // AIs should always investigate forced doors.
-       // If door was previously "Secure," i.e. only suspicious
-       // when open, undo that.
-       Object.RemoveMetaProperty(self,"M-SecureDoor");
-       if(!Object.HasMetaProperty(self,"M-CuriousDoor"))
-       {
-          Object.AddMetaProperty(self,"M-CuriousDoor"); // has watch link defaults
-          Link.CreateMany("AIWatchObj","@Human",self);
-       }
-
        /* Note that this doesn't deal with double doors
           at all.  We presume that for double doors to be
           locked, all of the synchronized doors will be
@@ -421,12 +411,9 @@ BEGIN_SCRIPT(StdKey,RootScript)
      {
         if(message.event!=kContainRemove)
         {
-           if(object(message.container)==Object.Named("Player"))
+           if(Object.InheritsFrom(message.container,"Avatar"))
            {
-              object schem=Object.Named("pickup_key");
-              
-              if(Object.Exists(schem))
-                 Sound.PlaySchemaAmbient(self,schem);
+              Sound.PlayEnvSchema(self,"Event Acquire",self,message.container,kEnvSoundAmbient);
            }
         }
         DefaultOnContained();
