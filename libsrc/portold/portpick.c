@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //  $Header: r:/t2repos/thief2/libsrc/portold/portpick.c,v 1.7 1998/04/10 23:22:29 buzzard Exp $
 //
 //  PORTAL
