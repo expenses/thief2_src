@@ -1,0 +1,8 @@
+// $Header: r:/prj/cam/src/shock/RCS/shkcrsho.h 1.1 1999/03/01 09:25:07 JON Exp $
+
+#ifndef __SHKCRSHO_H
+#define __SHKCRSHO_H
+      
+EXTERN const sCreatureDesc sCrShodanDesc;
+
+#endif
