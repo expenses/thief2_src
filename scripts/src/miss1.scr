@@ -495,6 +495,7 @@ BEGIN_SCRIPT(Training, RootScript)
           DisplayOutput = Data.GetString("PlayHint",Action)
                           + DisplayOutput;
           DarkUI.TextMessage(DisplayOutput,rgb(255,0,0),30000);
+          SetData("LessonTime",GetTime());
           return TRUE;
        }
        else
@@ -862,7 +863,16 @@ BEGIN_SCRIPT(Training, RootScript)
       }
       else if (TrainTransientTip())
          return;
-      DarkUI.TextMessage("",rgb(255,0,0),30000);
+
+      {
+         // Don't clear messages less than 1/2 second old, please.
+         // So they don't just flash by.
+         float lessontime=GetData("LessonTime");
+         if((GetTime()-lessontime)>1.0)
+            DarkUI.TextMessage("",rgb(255,0,0),30000);
+         else
+            SetOneShotTimer(self,"Update",0.5);
+      }
    }
    METHOD void Score(const string ref Action)
    {
@@ -893,6 +903,7 @@ MESSAGES:
             integer objmax=0;
 
             SetData("Init",TRUE);
+            SetData("LessonTime",0.0);
 
             SetOneShotTimer(self,"Prompt",25.0);
 
