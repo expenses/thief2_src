@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/res2/RCS/storcnst.h 1.1 1998/05/21 17:21:04 JUSTIN Exp $
 //
