@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/prj/cam/src/RCS/pkdelete.h 1.6 1997/09/18 00:08:47 mahk Exp $
 
 #ifndef __PKDELETE_H
