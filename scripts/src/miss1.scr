@@ -416,6 +416,11 @@ END_SCRIPT(ScoreLesson)
 #define NO_OBJ object(0)
 
 
+const integer kM1TipNone=0;
+const integer kM1TipCheckMap=1;
+const integer kM1TipCheckVisGem=2;
+
+
 BEGIN_SCRIPT(Training, RootScript)
   METHODS:
     /* Many things will want to know if your current inventory item is a
@@ -472,7 +477,7 @@ BEGIN_SCRIPT(Training, RootScript)
        string Command2 = Data.GetString("PlayCmd",Key2+"_command");
        boolean done=LessonDone(Action);
 
-       Debug.MPrint("Call DoLesson ",Action);
+       // Debug.MPrint("Call DoLesson ",Action);
        
        if(!done)
        {
@@ -499,6 +504,27 @@ BEGIN_SCRIPT(Training, RootScript)
        }
     }
 
+    METHOD void TransientTip(integer tip)
+    {
+       SetData("Tip",tip);
+    }
+    METHOD boolean TrainTransientTip(void)
+    {
+       integer tip=kM1TipNone;
+
+       if(IsDataSet("Tip"))
+          tip=integer(GetData("Tip"));
+       if(tip==kM1TipCheckMap)
+       {
+          DoLesson("CheckMap","Map","");
+       }
+       else if(tip==kM1TipCheckVisGem)
+       {
+          DoLesson("VisGem","","");
+       }
+       else return FALSE;
+       return TRUE;
+    }
     METHOD boolean TrainHealing (object world, object inv, object weap)
     {
       integer hp=Property.Get(self,"HitPoints");
@@ -633,7 +659,8 @@ BEGIN_SCRIPT(Training, RootScript)
           else
           {
              // Oh, Jesus, now we have to check if there even _is_ a key.
-             if(IsKeyFrom("Key",world))
+             if(IsKeyFrom("Key",world) &&
+                world != object("JenivereDoor"))
                 return DoLesson("GoFindKey","");
              else
                 return DoLesson("NoKeyDoor","");
@@ -738,6 +765,11 @@ BEGIN_SCRIPT(Training, RootScript)
          TrainGetLoot(world,inv,weap) ||
          TrainPortable(world,inv,weap) ||
          TrainUseFlare(world,inv,weap))
+      {
+         TransientTip(kM1TipNone);
+         return;
+      }
+      else if (TrainTransientTip())
          return;
       DarkUI.TextMessage("",rgb(255,0,0),30000);
    }
@@ -764,12 +796,15 @@ MESSAGES:
          Quest.SubscribeMsg(self,INV_ID_QVAR);
          Quest.SubscribeMsg(self,WORLD_ID_QVAR);
          Quest.SubscribeMsg(self,WEAP_UI_QVAR);
-
+       
          if(!IsDataSet("Init"))
          {
             integer objmax=0;
 
             SetData("Init",TRUE);
+
+            SetOneShotTimer(self,"Prompt",25.0);
+
             // Woo hoo.  Put tracking scripts on all world-frobbable items,
             // and set their FrobInfo to make sure they send select messages to
             // scripts.
@@ -878,13 +913,44 @@ MESSAGES:
    }
    OnMessage()
    {
-      if(MessageIs("Prompt"))
+      boolean prompt=TRUE;
+
+      if(MessageIs("CheckMap"))
+         TransientTip(kM1TipCheckMap);
+      else if(!MessageIs("Prompt"))
+         prompt=FALSE;
+      if(prompt)
          Prompt();
       DefaultOnMessage();
+   }
+   OnTimer()
+   {
+      if(message.name=="Prompt")
+      {
+         Prompt();
+         SetOneShotTimer(self,"Prompt",25.0);
+      }
+      DefaultOnTimer();
    }
 
 END_SCRIPT(Training)
 
+
+BEGIN_SCRIPT(MapTipster, RootScript)
+MESSAGES:
+   OnMessage()
+   {
+      if(MessageIs("TurnOn"))
+      {
+         object player=object("Player"); // gruesomely single-player
+         if(player!=object(0))
+         {
+            PostMessage(player,"CheckMap");
+         }
+      }
+      DefaultOnMessage();
+   }
+END_SCRIPT(MapTipster)
 
 
 BEGIN_SCRIPT(WhistleCall, RootScript)
