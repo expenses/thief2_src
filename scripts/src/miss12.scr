@@ -40,9 +40,64 @@ MESSAGES:
       }
       DefaultOnBeginScript();
    }
-// @TODO: Tally keys and such in the player's inventory.
+   // Tally keys and such in the player's inventory, at the end of the mission.
+   OnSim()
+   {
+      if(!message.starting)
+      {
+         linkset contains=Link.GetAll("Contains",self);
+
+         while(contains.AnyLinksLeft())
+         {
+            object obj=contains.Link().To();
+            if(Property.Possessed(obj,"KeySrc"))
+            {
+               // a key.  Use combine type encoding (hashed from keysrc info
+               // into a string in StdKey when we were contained) for quest var.
+               string combine=Property.Get(obj,"CombineType");
+               integer count=0;
+
+               if(Property.Possessed(obj,"StackCount"))
+                  count=Property.Get(obj,"StackCount");
+
+               Quest.Set(string("M12Inv")+combine,count,kQuestDataCampaign);
+            }
+            contains.NextLink();
+         }
+      }
+      DefaultOnSim();
+   }
 
 END_SCRIPT(SpecialGoals)
+
+
+/* Give the player whatever keys and such the quest vars say he got in previous mission. */
+BEGIN_SCRIPT(InvCache, LoadoutCache)
+METHODS:
+   METHOD boolean Cleared(object obj)
+   {
+      // Note that we don't just clear the object or not, but can mutate the
+      // objects we clear.  Woo hoo.
+      
+      // Note that key should have had its CombineType set appropriately when it
+      // got Contained in the Cache, due to the OnContained handler in the StdKey
+      // script.  Don't try this at home.
+      string combine=Property.Get(obj,"CombineType");
+      integer count=Quest.Get(string("M12Inv")+combine);
+
+      Debug.MPrint("Clearing ",obj," (",combine,")");
+
+      if(count!=0)
+      {
+         // we have the key.  Make sure counts match
+         Property.Set(obj,"StackCount",count);
+         return TRUE;
+      }
+      else
+         return FALSE;
+   }
+END_SCRIPT(InvCache)
+
 
 /* Two goals states can carry over from mission to mission.
    
