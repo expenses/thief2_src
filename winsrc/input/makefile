@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 1.15 $
-# $Author: kaboom $
-# $Date: 1994/08/15 16:50:27 $
+# $Revision: 1.16 $
+# $Author: jaemz $
+# $Date: 1994/10/11 13:02:35 $
 #
 
 DEBUG_ON= 1
@@ -36,6 +36,7 @@ INPUT_OBJS= \
         kbssig.obj kbsstat.obj \
         kbstart.obj \
         kbstate.obj kbcook.obj kbasctab.obj \
+        kbcntry.obj \
         leds.obj \
         joyflat.obj joystick.obj ngpjoy.obj basjoy.obj \
         mouse.obj  mousedev.obj
@@ -43,7 +44,7 @@ INPUT_HDRS= mouse.h kb.h kbcook.h joystick.h mousevel.h
 
 !include $(INIT)/make.rc
 
-kb.h: kbs.h kbdecl.h kbscan.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
+kb.h: kbs.h kbdecl.h kbscan.h kbcntry.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
         kblow.inc kbstate.inc
         rm -f junk
         @echo cat $^ \>junk
