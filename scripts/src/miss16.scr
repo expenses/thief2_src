@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.15 2000/03/02 10:54:47 rsmith Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/miss16.scr 1.16 2000/03/03 09:47:08 rsmith Exp $
 //
 
 #include "animlgte.h"
@@ -80,6 +80,26 @@ OnSim()
 
 END_SCRIPT (SoundPreload)
 #endif NOT_IN_USE
+
+// Script: Karras
+
+// When Karras gets a TurnOn/TurnOff msg from his Alert3Response, he broadcasts it 
+// out along any outgoing ControlDevice links.
+
+BEGIN_SCRIPT (Karras, RootScript)
+
+MESSAGES:
+OnMessage()
+{
+	if ( (MessageIs("TurnOn")) || (MessageIs("TurnOff")) )
+	{
+		Link.BroadcastOnAllLinks(self,message.message,"ControlDevice",NULL);
+	}
+	DefaultOnMessage();
+}
+
+END_SCRIPT (Karras)
+
 
 
 // Script:  HealingWaterFont
@@ -1040,6 +1060,15 @@ void PlaceAtOutput(integer slot, object obj)
    if ((integer)obj == OBJ_NULL)
       return;
 
+	// if obj is a grenade, remove its physics
+	if (Object.InheritsFrom(obj,Object.Named("Grenadz")))
+	{
+		if (Property.Possessed(obj,"PhysType"))
+		{
+			Property.Remove(obj,"PhysType");
+		}
+	}
+
    vector facing;
    vector position;
 
@@ -1194,8 +1223,10 @@ END_SCRIPT (MachineSlot)
 #define kAmalgExtra1    "IronChassis"
 #define kAmalgExtra2    "QuickLimeMixture"
 #define kAmalgExtra3    "AcidMixture"
+#define kAmalgExtra4    "FlareMixture"
 #define kAmalgResult1   "MineBulb"
 #define kAmalgResult2   "FlareMixture"
+#define kAmalgResult3   "Flashbomb"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -1549,6 +1580,16 @@ void Transmogrify()
       SetData("Extra2Count", (integer)GetData("Extra2Count") - 1);
       SetData("Extra3Count", (integer)GetData("Extra3Count") - 1);
    }
+   else
+   if (((integer)GetData("Extra1Count") > 0) &&
+       ((integer)GetData("Extra4Count") > 0))
+   {
+      object newObj = Object.Create(Object.Named(kAmalgResult3));
+      PlaceAtOutput(2, newObj);
+
+      SetData("Extra1Count", (integer)GetData("Extra1Count") - 1);
+      SetData("Extra4Count", (integer)GetData("Extra4Count") - 1);
+   }
 }
 
 void HandleInput(integer slot, object obj)
@@ -1571,6 +1612,12 @@ void HandleInput(integer slot, object obj)
       SetData("Extra3Count", (integer)GetData("Extra3Count") + 1);
    }
    else
+   if (Object.InheritsFrom(obj, Object.Named(kAmalgExtra4)))
+   {
+      Object.Destroy(obj);
+      SetData("Extra4Count", (integer)GetData("Extra4Count") + 1);
+   }
+	else
       PlaceAtOutput(1, obj);
 }
 
