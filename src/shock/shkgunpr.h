@@ -1,5 +1,9 @@
-// $Header: r:/prj/cam/src/shock/RCS/shkgunpr.h 1.17 1998/11/18 10:53:18 JON Exp $
+// $Header: r:/prj/cam/src/shock/RCS/shkgunpr.h 1.18 1999/11/19 14:53:55 adurant Exp $
 // Shock gun related properties
+
+
+This file has been moved to gunprop.h  AMSD
+
 
 #ifndef __SHKGUNPR_H
 #define __SHKGUNPR_H
