@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/entrywin/RCS/makefile $
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 # $Author: TOML $
-# $Date: 1996/06/11 13:48:09 $
+# $Date: 1996/06/11 13:49:13 $
 #
 # Makefile for entrywin library
 #
@@ -17,8 +17,8 @@ PROJECT = tech
 
 LIBTARGS = entrywin
 
-COMTOOLS_OBJS = entrywin
+ENTRYWIN_OBJS = entrywin
 
-COMTOOLS_HDRS =
+ENTRYWIN_HDRS =
 
 %include $(MRC)\make.rc
