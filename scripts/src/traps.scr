@@ -55,6 +55,14 @@ MESSAGES:
          HandleMessage(FALSE,message.from);
       DefaultOnMessage();
    }
+   OnTimer()
+   {
+      if(message.name=="TurnOn")
+         HandleMessage(TRUE,message.from);
+      else if(message.name=="TurnOff")
+         HandleMessage(FALSE,message.from);
+      DefaultOnTimer();
+   }
 
 END_SCRIPT(StdTrap)
 
