@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/libsrc/portal/RCS/portal_.h 1.9 1997/09/02 19:01:17 buzzard Exp $
+// $Header: r:/prj/cam/src/portal/RCS/portal_.h 1.10 1999/12/01 09:22:44 MAT Exp $
 
 #ifndef __PORTAL__H
 #define __PORTAL__H
@@ -17,7 +17,7 @@ struct port_render_data
    float zwater;       // z depth at which we encountered water
    uchar visit;        // have we already visited (traversed out of) this cell
    uchar num_outgoing_portals;
-   uchar zero_index;   // if num_unexplored_entries is 0, this is our index in the 0count list
+   uchar cell_flags;   // union of flags of cells used to reach this cell
    uchar num_unexplored_entries;
    int objs;
    int outgoing_portal_offset;
@@ -36,6 +36,7 @@ struct port_render_data
 #define FIRST_OUTGOING(x)  ((x)->render_data->outgoing_portal_offset)
 #define NUM_INCOMING(x) ((x)->render_data->num_unexplored_entries)
 #define NEED_CLIP(x)   ((x)->render_data->need_clip)
+#define CELL_FLAGS(x)  ((x)->render_data->cell_flags)
 
   // as we iterate over surfaces, we keep the
   // following variables loaded up so we don't

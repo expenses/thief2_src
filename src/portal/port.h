@@ -1,4 +1,4 @@
-// $Header: r:/prj/cam/src/portal/RCS/port.h 1.45 1998/12/22 10:34:19 JON Exp $
+// $Header: r:/prj/cam/src/portal/RCS/port.h 1.48 1999/12/01 09:21:49 MAT Exp $
 //   Interface to portal
 
 #ifndef _PORT_H_
@@ -48,9 +48,15 @@ extern uchar *pt_clut_list[256];
 extern unsigned char pt_medium_entry_clut[256];
 extern unsigned char pt_medium_exit_clut[256];
 extern unsigned char pt_medium_haze_clut[256];
+extern ulong portal_fog_color[3];
+extern float portal_fog_dist;
 
-// Like medium-haze clut, except per motion index.  Overrides 
-// medium haze if non-zero. 
+  // This flags controls whether Portal is using fog.  It's for option
+  // panels and config settings and such.
+extern BOOL portal_fog_on;
+
+  // Like medium-haze clut, except per motion index.  Overrides 
+  // medium haze if non-zero. 
 extern unsigned char pt_motion_haze_clut[256]; 
 
    // Both of these expect results in milliseconds.
@@ -63,7 +69,7 @@ extern void portal_set_znearfar(double z_near, double z_far);
   // which texture id for the sky?
 extern void portal_setup_star_hack(int tex_id);
 
-   // This controls MIP levels.  It should be 0-1 and defaults to .9.
+  // This controls MIP levels.  It should be 0-1 and defaults to .9.
 extern mxs_real portal_detail_level;
 
   // render your object through the passed-in clut;
@@ -74,64 +80,67 @@ extern BOOL (*portal_object_blocks)(ObjID blocker, ObjID blockee);
 extern void (*portal_pre_draw_callback)(void);
 extern Position* (*portal_object_pos)(ObjID obj);
 
-// kinds of object fragments--OTHER means the object has been split
-// and this fragment is not the first
+  // kinds of object fragments--OTHER means the object has been split
+  // and this fragment is not the first
 #define OBJ_NO_SPLIT      0
 #define OBJ_SPLIT_FIRST   1
 #define OBJ_SPLIT_OTHER   2
 
   // tools for rendering objects
 
-// push the r3s clip planes for the bounds of this cell;
-// don't bother pushing ones which don't clip the passed
-// in model
+  // push the r3s clip planes for the bounds of this cell;
+  // don't bother pushing ones which don't clip the passed in model
 extern void portal_push_clip_planes(
      mxs_vector *bbox_min, mxs_vector *bbox_max,
      mxs_vector *sphere_center, float radius);
 extern void portal_pop_clip_planes(void);
 
 
-// bitfield telling us which cells have been in the visible set in
-// portal_render_scene since the last call to portal_unmark_visible_cells
+  // bitfield telling us which cells have been in the visible set in
+  // portal_render_scene since the last call to portal_unmark_visible_cells
 extern uchar portal_cell_rendered[];
 
-// was cell ThisCell in the visible set last frame?
+  // was cell ThisCell in the visible set last frame?
 #define portal_cell_visible(ThisCell) \
    ((portal_cell_rendered[(ThisCell) >> 3] & ((1 << ((ThisCell) & 7)))) ? \
     TRUE : FALSE)
 
 
-// clear portal_cell_visible
+  // clear portal_cell_visible
 void portal_unmark_visible_cells();
 
 //////                                 Lighting
 
-// These flags apply to lights when we determine how they affect the
-// world--when lighting a level, or in the dynamic case during gameplay.
+  // These flags apply to lights when we determine how they affect the
+  // world--when lighting a level, or in the dynamic case during gameplay.
 
-// for moving lights--not part of world rep
+  // for moving lights--not part of world rep
 #define LIGHT_DYNAMIC           1
 
-// separate lightmap, added in with a weighting
+  // separate lightmap, added in with a weighting
 #define LIGHT_ANIMATED          2
 
-// not raycast lit, for prototype level lighting
+  // not raycast lit, for prototype level lighting
 #define LIGHT_QUICK             4
 
-// oversampled raycast
+  // oversampled raycast
 #define LIGHT_QUAD              8
 
-// raycast w/objects 
+  // raycast w/objects 
 #define LIGHT_OBJCAST          16
 
 extern int portal_add_omni_light(float br, float ambient,
-      Location *loc, uchar dynamic, float radius);
+      Location *loc, uchar dynamic, float radius, float inner_radius);
 extern int portal_add_spotlight(float br,
       Position *pos, float zoom, uchar dynamic);
 extern void portal_add_simple_dynamic_light(float br, float ambient,
                                             Location *loc, float radius);
 EXTERN void portal_add_simple_dynamic_dark(float br, float ambient,
                                            Location *loc, float radius);
+
+  // helper for portal_add_simple_dynamic_light--pares down cell list to
+  // cells which can be reached from a given cell
+EXTERN int portal_contiguous_cells(int *cell_list, int num_cells, int root_cell);
 
 
   // call this once a frame (or however often you recompute dynamic lights)
@@ -234,8 +243,8 @@ extern void porthw_end_frame(void);
 
 
 //////                         Moving Surfaces at Medium Boundaries
-// The number of cell motion structures is fixed.  This constant
-// appears here to make code using it more legible.
+
+  // The number of cell motion structures is fixed.
 #define MAX_CELL_MOTION 256
 extern PortalCellMotion portal_cell_motion[];
 extern void (*portal_anim_medium_callback)(long time_change_millisec);
@@ -259,7 +268,7 @@ extern bool render_backward;      // lets you see how far away it renders
 // These are things which are be useful in the editor,
 // but would be kind of silly to include in the game.
 
-// These are in portdraw.c, also referenced in portal.c.
+  // These are in portdraw.c, also referenced in portal.c.
 #ifndef SHIP
    extern bool draw_solid_by_MIP_level;
    extern bool draw_solid_by_cell;
