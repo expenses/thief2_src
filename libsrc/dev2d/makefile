@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dev2d/RCS/makefile $
-# $Revision: 1.10 $
+# $Revision: 1.11 $
 # $Author: KEVIN $
-# $Date: 1996/08/07 13:17:06 $
+# $Date: 1996/08/19 12:23:21 $
 #
 
 MAKETOP = $(CWD)
@@ -36,6 +36,7 @@ dev2d_OBJS = \
         bk8pix bk8lin bk8bm  \
         bk8pix8 bk8hlin bk8vlin \
         bk8fl8 \
+        clut16 \
         fl8cnv fl8p8f fl8p16f \
         fl8vlinf fl8hlinf fl8ubmf \
         fl8pix fl8lin fl8bm \
