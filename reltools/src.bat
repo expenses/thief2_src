@@ -131,52 +131,7 @@ mkdirs %_DAILYPRJ_%\cam\scripts\rel_h >& nul
 
 echo xcopy x:\prj\tech\h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
 rem for the cd
-xcopy x:\prj\tech\h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-rem for the designers 
-xcopy x:\prj\tech\h\*.h %_PRJPATH_%\scripts\rel_h /q
-
-
-echo xcopy %_DAILYPRJ_%\cam\h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\h\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\ai\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\ai\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\ai\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\dark\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\dark\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\dark\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\shock\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\shock\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\shock\*.h %_PRJPATH_%\scripts\rel_h /q
-
-
-echo xcopy %_DAILYPRJ_%\cam\src\physics\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\physics\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\physics\*.h %_PRJPATH_%\scripts\rel_h /q
-
-
-echo xcopy %_DAILYPRJ_%\cam\src\motion\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\motion\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\motion\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\editor\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\editor\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\editor\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\csg\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\csg\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\csg\*.h %_PRJPATH_%\scripts\rel_h /q
-
-echo xcopy %_DAILYPRJ_%\cam\src\portal\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\portal\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
-xcopy %_DAILYPRJ_%\cam\src\portal\*.h %_PRJPATH_%\scripts\rel_h /q
+xcopy r:\prj\cam\scripts\rel_h\*.h %_DAILYPRJ_%\cam\scripts\rel_h /q
 
 if .%@lower[%RunOneStep].==.y. goto Exit
 
