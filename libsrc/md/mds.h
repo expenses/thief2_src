@@ -1,8 +1,8 @@
 /*
  * $Source: x:/prj/tech/libsrc/md/RCS/mds.h $
- * $Revision: 1.15 $
- * $Author: CCAROLLO $
- * $Date: 1997/07/17 10:53:35 $
+ * $Revision: 1.18 $
+ * $Author: JAEMZ $
+ * $Date: 1998/06/18 13:03:23 $
  *
  * Structure definitions for the Model library
  *
@@ -11,6 +11,7 @@
 
 #ifndef __MDS_H
 #define __MDS_H
+#pragma once
 
 #include <matrixs.h>
 #include <r3ds.h>
@@ -20,6 +21,14 @@
 
 // Enable backface intersection checking
 #define BACKFACE_INTERSECTION
+
+// New thing we use for parms
+typedef struct mds_parm {
+   union {
+      mxs_ang ang;
+      float slide;
+   };
+} mds_parm;
 
 typedef struct mds_sphere {
    mxs_vector cen;
@@ -104,7 +113,7 @@ typedef struct mds_mat {
    char  name[16];	// name of the material, for viewer craziness
    mde_mat type;    // type 0 = texture, 1 = virtual color
    uchar num;     // slot to put it in
-   ulong handle;  // texture handle or 0bgr
+   ulong handle;  // texture handle or argb
    union {
       float uv;   // uv coords per 3d unit for mipmapping or ipal index
       ulong ipal; // inverse pal lookup
