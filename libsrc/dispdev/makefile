@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/dispdev/RCS/makefile $
-# $Revision: 1.10 $
+# $Revision: 1.11 $
 # $Author: KEVIN $
-# $Date: 1997/10/10 15:04:58 $
+# $Date: 1997/10/21 16:38:42 $
 #
 # Makefile for windisp library
 #
@@ -17,12 +17,12 @@ PROJECT = tech
 
 LIBTARGS = dispdev
 
-dispdev_objs = dispbase
+dispdev_objs = dispbase cbchain
 dispdev_win32_OBJS = wdisp wdspprov wdspmode wdispdd wddmode wdispgdi \
                      wdcreate wdisptls wdspgshl dddynf 
 dispdev_dos4g_OBJS = ddisp
 
-dispdev_HDRS = wdispapi.h wdspguid.h dddynf.h
+dispdev_HDRS = wdispapi.h wdspguid.h wdispcb.h dddynf.h cbchain.h
 
 %include $(MRC)\make.rc
 
