@@ -1,9 +1,12 @@
 #
-# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.3 1995/01/16 14:20:15 buzzard Exp $
+# $Header: x:/prj/tech/libsrc/prof/RCS/makefile 1.4 1995/01/17 07:54:12 buzzard Exp $
 # $Log: makefile $
-# Revision 1.3  1995/01/16 14:20:15  buzzard
-# duh
+# Revision 1.4  1995/01/17 07:54:12  buzzard
+# dependencies
 #
+# Revision 1.3  1995/01/16  14:20:15  buzzard
+# duh
+# 
 # Revision 1.2  1995/01/16  14:18:18  buzzard
 # build dir
 # 
@@ -34,3 +37,6 @@ PROF_HDRS = prof.h
 !include $(INIT)/make.rc
 
 ### OPUS MKMF:  Do not remove this line!  Automatic dependencies follow.
+
+prof.obj objo\prof.obj objd\prof.obj: fix.h lgsprntf.h prof.h stdarg.h stdio.h stdlib.h string.h \
+	 timer.h types.h
