@@ -514,13 +514,12 @@ END_SCRIPT(TrigInvFrob)
 
 // Script:	TrapConverse
 /* Put on conversation object so as to be able to start it with a "TurnOn." */
-BEGIN_SCRIPT(TrapConverse, RootScript)
-MESSAGES:
-   OnMessage()
+BEGIN_SCRIPT(TrapConverse, StdTrap)
+METHODS:
+   METHOD void Activate(boolean on, object sender)
    {
-      if (MessageIs("TurnOn"))
+      if(on)
          AI.StartConversation(self);
-      DefaultOnMessage();
    }
 END_SCRIPT(TrapConverse)
 
