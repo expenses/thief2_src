@@ -311,6 +311,11 @@ BEGIN_SCRIPT(StdKey,RootScript)
         {
            if(playerfrob) SendMessage(targ,"PlayerToolFrob");
            Key.TryToUseKey(self,targ,kKeyUseDefault);
+           // When a key is successfully used, "slay" it.  Mind you,
+           // _most_ keys will have a Slay Result property such that
+           // this does nothing.  Set the Slay Result normal for
+           // expendible key-like objects.
+           Damage.Slay(self,message.Frobber);
         }
         else
         {
