@@ -20,32 +20,18 @@ METHODS:
 
    METHOD void PopulationCheck(object mover, boolean enter)
    {
-      linkkind poplink=linkkind("Population");
       integer goalstate;
-
-      // Update population links
-      if(mover==object("Basso") ||
-         mover==object("Jenivere") ||
-         Object.InheritsFrom(mover,object("Avatar")))
-      {
-         if(enter && !Link.AnyExist(poplink,self,mover))
-            Link.Create(poplink,self,mover);
-         else
-            Link.DestroyMany(poplink,self,mover);
-      }
-      else
-         return;
 
       goalstate=Quest.Get(GoalStateVarName(GOAL_ESCAPE));
       // Don't change a failed or cancelled goal
       if(goalstate==kGoalFailed || goalstate==kGoalInactive)
          return;
 
-      // and check whether all principals have escaped
-      // @TODO: Fix for multiplayer
-      if(Link.AnyExist(poplink,self,object("Basso")) &&
-         Link.AnyExist(poplink,self,object("Jenivere")) &&
-         Link.AnyExist(poplink,self,object("Player")))
+      if(mover==object("Basso")) Quest.Set("BassoOK",enter);
+      else if(mover==object("Jenivere")) Quest.Set("JenOK",enter);
+      else if(mover==object("Player")) Quest.Set("PlayerOK",enter);
+
+      if(Quest.Get("PlayerOK") && Quest.Get("BassoOK") && Quest.Get("JenOK"))
          goalstate=kGoalComplete;
       else
          goalstate=kGoalIncomplete;
