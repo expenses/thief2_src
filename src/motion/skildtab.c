@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/motion/skildtab.c,v 1.42 2000/02/19 13:17:40 toml Exp $
 // This contains all the static data structures for the skill table, because
 // Watcom doesn't compile if these are in a c++ file.
