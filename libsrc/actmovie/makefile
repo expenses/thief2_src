@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/actmovie/RCS/makefile $
-# $Revision: 1.3 $
-# $Author: TOML $
-# $Date: 1996/09/06 11:55:47 $
+# $Revision: 1.4 $
+# $Author: JON $
+# $Date: 1996/09/18 11:35:36 $
 #
 # Makefile for actmovie library
 #
@@ -17,7 +17,9 @@ PROJECT = tech
 
 LIBTARGS = actmovie
 
-actmovie_OBJS = actmovie amguids amalloc
+actmovie_DEFINES =
+
+actmovie_OBJS = actmovie amguids amalloc imutil mtype
 
 actmovie_HDRS =
 
