@@ -202,14 +202,38 @@ END_SCRIPT (GuardSummoner)
 
 BEGIN_SCRIPT (SummonableGuard, AI)
 
-MESSAGES:
+METHODS:
+// return object at end of Route link from me, or (object)0 if none
+object GetDest ()
+{
+	if (Link.AnyExist("Route",self))
+		return (object)Link.GetOne("Route",self).To();
+	else
+		return (object)0;
+}
 
+void KillAllLinks(string LinkFlavor, object From)
+{
+	if (Link.AnyExist((const char *)LinkFlavor, From))
+	{
+		linkset Links=Link.GetAll((const char *)LinkFlavor, From);
+
+		while(Links.AnyLinksLeft())
+		{
+			Link.Destroy(Links.Link());
+			Links.NextLink();
+		}
+	}
+}
+
+MESSAGES:
 OnMessage()
 {
 	if (MessageIs("ComeARunnin"))
 	{
 		SetOneShotTimer("Delay",1.5);
-		SetData("Dest",message.from);
+		// store destination object by pointing a Route link to it
+		Link.Create("Route",self,message.from);
 	}
 
 	DefaultOnMessage();
@@ -219,14 +243,16 @@ OnTimer()
 {
 	if (message.name == "Delay")
 	{
-		if ((object)GetData("Dest")!=(object)0)
+		if (GetDest() !=(object)0)
 		{
+//			Debug.MPrint(self," going to ",GetDest());
 			Property.Set (self, "AI_AlertCap", "Min level", 3);
-			GotoObjLoc((object)GetData("Dest"), kFast); 
+			GotoObjLoc(GetDest(), kFast); 
 		}
 	}
 	else if (message.name == "Declamp")
 	{
+//		Debug.MPrint(self," declamping.");
 		Property.Set (self, "AI_AlertCap", "Min level", 0);
 	}
 	DefaultOnTimer();
@@ -234,27 +260,41 @@ OnTimer()
 
 OnObjActResult()
 {
-	object dest = (object)GetData("Dest");
+	object dest = GetDest();
 
-	if (dest !=(object)0)
+	if ( (dest !=(object)0) && (SuccessfulGoto((object)dest)) )
 	{
-		if (SuccessfulGoto((object)dest))
+//		Debug.MPrint(self," successfully got to ",dest);
+		// check to see if this is a waypoint or the final destination
+		if (Link.AnyExist("Route",dest))
 		{
-			if (Link.AnyExist("Route",dest))
-			{
-				SetData("Dest",Link.GetOne("Route",dest).To());
-				GotoObjLoc((object)GetData("Dest"), kFast); 
-			}
-			else
-			{
-				SetOneShotTimer("Declamp",8.0);
-			}
+			// waypoint
+			// store my new destination by killing all old route links 
+			// from me and setting a new one
+			object new_dest = Link.GetOne("Route",dest).To();
+			KillAllLinks("Route",self);
+			Link.Create("Route",self,new_dest);
+			GotoObjLoc(new_dest, kFast); 
+//			Debug.MPrint(self," going to  ",new_dest);
 		}
+		else
+		{
+			// final destination
+			KillAllLinks("Route",self);
+			SetOneShotTimer("Declamp",8.0);
+		}
+	}
+	else
+	{
+		// either I didn't get to my dest because something higher priority
+		// came up, or my data is scrambled somehow.  either way, i need to declamp
+//		Debug.MPrint(self,"'s, goto was not successful.  dest = ",dest);
+		KillAllLinks("Route",self);
+		SetOneShotTimer("Declamp",8.0);
 	}
 
 	DefaultOnObjActResult();
 }
-
 
 END_SCRIPT (SummonableGuard)
 
