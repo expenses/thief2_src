@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/g2/RCS/makefile $
-# $Revision: 1.23 $
+# $Revision: 1.24 $
 # $Author: KEVIN $
-# $Date: 1997/09/23 14:01:30 $
+# $Date: 1997/09/30 12:10:31 $
 #
 
 MAKETOP = $(CWD)
@@ -23,7 +23,7 @@ irrupt_OBJS = \
 POLY_OBJS = \
         grtm permap \
         tmsetup tf \
-        genlm fl8lm \
+        genlm fl8lm fl8pm \
         genfl8l genf16l genrsdtm \
         o88 lo88 co88 r88 t88oc \
         lht816 lh816 dlh816 t816oc \
@@ -46,7 +46,7 @@ INNER_LOOP_OBJS = \
 
 PTMAP_OBJS = \
         ptmap ptmapper ptfloat ptmap_8 ptmap_n ptpersp ptlinear \
-        pt_main pt_map pt_duv
+        pt_main pt_map pt_duv pt_grad
 
 # function tables compiled from .tbl's
 TABLE_OBJS = gencnv fl8cnv f16cnv \
