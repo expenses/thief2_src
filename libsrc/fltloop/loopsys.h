@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/fltloop/RCS/loopsys.h 1.3 1999/09/28 11:22:51 darrenl Exp $
 
 #pragma once
