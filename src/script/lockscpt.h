@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/script/lockscpt.h,v 1.2 1998/01/19 22:21:06 dc Exp $
 #pragma once  
 #ifndef __LOCKSCPT_H
