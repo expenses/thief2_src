@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/winsrc/input/RCS/makefile $
-# $Revision: 2.2 $
-# $Author: JACOBSON $
-# $Date: 1996/01/19 10:10:16 $
+# $Revision: 2.3 $
+# $Author: TOML $
+# $Date: 1996/02/02 10:08:59 $
 #
 
 MAKETOP = $(CWD)
@@ -32,7 +32,7 @@ test_LIBS = input
 
 input_OBJS = \
  	joystick kbstart kbshut kbasctab mousesys mousedev \
-        kbsys kbdev kbcook kbwin
+        kbsys kbdev kbcook kbwin defehand
 
 # kbcntry?
 
@@ -41,7 +41,7 @@ input_OBJS = \
 #	kbnext kbphnd kbqueue kbrhnd kbsflag kbshut kbssig kbsstat \
 #	kbstart kbstate leds mouse mousedev
 
-input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h
+input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h defehand.h
 
 # fix this, want right h2i args
 
@@ -54,14 +54,14 @@ input_HDRS = joystick.h kb.h kbcook.h keydefs.h mouse.h mousevel.h
 # kbarray.inc : kbarray.h
 #	h2inc /Ni $^ $@
 
-# kb.h : kbs.h kbdecl.h kbscan.h kbcntry.h kbarray.inc kbd.inc kberr.h 
+# kb.h : kbs.h kbdecl.h kbscan.h kbcntry.h kbarray.inc kbd.inc kberr.h
 #	kbflag.inc kblow.inc kbstate.inc
 #	%do comp_h h_pre="" h_in="$(^,M\.h)" inc_in="$(^,M\.inc)" h_out="$@"
 
 # kb.h: kbs.h kbdecl.h kbscan.h kbcntry.h kbarray.inc kbd.inc kberr.inc kbflag.inc \
 #         kblow.inc kbstate.inc
 
-kb.h: kbs.h kbdecl.h kbscan.h kbmod.h kbarray.h kbstate.h 
+kb.h: kbs.h kbdecl.h kbscan.h kbmod.h kbarray.h kbstate.h
         rm -f junk
         @echo cat $^ \>junk
         !foreach FILE $(^,M\.h)
@@ -74,7 +74,7 @@ kb.h: kbs.h kbdecl.h kbscan.h kbmod.h kbarray.h kbstate.h
         @echo \#define __KB_H >>$(@,F)
         sed '/\/\/.*$$/d' junk >>$(@,F)
         @echo \#endif /* !__KB_H */>>$(@,F)
- 
+
 %include $(MRC)\make.rc
 
 
