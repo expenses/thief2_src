@@ -1,10 +1,10 @@
 #
-# $Header: r:/t2repos/thief2/libsrc/gadget/makefile,v 1.5 1996/07/30 19:28:41 mahk Exp $
+# $Header: r:/t2repos/thief2/libsrc/gadget/makefile,v 1.6 1996/08/19 16:19:32 mahk Exp $
 
 MAKETOP = $(CWD)
 
-PROJECT = CAM
-PRJBACK = R:\prj
+PROJECT = TECH
+PRJBACK = x:\prj
 
 %include $(MRC)\env.rc
 
