@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.21 1999/11/24 18:05:25 adurant Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.22 1999/12/02 15:44:44 TJS Exp $
 //
 
 #include "frobscrt.h"
@@ -2121,7 +2121,13 @@ MESSAGES:
    }
    OnFrobWorldEnd()
    {
-      if(Locked.IsLocked(self))
+      boolean playerfrob=(object(message.Frobber)==object("Player"));
+      boolean locked=Locked.IsLocked(self);
+      
+      if(playerfrob && DarkGame.ConfigIsDefined("LockCheat"))
+         locked=FALSE;
+
+      if(locked)
       {
          Sound.PlayEnvSchema(self,"Event Reject, Operation OpenDoor",self,NULL,kEnvSoundAtObjLoc);
       }
