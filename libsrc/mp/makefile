@@ -1,4 +1,4 @@
-// $Header: x:/prj/tech/libsrc/mp/RCS/makefile 1.1 1996/10/30 11:32:51 kate Exp $
+// $Header: x:/prj/tech/libsrc/mp/RCS/makefile 1.2 1996/11/11 18:18:12 kate Exp $
 
 MAKETOP = $(CWD)
 
@@ -12,7 +12,7 @@ LIBTARGS = mp
 
 mp_DEFINES =
 
-mp_OBJS = multiped qt mpinit mplist mpmot mpstack mpupdate 
+mp_OBJS = qt mpinit mplist mpmot mpstack mpupdate mploco
 
 mp_HDRS = mp.h multiped.h qt.h motion.h motstruc.h mputil.h mpstack.h mplist.h
 
