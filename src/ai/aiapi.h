@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiapi.h 1.18 1999/08/05 16:40:46 Justin Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiapi.h,v 1.19 1999/12/09 20:09:02 BODISAFA Exp $
 //
 // The primary API for external access to the AI
 //
@@ -169,6 +169,7 @@ DECLARE_INTERFACE_(IAI, IUnknown)
    STDMETHOD_(void, Kill)() PURE;
    STDMETHOD_(void, Resurrect)() PURE;
    STDMETHOD_(BOOL, IsDead)() PURE;
+   STDMETHOD_(BOOL, IsDying)() PURE;
 
    //
    // Other state changes
