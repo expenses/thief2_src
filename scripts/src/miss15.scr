@@ -1,6 +1,9 @@
 #include "gen.scr" // we want to inherit from quest var traps...
+#include "drkgoalt.h"
 
 // Script file for Thief 2 - Mission 15 - Kidnap
+
+const int CAVADOR_LIVE_GOAL=1;
 
 /* Randomizes the given quest var at the beginning of time,
    and deletes self if quest var is initialized (non-zero)
@@ -132,7 +135,14 @@ END_SCRIPT(BlueLightSensor)
 
 
 
-
+BEGIN_SCRIPT(MrCavador, RootScript)
+MESSAGES:
+   OnSlain()
+   {
+      Quest.Set(GoalStateVarName(CAVADOR_LIVE_GOAL),kGoalFailed);
+      DefaultOnSlain();
+   }
+END_SCRIPT(MrCavador)
 
 
 
