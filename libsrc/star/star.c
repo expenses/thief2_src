@@ -1,12 +1,31 @@
 /*
  * $Source: x:/prj/tech/libsrc/star/RCS/star.c $
- * $Revision: 1.3 $
- * $Author: JAEMZ $
- * $Date: 1995/12/29 13:55:07 $
+ * $Revision: 1.9 $
+ * $Author: KEVIN $
+ * $Date: 1998/04/01 14:49:38 $
  *
  * Main star library source
  *
  * $Log: star.c $
+ * Revision 1.9  1998/04/01  14:49:38  KEVIN
+ * more 16 bit support.
+ * 
+ * Revision 1.8  1998/02/18  15:57:28  KEVIN
+ * added function to set pixel rendering function for next call to StarRender().
+ * 
+ * Revision 1.7  1997/11/04  16:22:14  KEVIN
+ * 16 bit support.
+ * 
+ * Revision 1.6  1997/11/02  20:05:37  buzzard
+ * anti-aliased stars cleanup
+ * 
+ * Revision 1.5  1997/10/26  21:01:54  dc
+ * reform to make debugging easier
+ * add check before free
+ * 
+ * Revision 1.4  1997/01/31  23:25:27  JAEMZ
+ * Updated star library for the nineties
+ * 
  * Revision 1.3  1995/12/29  13:55:07  JAEMZ
  * Stars obey fix mode
  * 
@@ -25,58 +44,81 @@
  * 
 */
 
-#include <2d.h>
-#include <3d.h>
 #include <stdlib.h>
+#include <math.h>
+
+#include <lg.h>
+#include <dev2d.h>
+#include <r3d.h>
 #include <mprintf.h>
-#include "star.h"
+
+#include <star.h>
 
 //#define  STAR_SPEW
-#define STARS_ANTI_ALIAS
-
-#ifdef STEREO_ON
-extern bool g3d_stereo;
-extern fix g3d_eyesep_raw;
-extern uchar *g3d_rt_canv_bits;
-extern uchar *g3d_lt_canv_bits;
-#endif
-
+// #define STARS_ANTI_ALIAS
 
 // globals for state
-sts_vec  *std_vec;
+// pointer to list of stars
+// and color list of stars, and number
+// of them
+#define STAR_MAX_Z 1.0e16
+
+mxs_vector  *std_vec;
 uchar    *std_col;
 int      std_num;
-
-
 int   std_size = 1;
 
-#ifdef STARS_ANTI_ALIAS
 // The canvas must be more than <std_alias_size> pixels wide
 // for us to anti-alias the stars (which makes them bigger,
 // hence the size restriction)
-int   std_alias_size = 640;     
+int   std_alias_size = 16000;     
 // This size is chosen so anti-aliasing starts happening
 // in full screen 640x400 modes.  Won't happen in demo mode
 // if demo mode uses a subcanvas
 
 // We must record the meaning of the colors of stars so
 // we can anti-alias them
-int   std_color_base, std_color_range;
+int   std_color_dark, std_color_bright;
 
 // gamma-correct star colors
 uchar std_alias_color_table[256];
-#endif
 
-extern   fix   std_min_z;
-extern   fix   std_max_rad;
+static float std_min_z;
+static float std_max_rad2; // maximum radius squared
 
-extern   g3s_vector matrix_scale;
-extern   g3s_phandle vbuf2;
-extern   int   n_verts;
+static BOOL check_bkgnd = TRUE;
+
+// gpix_func is NULL when check_bkgnd is FALSE;
+// i.e., when we want to skip the check.
+static gdgpix_func *gpix_func;
+
+// This is our unclipped pixel drawing function
+static gdupix_func *pix_func = NULL;
+
+// This is here because the 2d don't support this mode.
+static void flat16_clut8_upix8(int c8, int x, int y)
+{
+   uchar *clut = (uchar *)(grd_gc.fill_parm);
+   ushort *pal16 = grd_pal16_list[0];
+   ushort *dst = (ushort *)(grd_bm.bits + 2*x + grd_bm.row * y);
+   AssertMsg (pal16 != NULL, "NULL pal.");
+   *dst = pal16[clut[c8]];
+}
+
+void StarSetPixFunc(gdupix_func *f)
+{
+   pix_func = f;
+}
+
+void StarSetCheckBkgnd(BOOL check)
+{
+   check_bkgnd = check;
+}
+
 
 // sets global pointers in the star library
 // to the number of stars, their positions, their colors
-void star_set(int n,sts_vec *vlist,uchar *clist)
+void StarSet(int n,mxs_vector *vlist,uchar *clist)
 {
    std_num = n;
    std_vec = vlist;
@@ -84,9 +126,10 @@ void star_set(int n,sts_vec *vlist,uchar *clist)
 }
 
 // allocates the necessary space for stars using alloc
-int star_alloc(int n)
+// returns -1 if problem.
+int StarMalloc(int n)
 {
-   std_vec = (sts_vec *)malloc(n*sizeof(sts_vec)+n);
+   std_vec = (mxs_vector *)Malloc(n*sizeof(mxs_vector)+n);
    if (std_vec == NULL) return -1;
    std_col = (uchar *)(std_vec + n);
    std_num = n;
@@ -95,9 +138,9 @@ int star_alloc(int n)
 
 // frees star space using free, only if you've used
 // alloc to allocate it
-void star_free()
+void StarFree()
 {
-   free(std_vec);
+   if (std_vec) Free(std_vec);
 }
 
 
@@ -111,92 +154,76 @@ void star_free()
 // wherever there is black.   Not dissimilar to Kevins
 // per tmap hack
 
-extern g3s_vector view_position;
-
 #ifdef STAR_SPEW
 extern   int   star_num_behind;
 extern   int   star_num_projected;
 #endif
 
-// for the love of god, I hate 3d scaling.
-fix mag2_point(g3s_phandle p)
-{
-   fix a,f;
 
-   a = fix_div(p->x,matrix_scale.x);
-   f = fix_mul(a,a);
-
-   a = fix_div(p->y,matrix_scale.y);
-   f += fix_mul(a,a);
-
-   a = fix_div(p->z,matrix_scale.z);
-   f += fix_mul(a,a);
-
-   return f;
-}
-
-// in stereo mode, we can leave this normal
-// and it should work, assuming the two
-// polygons are similar enough
-void star_poly(int n,g3s_phandle *vp)
+// Note this messes up your context
+void StarPoly(int n,r3s_phandle *vp)
 {
    int i;
    fix m;
-   g3s_phandle *p;
-   int f;
+   r3s_phandle *p;
 
    // draw star poly in color zero.  This part very
    // important, if not zero, won't work.
-   f = g3_draw_poly(0,n,vp);
+   // vbuf is clipped poly.  So we just want to clip ourselves
+   n = r3_clip_polygon(n,vp,&p);
+
+   // Draw the black poly
+   r3_set_polygon_context(R3_PL_POLYGON);
+   r3_set_color(0);
+   r3_draw_poly(n,p);
 
    // snag points that have been fully clipped and projected
    // out of the depths of insanity of the 3d
-   if (f!=CLIP_ALL)
+   for (i=0;i<n;++i)
    {
-      p = &vbuf2;
-      for (i=0;i<n_verts;++i)
-      {
-         if (p[i]->z < std_min_z) std_min_z = p[i]->z;
-         m = mag2_point(p[i]);
-         if (m > std_max_rad) std_max_rad = m;
-      }
+      if (p[i]->p.z < std_min_z) std_min_z = p[i]->p.z;
+      m = r3_camera_mag2(p[i]);
+      if (m > std_max_rad2) std_max_rad2 = m;
    }
 }
 
 
-void star_empty(int n,g3s_phandle *vp)
+// Just enters the list, you have to render the 
+// background
+void StarEmpty(int n,r3s_phandle *vp)
 {
    int i;
-   fix m;
-   int n1;
-   g3s_phandle dest[10];   // assume max clip 10
+   float m;
+   r3s_phandle *dest;   // assume max clip 10
 
    // clip it just like you would when you render
    // then run through it
-   // set max out the maximum it could be, which would be eyesep raw
-   n1 = g3_clip_polygon(n,vp,dest);
-   for (i=0;i<n1;++i) {
-      if (dest[i]->z < std_min_z) std_min_z = dest[i]->z;
-      m = mag2_point(dest[i]);
-      if (m > std_max_rad) std_max_rad = m;
+   n = r3_clip_polygon(n,vp,&dest);
+
+   for (i=0;i<n;++i) {
+      if (dest[i]->p.z < std_min_z) std_min_z = dest[i]->p.z;
+      m = r3_camera_mag2(dest[i]);
+      if (m > std_max_rad2) std_max_rad2 = m;
    }
 }
 
 // render stars to a sky-like thing,
 // no viewports, clips to half sphere
-void star_sky(void)
+void StarSky(void)
 {
    std_min_z     = 0;
-   std_max_rad   = FIX_UNIT;
+   std_max_rad2  = 1.0;
 }
 
-#ifdef STARS_ANTI_ALIAS
 // render a single pixel of an anti-aliased star
 void do_aa_star_pixel(int x, int y, int fx, int fy, int c)
 {
-  int q; 
+  int q;
   
-  if (gr_get_pixel(x,y) == 0) {
+  // gpix_func is NULL when check_bkgnd is FALSE;
+  // i.e., when we want to skip the check.
+  if ((gpix_func == NULL) || (gd_gpix_opt(x,y,gpix_func) == 0))
+  {
     q = fx * fy * c;
 
     // fx is % 0..256; fy is % 0..256; c is % 0..255.
@@ -205,76 +232,124 @@ void do_aa_star_pixel(int x, int y, int fx, int fy, int c)
 
     // q is now 0..255, which we rescale back into color range
 
-    gr_fill_pixel(std_alias_color_table[q], x, y);
+    q = std_alias_color_table[q];
+    if (q)
+      gd_pix_opt(q,x,y,pix_func);
   }
 }
+
+static unsigned char effective_color[256];
 
 // render an anti-aliased star.
 // this is a prime candidate for being made table driven
 void do_aa_star(fix fx, fix fy, int c)
 {
-  // isolate the fractions and the integers
-  int x_frac = fix_frac(fx) >> 8;
-  int y_frac = fix_frac(fy) >> 8;
-  int x = fix_int(fx);
-  int y = fix_int(fy);
-
-  int color = (std_color_base + std_color_range - 1 - c);
-
-  // rescale the color so that it's 0..255, 0 = dark, 255 = light
-  color = (255 * color) / (std_color_range+1);
-
+  int color = effective_color[c];
   // ok, now compute the weightings for each pixel
 
-  do_aa_star_pixel(x,y, 256-x_frac, 256-y_frac, color);
-  do_aa_star_pixel(x+1,y, x_frac, 256-y_frac, color);
-  do_aa_star_pixel(x,y+1,256-x_frac, y_frac, color);
-  do_aa_star_pixel(x+1,y+1, x_frac, y_frac, color);
+  if (color > 4) {
+     // isolate the fractions and the integers
+     int x_frac = fix_frac(fx) >> 8;
+     int y_frac = fix_frac(fy) >> 8;
+     int x = fix_int(fx);
+     int y = fix_int(fy);
+
+     do_aa_star_pixel(x,y, 256-x_frac, 256-y_frac, color);
+     do_aa_star_pixel(x+1,y, x_frac, 256-y_frac, color);
+     do_aa_star_pixel(x,y+1,256-x_frac, y_frac, color);
+     do_aa_star_pixel(x+1,y+1, x_frac, y_frac, color);
+  } else {
+     int x = fix_rint(fx);
+     int y = fix_rint(fy);
+     if ((gpix_func == NULL) || (gd_gpix_opt(x,y,gpix_func) == 0))
+       gd_pix_opt(c,x,y,pix_func);
+  }
+}
+
+double star_gamma = .45776;
+
+static int compute_brightness(int n)
+{
+   int i;
+   for (i=255; i > 0; --i)
+      if (std_alias_color_table[i] == n)
+         return i;
+   return 0;
 }
 
 void star_init_alias_table(void)
 {
-  // init gamma corrected table
-  int i,a;
-  fix b,gamma;
+   // init gamma corrected table
+   float b;
+   int a,i;
 
-  gamma = fix_make(0, 30000);
+   if (std_color_dark < std_color_bright) {
+          // set a to the "black" color
+      a = std_color_dark-1; 
+          // set b to the number of colors in the bank + black
+      b = (std_color_bright - std_color_dark) + 2;
+   } else {
+      a = std_color_dark+1;   // "black"
+      b = (std_color_bright - std_color_dark) - 2;
+   }
 
-  a = std_color_base + std_color_range - 1;
-  b = fix_make(-(std_color_range-1),0);
+   for (i=0; i < 256; ++i) {
+      int c = floor(b * pow((float)i/256.0,star_gamma));
+      if (c != 0)
+         std_alias_color_table[i] = a + c;
+      else
+         std_alias_color_table[i] = 0;
+   }
 
-  for (i=0; i < 256; ++i)
-    std_alias_color_table[i] = 
-      a + fix_int(fix_mul(b, fix_pow(fix_make(i,0)/255, gamma)));
+  // remap input colors into the value 0..255
+
+  i = std_color_dark;
+  goto middle;
+  do {
+     i += std_color_dark < std_color_bright ? 1 : -1;
+    middle:
+     effective_color[i] = compute_brightness(i);
+  } while (i != std_color_bright);
 }
 
-#endif
 
-void star_render()
+// In this case, the user is responsible for setting the position
+// and orientation of the stars.  At the very least, you NEED to put
+// them at the viewer position, at least until we have our optimized
+// star transformer.  But that's easily gotten from the r3d
+// Must be in a block
+void StarRender(void)
 {
    int i;
-   g3s_phandle s;
+   r3s_point s;
    int x,y;
    int x1,y1;
-   g3s_vector v;
-   #ifdef STEREO_ON
-   bool  old_stereo;
-   #endif
-   #ifdef STARS_ANTI_ALIAS
+   float old_near_z;
    int anti_alias = grd_bm.w >= std_alias_size;
-   #endif
+
+   if (check_bkgnd)
+      gpix_func = gd_ugpix8_expose(0,0);
+   else
+      gpix_func = NULL;
+
+   if (pix_func == NULL) {
+      if ((grd_bpp>8)&&(gr_get_fill_type() == FILL_CLUT))
+         pix_func = flat16_clut8_upix8;
+      else
+         pix_func = gd_upix8_expose(0,0,0);
+   }
+
+   if (grd_bpp>8)
+      pixpal = (void *)grd_pal16_list[0];
 
    #ifdef STAR_SPEW
    star_num_behind = 0;
    star_num_projected = 0;
    #endif
 
-   #if defined(STARS_ANTI_ALIAS) && defined(STEREO_ON)
-   if (g3d_stereo) anti_alias = 0;
-   #endif
-
-   // exit if no one every drew a star field anywhere visible
-   if (std_min_z == 0x7fffffff) {
+   // exit if no one ever drew a star field anywhere visible
+   // This is biggest possible number
+   if (std_min_z == STAR_MAX_Z) {
       #ifdef STAR_SPEW
       mprintf("ignored\n");
       #endif
@@ -282,147 +357,120 @@ void star_render()
    }
 
    #ifdef STAR_SPEW
-   mprintf("max_rad = %x min_z = %x\n",fix_sqrt(star_max_rad),star_min_z);
+   mprintf("max_rad = %f min_z = %f\n",sqrt(star_max_rad2),star_min_z);
    #endif
+
+   // Can this ever happen?
    if (std_min_z < 0) std_min_z = 0;
 
-   // scale by max radius
-   #ifndef STEREO_ON
-   g3_scale_object(fix_sqrt(std_max_rad));
-   #else
-   // add in eyesep raw cause that's as much bigger it could be
-   g3_scale_object(fix_sqrt(std_max_rad) + (g3d_stereo?g3d_eyesep_raw:0));
-   #endif
+   // in actuality, this is identical to pushing forward plane
+   // forward to this value and going from there... hmmmm.
+   // hmmm... move plane forward
 
-   #ifdef STEREO_ON
-   old_stereo = g3d_stereo;
-   g3d_stereo = 0;
-   #endif
+   std_min_z /= sqrt(std_max_rad2);
+
+   old_near_z = r3_get_near_plane();
+   r3_set_near_plane(std_min_z);
 
    for (i=0;i<std_num;++i) {
       // in theory if codes aren't set it's on the screen
 
       // unpack star vec to a normal vec
-      v.x = ((fix)std_vec[i].x)<<1;
-      v.y = ((fix)std_vec[i].y)<<1;
-      v.z = ((fix)std_vec[i].z)<<1;
-
-      s = star_transform_point(&v);
+      // sometimes you need to transform to clip code...
+      r3_transform_point(&s,&std_vec[i]);
  
-      if (s->codes == 0) {
-         x = fix_rint(s->sx);
-         y = fix_rint(s->sy);
-         if (std_size <= 1) {
-         #ifdef STARS_ANTI_ALIAS
-            if (anti_alias) {
-              do_aa_star(s->sx,s->sy,std_col[i]);
-            } else
-         #endif
-            if (gr_get_pixel(x,y) == 0) gr_fill_pixel(std_col[i],x,y);
-         } else {
-            for (x1=x;x1<x+std_size;++x1) {
-               for (y1=y;y1<y+std_size;++y1) {
-                  if (gr_get_pixel(x1,y1) == 0) gr_fill_pixel(std_col[i],x1,y1);
-               }
+      // If on screen and z is big enough go for it
+      if ((s.p.z > std_min_z) && (s.ccodes == 0)) {
+         if (std_size <= 1)
+         {
+            if (anti_alias)
+               do_aa_star(s.grp.sx,s.grp.sy,std_col[i]);
+            else {
+               int x = fix_rint(s.grp.sx);
+               int y = fix_rint(s.grp.sy);
+               if ((gpix_func == NULL) || (gd_gpix_opt(x,y,gpix_func) == 0))
+                  gd_pix_opt(std_col[i],x,y,pix_func);
             }
          }
-
-         #ifdef STEREO_ON
-         if (old_stereo) {
-            // switch canvases quickly
-            grd_bm.bits = g3d_rt_canv_bits;
-            if (std_size <= 1) {
-               if (gr_get_pixel(x,y) == 0) gr_fill_pixel(std_col[i],x,y);
-            } else {
-               for (x1=x;x1<x+std_size;++x1) {
-                  for (y1=y;y1<y+std_size;++y1) {
-                     if (gr_get_pixel(x1,y1) == 0) gr_fill_pixel(std_col[i],x1,y1);
-                  }
-               }
-            }
-            // switch back
-            grd_bm.bits = g3d_lt_canv_bits;
+         else
+         {
+            x = fix_rint(s.grp.sx);
+            y = fix_rint(s.grp.sy);
+            for (x1=x;x1<x+std_size;++x1)
+               for (y1=y;y1<y+std_size;++y1)
+                  if ((gpix_func == NULL) || (gd_gpix_opt(x,y,gpix_func) == 0))
+                     gd_pix_opt(std_col[i],x,y,pix_func);
          }
-         #endif
 
       }
-      g3_free_point(s);
    }
-
-   #ifdef STEREO_ON
-   g3d_stereo = old_stereo;
-   #endif
 
    #ifdef STAR_SPEW
    mprintf("stars = %d behind = %d proj = %d\n",st_num,star_num_behind,star_num_projected);
    #endif
 
    // reset min z and max rad
-   std_min_z     = 0x7fffffff;
-   std_max_rad   = 0;
-                        
+   // make this very big
+   // very very big
+   std_min_z     = STAR_MAX_Z;
+   std_max_rad2  = 0;
+
+   r3_set_near_plane(old_near_z);
+
+   pix_func = NULL;
 }
 
 
+// Not be in a block
+void StarRenderSimple()
+{
+   mxs_vector view;
+   mxs_vector zero = {0,0,0};
+
+   view = *r3_get_view_pos();
+
+   r3_set_view(&zero);
+
+   r3_start_block();
+   StarRender();
+   r3_end_block();
+
+   r3_set_view(&view);
+}
+
+// Base is the black color, range includes
+// the white color
+// Also, set the canvas width size you need to be
+// to use anti-aliasing
+void StarSetAntiAlias(int dark_col,int bright_col,int wsize)
+{
+   std_color_dark = dark_col; // col;
+   std_color_bright = bright_col; // range;
+   std_alias_size = wsize; // size of canvas to exceed
+   star_init_alias_table();
+}
 
 
 // stuffs random vectors and colors into the set areas
 // randomly assigning a color range to them
 // feel free to seed
-void star_rand(uchar col,uchar range)
+void StarRand(uchar col,uchar range)
 {
    int i;
-   g3s_vector v;
-   sts_vec *s;
-   fix m;
-
-   #ifdef STARS_ANTI_ALIAS
-     // SYSTEM SHOCK HACK!
-   std_color_base = 208; // col;
-   std_color_range = 16; // range;
-
-   star_init_alias_table();
-   #endif
+   mxs_vector v;
+   mxs_vector *s;
 
    for (i=0;i<std_num;++i) {
       s = &std_vec[i];
 
-      v.x = (rand()%4000 - 2000) << 8;
-      v.y = (rand()%4000 - 2000) << 8;
-      v.z = (rand()%4000 - 2000) << 8;
+      v.x = (rand()%4000 - 2000);
+      v.y = (rand()%4000 - 2000);
+      v.z = (rand()%4000 - 2000);
 
-      m = fix_mul(v.x,v.x)
-         + fix_mul(v.y,v.y)
-         + fix_mul(v.z,v.z);
-
-      if (m<FIX_UNIT/100) {
-         i = i-1;
-         continue;
-      }
-
-      m = fix_sqrt(m);
-
-      // normalize for fun hack
-      v.x = fix_div(v.x,m);
-      v.y = fix_div(v.y,m);
-      v.z = fix_div(v.z,m);
-
-      // put into star vec
-      s->x = (v.x>>1);
-      s->y = (v.y>>1);
-      s->z = (v.z>>1);
+      mx_norm_vec(s,&v);
 
       // assign color
       std_col[i] = rand()%range + col;
 
    }
 }
-
-
-
-
-
-
-
-
-              
