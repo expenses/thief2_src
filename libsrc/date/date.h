@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/date/RCS/date.h 1.2 1998/10/09 14:45:27 jaemz Exp $
 
 #ifndef __DATE_H
