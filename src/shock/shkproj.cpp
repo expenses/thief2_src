@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkproj.cpp,v 1.39 1999/11/19 14:54:53 adurant Exp $
 
 This file has been moved to gunproj.cpp AMSD

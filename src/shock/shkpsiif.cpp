@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/shock/shkpsiif.cpp,v 1.25 2000/02/19 13:26:00 toml Exp $
 
 #include <dev2d.h>
