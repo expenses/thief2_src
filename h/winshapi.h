@@ -1,5 +1,10 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
-// $Source: x:/prj/tech/libsrc/winshell/RCS/winshapi.h $
+// $Source: r:/prj/cam/libsrc/gameshel/RCS/winshapi.h $
 // $Author: TOML $
 // $Date: 1996/09/18 16:45:39 $
 // $Revision: 1.5 $
