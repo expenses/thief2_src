@@ -1,11 +1,14 @@
 #	----------------------------------
 #	Makefile for DBG library
 #	----------------------------------
-# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.20 1994/06/01 17:14:11 junochoe Exp $
+# $Header: x:/prj/tech/libsrc/lg/RCS/makefile 1.21 1994/07/08 17:39:28 rex Exp $
 # $Log: makefile $
-# Revision 1.20  1994/06/01 17:14:11  junochoe
-# added tmpalloc.c temporary allocation functions
+# Revision 1.21  1994/07/08 17:39:28  rex
+# Moved to r:
 #
+# Revision 1.20  1994/06/01  17:14:11  junochoe
+# added tmpalloc.c temporary allocation functions
+# 
 # Revision 1.19  1994/02/28  10:53:02  rex
 # Changed kb.lib to input.lib
 # 
@@ -71,8 +74,8 @@ WARN_ON = 1
 DBG_ON = 1
 
 COMPILER = watcom
-SRCDIR = n:\project\lib\src\lg
-RELDIR = n:\project\lib\release
+SRCDIR = r:\prj\lib\src\lg
+RELDIR = r:\prj\lib\rel
 OBJDIR = obj
 LIBDIR = $(RELDIR)
 INCDIR = $(RELDIR)
