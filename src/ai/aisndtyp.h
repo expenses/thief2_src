@@ -1,7 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aisndtyp.h 1.11 1998/11/05 22:09:30 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aisndtyp.h,v 1.14 2000/03/06 22:36:28 bfarquha Exp $
 //
 //
+#pragma once
 
 #ifndef __AISNDTYP_H
 #define __AISNDTYP_H
@@ -18,7 +19,7 @@ enum eAISoundType
    kAIST_Combat,
 
    kAIST_Num,
-   
+
    kAIST_TypeMax=0xffffffff // force it use an int
 };
 
@@ -58,7 +59,7 @@ enum eAISoundConceptEnum
    kAISC_AlertToTwo,
    kAISC_AlertToThree,
    kAISC_SpotPlayer,
-   
+
    kAISC_AlertDownToZero,
    kAISC_LostContact,
 
@@ -68,6 +69,7 @@ enum eAISoundConceptEnum
    kAISC_ReactRun,
    kAISC_ReactFriend,
    kAISC_ReactAlarm,
+   kAISC_ReactFindFriend,
 
    // Combat related
    kAISC_CombatAttack,
@@ -79,30 +81,32 @@ enum eAISoundConceptEnum
    kAISC_CombatHitDamageHigh,
    kAISC_CombatHitDamageLow,
    kAISC_CombatHitAmbush,
-   
+
    // Death
    kAISC_DieLoud,
    kAISC_DieSoft,
-   
+
    // Discoveries
    kAISC_FoundBody,
    kAISC_FoundMissing,
    kAISC_FoundBreach,
    kAISC_FoundSmall,
    kAISC_FoundLarge,
+   kAISC_FoundRobot,
    kAISC_RecentIntruder,
    kAISC_RecentBody,
    kAISC_RecentMissing,
    kAISC_RecentOther,
-   
+   kAISC_RecentRobot,
+
    kAISC_OutOfReach,
 
    kAISC_CoreNum,
-   
+
    ////////////////
 
    kAISC_GameBase = 10000,
-   
+
    ////////////////
 
    kAISC_TypeMax=0xffffffff // force it use an int
