@@ -7,9 +7,9 @@
 # Makefile for Star library
 #
 # $Log: makefile $
-# Revision 2.4  1997/08/12 22:34:58  JAEMZ
+# Revision 2.4  1997/08/12  22:34:58  JAEMZ
 # Took out star3d.asm
-#
+# 
 # Revision 2.3  1997/01/31  23:26:07  JAEMZ
 # Ported star library to new libraries
 # 
