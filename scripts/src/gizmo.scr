@@ -312,6 +312,56 @@ MESSAGES:
    }
 END_SCRIPT(ToggleDoor)
 
+/* toggles suspicious state on open/close change */
+BEGIN_SCRIPT(SecurityDoor, Door)
+
+MESSAGES:
+
+  OnSim()
+  {
+    if (message.starting)
+    {
+      SetData("StartDoorState",Door.GetDoorState(self));
+      if (Door.GetDoorState(self)==kDoorClosing)
+        SetData("StartDoorState",kDoorClosed);
+      if (Door.GetDoorState(self)==kDoorOpening)
+        SetData("StartDoorState",kDoorOpen);
+    }
+    DefaultOnSim();
+  }
+
+  OnDoorOpen()
+  {
+    //then we've changed to our nonstart state.  Become suspicious
+
+    if ((integer)GetData("StartDoorState")!=kDoorOpen);
+      if (Property.Possessed(self,"SuspObj"))
+        Property.Set(self,"SuspObj","Is Suspicious",TRUE);
+
+    if ((integer)GetData("StartDoorState")==kDoorOpen)
+      if (Property.Possessed(self,"SuspObj"))
+        Property.Set(self,"SuspObj","Is Suspicious",FALSE);
+
+    DefaultOnDoorOpen();
+  }
+
+  OnDoorClose()
+  {
+    //then we've changed to our nonstart state.  Become suspicious
+
+    if ((integer)GetData("StartDoorState")!=kDoorClosed)
+      if (Property.Possessed(self,"SuspObj"))
+        Property.Set(self,"SuspObj","Is Suspicious",TRUE);
+
+    if ((integer)GetData("StartDoorState")==kDoorClosed)
+      if (Property.Possessed(self,"SuspObj"))
+        Property.Set(self,"SuspObj","Is Suspicious",FALSE);
+
+    DefaultOnDoorClose();
+  }
+
+END_SCRIPT(SecurityDoor)
+
 
 /* Key which knows how to lock and unlock an object, if and only 
    if it matches that object's RegionID and either has its Master
