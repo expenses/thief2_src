@@ -1191,9 +1191,28 @@ MESSAGES:
    {
       if(message.starting)
       {
+         Sound.PreLoad("bas0101a");
          SetOneShotTimer(self,"CheckDoor",11.0);
       }
       DefaultOnSim();
+   }
+   OnMessage()
+   {
+      object thedoor=object("JenivereDoor");
+
+      if(MessageIs("StartPicking"))
+      {
+         Sound.PlaySchema(thedoor,"lockpik",thedoor);
+         ActReact.React("tweq_control",1.0,thedoor,0,kTweqTypeJoints,kTweqDoActivate);
+      }
+      else if(MessageIs("FinishPicking"))
+      {
+         Sound.HaltSchema(thedoor);
+         ActReact.React("tweq_control",1.0,thedoor,0,kTweqTypeJoints,kTweqDoHalt);
+         // Property.Set(thedoor,"Locked",FALSE);
+      }
+      Reply(TRUE);
+      DefaultOnMessage();
    }
    OnTimer()
    {
