@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.2 1999/11/18 13:59:46 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/evidence.scr 1.3 2000/02/11 11:16:39 adurant Exp $
 //
 
 /* Creates watch links to this object when it gets created.
@@ -81,6 +81,10 @@ MESSAGES:
          object newobj=Object.Create("MissingLoot");
 
          Object.Teleport(newobj, vector(0,0,0), vector(0,0,0), self);
+
+	 Property.Set(newobj,"SuspObj","Is Suspicious",TRUE);
+	 Property.Set(newobj,"SuspObj","Suspicious Type","missingloot");
+	
          SetData("OutOfPlace",TRUE);
       }
       DefaultOnFrobWorldEnd();
@@ -141,3 +145,21 @@ MESSAGES:
    }
 END_SCRIPT(SecureDoor)
 
+
+//since suspicious objects now require that objects have the property 
+//directly on them, we need to make sure that it gets set on them directly.
+//So..  on begin_script we set suspicious to the right value
+
+BEGIN_SCRIPT(InstantiateSuspicious,RootScript)
+
+MESSAGES:
+
+   OnBeginScript()
+   {
+  
+     Property.Set(self,"SuspObj","Is Suspicious",Property.Get(self,"SuspObj","Is Suspicious"));
+
+     DefaultOnBeginScript();
+   }
+
+END_SCRIPT(InstantiateSuspicious);
