@@ -211,6 +211,12 @@ cd %_DAILYCD2_%
 xcopy /s r:\prj\thief2\install\cd2\%_lcode_%\* .
 
 rem **************************************************************
+rem get the SafeDisc stuff
+rem **************************************************************
+
+copy r:\prj\thief2\reltools\safedisc\* %_DAILYTHIEFCD2_%
+
+rem **************************************************************
 rem build the ilist files
 rem **************************************************************
 
