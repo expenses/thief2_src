@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/RCS/netprops.h 1.5 1999/01/27 16:00:42 mahk Exp $
+// $Header: r:/t2repos/thief2/src/object/netprops.h,v 1.9 2000/01/29 13:23:51 adurant Exp $
+#pragma once
 
 #ifndef __NETPROPS_H
 #define __NETPROPS_H
@@ -59,24 +60,16 @@ EXTERN void ObjSetHeartbeat(ObjID obj, int rate);
 //
 // A "host object ID", which describes who owns the real object
 // that this proxy belongs to, and its objID on that host.
+//
+// @NOTE: The property itself is now gone; only the struct itself is left.
+// The property has been replaced by a relation, which is hidden entirely
+// within objnet.
+//
 
 typedef struct sHostObjID {
    ObjID host;
    NetObjID netObjID; // ObjID on m_host, not necessarily a valid ObjID here.
 } sHostObjID;
-
-#undef  INTERFACE
-#define INTERFACE IHostObjIDProperty
-DECLARE_PROPERTY_INTERFACE(IHostObjIDProperty)
-{
-   DECLARE_UNKNOWN_PURE(); 
-   DECLARE_PROPERTY_PURE(); 
-   DECLARE_PROPERTY_ACCESSORS(sHostObjID*); 
-}; 
-
-// Make this property visible directly, rather than through accessors, since
-// objsys provides the a more general API called ObjHostObjID().
-EXTERN IHostObjIDProperty *gHostObjIDProp;
 
 /////////////////////////////////////////////////
 // AvatarHeightOffset Property
@@ -84,6 +77,42 @@ EXTERN IHostObjIDProperty *gHostObjIDProp;
 
 #define PROP_AVATAR_HEIGHT_OFFSET_NAME "AvatarZOffset"
 EXTERN IFloatProperty *gAvatarHeightOffsetProp;
+
+/////////////////////////////////////////////////
+//
+// Network Local Copy Property
+//
+// This property is mainly a convenience, to allow us to record that
+// certain objects are "local-only copies" of others. There are times
+// that we prefer not to have proper proxies, but rather separate
+// copies of an object -- this sometimes makes sense for short-lived
+// objects like bullets or special effects.
+//
+
+#define PROP_LOCAL_COPY_NAME "LocalCopy"
+EXTERN IBoolProperty *gLocalCopyProp;
+
+/////////////////////////////////////////////////
+//
+// Distinct Avatar Property
+//
+// This should be set on any object whose "avatar" -- that is, its
+// proxy representation -- has a different archetype than the hosted
+// object.
+
+#define PROP_DISTINCT_AVATAR_NAME "DistinctAvatar"
+EXTERN IBoolProperty *gDistinctAvatarProp;
+
+/////////////////////////////////////////////////
+//
+// Handoff Number Property
+//
+// This is a serial number of the times that this object has been handed
+// off from machine to machine. We use it so we can reject obsolete handoff
+// messages that arrive out of order.
+
+#define PROP_HANDOFF_NUMBER_NAME "HandoffNumber"
+EXTERN IIntProperty *gHandoffNumberProp;
 
 /////////////////////////////
 //

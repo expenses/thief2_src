@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/creature.h 1.49 1999/04/14 15:18:44 mwhite Exp $
+// $Header: r:/t2repos/thief2/src/motion/creature.h,v 1.50 2000/01/29 13:22:00 adurant Exp $
+#pragma once
 
 #ifndef __CREATURE_H
 #define __CREATURE_H
@@ -252,7 +253,7 @@ inline const Location *cCreature::GetLocation() const
 {
    Position *pPos=ObjPosGet(m_ObjID);
 
-   AssertMsg1(pPos,"No position for obj %d",m_ObjID);
+   AssertMsg1(pPos,"No position for obj 0",m_ObjID);
 
    return &pPos->loc;
 }

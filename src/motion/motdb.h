@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/motdb.h 1.5 1999/06/06 17:02:58 dc Exp $
+// $Header: r:/t2repos/thief2/src/motion/motdb.h,v 1.6 2000/01/29 13:22:13 adurant Exp $
+#pragma once
 
 #ifndef __MOTDB_H
 #define __MOTDB_H

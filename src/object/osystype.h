@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/RCS/osystype.h 1.5 1999/01/27 16:00:46 mahk Exp $
+// $Header: r:/t2repos/thief2/src/object/osystype.h,v 1.5 2000/01/29 13:24:11 adurant Exp $
+#pragma once
 
 #ifndef __OSYSTYPE_H
 #define __OSYSTYPE_H

@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/lnkquery.h 1.1 1999/04/07 14:38:23 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/lnkquery.h,v 1.6 2000/01/29 13:23:43 adurant Exp $
+#pragma once
 
 #ifndef __LNKQUERY_H
 #define __LNKQUERY_H

@@ -1,13 +1,14 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/lnkquer_.h 1.1 1999/04/07 14:38:23 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/lnkquer_.h,v 1.7 2000/01/29 13:23:44 adurant Exp $
+#pragma once
 
 #ifndef __LNKQUER__H
 #define __LNKQUER__H
 #include <lnkquery.h>
 #include <linktype.h>
 #include <linkbase.h>
-#include <linkint.h>
 #include <linkqdb_.h>
 #include <linkknow.h>
+#include <linkint.h>
 
 ////////////////////////////////////////////////////////////
 // LINK QUERY IMPLEMENTATION TOOLS

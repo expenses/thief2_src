@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/linkint.h 1.1 1999/04/07 14:38:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/linkint.h,v 1.6 2000/01/29 13:23:20 adurant Exp $
+#pragma once
 
 #ifndef __LINKINT_H
 #define __LINKINT_H

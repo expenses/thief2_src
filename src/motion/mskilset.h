@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/motion/RCS/mskilset.h 1.13 1998/08/07 15:18:42 kate Exp $
+// $Header: r:/t2repos/thief2/src/motion/mskilset.h,v 1.14 2000/01/29 13:22:20 adurant Exp $
+#pragma once
 
 #ifndef __MSKILSET_H
 #define __MSKILSET_H

@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/trait/RCS/donorq.h 1.1 1999/04/07 14:40:57 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/donorq.h,v 1.2 2000/01/29 13:23:02 adurant Exp $
+#pragma once
 #ifndef __DONORQ_H
 #define __DONORQ_H
 #include <comtools.h>

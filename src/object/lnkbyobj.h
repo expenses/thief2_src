@@ -1,4 +1,5 @@
-// $Header: x:/prj/tech/libsrc/object/link/RCS/lnkbyobj.h 1.1 1999/04/07 14:38:22 TOML Exp $
+// $Header: r:/t2repos/thief2/src/object/lnkbyobj.h,v 1.6 2000/01/29 13:23:40 adurant Exp $
+#pragma once
 
 #ifndef __LNKBYOBJ_H
 #define __LNKBYOBJ_H
