@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/physics/RCS/physcast.h 1.7 1999/06/18 16:39:56 JON Exp $
+// $Header: r:/t2repos/thief2/src/physics/physcast.h,v 1.9 2000/02/29 13:26:48 ccarollo Exp $
 //
 // Raycasting through physics objects
 //
+#pragma once
 
 #ifndef __PHYSCAST_H
 #define __PHYSCAST_H
@@ -17,6 +18,9 @@ enum ePhysCollisionTest
    kCollideSphereHat   = 0x0002,
    kCollideOBB         = 0x0004,
    kCollideEdgeTrigger = 0x0008,
+
+   // @TODO: kInsideSphere, kInsideSphereHat
+   kInsideOBB          = 0x0010,  
 
    kCollideTerrain     = 0x0100,
 
