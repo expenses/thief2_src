@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.62 2000/02/18 23:25:32 TJS Exp $
+// $Header: r:/prj/thief2/scripts/src/RCS/gen.scr 1.63 2000/02/23 10:09:34 adurant Exp $
 //
 
 #include "frobscrt.h"
@@ -779,6 +779,23 @@ END_SCRIPT(CamReturn);
 BEGIN_SCRIPT(CamGrenade, Physics)
 
 METHODS:
+
+   METHOD float GetMagSq(vector whichvec)
+   {
+     return ((whichvec.x * whichvec.x) + (whichvec.y * whichvec.y) +
+             (whichvec.z * whichvec.z));
+   }
+
+   METHOD BOOL PassVelCheck()
+   {
+	vector myvel;
+        Physics.GetVelocity(self,myvel);
+      if (GetMagSq(myvel)<4)
+	return TRUE;
+      else
+	return FALSE;
+   }
+
    METHOD void Activate()
    {
       // So, who ever said I was in motion because the player threw me, anyway?
@@ -800,6 +817,10 @@ MESSAGES:
 
     OnBeginScript()
     {
+       if (Link.AnyExist("~Contains",self)) //am I contained?
+  	 SetData("AmContained",1);
+       else
+	 SetData("AmContained",0);
        Physics.SubscribeMsg(self, kFellAsleepMsg);
        DefaultOnBeginScript();
     }
@@ -814,6 +835,32 @@ MESSAGES:
        Activate();
        DefaultOnPhysFellAsleep();
     }
+
+    OnContained()
+    {
+      if (message.event==kContainRemove)
+	SetData("AmContained",0);
+      else
+        SetData("Amcontained",1);
+      if(message.event==kContainRemove &&
+         object(message.container)==Object.Named("Player"))
+      {
+	 SetOneShotTimer(self,"velcheck",1.0);	 
+      }
+      DefaultOnContained();
+    }
+
+    OnTimer()
+    {
+      if (message.name == "velcheck")
+	if (!(integer)GetData("AmContained"))
+	  if (PassVelCheck())
+	    Activate();
+          else
+            SetOneShotTimer(self,"velcheck",1.0); //try again
+      DefaultOnTimer();
+    }
+    
 
     OnSlain()
     {
