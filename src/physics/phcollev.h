@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: r:/t2repos/thief2/src/physics/phcollev.h,v 1.3 2000/02/22 20:01:08 toml Exp $
 #pragma once  
 #ifndef __PHCOLLEV_H
