@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aidodgep.h 1.1 1998/06/23 13:15:42 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aidodgep.h,v 1.2 2000/01/29 12:45:16 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIDODGEP_H
 #define __AIDODGEP_H

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aidbdraw.h 1.3 1998/05/27 08:17:21 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aidbdraw.h,v 1.4 2000/01/29 12:45:13 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIDBDRAW_H
 #define __AIDBDRAW_H

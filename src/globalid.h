@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/globalid.h 1.2 1997/01/20 23:41:11 mahk Exp $
+// $Header: r:/t2repos/thief2/src/globalid.h,v 1.3 2000/01/29 12:41:20 adurant Exp $
+#pragma once
 
 #ifndef GLOBALID_H
 #define GLOBALID_H

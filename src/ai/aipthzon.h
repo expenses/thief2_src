@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aipthzon.h 1.2 1999/03/10 12:58:44 ccarollo Exp $
+// $Header: r:/t2repos/thief2/src/ai/aipthzon.h,v 1.3 2000/01/29 12:45:46 adurant Exp $
 //
 // AI zone-determination header
 //
+#pragma once
 
 #ifndef __AIPTHZON_H
 #define __AIPTHZON_H

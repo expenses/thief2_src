@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aicblink.h 1.1 1998/08/14 17:37:31 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aicblink.h,v 1.2 2000/01/29 12:45:06 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AICBLINK_H
 #define __AICBLINK_H

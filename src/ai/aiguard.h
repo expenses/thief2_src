@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiguard.h 1.1 1998/07/06 10:28:56 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiguard.h,v 1.2 2000/01/29 12:45:23 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIGUARD_H
 #define __AIGUARD_H

@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/sampapp.h 1.2 1996/11/10 02:37:23 mahk Exp $
+// $Header: r:/t2repos/thief2/src/sampapp.h,v 1.3 2000/01/29 12:41:43 adurant Exp $
+#pragma once
 
 #ifndef __SAMPAPP_H
 #define __SAMPAPP_H

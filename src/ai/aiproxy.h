@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiproxy.h 1.1 1999/05/21 13:29:12 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiproxy.h,v 1.2 2000/01/29 12:45:37 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIPROXY_H
 #define __AIPROXY_H

@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aibasatm.h 1.1 1999/03/02 17:42:25 TOML Exp $
+// $Header: r:/t2repos/thief2/src/ai/aibasatm.h,v 1.2 2000/01/29 12:45:02 adurant Exp $
 //
 // Template file for non-inline members of the base implementation of an AI actor
 //
+#pragma once
 
 #ifndef __AIBASATM_H
 #define __AIBASATM_H

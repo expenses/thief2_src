@@ -1,8 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/cam/src/ai/RCS/aiacttyp.h 1.13 1999/03/04 12:11:02 JON Exp $
+// $Header: r:/t2repos/thief2/src/ai/aiacttyp.h,v 1.14 2000/01/29 12:45:00 adurant Exp $
 //
 //
 //
+#pragma once
 
 #ifndef __AIACTTYP_H
 #define __AIACTTYP_H

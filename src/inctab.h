@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/inctab.h 1.1 1997/05/29 17:14:57 JON Exp $
+// $Header: r:/t2repos/thief2/src/inctab.h,v 1.2 2000/01/29 12:41:31 adurant Exp $
+#pragma once
 
 #ifndef INCTAB__H
 #define INCTAB__H

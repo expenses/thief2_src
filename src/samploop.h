@@ -1,4 +1,5 @@
-// $Header: r:/prj/cam/src/RCS/samploop.h 1.3 1998/04/24 14:13:17 TOML Exp $
+// $Header: r:/t2repos/thief2/src/samploop.h,v 1.4 2000/01/29 12:41:44 adurant Exp $
+#pragma once
 #ifndef __SAMPLOOP_H
 #define __SAMPLOOP_H
 
