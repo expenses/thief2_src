@@ -1,8 +1,8 @@
 #
 # $Source: x:/prj/tech/libsrc/matrix/RCS/makefile $
-# $Revision: 1.9 $
-# $Author: DAVET $
-# $Date: 1997/08/12 14:09:32 $
+# $Revision: 1.10 $
+# $Author: dc $
+# $Date: 1997/08/12 14:29:27 $
 #
 # Makefile for Matrix library
 #
@@ -36,13 +36,13 @@ matrix_HDRS = \
 .PATH.sed = $(.PATH.c)
 
 mxd.sed .ALWAYS: 
-        %set fullpath_for_sed_script = $(.TARGET)
+        @%set fullpath_for_sed_script = $(.TARGET)
 
 .BEFORE: mxd.sed matrixd.h matrixds.h mxsymd.h
 
 build_double_version: 
-        @echo Build double for $(target) (use $(fullpath_for_sed_script))
-        sed -f $(fullpath_for_sed_script) $(source) > $(target,F)
+        @echo Building double version of $(target)
+        @sed -f $(fullpath_for_sed_script) $(source) > $(target,F)
 
 #        @chmod -w $(target)
 
