@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkinv.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkinv.cpp,v 1.108 1999/11/19 14:57:42 adurant Exp $
 
 #include <2d.h>

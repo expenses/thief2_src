@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkhacks.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkhacks.cpp,v 1.5 2000/02/19 13:25:19 toml Exp $
 //
 // wow this whole file looks like it can be killed someday soon...

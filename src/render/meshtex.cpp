@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\meshtex.cpp"
 // $Header: r:/t2repos/thief2/src/render/meshtex.cpp,v 1.1 2000/01/14 10:40:19 MAT Exp $
 
 /* --<<= -+-/-/-/=/=/\/- <<< ((( ((( / \ ))) ))) >>> -\/\=\=\-\-\-+- =>>-- *\

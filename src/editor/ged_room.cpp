@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\ged_room.cpp"
 // $Header: r:/t2repos/thief2/src/editor/ged_room.cpp,v 1.24 1999/12/01 09:25:43 MAT Exp $
 // room database gediting
 

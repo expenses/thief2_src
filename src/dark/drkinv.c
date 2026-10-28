@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\drkinv.c"
 // $Header: r:/t2repos/thief2/src/dark/drkinv.c,v 1.15 2000/02/19 12:27:17 toml Exp $
 // dark specific inventory stuff
 // including expose of the ui

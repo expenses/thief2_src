@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkmulti.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkmulti.cpp,v 1.84 1999/12/14 19:59:58 adurant Exp $
 
 #include <limits.h>

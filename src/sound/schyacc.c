@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sound\\schyacc.c"
 /* n:\bin\yacc -l -D schtok.h -o sound\schyacc.c schema.y */
 #ifdef YYTRACE
 #define YYDEBUG 1

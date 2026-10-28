@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\mnumprop.cpp"
 // $Header: r:/t2repos/thief2/src/render/mnumprop.cpp,v 1.15 1999/05/19 16:12:10 mahk Exp $
 
 //

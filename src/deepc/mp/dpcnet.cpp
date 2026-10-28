@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\deepc\\mp\\dpcnet.cpp"
 #include <lg.h>
 #include <ctype.h>   // for isalnum()
 #include <appagg.h>

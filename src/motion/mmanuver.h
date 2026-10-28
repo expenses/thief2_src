@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\mmanuver.h"
 // $Header: r:/t2repos/thief2/src/motion/mmanuver.h,v 1.9 2000/01/31 09:50:13 adurant Exp $
 #pragma once
 

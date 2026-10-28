@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\wrloop.cpp"
 // $Header: r:/t2repos/thief2/src/sim/wrloop.cpp,v 1.73 2000/03/18 15:20:54 adurant Exp $
 
 #include <wrloop.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\face.cpp"
 // $Header: r:/t2repos/thief2/src/render/face.cpp,v 1.4 2000/01/20 16:47:45 MAT Exp $
 
 /* --<<= -+-/-/-/=/=/\/- <<< ((( ((( / \ ))) ))) >>> -\/\=\=\-\-\-+- =>>-- *\

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkovrld.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkovrld.cpp,v 1.11 2000/02/19 13:25:49 toml Exp $
 
 // overload swing meter

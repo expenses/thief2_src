@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\actreact\\reaction.cpp"
 // $Header: r:/t2repos/thief2/src/actreact/reaction.cpp,v 1.11 2000/01/28 11:28:21 adurant Exp $
 #include <appagg.h>
 #include <reactio_.h>

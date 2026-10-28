@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\swapregs.c"
 // $Header: r:/t2repos/thief2/src/editor/swapregs.c,v 1.11 2000/02/19 13:11:35 toml Exp $
 // swap button list for the create tool
 

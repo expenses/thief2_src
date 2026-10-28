@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\crwpnlst.cpp"
 #include <string.h>    // memset, apparently
 
 #include <appagg.h>

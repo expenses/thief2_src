@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\meshprop.cpp"
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/dark/meshprop.cpp,v 1.1 1999/11/02 16:15:27 adurant Exp $
 //

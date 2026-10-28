@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\objmodel.c"
 // $Header: r:/t2repos/thief2/src/render/objmodel.c,v 1.52 2000/02/13 20:10:37 adurant Exp $
 // this module deals with loading, freeing, and texture managing of
 // renderer models.

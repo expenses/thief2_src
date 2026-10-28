@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkanmsp.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkanmsp.cpp,v 1.4 1998/07/12 14:44:34 JUSTIN Exp $
 //
 // Animated Sprite Management

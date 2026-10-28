@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sound\\songutil.cpp"
 // $Header: r:/t2repos/thief2/src/sound/songutil.cpp,v 1.13 2000/02/29 17:44:44 patmac Exp $
 
 #include <songutil.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\deepc\\ai\\dpcaidga.cpp"
 #include <lg.h>
 
 #include <aiactloc.h>

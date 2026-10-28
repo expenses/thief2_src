@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\quest.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/quest.cpp,v 1.14 1999/08/31 17:42:29 Justin Exp $
 
 #include <questapi.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\objcast.cpp"
 // $Header: r:/t2repos/thief2/src/render/objcast.cpp,v 1.13 2000/02/01 18:23:06 bfarquha Exp $
 
 /* --<<= --/-/-/-/-/-/-/ <<< ((( ((( /\ ))) ))) >>> \-\-\-\-\-\-\-- =>>-- *\

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\doorphys.cpp"
 // $Header: r:/t2repos/thief2/src/sim/doorphys.cpp,v 1.53 2000/03/20 09:48:02 adurant Exp $
 // door system
 

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\viewmgr.c"
 // $Header: r:/t2repos/thief2/src/editor/viewmgr.c,v 1.62 2000/02/19 13:13:51 toml Exp $
 
 // View management system

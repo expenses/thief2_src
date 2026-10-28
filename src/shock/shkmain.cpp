@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkmain.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkmain.cpp,v 1.2 1999/04/30 18:23:49 mahk Exp $
 
 #include <loopapi.h>

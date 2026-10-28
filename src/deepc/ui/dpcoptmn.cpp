@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\deepc\\ui\\dpcoptmn.cpp"
 #include <dpcoptmn.h>
 #include <string.h>
 #include <dev2d.h>

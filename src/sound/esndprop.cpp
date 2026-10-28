@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sound\\esndprop.cpp"
 // $Header: r:/t2repos/thief2/src/sound/esndprop.cpp,v 1.4 1998/08/04 22:49:47 mahk Exp $
 
 #include <esndprop.h>

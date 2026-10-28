@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\relinver.cpp"
 // $Header: r:/t2repos/thief2/src/object/relinver.cpp,v 1.10 1998/10/19 13:04:49 mahk Exp $
 #include <linkbase.h>
 #include <relinver.h>

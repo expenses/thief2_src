@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\ghostphy.cpp"
 // $Header: r:/t2repos/thief2/src/sim/ghostphy.cpp,v 1.25 1999/08/26 13:25:22 ccarollo Exp $
 // physics functions for ghosts
 

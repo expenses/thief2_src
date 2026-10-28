@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\picklock.cpp"
 // $Header: r:/t2repos/thief2/src/dark/picklock.cpp,v 1.22 2000/01/29 20:22:07 adurant Exp $
 // lockpick service, properties, the whole thing...
 

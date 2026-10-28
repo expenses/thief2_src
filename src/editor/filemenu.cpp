@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\filemenu.cpp"
 // $Header: r:/t2repos/thief2/src/editor/filemenu.cpp,v 1.5 1998/10/17 19:28:42 dc Exp $
 
 #include <lg.h>

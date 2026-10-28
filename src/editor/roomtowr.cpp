@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\roomtowr.cpp"
 // $Header: r:/t2repos/thief2/src/editor/roomtowr.cpp,v 1.4 1999/12/09 18:16:26 MAT Exp $
 
 /* --=<= --/-/-/-/-/-/-/ <(< (( ((( /^^\ ))) )) >)> \-\-\-\-\-\-\-- =>=-- *\

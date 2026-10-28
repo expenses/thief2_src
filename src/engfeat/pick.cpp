@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\pick.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/pick.cpp,v 1.10 2000/01/10 18:23:15 adurant Exp $
 
 /* --<<= --/-/-/-/-/-/-/ <<< ((( ((( /\ ))) ))) >>> \-\-\-\-\-\-\-- =>>-- *\

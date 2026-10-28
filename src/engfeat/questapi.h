@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\questapi.h"
 // $Header: r:/t2repos/thief2/src/engfeat/questapi.h,v 1.7 2000/01/29 13:20:00 adurant Exp $
 #pragma once
 

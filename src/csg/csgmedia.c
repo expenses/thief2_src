@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\csg\\csgmedia.c"
 #include <lg.h>
 #include <csg.h>
 #include <bspdata.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\script\\scrptnet.cpp"
 // $Header: r:/t2repos/thief2/src/script/scrptnet.cpp,v 1.7 1999/06/10 20:22:34 Justin Exp $
 //
 // Basic Script Networking implementation

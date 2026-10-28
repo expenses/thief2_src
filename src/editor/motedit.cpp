@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\motedit.cpp"
 // $Header: r:/t2repos/thief2/src/editor/motedit.cpp,v 1.6 2000/02/19 13:11:06 toml Exp $
 // XXX @TODO: reset globals on startup
 

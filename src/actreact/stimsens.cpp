@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\actreact\\stimsens.cpp"
 // $Header: r:/t2repos/thief2/src/actreact/stimsens.cpp,v 1.28 1998/10/24 00:55:35 mahk Exp $
 #include <appagg.h>
 

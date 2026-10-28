@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sound\\auxsnd.cpp"
 // $Header: r:/t2repos/thief2/src/sound/auxsnd.cpp,v 1.8 1999/06/28 21:28:12 mwhite Exp $
 // memory sound source stuff from Pat
 

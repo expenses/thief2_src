@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shknetap.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shknetap.cpp,v 1.1 1999/10/20 16:44:15 Justin Exp $
 //
 // Shock implementation of required network services

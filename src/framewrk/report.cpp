@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\framewrk\\report.cpp"
 // $Header: r:/t2repos/thief2/src/framewrk/report.cpp,v 1.17 1999/06/02 16:56:08 XEMU Exp $
 // report system
 

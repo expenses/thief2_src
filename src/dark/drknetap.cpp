@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\drknetap.cpp"
 // $Header: r:/t2repos/thief2/src/dark/drknetap.cpp,v 1.1 1999/10/20 16:34:28 Justin Exp $
 //
 // Dark implementation of required network services

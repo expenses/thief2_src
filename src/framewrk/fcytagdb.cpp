@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\framewrk\\fcytagdb.cpp"
 // $Header: r:/t2repos/thief2/src/framewrk/fcytagdb.cpp,v 1.7 1998/06/08 17:05:21 TOML Exp $
 
 #include <fcytagdb.h>

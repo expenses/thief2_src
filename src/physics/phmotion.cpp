@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\physics\\phmotion.cpp"
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phmotion.cpp,v 1.5 1998/06/19 14:02:15 CCAROLLO Exp $
 //

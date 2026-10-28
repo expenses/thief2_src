@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\portal\\portsurf.c"
 //  $Header: r:/t2repos/thief2/src/portal/portsurf.c,v 1.42 2000/02/19 13:18:58 toml Exp $
 //
 //  PORTAL

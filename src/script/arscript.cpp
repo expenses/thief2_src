@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\script\\arscript.cpp"
 // $Header: r:/t2repos/thief2/src/script/arscript.cpp,v 1.10 1999/03/03 17:38:00 mahk Exp $
 
 #include <comtools.h>

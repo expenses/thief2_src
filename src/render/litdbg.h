@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\litdbg.h"
 // $Header: r:/t2repos/thief2/src/render/litdbg.h,v 1.1 1999/06/07 22:58:27 dc Exp $
 // is this idiotic, or what...
 

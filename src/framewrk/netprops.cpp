@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\framewrk\\netprops.cpp"
 // $Header: r:/t2repos/thief2/src/framewrk/netprops.cpp,v 1.11 1999/06/22 19:31:29 Justin Exp $
 
 #include <lg.h>

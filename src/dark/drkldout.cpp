@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\drkldout.cpp"
 // $Header: r:/t2repos/thief2/src/dark/drkldout.cpp,v 1.22 2000/02/28 14:17:04 kevin Exp $
 #include <comtools.h>
 #include <appagg.h>

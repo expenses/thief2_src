@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\script\\twqscrpt.cpp"
 // $Header: r:/t2repos/thief2/src/script/twqscrpt.cpp,v 1.11 1999/05/27 17:25:18 Justin Exp $
 // 
 

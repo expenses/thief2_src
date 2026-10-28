@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\framewrk\\ctagnet.cpp"
 // $Header: r:/t2repos/thief2/src/framewrk/ctagnet.cpp,v 1.6 1999/06/15 13:16:33 Justin Exp $
 //
 // Networking for the cTags array.

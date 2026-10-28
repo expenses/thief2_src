@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkkey.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkkey.cpp,v 1.19 2000/02/19 13:25:33 toml Exp $
 
 #include <appagg.h>

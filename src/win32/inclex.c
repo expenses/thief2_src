@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\win32\\inclex.c"
 /* n:\bin\lex -p inc -l -o r:\prj\cam\src\win32\inclex.c r:\prj\cam\src\inclex.lex */
 #define YYNEWLINE 10
 #define INITIAL 0

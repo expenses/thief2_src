@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\x10guish.cpp"
 // $ Header: $
 #include <x10guish.h>
 

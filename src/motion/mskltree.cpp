@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\mskltree.cpp"
 // $Header: r:/t2repos/thief2/src/motion/mskltree.cpp,v 1.3 1997/12/22 19:48:56 mahk Exp $
 
 #include <mskltree.h>

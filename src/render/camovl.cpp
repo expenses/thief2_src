@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\camovl.cpp"
 // $Header: r:/t2repos/thief2/src/render/camovl.cpp,v 1.10 2000/03/16 19:47:18 bfarquha Exp $
 
 // "Overlay" (read "2d") effects for when we're looking through the remote camera.

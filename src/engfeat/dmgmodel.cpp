@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\dmgmodel.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/dmgmodel.cpp,v 1.19 2000/02/05 19:37:52 adurant Exp $
 
 #include <appagg.h>

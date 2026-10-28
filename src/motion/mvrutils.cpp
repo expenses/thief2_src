@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\mvrutils.cpp"
 // $Header: r:/t2repos/thief2/src/motion/mvrutils.cpp,v 1.37 2000/03/06 09:42:29 adurant Exp $
 
 #include <matrixs.h>

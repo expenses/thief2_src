@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\quesreac.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/quesreac.cpp,v 1.2 1998/10/05 17:27:28 mahk Exp $
 #include <quesreac.h>
 #include <reaction.h>

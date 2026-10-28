@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\drkoptmn.cpp"
 // $Header: r:/t2repos/thief2/src/dark/drkoptmn.cpp,v 1.75 2000/03/22 18:19:55 patmac Exp $
 #include <string.h>
 #include <dev2d.h>
