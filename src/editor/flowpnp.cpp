@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\flowpnp.cpp"
 // $Header: r:/t2repos/thief2/src/editor/flowpnp.cpp,v 1.9 2000/02/19 13:10:39 toml Exp $
 // flow PnP gadget
 

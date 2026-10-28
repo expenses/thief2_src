@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\contain.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/contain.cpp,v 1.26 2000/01/13 13:17:37 adurant Exp $
 
 // COM fun

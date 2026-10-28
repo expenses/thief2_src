@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\playtest.h"
 // $Header: r:/t2repos/thief2/src/sim/playtest.h,v 1.5 2000/02/19 12:37:01 toml Exp $
 #pragma once
 #ifndef __PLAYTEST_H

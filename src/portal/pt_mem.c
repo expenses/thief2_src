@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\portal\\pt_mem.c"
 // $Header: r:/t2repos/thief2/src/portal/pt_mem.c,v 1.13 2000/02/19 13:18:47 toml Exp $
 
 // texture map storage management

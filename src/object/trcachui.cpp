@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\trcachui.cpp"
 // $Header: r:/t2repos/thief2/src/object/trcachui.cpp,v 1.6 1998/09/28 11:32:20 CMONTER Exp $
 
 #include <trcachui.h>

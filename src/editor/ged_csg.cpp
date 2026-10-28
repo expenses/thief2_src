@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\ged_csg.cpp"
 // $Header: r:/t2repos/thief2/src/editor/ged_csg.cpp,v 1.53 2000/02/19 13:10:43 toml Exp $
 // layout: interface to brushes during csg, then support calls, then portalization calls themselves
 

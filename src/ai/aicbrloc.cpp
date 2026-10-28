@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\ai\\aicbrloc.cpp"
 // $Header: r:/t2repos/thief2/src/ai/aicbrloc.cpp,v 1.7 2000/02/19 12:17:26 toml Exp $
 
 #include <aicbrloc.h>

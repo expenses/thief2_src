@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\ai\\aiactloc.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiactloc.cpp,v 1.38 2000/03/21 12:24:08 bfarquha Exp $
 //

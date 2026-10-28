@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\swaptool.c"
 // $Header: r:/t2repos/thief2/src/editor/swaptool.c,v 1.11 2000/02/19 13:11:36 toml Exp $
 // utilities for PnP swap area
 

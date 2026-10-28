@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\linkstor.cpp"
 // $Header: r:/t2repos/thief2/src/object/linkstor.cpp,v 1.17 1999/08/19 16:54:53 Justin Exp $
 #include <appagg.h>
 #include <string.h>

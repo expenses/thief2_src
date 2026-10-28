@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\phproped.cpp"
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/editor/phproped.cpp,v 1.2 1998/10/09 20:17:20 CCAROLLO Exp $
 //

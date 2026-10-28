@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\mschutil.cpp"
 // $Header: r:/t2repos/thief2/src/motion/mschutil.cpp,v 1.5 1998/06/04 16:04:30 kate Exp $
 
 #include <motprop.h>

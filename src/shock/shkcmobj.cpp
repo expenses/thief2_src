@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkcmobj.cpp"
 ////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/shock/shkcmobj.cpp,v 1.3 1999/05/30 20:30:57 JON Exp $
 //

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\ai\\aicbrsht.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aicbrsht.cpp,v 1.9 2000/02/03 16:36:39 bfarquha Exp $
 //

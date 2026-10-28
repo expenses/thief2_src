@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\mvrflags.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/motion/mvrflags.cpp,v 1.7 1999/08/05 17:08:08 Justin Exp $
 //

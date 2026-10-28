@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\roomutil.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/roomutil.cpp,v 1.8 1998/09/10 21:31:45 CCAROLLO Exp $
 //

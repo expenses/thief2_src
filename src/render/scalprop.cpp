@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\scalprop.cpp"
 // $Header: r:/t2repos/thief2/src/render/scalprop.cpp,v 1.13 1999/06/17 23:31:35 Justin Exp $
 
 #include <propert_.h>

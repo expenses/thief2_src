@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\plyrmode.cpp"
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/plyrmode.cpp,v 1.24 2000/03/09 22:57:22 adurant Exp $
 //

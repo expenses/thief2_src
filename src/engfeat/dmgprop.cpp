@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\dmgprop.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/dmgprop.cpp,v 1.6 1998/10/19 13:03:30 mahk Exp $
 #include <appagg.h>
 #include <dmgprop.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\engfeat.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/engfeat.cpp,v 1.75 2000/01/24 12:08:42 adurant Exp $
 
 //#define PROFILE_ON

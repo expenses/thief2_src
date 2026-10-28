@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\inv_hack.c"
 // $Header: r:/t2repos/thief2/src/engfeat/inv_hack.c,v 1.24 2000/02/19 13:15:05 toml Exp $
 // silly inv (mostly for frob testing for now)
 

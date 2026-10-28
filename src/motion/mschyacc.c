@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\mschyacc.c"
 /* n:\bin\yacc -p msch -l -D mschtok.h -o mschyacc.c c:\b\cam\src\mschema.y */
 
 #ifdef MSCHTRACE

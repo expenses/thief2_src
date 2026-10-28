@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\csg\\csgbuild.c"
 // $Header: r:/t2repos/thief2/src/csg/csgbuild.c,v 1.8 2000/02/19 12:26:41 toml Exp $
 //
 // build the BSP tree by inserting brushes and filtering them down the tree

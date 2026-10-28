@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\win32\\mschlex.c"
 /* n:\bin\lex -p msch -l -o win32\mschlex.c c:\prj\cam\src\mschlex.lex */
 #define YYNEWLINE 10
 #define INITIAL 0

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\nameprop.cpp"
 // $Header: r:/t2repos/thief2/src/object/nameprop.cpp,v 1.5 1998/05/13 16:30:33 mahk Exp $
 #include <nameprop.h>
 #include <objnotif.h>

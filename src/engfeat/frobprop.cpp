@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\frobprop.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/frobprop.cpp,v 1.14 1998/11/19 13:03:13 JUSTIN Exp $
 // initial frob property - probably not shipping
 

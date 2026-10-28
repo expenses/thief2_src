@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\propsave.cpp"
 // $Header: r:/t2repos/thief2/src/object/propsave.cpp,v 1.16 1998/10/05 17:27:23 mahk Exp $
 #include <propbase.h>
 #include <propert_.h>

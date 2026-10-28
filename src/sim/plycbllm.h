@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\plycbllm.h"
 // $Header: r:/t2repos/thief2/src/sim/plycbllm.h,v 1.18 2000/01/31 10:00:20 adurant Exp $
 #pragma once
 

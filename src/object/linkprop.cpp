@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\linkprop.cpp"
 // $Header: r:/t2repos/thief2/src/object/linkprop.cpp,v 1.5 1998/01/27 18:51:07 mahk Exp $
 #include <linkprop.h>
 #include <linkbase.h>

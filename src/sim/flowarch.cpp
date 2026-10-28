@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\flowarch.cpp"
 // $Header: r:/t2repos/thief2/src/sim/flowarch.cpp,v 1.6 1998/09/23 15:43:24 mahk Exp $
 #include <flowarch.h>
 #include <port.h>

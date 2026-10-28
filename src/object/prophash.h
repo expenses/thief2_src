@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\prophash.h"
 // $Header: r:/t2repos/thief2/src/object/prophash.h,v 1.10 2000/02/22 20:00:46 toml Exp $
 #pragma once
 

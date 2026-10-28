@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\palmgr.c"
 // $Header: r:/t2repos/thief2/src/render/palmgr.c,v 1.25 2000/02/23 09:08:16 toml Exp $
 #include <string.h>
 

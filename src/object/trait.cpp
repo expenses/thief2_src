@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\trait.cpp"
 // $Header: r:/t2repos/thief2/src/object/trait.cpp,v 1.16 1999/05/19 16:05:39 mahk Exp $
 #include <trait_.h>
 #include <objquery.h>

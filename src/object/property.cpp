@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\property.cpp"
 // $Header: r:/t2repos/thief2/src/object/property.cpp,v 1.65 1999/11/05 14:26:37 Justin Exp $
 #include <mprintf.h>
 

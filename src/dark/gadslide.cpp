@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\dark\\gadslide.cpp"
 /*
  * $Source: r:/t2repos/thief2/src/dark/gadslide.cpp,v $
  * $Revision: 1.7 $

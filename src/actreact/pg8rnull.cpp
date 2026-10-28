@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\actreact\\pg8rnull.cpp"
 // $Header: r:/t2repos/thief2/src/actreact/pg8rnull.cpp,v 1.5 1998/10/05 17:26:59 mahk Exp $
 
 #include <pg8rtype.h>

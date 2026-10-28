@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\weaphalo.cpp"
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/engfeat/weaphalo.cpp,v 1.5 2000/03/17 12:38:18 bfarquha Exp $
 //

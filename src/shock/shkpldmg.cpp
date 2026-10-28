@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkpldmg.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkpldmg.cpp,v 1.11 1999/08/05 17:58:39 Justin Exp $
 
 #include <shkpldmg.h>

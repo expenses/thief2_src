@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shksavui.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shksavui.cpp,v 1.13 1999/06/08 23:52:11 XEMU Exp $
 
 #include <appagg.h>

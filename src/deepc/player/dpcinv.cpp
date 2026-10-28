@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\deepc\\player\\dpcinv.cpp"
 // Deep Cover inventory system stuff
 #include <2d.h>
 #include <res.h>

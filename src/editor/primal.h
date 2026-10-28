@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\primal.h"
 // $Header: r:/t2repos/thief2/src/editor/primal.h,v 1.11 2000/01/29 13:12:57 adurant Exp $
 // primal brush systems
 #pragma once

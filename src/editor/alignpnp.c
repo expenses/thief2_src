@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\alignpnp.c"
 // $Header: r:/t2repos/thief2/src/editor/alignpnp.c,v 1.23 2000/02/19 12:27:36 toml Exp $
 // Brush Texture PnP gadget
 

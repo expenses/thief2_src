@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\objsys.cpp"
 // $Header: r:/t2repos/thief2/src/object/objsys.cpp,v 1.91 2000/03/07 19:57:45 toml Exp $
 #include <appagg.h>
 #include <constrid.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sound\\ambprop.cpp"
 // $Header: r:/t2repos/thief2/src/sound/ambprop.cpp,v 1.13 1999/05/26 12:18:55 JON Exp $
 // ambient sound wackiness for Dark
 // initial hacked version, sorry

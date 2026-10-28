@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\propsprs.h"
 // $Header: r:/t2repos/thief2/src/object/propsprs.h,v 1.4 1998/10/06 10:45:44 CCAROLLO Exp $
 #pragma once  
 #ifndef __PROPSPRS_H

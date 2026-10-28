@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkaiutl.cpp"
 //////////////////////////////////////////////////////////////]
 // $Header: r:/t2repos/thief2/src/shock/shkaiutl.cpp,v 1.1 1999/04/11 11:09:53 JON Exp $
 //

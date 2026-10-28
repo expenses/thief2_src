@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\csg\\csg.c"
 // $Header: r:/t2repos/thief2/src/csg/csg.c,v 1.95 2000/02/19 12:26:35 toml Exp $
 //
 // csg.c

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\keysys.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/keysys.cpp,v 1.1 1998/06/25 22:50:45 XEMU Exp $
 
 // COM fun

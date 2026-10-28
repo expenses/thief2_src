@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\shock\\shkaisc.cpp"
 // $Header: r:/t2repos/thief2/src/shock/shkaisc.cpp,v 1.6 1999/05/30 16:22:01 XEMU Exp $
 
 #include <shkaisc.h>

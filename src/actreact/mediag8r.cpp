@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\actreact\\mediag8r.cpp"
 // $Header: r:/t2repos/thief2/src/actreact/mediag8r.cpp,v 1.2 1998/09/06 00:36:34 mahk Exp $
 #include <appagg.h>
 #include <mediag8r.h>

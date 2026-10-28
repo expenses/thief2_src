@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\ui\\buttpanl.cpp"
 // $Header: r:/t2repos/thief2/src/ui/buttpanl.cpp,v 1.12 1999/05/27 12:55:54 mahk Exp $
 #include <buttpanl.h>
 #include <string.h>

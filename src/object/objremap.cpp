@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\objremap.cpp"
 // $Header: r:/t2repos/thief2/src/object/objremap.cpp,v 1.11 1999/10/06 15:59:44 BFarquha Exp $
 
 #include <appagg.h>

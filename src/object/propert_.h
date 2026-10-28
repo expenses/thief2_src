@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\propert_.h"
 // $Header: r:/t2repos/thief2/src/object/propert_.h,v 1.31 2000/01/29 13:24:24 adurant Exp $
 #pragma once
 

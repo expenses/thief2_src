@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\render\\litprop.cpp"
 // $Header: r:/t2repos/thief2/src/render/litprop.cpp,v 1.58 2000/01/27 20:03:44 BFarquha Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\

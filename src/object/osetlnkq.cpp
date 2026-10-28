@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\object\\osetlnkq.cpp"
 #include <osetlnkq.h>
 #include <relation.h>
 #include <lnkquer_.h>

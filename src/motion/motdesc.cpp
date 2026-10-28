@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\motion\\motdesc.cpp"
 // $Header: r:/t2repos/thief2/src/motion/motdesc.cpp,v 1.26 1998/04/20 15:52:33 kate Exp $
 
 #include <wtypes.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\sim\\plyablty.cpp"
 // $Header: r:/t2repos/thief2/src/sim/plyablty.cpp,v 1.10 1998/09/29 18:14:49 CCAROLLO Exp $
 
 #include <plyablty.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\gunprop.cpp"
 // $Header: r:/t2repos/thief2/src/engfeat/gunprop.cpp,v 1.8 1999/12/10 14:28:03 BFarquha Exp $
 
 #include <gunprop.h>

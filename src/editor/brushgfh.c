@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\brushgfh.c"
 // $Header: r:/t2repos/thief2/src/editor/brushgfh.c,v 1.45 2000/02/19 12:27:50 toml Exp $
 
 #include <stdlib.h>

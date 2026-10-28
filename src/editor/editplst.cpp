@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "s:\\prj\\thief2\\src\\editor\\editplst.cpp"
 // $Header: r:/t2repos/thief2/src/editor/editplst.cpp,v 1.14 1998/03/14 21:07:57 mahk Exp $
 
 // Property List Editor
