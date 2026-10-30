@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/edittool.h,v 1.2 1997/10/16 18:19:00 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/RCS/edittool.h 1.3 1999/01/27 16:00:33 mahk Exp $
 #pragma once  
 #ifndef __EDITTOOL_H
 #define __EDITTOOL_H
@@ -14,7 +9,8 @@
 ////////////////////////////////////////////////////////////
 // EDITOR TOOLS COMPONENT
 //
-// This aggregate member provides useful editing interfaces to DLLs that want them. 
+// This "editing tools" interface is a legacy from the Dark engine.  
+// It collects together a few useful functions that the editing dialogs need
 //
 
 F_DECLARE_INTERFACE(IEditTools);

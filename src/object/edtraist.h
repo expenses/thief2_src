@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/edtraist.h,v 1.3 1997/12/03 16:33:00 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/RCS/edtraist.h 1.4 1999/01/27 16:00:33 mahk Exp $
 #pragma once  
 #ifndef __EDTRAIST_H
 #define __EDTRAIST_H

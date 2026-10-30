@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/pstordel.h,v 1.1 1998/03/26 13:53:06 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/property/RCS/pstordel.h 1.2 1999/04/21 11:39:52 ccarollo Exp $
 #pragma once  
 #ifndef __PSTORDEL_H
 #define __PSTORDEL_H
@@ -40,6 +35,7 @@ public:
    STDMETHOD(SetID)(PropertyID id) { return mpStore->SetID(id); }; 
    STDMETHOD_(sDatum,Create)(ObjID obj) { return mpStore->Create(obj);}; 
    STDMETHOD(Delete)(ObjID obj) { return mpStore->Delete(obj); }; 
+   STDMETHOD(Release)(ObjID obj, sDatum* pdat ) { return mpStore->Release(obj,pdat); };
    STDMETHOD_(BOOL,Relevant)(ObjID obj) const { return mpStore->Relevant(obj); }; 
    STDMETHOD_(BOOL,Get)(ObjID obj, sDatum* pdat ) const { return mpStore->Get(obj,pdat); };  
    STDMETHOD(Set)(ObjID obj, sDatum val) { return mpStore->Set(obj,val); }; 

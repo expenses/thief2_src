@@ -4,9 +4,9 @@
 
 /*
  * $Source: x:/prj/tech/libsrc/config/RCS/config.h $
- * $Revision: 1.18 $
- * $Author: dc $
- * $Date: 1997/09/01 21:52:52 $
+ * $Revision: 1.21 $
+ * $Author: JAEMZ $
+ * $Date: 1999/10/21 11:33:16 $
  *
  */
 
@@ -166,11 +166,11 @@ void config_get_raw_all(ConfigIterFunc ifunc, char* buf, int bufsize);
 // stops when it's called with all vars or as soon as ifunc
 // returns TRUE.  The order is arbitrary (not sorted).
 
-// Useful macros
+// Functions to set the thing conveniently
+void config_set_int(const char *varname,int val);
+void config_set_string(const char *varname,char *val);
+void config_set_float(const char *varname,float val);
 
-#define config_set_int(varname,val)      config_set_single_value(varname,CONFIG_INT_TYPE,(config_valtype)(val))
-#define config_set_string(varname,val)   config_set_single_value(varname,CONFIG_STRING_TYPE,(config_valtype)(val))
-#define config_set_float(varname,val)    config_set_single_value(varname,CONFIG_FLOAT_TYPE,(config_valtype)(val))
 #define config_get_int(varname,valptr)   config_get_single_value(varname,CONFIG_INT_TYPE,(config_valtype)(valptr))
 #define config_get_word(varname,valptr)  config_get_single_value(varname,CONFIG_STRING_TYPE,(config_valtype)(valptr))
 #define config_get_float(varname,valptr) config_get_single_value(varname,CONFIG_FLOAT_TYPE,(config_valtype)(valptr))
@@ -181,6 +181,11 @@ void config_get_raw_all(ConfigIterFunc ifunc, char* buf, int bufsize);
         config_set_single_value(varname,CONFIG_FLOAT_TYPE,(config_valtype)(*(void **)(&fltvar)))
 
 #define config_is_defined(var) config_get_raw(var,NULL,0)
+
+//
+// Returns FALSE if the config variable is 0 or undefined, TRUE otherwise.
+//
+bool config_is_nonzero (const char *pVarName);
 
 errtype config_unset(const char* varname);
 // undefines the specified variable.

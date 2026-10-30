@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/propfac_.h,v 1.3 1998/09/07 01:07:18 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/property/RCS/propfac_.h 1.4 1999/04/22 14:54:34 JAEMZ Exp $
 #pragma once  
 #ifndef __PROPFAC__H
 #define __PROPFAC__H
@@ -12,6 +7,9 @@
 #include <propert_.h>
 #include <dataops_.h>
 #include <matrixs.h>
+#include <matrixds.h>
+#include <mxang.h>
+#include <srgba.h>
 #include <propbool.h>
 
 ////////////////////////////////////////////////////////////
@@ -182,7 +180,93 @@ public:
    STANDARD_DESCRIBE_TYPE(Vector); 
 };
 
-#undef GENSTORE
 
+//
+// RGB
+//
+typedef sRGBA RGB;
+
+
+class cGenericRGBProperty : public cGenericProperty<IRGBProperty,&IID_IRGBProperty,RGB*>
+{
+   typedef cGenericProperty<IRGBProperty,&IID_IRGBProperty,RGB*> cParent; 
+
+   static cClassDataOps<RGB> gOps; 
+public:
+
+   cGenericRGBProperty(const sPropertyDesc* desc, IPropertyStore* store)
+      : cParent(desc,store)
+   {
+      SetOps(&gOps); 
+   }
+
+   cGenericRGBProperty(const sPropertyDesc* desc, ePropertyImpl impl)
+      : cParent(desc,GENSTORE(impl))
+   {
+      SetOps(&gOps); 
+   }
+
+   STANDARD_DESCRIBE_TYPE(RGB); 
+};
+
+
+//
+// DoubleVec
+//
+
+typedef mxds_vector DoubleVec; 
+
+class cGenericDoubleVecProperty : public cGenericProperty<IDoubleVecProperty,&IID_IDoubleVecProperty,DoubleVec*>
+{
+   typedef cGenericProperty<IDoubleVecProperty,&IID_IDoubleVecProperty,DoubleVec*> cParent; 
+
+   static cClassDataOps<DoubleVec> gOps; 
+public:
+
+   cGenericDoubleVecProperty(const sPropertyDesc* desc, IPropertyStore* store)
+      : cParent(desc,store)
+   {
+      SetOps(&gOps); 
+   }
+
+   cGenericDoubleVecProperty(const sPropertyDesc* desc, ePropertyImpl impl)
+      : cParent(desc,GENSTORE(impl))
+   {
+      SetOps(&gOps); 
+   }
+
+   STANDARD_DESCRIBE_TYPE(DoubleVec); 
+};
+
+
+//
+// AngVec property
+// 
+
+typedef mxs_angvec AngVec; 
+
+class cGenericAngVecProperty : public cGenericProperty<IAngVecProperty,&IID_IAngVecProperty,AngVec*>
+{
+   typedef cGenericProperty<IAngVecProperty,&IID_IAngVecProperty,AngVec*> cParent; 
+
+   static cClassDataOps<AngVec> gOps; 
+public:
+
+   cGenericAngVecProperty(const sPropertyDesc* desc, IPropertyStore* store)
+      : cParent(desc,store)
+   {
+      SetOps(&gOps); 
+   }
+
+   cGenericAngVecProperty(const sPropertyDesc* desc, ePropertyImpl impl)
+      : cParent(desc,GENSTORE(impl))
+   {
+      SetOps(&gOps); 
+   }
+
+   STANDARD_DESCRIBE_TYPE(AngVec); 
+};
+
+#undef GENSTORE
 
 #endif // __PROPFAC__H

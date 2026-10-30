@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/listset.h,v 1.1 1997/10/06 19:05:16 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/link/RCS/listset.h 1.1 1999/04/07 14:38:22 TOML Exp $
 #pragma once  
 #ifndef __LISTSET_H
 #define __LISTSET_H

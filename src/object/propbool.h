@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/propbool.h,v 1.1 1998/03/26 13:51:52 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/property/RCS/propbool.h 1.2 1999/04/21 11:38:35 ccarollo Exp $
 #pragma once  
 #ifndef __PROPBOOL_H
 #define __PROPBOOL_H
@@ -11,7 +6,8 @@
 #include <propsto_.h>
 #include <dataops_.h>
 #include <packflag.h>
-#include <osysbase.h>
+#include <iobjsys.h>
+#include <objdef.h>
 
 ////////////////////////////////////////////////////////////
 // Special "Bit Vector" property implementation for booleans
@@ -24,8 +20,8 @@ class cBoolPropertyStore: public cPropertyStore<cSimpleDataOps>
 {
    
 public:
-   // @TODO: remove reference to gMaxObjID during rescalable object system pass
-   cBoolPropertyStore(ObjID min = gMinObjID, ObjID max = gMaxObjID)
+   cBoolPropertyStore(ObjID min = gObjSys->GetLocalID(gObjSys->MaxObjID(kObjectAbstract)), 
+                      ObjID max = gObjSys->GetLocalID(gObjSys->MaxObjID(kObjectConcrete)))
       : mValue(max-min),
         mInUse(max-min),
         mMinObj(min),
@@ -53,6 +49,12 @@ public:
       return obj >= mMinObj && obj < mMaxObj;
    }      
 
+   void ValidateHost(ObjID obj) const
+   {
+      AssertMsg(gObjSys->GetObjHost(obj) == gObjSys->GetHost(),
+                "Bool property store can only be used on locally created properties!");
+   }
+
    //
    // METHODS 
    // 
@@ -65,6 +67,9 @@ public:
 
    STDMETHOD_(sDatum,Create)(ObjID obj) 
    {
+      ValidateHost(obj);
+      obj = gObjSys->GetLocalID(obj);
+
       sDatum val; 
       if (InBounds(obj) && !InUse(obj))
       {
@@ -75,6 +80,9 @@ public:
 
    STDMETHOD(Delete)(ObjID obj)
    {
+      ValidateHost(obj);
+      obj = gObjSys->GetLocalID(obj);
+
       if (InBounds(obj) && InUse(obj))
       {
          ClearInUse(obj);
@@ -83,13 +91,37 @@ public:
       return S_FALSE; 
    }
 
+   STDMETHOD(Release)(ObjID obj, sDatum* pval)
+   {
+      ValidateHost(obj);
+      obj = gObjSys->GetLocalID(obj);
+
+      if (InBounds(obj) && InUse(obj))
+      {
+         pval->value = (void *)Value(obj);
+         ClearInUse(obj);
+         SetValue(obj,FALSE); 
+      }
+      return S_FALSE; 
+   }
+
    STDMETHOD_(BOOL,Relevant)(ObjID obj)  const 
    {
+      if (gObjSys->GetObjHost(obj) != gObjSys->GetHost())
+         return FALSE;
+
+      obj = gObjSys->GetLocalID(obj);
+
       return InBounds(obj) && InUse(obj); 
    }
 
    STDMETHOD_(BOOL,Get)(ObjID obj, sDatum* pval) const 
    {
+      if (gObjSys->GetObjHost(obj) != gObjSys->GetHost())
+         return FALSE;
+
+      obj = gObjSys->GetLocalID(obj);
+
       if (InBounds(obj) && InUse(obj))
       {
          pval->value = (void*)Value(obj); 
@@ -99,6 +131,9 @@ public:
 
    STDMETHOD(Set)(ObjID obj, sDatum val)
    {
+      ValidateHost(obj);
+      obj = gObjSys->GetLocalID(obj);
+
       if (!InBounds(obj))
          return E_FAIL; 
 
@@ -112,6 +147,12 @@ public:
 
    STDMETHOD_(sDatum,Copy)(ObjID targ, ObjID src) 
    {
+      ValidateHost(targ);
+      ValidateHost(src);
+
+      targ = gObjSys->GetLocalID(targ);
+      src = gObjSys->GetLocalID(src);
+
       if (!InBounds(targ) || !InBounds(src) || !InUse(src))
          return sDatum(); 
 

@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/prpstats.h,v 1.1 1998/10/01 18:40:47 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/property/RCS/prpstats.h 1.1 1999/04/07 14:40:23 TOML Exp $
 #pragma once  
 #ifndef __PRPSTATS_H
 #define __PRPSTATS_H
