@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\h\\comtools.h"
 //////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/comtools/RCS/comtools.h $
 // $Author: Johan $

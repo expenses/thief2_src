@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\h\\hshpptem.h"
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/hshpptem.h 1.8 1998/08/24 20:55:54 mahk Exp $
 
 #ifndef HSHPPTEM_H

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\h\\packflag.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/packflag.h 1.5 1970/01/01 00:00:00 mahk Exp $
 //

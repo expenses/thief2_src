@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\h\\hashpp.h"
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/hashpp.h 1.9 1998/09/29 11:25:14 TOML Exp $
 
 #ifndef HASHPP_H

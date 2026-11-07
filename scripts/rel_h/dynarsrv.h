@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\h\\dynarsrv.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/dynarsrv.h 1.4 1998/10/03 10:57:41 TOML Exp $
 //
