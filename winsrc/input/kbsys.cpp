@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\kbsys.cpp"
 /*
  * $Source: x:/prj/tech/winsrc/input/RCS/kbsys.cpp $
  * $Revision: 1.13 $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\entrywin\\entrywin.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/winsrc/entrywin/RCS/entrywin.cpp $
 // $Author: TOML $

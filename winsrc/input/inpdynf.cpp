@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\inpdynf.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/winsrc/input/RCS/inpdynf.cpp $
 // $Author: JON $

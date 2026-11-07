@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\inpman.cpp"
 // $Header: x:/prj/tech/winsrc/input/RCS/inpman.cpp 1.1 1997/10/06 20:46:12 JON Exp $
 
 #include <inpman.h>

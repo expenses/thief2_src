@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\inpcompo.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/winsrc/input/RCS/inpcompo.cpp $
 // $Author: TOML $

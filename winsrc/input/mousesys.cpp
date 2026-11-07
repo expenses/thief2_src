@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\mousesys.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/winsrc/input/RCS/mousesys.cpp $
 // $Author: TOML $

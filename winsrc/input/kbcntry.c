@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\kbcntry.c"
 #include <kbcook.h>
 #include <kbcntry.h>
 

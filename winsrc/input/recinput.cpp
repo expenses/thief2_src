@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\recinput.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/winsrc/input/RCS/recinput.cpp $
 // $Author: JAEMZ $

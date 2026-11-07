@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\joystick.cpp"
 //
 // $Header: x:/prj/tech/winsrc/input/RCS/joystick.cpp 1.44 1998/02/06 18:02:01 PATMAC Exp $
 //

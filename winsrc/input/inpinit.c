@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\winsrc\\input\\inpinit.c"
 // $Header: x:/prj/tech/libsrc/input/RCS/inpinit.c 1.2 1996/10/17 17:39:20 TOML Exp $
 
 #include <aggmemb.h>
