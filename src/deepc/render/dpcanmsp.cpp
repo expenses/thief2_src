@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\deepc\\render\\dpcanmsp.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\deepc\\render\\dpcanmsp.cpp"
+#endif
+#line 1
 // Animated Sprite Management
 //
 // @NOTE (justin 7-1-98): This code used to have a cAnimSpriteMan under the

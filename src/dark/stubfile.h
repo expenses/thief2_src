@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\dark\\stubfile.h"
+#else
+#line 1 "s:\\prj\\thief2\\src\\dark\\stubfile.h"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/stubfile.h,v 1.2 1998/11/03 06:38:14 mahk Exp $
 #pragma once  
 #ifndef __STUBFILE_H

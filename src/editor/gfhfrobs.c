@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\gfhfrobs.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\editor\\gfhfrobs.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/gfhfrobs.c,v 1.15 2000/02/19 13:10:50 toml Exp $
 
 #include <string.h>

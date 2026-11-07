@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\inc.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\inc.c"
+#endif
+#line 1
 /* n:\bin\yacc -p inc -l -D inctok.h -o inc.c inc.y */
 #ifdef INCTRACE
 #define INCDEBUG 1

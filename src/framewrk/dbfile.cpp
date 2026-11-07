@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\framewrk\\dbfile.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\framewrk\\dbfile.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/dbfile.cpp,v 2.38 2000/03/07 19:57:07 toml Exp $
 
 #include <lg.h>

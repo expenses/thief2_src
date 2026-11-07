@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\shock\\shkdmg.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\shock\\shkdmg.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkdmg.cpp,v 1.40 1999/11/19 14:56:16 adurant Exp $
 
 #include <shkdmg.h>

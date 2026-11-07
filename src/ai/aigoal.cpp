@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ai\\aigoal.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\ai\\aigoal.cpp"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aigoal.cpp,v 1.11 1999/11/29 12:28:24 BFarquha Exp $
 //

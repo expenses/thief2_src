@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\relation.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\object\\relation.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/object/relation.cpp,v 1.45 1999/08/31 14:40:15 Justin Exp $
 
 #include <relatio_.h>

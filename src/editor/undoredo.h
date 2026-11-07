@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\undoredo.h"
+#else
 #line 1 "s:\\prj\\thief2\\src\\editor\\undoredo.h"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/undoredo.h,v 1.3 1998/08/08 16:52:27 dc Exp $
 
 #pragma once

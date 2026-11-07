@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\oldasfx.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\oldasfx.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/oldasfx.c,v 1.47 2000/02/19 12:14:26 toml Exp $
 // remedial sound system for DromEd/Dark/AIR/So on
 

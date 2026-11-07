@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\psdialog.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\editor\\psdialog.cpp"
+#endif
+#line 1
 //
 //  The new list-based pseudo-script dialog
 //  Presents data as a series of sub-dialogs accesible from a simple list:

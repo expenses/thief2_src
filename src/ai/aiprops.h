@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ai\\aiprops.h"
+#else
+#line 1 "s:\\prj\\thief2\\src\\ai\\aiprops.h"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiprops.h,v 1.14 1999/03/29 08:41:47 JON Exp $
 //

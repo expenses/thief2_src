@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\render\\slitprop.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\render\\slitprop.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/render/slitprop.cpp,v 1.15 1999/03/04 17:30:37 XEMU Exp $
 
 #include <propert_.h>

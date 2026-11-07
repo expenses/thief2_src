@@ -3,7 +3,14 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#if defined(EDITOR) && defined(OBJARRAY_H_LOWER)
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\objarray.h"
+#elif defined(EDITOR)
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\ObjArray.h"
+#else
 #line 1 "s:\\prj\\thief2\\src\\object\\objarray.h"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/object/objarray.h,v 1.3 2000/03/07 19:58:26 toml Exp $
 //

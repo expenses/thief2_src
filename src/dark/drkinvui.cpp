@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\dark\\drkinvui.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\dark\\drkinvui.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkinvui.cpp,v 1.78 2000/03/19 16:09:37 patmac Exp $
 
 #include <lg.h>

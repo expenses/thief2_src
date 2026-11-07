@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\shock\\shkpsi.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\shock\\shkpsi.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkpsi.cpp,v 1.48 1999/11/19 14:55:58 adurant Exp $
 // general psionics powers
 // for the moment, assumes player not any old AI

@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\dark\\drkdebrf.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\dark\\drkdebrf.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkdebrf.cpp,v 1.22 2000/03/23 21:33:06 adurant Exp $
 #include <appagg.h>
 #include <drkdebrf.h>

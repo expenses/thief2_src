@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\proped.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\editor\\proped.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/proped.cpp,v 1.16 1999/11/22 17:55:20 henrys Exp $
 
 #include <proped.h>

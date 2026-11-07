@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\vslider.c"
+#else
+#line 1 "s:\\prj\\thief2\\src\\editor\\vslider.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/vslider.c,v 1.10 2000/02/19 13:13:45 toml Exp $
 // arbitrary axis virtual slider gadgets
 

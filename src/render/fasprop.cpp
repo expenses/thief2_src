@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\render\\fasprop.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\render\\fasprop.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/render/fasprop.cpp,v 1.5 1999/03/23 11:39:13 Justin Exp $
 
 #include <property.h>

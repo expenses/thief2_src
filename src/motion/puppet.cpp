@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\motion\\puppet.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\motion\\puppet.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/motion/puppet.cpp,v 1.12 1998/07/27 13:12:21 CCAROLLO Exp $
 
 #include <puppet.h>

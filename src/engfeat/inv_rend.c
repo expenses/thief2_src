@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ENGFEAT\\inv_rend.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\engfeat\\inv_rend.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/inv_rend.c,v 1.47 2000/02/19 13:15:07 toml Exp $
 // code to draw the current inventory object
 // more generally, code to support the issue of rendering models to various canvases

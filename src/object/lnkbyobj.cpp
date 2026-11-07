@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\lnkbyobj.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\object\\lnkbyobj.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/object/lnkbyobj.cpp,v 1.14 1998/10/15 00:28:21 mahk Exp $
 #include <lnkbyobj.h>
 #include <linkman.h>

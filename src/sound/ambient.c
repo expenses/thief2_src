@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\SOUND\\ambient.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\sound\\ambient.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/sound/ambient.c,v 1.29 1999/04/26 15:12:00 mwhite Exp $
 // ambient sound object initial cut
 // actual system which do things sound things

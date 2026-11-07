@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ENGFEAT\\questprp.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\engfeat\\questprp.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/questprp.cpp,v 1.4 1999/06/02 16:55:22 XEMU Exp $
 #include <questprp.h>
 #include <propert_.h>

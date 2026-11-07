@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ai\\aibasctm.h"
+#else
 #line 1 "s:\\prj\\thief2\\src\\ai\\aibasctm.h"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aibasctm.h,v 1.31 2000/02/17 23:34:31 adurant Exp $
 //

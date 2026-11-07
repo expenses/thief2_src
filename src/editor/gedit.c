@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\gedit.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\editor\\gedit.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/gedit.c,v 2.10 2000/02/18 17:20:57 MAT Exp $
 
 // gedit.c

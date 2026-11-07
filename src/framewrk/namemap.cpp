@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\framewrk\\namemap.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\framewrk\\namemap.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/namemap.cpp,v 1.4 1998/04/20 17:16:55 kate Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\

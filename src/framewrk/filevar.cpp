@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\framewrk\\filevar.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\framewrk\\filevar.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/filevar.cpp,v 1.6 1998/09/22 14:13:24 mahk Exp $
 
 #include <appagg.h>

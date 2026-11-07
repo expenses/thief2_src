@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ai\\aiutils.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\ai\\aiutils.cpp"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiutils.cpp,v 1.39 2000/03/19 13:35:54 adurant Exp $
 //

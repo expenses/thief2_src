@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\ai\\aicombat.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\ai\\aicombat.cpp"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aicombat.cpp,v 1.45 2000/02/11 18:28:09 bfarquha Exp $
 //

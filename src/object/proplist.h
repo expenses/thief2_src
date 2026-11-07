@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\proplist.h"
+#else
 #line 1 "s:\\prj\\thief2\\src\\object\\proplist.h"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/object/proplist.h,v 1.6 1998/03/26 13:52:47 mahk Exp $
 #pragma once  
 #ifndef __PROPLIST_H

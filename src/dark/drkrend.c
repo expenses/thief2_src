@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\dark\\drkrend.c"
+#else
+#line 1 "s:\\prj\\thief2\\src\\dark\\drkrend.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkrend.c,v 1.30 2000/01/06 18:49:19 BFarquha Exp $
 // air specific rendering code
 

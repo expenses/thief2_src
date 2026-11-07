@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\linkset.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\object\\linkset.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/object/linkset.cpp,v 1.4 1998/01/27 18:49:35 mahk Exp $
 #include <lnkquer_.h>
 #include <linkset.h>

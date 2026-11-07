@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\sim\\roompa.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\sim\\roompa.cpp"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/roompa.cpp,v 1.10 1998/08/26 14:10:14 CCAROLLO Exp $
 //

@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\sim\\playtest.h"
+#else
 #line 1 "s:\\prj\\thief2\\src\\sim\\playtest.h"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/sim/playtest.h,v 1.5 2000/02/19 12:37:01 toml Exp $
 #pragma once
 #ifndef __PLAYTEST_H

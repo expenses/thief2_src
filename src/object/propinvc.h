@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\propinvc.h"
+#else
 #line 1 "s:\\prj\\thief2\\src\\object\\propinvc.h"
+#endif
+#line 1
  // $Header: r:/t2repos/thief2/src/object/propinvc.h,v 1.7 2000/01/29 13:24:33 adurant Exp $
 #pragma once
 #ifndef __PROPINVC_H

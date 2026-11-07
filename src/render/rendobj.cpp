@@ -3,7 +3,13 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#define OBJARRAY_H_LOWER
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\render\\rendobj.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\render\\rendobj.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/render/rendobj.cpp,v 1.5 2000/02/28 16:50:59 MAT Exp $
 
 // Render an object

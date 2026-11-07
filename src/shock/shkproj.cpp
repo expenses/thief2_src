@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\shock\\shkproj.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\shock\\shkproj.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkproj.cpp,v 1.39 1999/11/19 14:54:53 adurant Exp $
 
 This file has been moved to gunproj.cpp AMSD

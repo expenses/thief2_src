@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\deepc\\ai\\dpcaipth.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\deepc\\ai\\dpcaipth.cpp"
+#endif
+#line 1
 // AI Pathfinding.
 
 #include <dpcaipth.h>

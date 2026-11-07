@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\motion\\motdesc.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\motion\\motdesc.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/motion/motdesc.cpp,v 1.26 1998/04/20 15:52:33 kate Exp $
 
 #include <wtypes.h>

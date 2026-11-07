@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\object\\linkprop.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\object\\linkprop.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/object/linkprop.cpp,v 1.5 1998/01/27 18:51:07 mahk Exp $
 #include <linkprop.h>
 #include <linkbase.h>

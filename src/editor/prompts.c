@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\editor\\prompts.c"
+#else
+#line 1 "s:\\prj\\thief2\\src\\editor\\prompts.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/prompts.c,v 1.3 2000/02/19 13:11:16 toml Exp $
 // basic prompts for asking for data from the user
 

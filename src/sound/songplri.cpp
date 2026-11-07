@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\SOUND\\songplri.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\sound\\songplri.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/sound/songplri.cpp,v 1.17 2000/02/20 15:12:37 patmac Exp $
 
 #include <songplr.h>

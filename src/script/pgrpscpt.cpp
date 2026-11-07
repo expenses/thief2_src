@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\SCRIPT\\pgrpscpt.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\script\\pgrpscpt.cpp"
+#endif
+#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/script/pgrpscpt.cpp,v 1.2 1998/09/21 23:17:29 CCAROLLO Exp $
 //

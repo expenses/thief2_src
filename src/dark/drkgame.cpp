@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\dark\\drkgame.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\dark\\drkgame.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkgame.cpp,v 1.106 2000/03/09 16:16:14 toml Exp $
 // dark specific game features
 

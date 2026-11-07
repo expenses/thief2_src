@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\win32\\schlex.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\win32\\schlex.c"
+#endif
+#line 1
 /* n:\bin\lex -l -o win32\schlex.c c:\prj\cam\src\schlex.lex */
 #define YYNEWLINE 10
 #define INITIAL 0

@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\shock\\pshkgun.cpp"
+#else
 #line 1 "s:\\prj\\thief2\\src\\shock\\pshkgun.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/shock/pshkgun.cpp,v 1.48 1999/11/19 14:57:13 adurant Exp $
 
 #include <gunapi.h>

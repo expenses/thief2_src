@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\render\\textarch.cpp"
+#else
+#line 1 "s:\\prj\\thief2\\src\\render\\textarch.cpp"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/render/textarch.cpp,v 1.12 1998/11/10 23:06:31 mahk Exp $
 #include <textarch.h>
 

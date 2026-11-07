@@ -3,7 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\render\\family.c"
+#else
 #line 1 "s:\\prj\\thief2\\src\\render\\family.c"
+#endif
+#line 1
 // $Header: r:/t2repos/thief2/src/render/family.c,v 1.68 2000/02/14 20:35:19 bfarquha Exp $
 // hack for family loading/palette switch until real dataflow
 

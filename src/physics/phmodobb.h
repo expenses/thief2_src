@@ -3,6 +3,12 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#ifdef EDITOR
+#line 1 "r:\\prj\\thief2\\skup\\thief2\\src\\physics\\phmodobb.h"
+#else
+#line 1 "s:\\prj\\thief2\\src\\physics\\phmodobb.h"
+#endif
+#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phmodobb.h,v 1.15 2000/01/29 13:32:54 adurant Exp $
 //
