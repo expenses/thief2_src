@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\f16f16.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/f16f16.c 1.8 1997/02/17 14:48:45 KEVIN Exp $
 // Routines for drawing flat16 bitmaps into a flat16 canvas.
 

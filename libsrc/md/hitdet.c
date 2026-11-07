@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\hitdet.c"
 // $Header: x:/prj/tech/libsrc/md/RCS/hitdet.c 1.3 1997/07/17 10:53:07 CCAROLLO Exp $
 //
 // Model hit detection.

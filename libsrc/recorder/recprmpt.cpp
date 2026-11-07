@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\recorder\\recprmpt.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/recorder/RCS/recprmpt.cpp $
 // $Author: TOML $

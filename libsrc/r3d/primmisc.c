@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\primmisc.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primmisc.c 1.11 1997/10/03 13:03:24 KEVIN Exp $
 
 //  3D misc rendering primitives

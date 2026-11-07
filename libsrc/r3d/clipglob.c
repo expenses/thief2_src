@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\clipglob.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipglob.c 1.24 1997/11/04 15:54:02 KEVIN Exp $
 #include <math.h>
 

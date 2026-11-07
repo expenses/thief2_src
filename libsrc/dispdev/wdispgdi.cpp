@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dispdev\\wdispgdi.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/dispdev/RCS/wdispgdi.cpp $
 // $Author: TOML $

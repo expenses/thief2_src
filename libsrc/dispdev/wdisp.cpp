@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dispdev\\wdisp.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/dispdev/RCS/wdisp.cpp $
 // $Author: KEVIN $

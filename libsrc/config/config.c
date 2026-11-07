@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\config\\config.c"
 #include <stdio.h>
 #include <fcntl.h>
 #include <io.h>

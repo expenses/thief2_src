@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\clipproj.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipproj.c 1.8 1997/10/01 13:32:10 KEVIN Exp $
 
 #include <lg.h>

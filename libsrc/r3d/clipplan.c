@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\clipplan.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipplan.c 1.7 1996/06/13 11:53:36 JAEMZ Exp $
 
 // User-defined clipping plane management

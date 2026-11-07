@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\ui\\vmouse.c"
 #include <lg.h>
 #include <error.h>
 #include <mouse.h>

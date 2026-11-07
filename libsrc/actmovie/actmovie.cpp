@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\actmovie\\actmovie.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/actmovie/RCS/actmovie.cpp $
 // $Author: DAVET $

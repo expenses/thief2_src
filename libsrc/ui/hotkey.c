@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\ui\\hotkey.c"
 // $Header: x:/prj/tech/libsrc/ui/RCS/hotkey.c 1.17 1997/06/15 21:08:57 TOML Exp $
 
 #define __HOTKEY_SRC

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\codewrit.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lg/RCS/codewrit.cpp $
 // $Author: TOML $

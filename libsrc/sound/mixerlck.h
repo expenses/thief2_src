@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sound\\mixerlck.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sound/RCS/mixerlck.h $
 // $Author: dc $

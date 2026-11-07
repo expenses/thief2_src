@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\fcolor.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/fcolor.c 1.3 1998/04/06 16:11:30 KEVIN Exp $
 
 #include <dbg.h>

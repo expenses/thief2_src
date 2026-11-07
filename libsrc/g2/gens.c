@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\gens.c"
 /*
  * $Source: s:/prj/tech/libsrc/g2/RCS/gens.c $
  * $Revision: 1.1 $

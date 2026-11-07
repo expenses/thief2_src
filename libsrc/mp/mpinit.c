@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mp\\mpinit.c"
 //
 // mpinit.c - Multiped init/shutdown/motion loading stuff.
 //

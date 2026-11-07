@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\cpptools\\fnamutil.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/fnamutil.cpp $
 // $Author: TOML $

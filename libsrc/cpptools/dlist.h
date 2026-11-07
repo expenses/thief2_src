@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\h\\dlist.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/dlist.h $
 // $Author: TOML $

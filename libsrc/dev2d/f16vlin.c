@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\f16vlin.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/f16vlin.c 1.1 1998/04/02 11:47:14 KEVIN Exp $
 
 #include <grd.h>

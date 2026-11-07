@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\xfrmglob.c"
 /*
  * $Source: x:/prj/tech/libsrc/r3d/RCS/xfrmglob.c $
  * $Revision: 1.5 $

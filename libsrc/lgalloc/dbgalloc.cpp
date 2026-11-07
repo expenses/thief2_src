@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lgalloc\\dbgalloc.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/dbgalloc.cpp $
 // $Author: TOML $

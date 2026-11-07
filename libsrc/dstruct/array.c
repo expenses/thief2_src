@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dstruct\\array.c"
 #include <lg.h>
 #include <string.h>
 #include <array.h> 

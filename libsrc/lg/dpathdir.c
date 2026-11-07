@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\dpathdir.c"
 /*
  * $Header: x:/prj/tech/libsrc/lg/RCS/dpathdir.c 1.8 1998/05/07 10:05:13 DAVET Exp $
  *

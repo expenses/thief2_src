@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\datapath.cpp"
 //		Datapath.C		Searches for files in data path
 //		Rex E. Bradford (REX)
 //

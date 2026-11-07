@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\ui\\slab.c"
 #include <lg.h>
 #include <slab.h> 
 

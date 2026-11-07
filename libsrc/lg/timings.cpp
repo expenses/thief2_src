@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\timings.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/lg/RCS/timings.cpp 1.4 1998/05/22 14:17:49 kate Exp $
 //

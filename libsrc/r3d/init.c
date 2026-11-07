@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\init.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/init.c 1.9 1997/10/03 13:02:13 KEVIN Exp $
 // this has the r3d initializers, as well as global state setup
 

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\resfile.cpp"
 //      ResFile.C       Resource Manager file access
 //      Rex E. Bradford (REX)
 /*

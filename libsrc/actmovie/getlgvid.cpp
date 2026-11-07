@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\actmovie\\getlgvid.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/actmovie/RCS/getlgvid.cpp $
 // $Author: TOML $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mp\\mpupdate.c"
 // $Header: x:/prj/tech/libsrc/mp/RCS/mpupdate.c 1.23 1998/06/21 15:13:57 kate Exp $
 
 //

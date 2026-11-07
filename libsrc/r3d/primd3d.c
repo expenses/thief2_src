@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\primd3d.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primd3d.c 1.7 1998/06/30 18:45:49 buzzard Exp $
 
 #include <dev2d.h>

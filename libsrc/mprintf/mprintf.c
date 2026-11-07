@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mprintf\\mprintf.c"
 /*
  * $Source: x:/prj/tech/libsrc/mprintf/RCS/mprintf.c $
  * $Revision: 1.23 $

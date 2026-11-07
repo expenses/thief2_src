@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\appagg.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lg/RCS/appagg.cpp $
 // $Author: TOML $

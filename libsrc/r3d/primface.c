@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\primface.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primface.c 1.7 1996/06/30 03:10:42 buzzard Exp $
 
 //  3D Rendering primitives and context

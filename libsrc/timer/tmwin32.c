@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\timer\\tmwin32.c"
 /*
  * $Header: x:/prj/tech/libsrc/timer/RCS/tmwin32.c 1.11 1997/06/18 02:13:36 TOML Exp $
  *

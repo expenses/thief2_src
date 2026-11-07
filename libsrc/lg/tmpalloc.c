@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\tmpalloc.c"
 /*
  * $Source: x:/prj/tech/libsrc/lg/RCS/tmpalloc.c $
  * $Revision: 1.6 $

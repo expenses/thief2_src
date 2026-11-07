@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\cpptools\\dynarray.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/dynarray.cpp $
 // $Author: TOML $

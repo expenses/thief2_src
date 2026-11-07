@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\space.c"
 
 /*
  * $Source: x:/prj/tech/libsrc/r3d/RCS/space.c $

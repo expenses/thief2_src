@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\prof\\prof.c"
 /*
  *  Source-based profiler
  *

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\h\\hshsttem.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/hshsttem.h $
 // $Author: TOML $

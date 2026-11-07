@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\scale.c"
 /*
  * $Source: x:/prj/tech/libsrc/md/RCS/scale.c $
  * $Revision: 1.6 $

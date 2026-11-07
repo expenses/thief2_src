@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\res.cpp"
 //      Res.C       Resource Manager primary access routines
 //      Rex E. Bradford (REX)
 //

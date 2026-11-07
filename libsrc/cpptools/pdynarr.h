@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\h\\pdynarr.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/pdynarr.h $
 // $Author: JAEMZ $

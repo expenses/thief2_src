@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\pal.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/pal.c 1.5 1998/01/27 16:41:08 JAEMZ Exp $
 // Routines and data for non-hardware-dependent palette control.
 

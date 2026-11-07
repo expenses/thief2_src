@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\rescache.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/res/RCS/rescache.cpp $
 // $Author: dc $

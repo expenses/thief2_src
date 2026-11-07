@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\pt_main.c"
 /*
  *   $Header: x:/prj/tech/libsrc/g2/RCS/pt_main.c 1.8 1998/04/06 15:42:12 KEVIN Exp $
  *

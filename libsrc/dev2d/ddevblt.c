@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\ddevblt.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/ddevblt.c $
  * $Revision: 1.2 $

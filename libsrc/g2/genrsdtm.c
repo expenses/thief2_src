@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\genrsdtm.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/genrsdtm.c 1.2 1997/05/16 09:53:04 KEVIN Exp $
 
 #include <tmapd.h>

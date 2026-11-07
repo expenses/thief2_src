@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\f16lin.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/f16lin.c $
  * $Revision: 1.2 $

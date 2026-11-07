@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\co88.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/co88.c 1.2 1998/04/28 14:31:34 KEVIN Exp $
 #include <genrast.h>
 #include <tmapd.h>

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\gdpix.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/gdpix.c 1.2 1997/02/17 14:49:13 KEVIN Exp $
 // Generic pixel drawing primitives
 

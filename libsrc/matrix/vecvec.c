@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\matrix\\vecvec.c"
 /*
  * $Source: x:/prj/tech/libsrc/matrix/RCS/vecvec.c $
  * $Revision: 1.8 $

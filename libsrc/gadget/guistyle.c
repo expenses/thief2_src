@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\libsrc\\gadget\\guistyle.c"
 // $Header: r:/t2repos/thief2/libsrc/gadget/guistyle.c,v 1.1 1996/07/30 19:27:26 mahk Exp $
 
 #include <2d.h>

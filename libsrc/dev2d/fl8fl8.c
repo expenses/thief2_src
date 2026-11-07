@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\fl8fl8.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/fl8fl8.c 1.6 1997/02/07 11:21:45 KEVIN Exp $
 // Routines for drawing flat8 bitmaps into a flat8 canvas.
 

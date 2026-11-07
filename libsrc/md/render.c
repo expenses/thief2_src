@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\render.c"
 /*
  * $Source: x:/prj/tech/libsrc/md/RCS/render.c $
  * $Revision: 1.28 $

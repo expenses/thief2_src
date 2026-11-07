@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\bitmap.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/bitmap.c 1.10 1998/03/26 11:49:52 KEVIN Exp $
 
 #include <string.h>

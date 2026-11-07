@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\matrix\\matmat.c"
 /*
  * $Source: x:/prj/tech/libsrc/matrix/RCS/matmat.c $
  * $Revision: 1.7 $

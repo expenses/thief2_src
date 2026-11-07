@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\gdgbm.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/gdgbm.c $
  * $Revision: 1.3 $

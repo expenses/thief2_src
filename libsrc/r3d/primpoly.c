@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\primpoly.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primpoly.c 1.17 1997/10/03 13:03:26 KEVIN Exp $
 //
 //  polygon drawing functions

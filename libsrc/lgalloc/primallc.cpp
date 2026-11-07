@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lgalloc\\primallc.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/primallc.cpp $
 // $Author: TOML $

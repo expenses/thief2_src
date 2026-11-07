@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\screen.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/screen.c $
  * $Revision: 1.7 $

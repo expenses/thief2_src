@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\cpptools\\hashset.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/hashset.cpp $
 // $Author: TOML $

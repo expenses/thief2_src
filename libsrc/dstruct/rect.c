@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dstruct\\rect.c"
 //		Rect.C		Rectangle-handling routines.
 //		Rex E. Bradford (REX)
 //

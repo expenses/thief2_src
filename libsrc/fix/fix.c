@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\fix\\fix.c"
 // $Header: x:/prj/tech/libsrc/fix/RCS/fix.c 1.28 1997/04/24 13:59:30 TOML Exp $
 
 #include <stdlib.h>

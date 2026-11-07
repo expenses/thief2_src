@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\stastk.c"
 /*
  * $Source: s:/prj/tech/libsrc/dev2d/RCS/stastk.c $
  * $Revision: 1.1 $

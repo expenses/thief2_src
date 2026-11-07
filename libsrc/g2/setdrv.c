@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\setdrv.c"
 /*
  * $Source: s:/prj/tech/libsrc/g2/RCS/setdrv.c $
  * $Revision: 1.2 $

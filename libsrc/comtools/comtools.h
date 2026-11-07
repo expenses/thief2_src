@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\h\\comtools.h"
 //////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/comtools/RCS/comtools.h $
 // $Author: TOML $

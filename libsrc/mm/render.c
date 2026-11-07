@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mm\\render.c"
 // $Header: x:/prj/tech/libsrc/mm/RCS/render.c 1.7 1998/06/30 18:59:26 buzzard Exp $
 // XXX TO DO: go through all the loops and make them more efficient
 #include <mm.h>

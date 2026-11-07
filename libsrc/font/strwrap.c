@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\font\\strwrap.c"
 
 
 /* $Source: s:/prj/tech/libsrc/font/RCS/strwrap.c $

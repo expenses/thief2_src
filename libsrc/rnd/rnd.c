@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\rnd\\rnd.c"
 //		Rnd.C		Random stream implementation
 //		Rex E. Bradford (REX)
 //

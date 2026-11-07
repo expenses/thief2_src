@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\font\\str.c"
 // $Header: x:/prj/tech/libsrc/font/RCS/str.c 1.2 1997/01/23 14:05:48 KEVIN Exp $
 // String drawing functions
 

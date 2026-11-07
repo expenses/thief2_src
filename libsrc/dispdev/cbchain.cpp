@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dispdev\\cbchain.cpp"
 // $Header: x:/prj/tech/libsrc/dispdev/RCS/cbchain.cpp 1.1 1997/10/21 16:15:32 KEVIN Exp $
 // Handle maintenance of a callback chain, i.e., adding and removing funcs from the chain.
 // Each function in the chain should call this as necessary, passing pointers

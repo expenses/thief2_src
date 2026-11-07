@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\pal16.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/pal16.c 1.3 1998/03/12 10:42:42 KEVIN Exp $
 // Routines and data for 16 bit palette manipulation.
 

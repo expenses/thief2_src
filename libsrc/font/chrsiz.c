@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\font\\chrsiz.c"
 /*
  * $Source: s:/prj/tech/libsrc/font/RCS/chrsiz.c $
  * $Revision: 1.1 $

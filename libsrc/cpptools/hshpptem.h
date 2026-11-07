@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\h\\hshpptem.h"
 // $Header: x:/prj/tech/libsrc/cpptools/RCS/hshpptem.h 1.7 1998/05/23 17:48:50 mahk Exp $
 
 #ifndef HSHPPTEM_H

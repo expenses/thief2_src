@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\gameshel\\winput.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/gameshel/RCS/winput.cpp $
 // $Author: DAVET $

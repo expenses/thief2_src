@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\mipmap.c"
 /*
  * $Source: x:/prj/tech/libsrc/md/RCS/mipmap.c $
  * $Revision: 1.13 $

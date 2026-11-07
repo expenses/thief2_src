@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\genf16.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/genf16.c $
  * $Revision: 1.3 $

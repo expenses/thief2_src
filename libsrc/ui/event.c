@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\ui\\event.c"
 /*
  * $Source: x:/prj/tech/libsrc/ui/RCS/event.c $
  * $Revision: 1.71 $

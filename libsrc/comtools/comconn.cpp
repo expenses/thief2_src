@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\comtools\\comconn.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/comtools/RCS/comconn.cpp $
 // $Author: TOML $

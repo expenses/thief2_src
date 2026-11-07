@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\actmovie\\amalloc.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/actmovie/RCS/amalloc.h $
 // $Author: JON $

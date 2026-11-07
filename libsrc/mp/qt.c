@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mp\\qt.c"
 //
 // qt.c -- Quaternion functions.
 //

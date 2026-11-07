@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sndsrc\\sndsrc.cpp"
 ////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sndsrc/RCS/sndsrc.cpp $
 // $Author: PATMAC $

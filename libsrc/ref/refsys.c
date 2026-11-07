@@ -1,3 +1,4 @@
+#line 1 "r:\\prj\\cam\\libsrc\\ref\\refsys.c"
 /*
 @Copyright Looking Glass Studios, Inc.
 1996,1997,1998,1999,2000 Unpublished Work.

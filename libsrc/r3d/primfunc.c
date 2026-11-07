@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\primfunc.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primfunc.c 1.22 1997/10/03 13:03:23 KEVIN Exp $
 
 #include <dbg.h>

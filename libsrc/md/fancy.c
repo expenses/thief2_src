@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\fancy.c"
 /*
  * $Source: x:/prj/tech/libsrc/md/RCS/fancy.c $
  * $Revision: 1.5 $

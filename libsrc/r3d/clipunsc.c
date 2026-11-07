@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\clipunsc.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipunsc.c 1.6 1996/10/29 12:44:56 KEVIN Exp $
 
 #include <lg.h>

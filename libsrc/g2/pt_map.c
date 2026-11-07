@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\pt_map.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/pt_map.c 1.9 1998/04/06 12:38:36 KEVIN Exp $
 //
 // Setup/initialization etc. for port demo

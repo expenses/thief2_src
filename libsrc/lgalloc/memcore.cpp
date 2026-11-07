@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lgalloc\\memcore.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/memcore.cpp $
 // $Author: TOML $

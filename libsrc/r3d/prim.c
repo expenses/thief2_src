@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\prim.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/prim.c 1.12 1997/10/03 13:02:29 KEVIN Exp $
 //
 //  Context setting for 3D primitives

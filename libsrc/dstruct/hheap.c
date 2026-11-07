@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dstruct\\hheap.c"
 //		HHEAP.C		Homogenous heap module
 //		Rex E. Bradford (REX)
 //

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\cpptools\\relocptr.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/relocptr.cpp $
 // $Author: TOML $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\genrsd8.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/genrsd8.c $
  * $Revision: 1.3 $

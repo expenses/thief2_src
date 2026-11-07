@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sndsrc\\memseg.cpp"
 ////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sndsrc/RCS/memseg.cpp $
 // $Author: PATMAC $

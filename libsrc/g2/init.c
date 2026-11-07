@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\init.c"
 /*
  * $Source: x:/prj/tech/libsrc/g2/RCS/init.c $
  * $Revision: 1.4 $

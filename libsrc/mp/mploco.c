@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mp\\mploco.c"
 //
 // mploco.c -- Multiped locomotion interface functions.
 //

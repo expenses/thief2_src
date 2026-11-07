@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\comtools\\pguidset.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/comtools/RCS/pguidset.cpp $
 // $Author: TOML $

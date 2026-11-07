@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\star\\star.c"
 /*
  * $Source: x:/prj/tech/libsrc/star/RCS/star.c $
  * $Revision: 1.9 $

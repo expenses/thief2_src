@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\canvas.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/canvas.c 1.16 1998/04/28 13:45:45 KEVIN Exp $
 // Canvas handling routines.
 //

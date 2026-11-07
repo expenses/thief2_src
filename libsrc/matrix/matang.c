@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\matrix\\matang.c"
 /*
  * $Source: x:/prj/tech/libsrc/matrix/RCS/matang.c $
  * $Revision: 1.16 $

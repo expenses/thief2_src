@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\permap.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/permap.c 1.3 1997/05/16 09:53:23 KEVIN Exp $
 // subdividing perspective mapper.
 

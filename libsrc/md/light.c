@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\light.c"
 #include <mprintf.h>
 #include <matrix.h>
 #include <r3d.h>

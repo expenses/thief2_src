@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\refacc.cpp"
 //      RefAcc.c        Resource reference access
 //      Rex E. Bradford
 /*

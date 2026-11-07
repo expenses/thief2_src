@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\cliptest.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/cliptest.c 1.4 1997/08/21 20:42:25 JAEMZ Exp $   Internal clipping of primitives
 
 #include <clipcon_.h>

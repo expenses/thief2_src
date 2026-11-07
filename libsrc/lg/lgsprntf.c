@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\lgsprntf.c"
 // $Header: x:/prj/tech/libsrc/lg/RCS/lgsprntf.c 1.16 1996/10/21 09:33:18 TOML Exp $
 // lgsprntf.c -- sprintf with floats back in
 // soon, perhaps, we can just use sprintf

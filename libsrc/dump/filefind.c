@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dump\\filefind.c"
 /*
  * $Source: x:/prj/tech/libsrc/dump/RCS/filefind.c $
  * $Revision: 1.5 $

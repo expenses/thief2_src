@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "r:\\prj\\thief2\\libsrc\\script\\scrobj.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/scrobj.cpp,v 1.8 2000/02/22 19:49:45 toml Exp $
 //

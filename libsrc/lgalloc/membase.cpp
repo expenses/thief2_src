@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lgalloc\\membase.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/membase.cpp $
 // $Author: TOML $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\vec2\\vec2.c"
 // $Header: x:/prj/tech/libsrc/vec2/RCS/vec2.c 1.2 1997/08/22 18:43:11 dc Exp $
 
 #include <stdlib.h>

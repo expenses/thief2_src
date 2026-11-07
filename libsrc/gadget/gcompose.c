@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "x:\\prj\\tech\\libsrc\\gadget\\gcompose.c"
 // $Header: r:/t2repos/thief2/libsrc/gadget/gcompose.c,v 1.9 1998/04/09 14:06:24 mahk Exp $
 
 #include <string.h>

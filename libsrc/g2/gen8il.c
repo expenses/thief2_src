@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\gen8il.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/gen8il.c 1.1 1997/05/16 09:52:41 KEVIN Exp $
 // Generic flat8 source inner loops.
 

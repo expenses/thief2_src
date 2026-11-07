@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\recorder\\recorder.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/recorder/RCS/recorder.h $
 // $Author: TOML $

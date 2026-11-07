@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\lg\\exit.c"
 /*
  * $Source: x:/prj/tech/libsrc/lg/RCS/exit.c $
  * $Revision: 1.7 $

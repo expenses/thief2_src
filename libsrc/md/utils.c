@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\md\\utils.c"
 /*
  * $Source: x:/prj/tech/libsrc/md/RCS/utils.c $
  * $Revision: 1.6 $

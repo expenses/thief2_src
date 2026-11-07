@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\hflip.c"
 /*
  * $Source: s:/prj/tech/libsrc/dev2d/RCS/hflip.c $
  * $Revision: 1.1 $

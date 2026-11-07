@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sndsrc\\imaadpcm.cpp"
 ////////////////////////////////////////////////////////////////////////
 //
 // (c) 1996 Looking Glass Technologies Inc.

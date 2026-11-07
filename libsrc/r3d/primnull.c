@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\primnull.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primnull.c 1.2 1997/10/03 13:03:25 KEVIN Exp $
 
 #include <r3ds.h>

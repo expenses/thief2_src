@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\ctxtmang.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/ctxtmang.c 1.9 1997/10/15 12:19:51 TOML Exp $
 // basic support for contexts, alloc and dealloc, low level set and end
 

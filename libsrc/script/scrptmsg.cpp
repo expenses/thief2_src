@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "r:\\prj\\thief2\\libsrc\\script\\scrptmsg.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/scrptmsg.cpp,v 1.10 1998/03/05 08:19:53 MAT Exp $
 //

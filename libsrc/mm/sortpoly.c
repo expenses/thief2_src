@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mm\\sortpoly.c"
 // $Header: x:/prj/tech/libsrc/mm/RCS/sortpoly.c 1.1 1997/08/22 19:38:48 kate Exp $
 // this module contains the various mesh polygon sorting routines.
 

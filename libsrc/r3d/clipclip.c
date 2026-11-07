@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\clipclip.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipclip.c 1.9 1996/10/29 12:44:47 KEVIN Exp $
 
 // clipping is:

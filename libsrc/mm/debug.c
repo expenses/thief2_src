@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mm\\debug.c"
 // $Header: x:/prj/tech/libsrc/mm/RCS/debug.c 1.5 1998/05/05 15:48:48 kate Exp $
 
 #include <stdlib.h>

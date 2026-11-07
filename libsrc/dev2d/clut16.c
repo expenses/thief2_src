@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\clut16.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/clut16.c 1.4 1996/12/06 14:29:56 KEVIN Exp $
 // Routines to construct 16 bit cluts.
 

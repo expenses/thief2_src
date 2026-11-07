@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dump\\bmpdump.c"
 /*
  * $Source: x:/prj/tech/libsrc/dump/RCS/bmpdump.c $
  * $Revision: 1.3 $

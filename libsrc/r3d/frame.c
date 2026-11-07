@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\frame.c"
 // $Header: x:/prj/tech/libsrc/r3d/RCS/frame.c 1.3 1997/01/06 18:27:22 JAEMZ Exp $
 // simple start and end frame for single context work
 

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\comtools\\interset.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/comtools/RCS/interset.cpp $
 // $Author: TOML $

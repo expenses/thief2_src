@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "r:\\prj\\thief2\\libsrc\\script\\scrptapi.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/scrptapi.h,v 1.14 1999/06/29 19:11:09 mahk Exp $
 //

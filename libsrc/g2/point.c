@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\point.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/point.c 1.2 1997/02/07 12:54:56 KEVIN Exp $
 #include <point.h>
 int gr_draw_point(int c, g2s_point *p)

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mm\\xformseg.c"
 // $Header: x:/prj/tech/libsrc/mm/RCS/xformseg.c 1.7 1998/06/30 18:59:27 buzzard Exp $
 // this module contains the various segment transforming routines
 

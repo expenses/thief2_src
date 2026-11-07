@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\smode.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/smode.c $
  * $Revision: 1.7 $

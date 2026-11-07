@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sound\\dsnddynf.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sound/RCS/dsnddynf.cpp $
 // $Log: dsnddynf.cpp $

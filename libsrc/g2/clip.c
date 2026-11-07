@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\clip.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/clip.c 1.3 1997/05/16 17:27:26 KEVIN Exp $
 
 #include <dev2d.h>  // (sigh) only for clip codes...

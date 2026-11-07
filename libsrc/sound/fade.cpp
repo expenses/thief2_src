@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sound\\fade.cpp"
 ////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sound/RCS/fade.cpp $
 // $Author: PATMAC $

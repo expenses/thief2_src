@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\cominit.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/cominit.c $
  * $Revision: 1.6 $

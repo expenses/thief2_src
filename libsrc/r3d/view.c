@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\view.c"
 /*
  * $Source: x:/prj/tech/libsrc/r3d/RCS/view.c $
  * $Revision: 1.23 $

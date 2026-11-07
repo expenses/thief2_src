@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\genply.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/genply.c 1.3 1998/04/28 14:28:46 KEVIN Exp $
 
 #include <tmapd.h>

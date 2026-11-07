@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\genrast.c"
 // $Header: x:/prj/tech/libsrc/g2/RCS/genrast.c 1.3 1997/11/21 14:00:29 KEVIN Exp $
 //
 // Generic edge and rasterization functions.

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\resacc.cpp"
 //        ResAcc.c          Resource access
 //        Rex E. Bradford
 //

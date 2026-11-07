@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1 "r:\\prj\\thief2\\libsrc\\script\\multparm.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/multparm.cpp,v 1.2 1997/12/22 16:19:21 TOML Exp $
 //

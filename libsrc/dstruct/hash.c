@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dstruct\\hash.c"
 #include <lg.h> 
 #include <stdlib.h>
 #include <string.h>

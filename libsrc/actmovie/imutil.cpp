@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\actmovie\\imutil.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/actmovie/RCS/imutil.cpp $
 // $Author: TOML $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\lzw.cpp"
 //    LZW.C       New improved super-duper LZW compressor & decompressor
 //    This module by Greg Travis and Rex Bradford
 //

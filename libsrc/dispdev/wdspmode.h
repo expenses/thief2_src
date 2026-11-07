@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dispdev\\wdspmode.h"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/dispdev/RCS/wdspmode.h $
 // $Author: KEVIN $

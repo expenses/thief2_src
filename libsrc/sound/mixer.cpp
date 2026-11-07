@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sound\\mixer.cpp"
 ////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/sound/RCS/mixer.cpp $
 // $Author: PATMAC $

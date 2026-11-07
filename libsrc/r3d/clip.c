@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\clip.c"
 #include <clipcon_.h>
 #include <primfunc.h>
 

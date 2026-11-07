@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\cpptools\\hashpp.cpp"
 #include <stdlib.h>
 #include <hashpp.h>
 

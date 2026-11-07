@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\fl8mono.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/fl8mono.c $
  * $Revision: 1.2 $

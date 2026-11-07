@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\pkzip.cpp"
 // $Source: x:/prj/tech/libsrc/res/RCS/pkzip.cpp $
 // $Author: TOML $
 // $Date: 1997/01/17 11:04:24 $

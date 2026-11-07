@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\gameshel\\wgshell.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/gameshel/RCS/wgshell.cpp $
 // $Author: TOML $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\appcore\\wappcore.cpp"
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/appcore/RCS/wappcore.cpp $
 // $Author: TOML $

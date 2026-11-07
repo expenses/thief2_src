@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\sound\\dsample.cpp"
 ////////////////////////////////////////////////////////////////////////
 // $Header: x:/prj/tech/libsrc/sound/RCS/dsample.cpp 1.1 1998/03/20 11:45:53 PATMAC Exp $
 //

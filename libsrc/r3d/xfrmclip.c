@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\r3d\\xfrmclip.c"
 /*
  * $Source: x:/prj/tech/libsrc/r3d/RCS/xfrmclip.c $
  * $Revision: 1.7 $

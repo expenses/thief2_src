@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mp\\mpvm.c"
 //
 // mpvm.c -- Multiped virtual motion/effector placement stuff.
 //

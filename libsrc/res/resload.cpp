@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\resload.cpp"
 //      ResLoad.c   Load resource from resfile
 //      Rex E. Bradford
 /*

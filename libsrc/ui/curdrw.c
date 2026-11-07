@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\ui\\curdrw.c"
 /*
  * $Source: x:/prj/tech/libsrc/ui/RCS/curdrw.c $
  * $Revision: 1.20 $

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\g2\\rastel.c"
 /* 
  * $Source: s:/prj/tech/libsrc/g2/RCS/rastel.c $
  * $Revision: 1.1 $

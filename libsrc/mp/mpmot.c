@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\mp\\mpmot.c"
 //
 // mpmot.c -- Multiped motion start/stop/transition functions.
 //

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\rsdcvt.c"
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/rsdcvt.c 1.5 1998/03/12 10:42:56 KEVIN Exp $
 
 // Routine for unpacking an rsd bitmap to a flat8 bitmap.

@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\gdlin.c"
 /*
  * $Source: s:/prj/tech/libsrc/dev2d/RCS/gdlin.c $
  * $Revision: 1.1 $

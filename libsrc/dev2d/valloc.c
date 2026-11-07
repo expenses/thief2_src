@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\dev2d\\valloc.c"
 /*
  * $Source: x:/prj/tech/libsrc/dev2d/RCS/valloc.c $
  * $Revision: 1.2 $

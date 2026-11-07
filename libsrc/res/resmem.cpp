@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\res\\resmem.cpp"
 //      ResMem.C      Resource Manager memory management
 //      Rex E. Bradford (REX)
 /*

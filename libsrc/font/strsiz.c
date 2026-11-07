@@ -1,3 +1,4 @@
+#line 1 "x:\\prj\\tech\\libsrc\\font\\strsiz.c"
 /*
  * $Source: s:/prj/tech/libsrc/font/RCS/strsiz.c $
  * $Revision: 1.1 $
