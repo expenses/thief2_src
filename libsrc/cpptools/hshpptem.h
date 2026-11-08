@@ -1,5 +1,5 @@
 #line 1 "x:\\prj\\tech\\h\\hshpptem.h"
-// $Header: x:/prj/tech/libsrc/cpptools/RCS/hshpptem.h 1.7 1998/05/23 17:48:50 mahk Exp $
+// $Header: x:/prj/tech/libsrc/cpptools/RCS/hshpptem.h 1.8 1998/08/24 20:55:54 mahk Exp $
 
 #ifndef HSHPPTEM_H
 #define HSHPPTEM_H
@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <_dstruct.h>
+
+#ifndef SHIP
+#include <mprintf.h>
+#endif // !SHIP
 
 #ifndef NO_DB_MEM
 // Must be last header
@@ -47,7 +51,7 @@ HASHTABLE_TEMPLATE void HASHTABLE::Init()
 
 
 HASHTABLE_TEMPLATE  HASHTABLE::cHashTable(int vecsize)
-   : fullness(0)
+   : fullness(0),tombstones(0)
 {
    while(!is_prime(vecsize)) vecsize++;
    size = vecsize;
@@ -151,6 +155,7 @@ HASHTABLE_TEMPLATE errtype HASHTABLE::Grow(int newsize)
    size = newsize;
    sizelog2 = hashlog2(newsize);
    fullness = 0;
+   tombstones = 0; 
    for (i = 0; i < newsize; i++) newstat[i] = HASH_EMPTY;
    for (i = 0; i < oldsize; i++)
    {
@@ -186,11 +191,26 @@ HASHTABLE_TEMPLATE BOOL HASHTABLE::Set(const KEY& key,const VALUE& value)
 HASHTABLE_TEMPLATE errtype HASHTABLE::Insert(const KEY& key, const VALUE& value)
 {
    int i;
-   if (fullness*100/size > FULLNESS_THRESHHOLD_PERCENT)
-      Grow(size*2);
+   
+   if ((fullness+tombstones)*100 > size*FULLNESS_THRESHHOLD_PERCENT)
+   {
+      
+      // If we have as many tombstones as entries, then we can just
+      // rehash without changing size.  This works because it takes
+      // twice as much work to make a tombstone as it does to make an
+      // entry.  (insert + delete vs only insert)
+
+      if (tombstones >= fullness)
+         Grow(size); // don't actually change size
+      else
+         Grow(size + fullness*100/FULLNESS_THRESHHOLD_PERCENT); // grow in proportion to fullness 
+   }
+
    i = find_index(key);
    vec[i].key = key;
    vec[i].value = value;
+   if (statvec[i] == HASH_TOMBSTONE)
+      tombstones--; 
    statvec[i] = HASH_FULL;
    fullness++;
    return OK;
@@ -240,6 +260,7 @@ HASHTABLE_TEMPLATE errtype HASHTABLE::Delete(const KEY& key)
    {
       statvec[i] = HASH_TOMBSTONE;
       fullness--;
+      tombstones++; 
       return OK;
    }
    return ERR_NOEFFECT;

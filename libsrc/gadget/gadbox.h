@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/libsrc/gadget/gadbox.h,v 1.4 1998/09/09 14:59:07 KEVIN Exp $
+// $Header: x:/prj/tech/libsrc/gadget/RCS/gadbox.h 1.8 1999/12/28 12:13:07 JAEMZ Exp $
 
 #ifndef __GADBOX_H
 #define __GADBOX_H
@@ -34,7 +29,7 @@ typedef struct _LGadRoot LGadRoot;
 // 
 
 // Create the screen root
-EXTERN LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, Ref curs_id, int paltype);
+EXTERN LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, IDataSource *pCurs, Point anchor, int paltype);
 
 // Change which root is the "current" screen root.  Only gadgets on the "current"
 // root will receive input. 
@@ -51,6 +46,9 @@ EXTERN LGadRoot* LGadSetupSubRoot(LGadRoot* subroot, LGadRoot* parent, short x, 
 
 // Destroy a root
 EXTERN LGadDestroyRoot(LGadRoot *vr);
+
+// Change the root cursor 
+EXTERN void LGadSetRootCursor(LGadRoot* root, IDataSource* bm, Point hotspot); 
 
 ////////////////////////////////////////////////////////////
 // BOX GADGETS
@@ -69,7 +67,7 @@ typedef struct _LGadBox LGadBox;
 // BOX CALLBACKS
 // 
 
-typedef bool (*LGadMouseCallback)(short x, short y, short action, LGadBox *vb);
+typedef bool (*LGadMouseCallback)(short x, short y, short action, short wheel, LGadBox *vb);
 typedef bool (*LGadMotionCallback)(short x, short y, LGadBox *vb);
 typedef bool (*LGadKeyCallback)(short keycode, LGadBox *vb);
 typedef void (*DrawCallback)(void *data, LGadBox *vb);
@@ -99,7 +97,8 @@ struct _LGadBox {
 #define BOXFLAG_BUFFERED   0x0 // Use normal compose methods
 #define BOXFLAG_DIRECT     0x1 // draw straight to screen
 #define BOXFLAG_ACTIVE     0x2 // (internal) box has been initialized
-#define BOXFLAG_FLIP       0x4
+#define BOXFLAG_FLIP       0x4 // draw this box twice and flip in between
+#define BOXFLAG_CLEAR      0x8 // gui clear at start of draw 
 
 //------------------------------------------------------------
 // ACCESSORS
@@ -189,7 +188,7 @@ struct _LGadRoot {
    uiSlab* root_slab;
    Cursor* curs;
    bool subroot;
-   int cursor_id;
+   IDataSource *pCursor;
    bool free_self;
 };
 
