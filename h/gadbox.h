@@ -64,7 +64,7 @@ typedef struct _LGadBox LGadBox;
 // BOX CALLBACKS
 // 
 
-typedef bool (*LGadMouseCallback)(short x, short y, short action, LGadBox *vb);
+typedef bool (*LGadMouseCallback)(short x, short y, short action, short wheel, LGadBox *vb);
 typedef bool (*LGadMotionCallback)(short x, short y, LGadBox *vb);
 typedef bool (*LGadKeyCallback)(short keycode, LGadBox *vb);
 typedef void (*DrawCallback)(void *data, LGadBox *vb);
@@ -94,6 +94,8 @@ struct _LGadBox {
 #define BOXFLAG_BUFFERED   0x0 // Use normal compose methods
 #define BOXFLAG_DIRECT     0x1 // draw straight to screen
 #define BOXFLAG_ACTIVE     0x2 // (internal) box has been initialized
+#define BOXFLAG_FLIP       0x4 // draw this box twice and flip in between
+#define BOXFLAG_CLEAR      0x8 // gui clear at start of draw 
 
 //------------------------------------------------------------
 // ACCESSORS
