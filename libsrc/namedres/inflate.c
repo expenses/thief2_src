@@ -153,6 +153,7 @@ int f;
 {
   int r;
   uInt b;
+  int flush = f;
 
   if (z == Z_NULL || z->state == Z_NULL || z->next_in == Z_NULL)
     return Z_STREAM_ERROR;
@@ -226,7 +227,12 @@ int f;
         break;
       }
       if (r == Z_OK)
-        r = f;
+      {
+        if (z->avail_in == 0 && z->avail_out == 0 && flush == Z_FINISH)
+          r = Z_STREAM_END;
+        else
+          r = f;
+      }
       if (r != Z_STREAM_END)
         return r;
       r = f;
