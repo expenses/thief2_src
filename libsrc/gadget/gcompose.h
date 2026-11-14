@@ -1,21 +1,15 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
 #ifndef __GCOMPOSE_H
 #define __GCOMPOSE_H
 /*
- * $Source: r:/t2repos/thief2/libsrc/gadget/gcompose.h,v $
- * $Revision: 1.5 $
- * $Author: mahk $
- * $Date: 1996/09/20 22:03:20 $
+ * $Source: x:/prj/tech/libsrc/gadget/RCS/gcompose.h $
+ * $Revision: 1.6 $
+ * $Author: JAEMZ $
+ * $Date: 1998/08/04 14:09:38 $
  *
  */
 
 #include <2d.h>
 #include <rect.h>
-#include <res.h>
 #include <error.h>
 
 

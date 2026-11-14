@@ -1,8 +1,13 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/md/RCS/md.h $
- * $Revision: 1.25 $
- * $Author: buzzard $
- * $Date: 1998/06/30 18:56:11 $
+ * $Revision: 1.37 $
+ * $Author: alique $
+ * $Date: 1970/01/01 00:00:00 $
  *
  * Model Library prototypes
  *
@@ -13,9 +18,38 @@
 #define __MD_H
 #pragma once
 
+
 #include <mds.h>
 
 #include <r3ds.h>
+
+
+typedef void (* mdf_mesh_cback)(mds_mesh *m,SubOMeshList *sml,
+             int SubObjNum ,float *norms,ushort *indexpnts);
+typedef void (* mdf_meshpgon_cback) (short *trilist,void *bm,ulong color,ulong type);
+
+EXTERN void render_subobj(int i);
+EXTERN void render_node(uchar *n,ushort i);
+EXTERN void md_mesh_render_only(mds_model *m,mds_parm pm[]);
+EXTERN void mesh_render_subobj(int i);
+EXTERN void mesh_render_node(uchar *n,ushort i);
+EXTERN void md_mesh_transform_subobj(int i);
+EXTERN void md_mesh_transform_only(mds_model *m,mds_parm p[]);
+EXTERN void md_mesh_init(mds_model *m);
+EXTERN void md_mesh_rg_render_pgon(mds_mesh *meshes,SubOMeshList *sml,int SubObjNum,
+                                   float *norms,ushort *indexpnts);
+EXTERN void md_render_meshpgon_render_callback(short *trilist,void *bm,ulong color,ulong type);
+EXTERN void md_mesh_light_cback(int num,float *ivals,mds_light *lights);
+EXTERN mdf_mesh_cback md_set_render_meshpgon_callback(mdf_meshpgon_cback func);
+EXTERN mdf_mesh_cback md_set_mesh_callback(mdf_mesh_cback func);
+EXTERN int md_rg_indexed_tmap(int n, short *vi, r3s_texture bm);
+#define MD_NEW_VER 5
+#define MD_MESH_SOLID 65535
+
+
+EXTERN void md_use_render_g();
+EXTERN void md_use_msh_render_g();
+EXTERN void md_use_lgd3d();
 
 // Normal way to render a model.  Pass in pointer to the model and parms
 // list
@@ -34,6 +68,9 @@ EXTERN void md_set_buff(mds_model *m,void *buff);
 // into the buffer.  Does not render.
 EXTERN void md_transform_only(mds_model *m,mds_parm parms[]);
 
+// Calls cback for every subobject with r3d setup appropriately
+EXTERN void md_traverse_subobjs(mds_model *m, mdf_subrecur cback);
+
 // Only render the model, assumes it has been transformed, and in fact,
 // only works then.
 EXTERN void md_render_only(mds_model *m,mds_parm parms[]);
@@ -43,6 +80,10 @@ EXTERN void md_render_subobj(mds_model *m,mds_parm parms[],int sub);
 
 // Return a pointer to the material list.
 #define md_mat_list(m) ((mds_mat *)((uchar *)(m)+((m)->mat_off)))
+
+// Return the correct pointer to the given aux material
+// only way to access it
+#define md_amat(_m,_n) ((mds_amat *)((uchar *)(_m)+((_m)->amat_off)+((_m)->amat_size)*(_n)))
 
 // Return a point to the subobject list
 #define md_subobj_list(m) ((mds_subobj *)((uchar *)(m)+((m)->subobj_off)))
@@ -60,7 +101,13 @@ EXTERN void md_render_subobj(mds_model *m,mds_parm parms[],int sub);
 #define md_norm_list(m) ((mxs_vector*)((uchar *)m+m->norm_off))
 
 // Just evaluate the vhots, stuffing them into their positions.
+// Needs a valid 3d space
 EXTERN void md_eval_vhots(mds_model *m,mds_parm parms[]);
+
+// Just evaluate the vhots, stuffing them into their positions.
+// Does not need a 3d context, actually ignores the 3d context
+// and just gets all the points relative to the object space
+EXTERN void md_eval_vhots_object(mds_model *m,mds_parm parms[]);
 
 // These tables are for the vcolors, textures, vcalls, and for reading the result of vhots.  The vhots are in 
 // world coords.  You set the vcolor to the color index (if 8 bit) or color (if 16 bit or higher).  You set the 
@@ -75,6 +122,12 @@ EXTERN int         *mdd_vcolor_tab;
 EXTERN r3s_texture *mdd_vtext_tab;
 EXTERN mdf_vcall   *mdd_vcall_tab;
 EXTERN mxs_vector  *mdd_vhot_tab;
+
+/*
+EXTERN void md_rg_set_textable( void* pI );
+EXTERN void md_rg_set_default_textable(void);
+EXTERN void* md_rg_TexTable_GetElement( int n );
+*/
 
 #define md_set_table_entry(index, val, table) \
 do {                                                     \
@@ -118,6 +171,8 @@ EXTERN mdf_pgon_cback md_set_render_pgon_callback(mdf_render_pgon_cback func);
 // Exposed so people doing pgon callbacks
 // can pre or post render
 EXTERN void md_render_pgon(mds_pgon *p);
+EXTERN void md_rg_render_pgon(mds_pgon *p); //zb
+//EXTERN void md_rg_render_pgon_render_callback(mds_pgon *p);
 
 // By default is set true, you can set it false here, and change the 
 // render order for doing craziness like span 
@@ -151,12 +206,12 @@ EXTERN void md_set_render_light(bool l);
 EXTERN bool       mdd_rgb_lighting;
 
 // Sets the per subobject callback and returns the old one.
-mdf_subobj_cback md_set_subobj_callback(mdf_subobj_cback);
+EXTERN mdf_subobj_cback md_set_subobj_callback(mdf_subobj_cback);
 
 // Sets the light callback, and gets the old one back
-mdf_light_setup_cback md_set_light_setup_callback(mdf_light_setup_cback);
-mdf_light_cback md_set_light_callback(mdf_light_cback);
-mdf_light_obj_cback md_set_light_obj_callback(mdf_light_obj_cback);
+EXTERN mdf_light_setup_cback md_set_light_setup_callback(mdf_light_setup_cback);
+EXTERN mdf_light_cback md_set_light_callback(mdf_light_cback);
+EXTERN mdf_light_obj_cback md_set_light_obj_callback(mdf_light_obj_cback);
 
 // This is the default implementaton of lighting, just
 // call md_light_init() to install, and use it
@@ -212,5 +267,26 @@ EXTERN mds_model *md_scale_model(mds_model *dst,mds_model *src,mxs_vector *s,boo
 // you may actually want it to be the same, plus it's the slowest thing to
 // do
 EXTERN mds_model *md_shear_model(mds_model *dst,mds_model *src,int ax_src,int ax_targ,mxs_real s,bool light);
+
+// Call if you want to use lgd3d alpha blending in the models
+// Defaults to true.  If false, then alphad things are opaque
+EXTERN void md_set_alpha(bool);
+// Assuming your are setting alpha, scales it by this amount
+EXTERN void md_set_alpha_scale(float);
+
+// Call if you want to allow or disallow self illumination, defaults to
+// true.
+EXTERN void md_set_illum(bool);
+
+// Accessors for the model
+// Does this model have alpha?
+#define md_has_alpha(_m) ((_m)->ver > 3 && ((_m)->mat_flags&MD_MAT_TRANS))
+// Does it use self illumination?
+#define md_has_illum(_m) ((_m)->ver > 3 && ((_m)->mat_flags&MD_MAT_ILLUM))
+
+// This gives you a set of parameters you can pass in that are
+// guaranteed to be zeroed, so you don't need your own copy.  Beware though,
+// NEVER write into it.
+EXTERN mds_parm mdd_zero_parms[];
 
 #endif // __MD_H
