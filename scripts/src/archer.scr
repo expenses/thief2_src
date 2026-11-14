@@ -1,10 +1,32 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
+head	 1.1;
+branch   ;
+access   ;
+symbols  ;
+locks    ; strict;
+comment  @@;
 
-///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/prj/thief2/scripts/src/RCS/archer.scr 1.1 1999/11/10 17:25:58 rsmith Exp $
+
+1.1
+date	 1999.11.10.17.25.58;  author rsmith;  state Exp;
+branches ;
+next	 ;
+
+
+desc
+@Thief 2 script - archer.scr
+Intended for rooftops mission (Thief 2's demo mission)
+Scripts that modify the dueling archers' behavior.
+@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@///////////////////////////////////////////////////////////////////////////////
+// $Header: r:/prj/thief2/scripts/src/RCS/archer.scr 1.1 1999/10/06 11:34:56 TJS Exp $
 //
 
 
@@ -271,3 +293,4 @@ OnTimer()
 
 END_SCRIPT (PostFightAlertResetter)
 
+@

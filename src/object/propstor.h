@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/propstor.h,v 1.1 1998/03/26 13:53:01 mahk Exp $
+// $Header: x:/prj/tech/libsrc/object/property/RCS/propstor.h 1.2 1999/04/21 11:39:32 ccarollo Exp $
 #pragma once  
 #ifndef __PROPSTOR_H
 #define __PROPSTOR_H
@@ -37,6 +32,7 @@ DECLARE_INTERFACE_(IPropertyStore,IUnknown)
    //
    STDMETHOD_(sDatum,Create)(THIS_ ObjID obj) PURE;
    STDMETHOD(Delete)(THIS_ ObjID obj) PURE; 
+   STDMETHOD(Release)(THIS_ ObjID obj, sDatum* ) PURE;
 
    // 
    // Check for the presence of an object

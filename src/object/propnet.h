@@ -1,12 +1,9 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/object/propnet.h,v 1.1 1998/10/08 16:37:04 MROWLEY Exp $
+// $Header: x:/prj/tech/libsrc/object/property/RCS/propnet.h 1.1 1999/04/07 14:40:22 TOML Exp $
 #pragma once  
 #ifndef __PROPNET_H
 #define __PROPNET_H
+
+#ifdef TODO_ABSTRACT_OBJECT_NETWORKING
 
 ////////////////////////////////////////////////////////////
 // PROPERTY NETWORKING API 
@@ -34,5 +31,7 @@ DECLARE_INTERFACE_(IPropertyNetworking,IUnknown)
    //
    STDMETHOD_(void,ReceivePropertyMsg)(const sNetMsg_Generic *pMsg, ulong size, ObjID fromPlayer) PURE;
 }; 
+
+#endif
 
 #endif // __PROPNET_H

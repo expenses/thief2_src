@@ -1,9 +1,4 @@
-/*
-@Copyright Looking Glass Studios, Inc.
-1996,1997,1998,1999,2000 Unpublished Work.
-*/
-
-// $Header: r:/t2repos/thief2/src/editor/isdescty.h,v 1.4 1997/10/20 18:22:40 mahk Exp $
+// $Header: x:/prj/tech/libsrc/sdesc/RCS/isdescty.h 1.5 1999/01/27 17:33:59 mahk Exp $
 #pragma once  
 #ifndef __ISDESCTY_H
 #define __ISDESCTY_H
