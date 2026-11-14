@@ -1,0 +1,9 @@
+#include <windows.h>
+#include <initguid.h>
+#include <ddraw.h>
+#include <d3d.h>
+#include <dsound.h>
+#include <ia3d.h>
+#include <dplay.h>
+#include <dplobby.h>
+#include <dinput.h>
