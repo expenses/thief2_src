@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/matrix/RCS/mxcvrt.h 1.1 1997/08/12 06:42:19 dc Exp $
 
 #ifndef __MXCVRT_H

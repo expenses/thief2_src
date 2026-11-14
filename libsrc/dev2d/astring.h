@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/dev2d/RCS/astring.h 1.4 1997/02/07 11:22:04 KEVIN Exp $
 
 #ifndef __ASTRING_H

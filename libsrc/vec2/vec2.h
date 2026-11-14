@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/vec2/RCS/vec2.h 1.4 1997/12/16 15:28:41 TOML Exp $
 // 2d vector math based on mxs_reals
 // This stuff implicitly references some stuff that assumes mxs_reals

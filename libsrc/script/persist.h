@@ -3,9 +3,8 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/persist.h,v 1.2 1999/06/29 19:10:57 mahk Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/persist.h 1.2 1999/06/29 19:10:57 mahk Exp $
 //
 // sPersistent is a weird little utility struct for loading and
 // saving the basic types used by scripts, including vectors and

@@ -3,7 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-// $Header: r:/t2repos/thief2/libsrc/portold/portsky.h,v 1.1 1998/03/03 12:33:34 KEVIN Exp $
+// $Header: r:/prj/cam/libsrc/portal/RCS/portsky.h 1.1 1998/03/03 12:33:34 KEVIN Exp $
 
 #ifndef __PORTSKY_H
 #define __PORTSKY_H

@@ -4,7 +4,7 @@
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/scrptnet.h,v 1.1 1999/01/20 18:46:36 JUSTIN Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrptnet.h 1.1 1999/01/20 18:46:36 JUSTIN Exp $
 //
 // ObjScript Networking Interface
 //

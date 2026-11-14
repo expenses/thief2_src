@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 /* message.h
 **
  * $Header: r:/prj/lib/src/dstruct/rcs/message.h 1.2 1993/10/07 10:34:52 rex Exp $
@@ -155,4 +160,3 @@ void MsgPrint (Message *m);
 
 #endif // MESSAGE_H 
 
-

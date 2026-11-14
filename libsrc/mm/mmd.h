@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/mm/RCS/mmd.h 1.3 1998/05/05 15:48:55 kate Exp $
 
 #ifndef __MMD_H

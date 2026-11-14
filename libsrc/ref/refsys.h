@@ -7,7 +7,7 @@
 **
 ** ObjRefs, ObjRefSystems
 **
-** $Header: r:/t2repos/thief2/libsrc/ref/refsys.h,v 1.1 1998/03/14 22:05:08 mahk Exp $
+** $Header: r:/prj/cam/libsrc/ref/RCS/refsys.h 1.1 1998/03/14 22:05:08 mahk Exp $
  * 
 */
 

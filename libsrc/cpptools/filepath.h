@@ -1,8 +1,13 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/cpptools/RCS/filepath.h $
-// $Author: TOML $
-// $Date: 1996/10/21 14:15:00 $
-// $Revision: 1.3 $
+// $Author: darrenl $
+// $Date: 1999/03/29 18:10:05 $
+// $Revision: 1.4 $
 //
 // (c) Copyright 1993-1996 Tom Leonard. All Rights Reserved. Unlimited license granted to Looking Glass Technologies Inc.
 //
@@ -183,6 +188,7 @@ public:
 
     // Iteration
     BOOL FindFirst(cFileSpec &,sFindContext&) const;
+    BOOL FindFirst(cFileSpec &,sFindContext&, const char *pWildcard) const;
     BOOL FindNext(cFileSpec &,sFindContext&) const;
 
     BOOL FindFirst(cFilePath &,sFindContext&) const;

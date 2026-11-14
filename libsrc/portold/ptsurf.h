@@ -3,7 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-// $Header: r:/t2repos/thief2/libsrc/portold/ptsurf.h,v 1.5 1998/04/06 12:42:05 MAT Exp $
+// $Header: r:/prj/cam/libsrc/portal/RCS/ptsurf.h 1.5 1998/04/06 12:42:05 MAT Exp $
 
 #ifndef _PTSURF_H_
 #define _PTSURF_H_

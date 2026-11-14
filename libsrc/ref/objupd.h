@@ -7,11 +7,11 @@
 **
 ** Template for bin-updating functions
 **
-** $Header: r:/t2repos/thief2/libsrc/ref/objupd.h,v 1.1 1998/03/14 22:05:14 mahk Exp $
-** $Log: objupd.h,v $
-** Revision 1.1  1998/03/14 22:05:14  mahk
-** Initial revision
-**
+** $Header: r:/prj/cam/libsrc/ref/RCS/objupd.h 1.1 1998/03/14 22:05:14 mahk Exp $
+** $Log: objupd.h $
+ * Revision 1.1  1998/03/14  22:05:14  mahk
+ * Initial revision
+ * 
  * Revision 1.1  1996/07/24  12:39:15  DFAN
  * Initial revision
  * 

@@ -3,7 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-// $Header: r:/t2repos/thief2/libsrc/script/scrptmem.h,v 1.6 1998/06/14 12:55:08 TOML Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrptmem.h 1.6 1998/06/14 12:55:08 TOML Exp $
 
 // This is the custom allocator included in each script module;
 // actually just a wrapper which keeps track separately of all

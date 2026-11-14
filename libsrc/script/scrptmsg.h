@@ -3,9 +3,8 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/scrptmsg.h,v 1.15 1999/01/20 18:45:45 JUSTIN Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrptmsg.h 1.15 1999/01/20 18:45:45 JUSTIN Exp $
 //
 //
 //

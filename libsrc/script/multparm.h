@@ -3,9 +3,8 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/multparm.h,v 1.13 1999/12/01 13:24:39 Justin Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/multparm.h 1.13 1999/12/01 13:24:39 Justin Exp $
 //
 // Multiple Purpose Parameter
 //

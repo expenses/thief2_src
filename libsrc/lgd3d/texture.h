@@ -1,16 +1,17 @@
-// $Header: x:/prj/tech/libsrc/lgd3d/RCS/texture.h 1.6 1998/02/02 12:52:06 KEVIN Exp $
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+#pragma once
+/* This file created by RESTOOL */
 
 #ifndef __TEXTURE_H
 #define __TEXTURE_H
 
-extern D3DTEXTUREHANDLE TextureHandle[];
-extern D3DMATERIALHANDLE MaterialHandle[];
-extern grs_bitmap *TdrvBitmap[];
-
-typedef struct lgd3ds_device_info lgd3ds_device_info;
-extern void InitTextureSys(lgd3ds_device_info *info);
-extern void ShutdownTextureSys(void);
-
-#define LGD3D_MAX_TEXTURES 1024
+#define RES_Palette 0x64      // (100)
+#define RES_ShadeTable 0x65      // (101)
+#define RES_Textures 0x66     // (102)
+#define RES_Texture_End 0x67     // (103)
 
 #endif

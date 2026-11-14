@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/ui/RCS/texttool.h 1.7 1998/06/18 13:29:56 JAEMZ Exp $
 
 #ifndef __TEXTTOOL_H

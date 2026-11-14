@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/matrix/RCS/mxsymd.h 1.3 1997/08/11 18:40:51 dc Exp $
 
 // symmetric octant based sin/cos

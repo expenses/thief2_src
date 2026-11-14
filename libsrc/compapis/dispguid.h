@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #ifndef __DISPGUID_H
 #define __DISPGUID_H
 DEFINE_LG_GUID(IID_IDisplayDevice,       0x07);

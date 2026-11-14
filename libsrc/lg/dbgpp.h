@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/lg/RCS/dbgpp.h 1.5 1996/10/10 12:11:38 TOML Exp $
 // $Log: dbgpp.h $
 // Revision 1.5  1996/10/10  12:11:38  TOML

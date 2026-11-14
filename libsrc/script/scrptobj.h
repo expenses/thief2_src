@@ -4,7 +4,7 @@
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/scrptobj.h,v 1.1 1999/11/02 16:21:57 Justin Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrptobj.h 1.1 1999/11/02 16:21:57 Justin Exp $
 //
 // Primitive "object" types for the script system
 //

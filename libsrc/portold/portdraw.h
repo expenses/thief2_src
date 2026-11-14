@@ -18,7 +18,7 @@
 extern int check_surface_visible(PortalCell *cell, 
                                  PortalPolygonCore *poly, int voff);
 
-extern void PortalSetMIPTable();
+extern void portal_mip_setup(float zoom);
 
 extern ushort *cur_anim_light_index_list;
 

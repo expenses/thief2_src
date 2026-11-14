@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/matrix/RCS/matrixds.h $
  * $Revision: 1.10 $
  * $Author: JAEMZ $

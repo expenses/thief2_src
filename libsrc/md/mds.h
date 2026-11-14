@@ -1,8 +1,13 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Source: x:/prj/tech/libsrc/md/RCS/mds.h $
- * $Revision: 1.18 $
- * $Author: JAEMZ $
- * $Date: 1998/06/18 13:03:23 $
+ * $Revision: 1.22 $
+ * $Author: alique $
+ * $Date: 1970/01/01 00:00:00 $
  *
  * Structure definitions for the Model library
  *
@@ -17,7 +22,9 @@
 #include <r3ds.h>
 
 // Current MD version number
-#define MD_CUR_VER 3
+#define MD_CUR_VER 4
+// Current backwards compatible number
+#define MD_COMPATIBLE_VER 3
 
 // Enable backface intersection checking
 #define BACKFACE_INTERSECTION
@@ -63,6 +70,14 @@ typedef struct mds_model {
    ulong pgon_off;
    ulong node_off;
    ulong mod_size;   // size of the model
+   // Next time, make materials field expandable...
+   ulong mat_flags;     // which features are used, trans, illum, etc.
+   ulong amat_off;      // offset of auxilliary material info
+   ulong amat_size;     // size of new material, never assume size of struct
+
+   ulong  mesh_off;
+   ulong  submeshlist_off;
+   ushort meshes;
 } mds_model;
 
 
@@ -103,6 +118,7 @@ typedef struct mds_subobj {
 // more information like  shininess and things like that.  That's more a
 // feature for lighting.
 
+
 enum _mde_mat {
    MD_MAT_TMAP,
    MD_MAT_COLOR
@@ -119,6 +135,20 @@ typedef struct mds_mat {
       ulong ipal; // inverse pal lookup
    };
 } mds_mat;        // material info
+
+// Which features are used by the model as a whole, these get or'd
+// in mat_flags
+// Do we have translucency?
+#define MD_MAT_TRANS 0x1
+// Do we have self illumination?
+#define MD_MAT_ILLUM 0x2
+
+// Auxilliary information for material
+typedef struct mds_amat {
+   float trans; // translucency 0-1
+   float illum; // self illumination, 0-1
+   float MaxTU,MaxTV; //mipmap max texel size
+} mds_amat;
 
 
 // UVs Wow, is this structure uninteresting
@@ -153,6 +183,7 @@ typedef void (*mdf_light_setup_cback)(mxs_vector *bmin,mxs_vector *bmax);
 
 // lighting callback for setting the lighting
 typedef void (*mdf_light_cback)(int num,float *i,mds_light *lts,mxs_vector *pts,r3s_point *tpts);
+typedef void (*mdf_mesh_light_cback)(int num,float *ivals,mds_light *lights);
 
 // subobject callback
 typedef void (*mdf_subobj_cback)(mds_subobj *s);
@@ -186,6 +217,12 @@ typedef struct mds_pgon {
    ushort   verts[]; // vertex indices, then light indices, then uv
                      // indices, optionally
 } mds_pgon;
+
+// Auxilliary info for the pgon.. like material
+// occurs after verts, has extra info
+typedef struct mds_pgon_aux {
+   ubyte   mat; // which material
+} mds_pgon_aux;
 
 
 // The node list is still relatively similar to an interpreter, in that there are many types of nodes, and
@@ -260,5 +297,48 @@ typedef struct mds_sphere_hit_detect_info {
    uchar *pgons;              // used internally by md_sphere_hit_detect()
    uchar *nodes;              // used internally by md_sphere_hit_detect()
 } mds_sphere_hit_detect_info;
+
+// function type that gets recurred through
+typedef void (* mdf_subrecur)(int i);
+
+
+typedef enum {
+MD_PGON_SOLID, // vcolor lookup
+MD_PGON_WIRE,  // wire
+MD_PGON_TMAP
+} mde_pgon;
+
+typedef struct mds_plyinfo {
+   mde_pgon   type;
+   ushort     data;
+   ushort     normi;
+   float      d;
+} mds_plyinfo; //mesh polygon info
+
+
+typedef struct mds_mesh {
+   ushort       pgons;   // number of pgons
+   ushort       verts;   // number of verts
+   ushort       mat;     // index to material 
+   mxs_vector  *pnts;    // vertices
+   float       *uvs;     // uvs
+   mds_light   *lights;  // vertex normals
+   mxs_vector  *normals; // poly normals
+   short       *trilist; // triangle indice
+   mds_plyinfo *ply_info;// polygon info  
+   float       *ivals;   // light values
+} mds_mesh; // Mesh struct
+
+typedef struct SubObMeshList {
+   ushort      meshnum;
+   ushort      startpnt,numpnts;
+   ushort      startply,pgons;
+} SubObMeshList;
+typedef struct SubOMeshList {
+  SubObMeshList *subobj;
+  ushort        numMeshes;
+} SubOMeshList;
+
+
 
 #endif // __MDS_H

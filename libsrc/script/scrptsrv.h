@@ -4,7 +4,7 @@
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/scrptsrv.h,v 1.5 1997/12/31 12:33:53 TOML Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrptsrv.h 1.5 1997/12/31 12:33:53 TOML Exp $
 //
 //
 //

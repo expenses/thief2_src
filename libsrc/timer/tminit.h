@@ -1,4 +1,9 @@
 /*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+/*
  * $Header: x:/prj/tech/libsrc/timer/RCS/tminit.h 1.8 1996/12/10 21:16:06 TONY Exp $
  */
 

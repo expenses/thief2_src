@@ -1,8 +1,13 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/lgalloc/RCS/allocovr.h $
-// $Author: TOML $
-// $Date: 1998/06/10 13:58:05 $
-// $Revision: 1.5 $
+// $Author: ccarollo $
+// $Date: 1999/02/11 11:47:55 $
+// $Revision: 1.6 $
 //
 // Include this file once in some C++ file in the executable to overload allocs
 //
@@ -214,6 +219,11 @@ void * __cdecl _heap_alloc(size_t size)
 void * __cdecl _nh_malloc(size_t size, int)
 {
     return g_pMalloc->Alloc(size);
+}
+
+void *  __cdecl _expand(void *, size_t)
+{
+   return NULL;
 }
 
 #endif

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //
 // mpstack.h -- motion stack stuff. Memory management for multiped motion list
 // and stack used to evaluate it.
@@ -45,6 +50,8 @@ typedef struct mps_stack_node
 #define MP_END_FLAG		0x40000000
 
 #define MP_MOTNUM_FROM_NODE_HANDLE(handle) ((handle)&~(MP_KILL_FLAG|MP_END_FLAG))
+
+#define MP_NODE_HANDLE_IS_POSE(handle) (MP_MOTNUM_FROM_NODE_HANDLE(handle)==MP_MOTNUM_FROM_NODE_HANDLE(-1))
 
 //
 

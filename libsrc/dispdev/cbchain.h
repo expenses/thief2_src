@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/dispdev/RCS/cbchain.h 1.1 1997/10/21 16:15:44 KEVIN Exp $
 // Generic callback chain structures and handler prototype
 

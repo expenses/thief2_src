@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/dispdev/RCS/wdispcb.h 1.1 1997/10/21 16:16:10 KEVIN Exp $
 
 #ifndef __WDISPCB_H

@@ -1,3 +1,9 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
+// $Header: x:/prj/tech/libsrc/mp/RCS/qt.h 1.3 1998/09/14 16:15:03 KEVIN Exp $
 
 #ifndef __QT_H
 #define __QT_H
@@ -44,6 +50,12 @@ EXTERN void quat_mul(quat * dest, quat * p, quat * q);
 // and the given quaternion, using the given scale as the interpolation
 // parameter.
 EXTERN void quat_scale(quat * dest, quat * q, float scale);
+
+// Interpolates between q1 and q2.
+EXTERN void quat_slerp_cached_info(quat *dest, quat * q1, quat * q2, float t, mxs_vector *omega_info, bool flip);
+
+// Interpolates between q1 and q2.
+EXTERN bool quat_get_slerp_info(mxs_vector *omega_info, quat * q1, quat * q2);
 
 // Interpolates between q1 and q2.
 EXTERN void quat_slerp(quat * dest, quat * q1, quat * q2, float t);

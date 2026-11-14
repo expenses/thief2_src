@@ -4,7 +4,7 @@
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-// $Header: r:/t2repos/thief2/libsrc/script/scrptbas.h,v 1.21 1999/06/29 19:11:21 mahk Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrptbas.h 1.21 1999/06/29 19:11:21 mahk Exp $
 //
 //
 

@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/ui/RCS/tngslidr.h 1.10 1998/06/18 13:31:32 JAEMZ Exp $
 
 #ifndef __TNGSLIDR_H

@@ -3,7 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-// $Header: r:/t2repos/thief2/libsrc/portold/ptmapper.h,v 1.4 1996/12/19 19:09:30 buzzard Exp $
+// $Header: r:/prj/cam/libsrc/portal/RCS/ptmapper.h 1.4 1996/12/19 19:09:30 buzzard Exp $
 
 extern void pt_scan_convert(fix x, int *p, fix dx, int count);
 extern void pt_asm_outer_loop(double *uv, uchar *dest, int *xdata, int height);

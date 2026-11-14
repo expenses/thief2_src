@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/ui/RCS/qboxgadg.h 1.12 1998/06/18 13:29:14 JAEMZ Exp $
 
 #ifndef __QBOXGADG_H

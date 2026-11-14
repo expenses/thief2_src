@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 /// $Header: x:/prj/tech/libsrc/g2/RCS/g2pt.h 1.3 1998/07/02 12:08:09 PATMAC Exp $
 
 #ifndef __G2PT_H

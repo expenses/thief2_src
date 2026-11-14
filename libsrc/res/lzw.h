@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 //        LZW.H       Header file for LZW compressor/expander (see lzw.c for info)
 //        Rex E. Bradford (REX)
 /*

@@ -3,7 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-// $Header: r:/t2repos/thief2/libsrc/script/scrguid.h,v 1.2 1999/01/20 18:42:16 JUSTIN Exp $
+// $Header: r:/prj/cam/libsrc/script/RCS/scrguid.h 1.2 1999/01/20 18:42:16 JUSTIN Exp $
 
 DEFINE_LG_GUID(IID_IScriptMan, 0xcf);
 DEFINE_LG_GUID(IID_IScript, 0xd0);

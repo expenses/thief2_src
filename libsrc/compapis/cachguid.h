@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #ifndef __CACHGUID_H
 #define __CACHGUID_H
 DEFINE_LG_GUID(IID_ICache, 0x89);

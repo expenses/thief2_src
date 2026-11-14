@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/fix/RCS/safefix.h 1.1 1997/04/24 13:59:31 TOML Exp $
 
 #ifndef __SAFEFIX_H

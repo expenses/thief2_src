@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 /* $Header: x:/prj/tech/libsrc/fix/RCS/fix.h 1.59 1997/04/24 13:59:25 TOML Exp $
  *
  * Code, prototypes and types for fixed-point routines.

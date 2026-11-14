@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/mp/RCS/mp.h 1.1 1996/10/30 11:33:51 kate Exp $
 // The all-inclusive header file for multiped library
 

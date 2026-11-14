@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 #ifndef __APPGUID_H
 #define __APPGUID_H
 DEFINE_LG_GUID(IID_IAppAdviseSink,  0x8);

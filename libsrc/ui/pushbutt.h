@@ -1,3 +1,8 @@
+/*
+@Copyright Looking Glass Studios, Inc.
+1996,1997,1998,1999,2000 Unpublished Work.
+*/
+
 // $Header: x:/prj/tech/libsrc/ui/RCS/pushbutt.h 1.9 1998/06/18 13:29:11 JAEMZ Exp $
 
 #ifndef __PUSHBUTT_H

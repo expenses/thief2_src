@@ -3,7 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-// $Header: r:/t2repos/thief2/libsrc/portold/pt.h,v 1.4 1997/08/05 12:11:37 TOML Exp $
+// $Header: r:/prj/cam/libsrc/portal/RCS/pt.h 1.4 1997/08/05 12:11:37 TOML Exp $
 
 //  PORTAL TEXTURE MAPPING
 
