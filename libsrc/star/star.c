@@ -1,3 +1,7 @@
+
+
+
+
 /*
  * $Source: x:/prj/tech/libsrc/star/RCS/star.c $
  * $Revision: 1.9 $
@@ -95,6 +99,10 @@ static gdgpix_func *gpix_func;
 // This is our unclipped pixel drawing function
 static gdupix_func *pix_func = NULL;
 
+static tStarRenderCallback star_render_callback = NULL;
+static struct sStarRenderCallbackData star_callback_data;
+static BOOL star_do_default;
+
 // This is here because the 2d don't support this mode.
 static void flat16_clut8_upix8(int c8, int x, int y)
 {
@@ -103,6 +111,11 @@ static void flat16_clut8_upix8(int c8, int x, int y)
    ushort *dst = (ushort *)(grd_bm.bits + 2*x + grd_bm.row * y);
    AssertMsg (pal16 != NULL, "NULL pal.");
    *dst = pal16[clut[c8]];
+}
+
+void StarSetStarRenderCallback(tStarRenderCallback cb)
+{
+   star_render_callback = cb;
 }
 
 void StarSetPixFunc(gdupix_func *f)
@@ -327,19 +340,28 @@ void StarRender(void)
    float old_near_z;
    int anti_alias = grd_bm.w >= std_alias_size;
 
-   if (check_bkgnd)
-      gpix_func = gd_ugpix8_expose(0,0);
-   else
+   if (check_bkgnd) {
+      switch (grd_bm.type) {
+         case BMT_FLAT8:
+            gpix_func = gd_ugpix8_expose(0,0);
+            break;
+         case BMT_FLAT16:
+            gpix_func = gd_ugpix16_expose(0,0);
+            break;
+         default:
+            return;
+      }
+   } else
       gpix_func = NULL;
 
    if (pix_func == NULL) {
-      if ((grd_bpp>8)&&(gr_get_fill_type() == FILL_CLUT))
+      if ((grd_bm.type == BMT_FLAT16)&&(gr_get_fill_type() == FILL_CLUT))
          pix_func = flat16_clut8_upix8;
       else
          pix_func = gd_upix8_expose(0,0,0);
    }
 
-   if (grd_bpp>8)
+   if (grd_bm.type == BMT_FLAT16)
       pixpal = (void *)grd_pal16_list[0];
 
    #ifdef STAR_SPEW
@@ -381,6 +403,15 @@ void StarRender(void)
  
       // If on screen and z is big enough go for it
       if ((s.p.z > std_min_z) && (s.ccodes == 0)) {
+         star_do_default = TRUE;
+         if (star_render_callback) {
+            star_callback_data.pVec = &std_vec[i];
+            star_callback_data.pPoint = &s;
+            star_callback_data.color = std_col[i];
+            star_do_default = star_render_callback(&star_callback_data);
+            if (!star_do_default)
+               continue;
+         }
          if (std_size <= 1)
          {
             if (anti_alias)

@@ -7,11 +7,15 @@
  * $Date: 1996/10/16 16:07:57 $
  */
 
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <lg.h>
-#include <gfile.h>
+#include <windows.h>
+#include <gif.h>
+#include <resapi.h>
+#include <storeapi.h>
+#include <grs.h>
+#include <bitmap.h>
 
 typedef struct {
 	char sig[6];
@@ -30,101 +34,9 @@ typedef struct {
 	uchar flags;
 } ImageBlock;
 
-static ImageBlock imageBlock;
-static uchar *buffer;
-
-static bool unpackimage(FILE *fp, int bits);
-static void putextension(FILE *fp);
 #define NO_CODE		-1
 
-//	-------------------------------------------------------
-//		READ ROUTINE
-//	-------------------------------------------------------
-//
-//	GifRead() reads in a GIF file.
-
-bool GifRead(GfileInfo *pgfi, FILE *fp)
-{
-	GifHeader gifHeader;
-	int sizePall;
-	int c;
-	bool ret;
-
-//	Read header, if not valid GIF file return
-
-	fread(&gifHeader, 1, sizeof(GifHeader), fp);
-	if (memcmp(gifHeader.sig, "GIF", 3))
-		return FALSE;
-
-//	Get palette if there is one
-
-	pgfi->ppall = NULL;
-	if (gifHeader.flags & 0x80)
-		{
-		sizePall = (1 << ((gifHeader.flags & 7) + 1));
-		pgfi->ppall = Calloc(3 * 256);
-		fread(pgfi->ppall, 1, 3 * sizePall, fp);
-		}
-
-//	Step through the blocks, looking for 1st image block
-
-	while (((c = fgetc(fp)) == ',') || (c == '!') || (c == 0))
-		{
-		/* if it's an image block... */
-		if (c == ',')
-			{
-			/* get the start of the image block */
-			fread(&imageBlock, 1, sizeof(ImageBlock), fp);
-
-			pgfi->bm.type = BMT_FLAT8;
-			pgfi->bm.align = 0;
-			pgfi->bm.flags = 0;
-			pgfi->bm.w = imageBlock.width;
-			pgfi->bm.h = imageBlock.depth;
-			pgfi->bm.row = pgfi->bm.w;
-			buffer = pgfi->bm.bits = Malloc((long) pgfi->bm.row * (long) pgfi->bm.h);
-
-			/* get the local colour map if there is one */
-			if (imageBlock.flags & 0x80)
-				{
-				sizePall = 1<<((imageBlock.flags & 0x0007) + 1);
-				if (pgfi->ppall == NULL)
-					pgfi->ppall = Calloc(3 * 256);
-				fread(pgfi->ppall, 1, 3 * 256, fp);
-				}
-
-			/* get the initial code size */
-			if ((c = fgetc(fp)) == EOF)
-				goto BADRET;
-
-			/* unpack the image */
-			ret = unpackimage(fp,c);
-			if (ret)
-				return TRUE;
-			goto BADRET;
-			}
-		/* otherwise, it's an extension */
-		else if (c == '!')
-			putextension(fp);
-		}
-
-	return TRUE;
-
-//	If error, free up properly
-
-BADRET:
-
-	GfileFree(pgfi);
-	return FALSE;
-}
-
-//	------------------------------------------------------------------
-//		INTERNAL READER
-//	------------------------------------------------------------------
-//
-//	unpackimage() unpacks an LZW compressed image
-
-static bool unpackimage(FILE *fp,int bits)
+bool ResUnpackImage(IStoreStream *pStream, int bits, uchar *buffer, ImageBlock *pImg)
 {
 	short int bits2;  	    /* Bits plus 1 */
 	short int codesize;       /* Current code size in bits */
@@ -162,9 +74,9 @@ static bool unpackimage(FILE *fp,int bits)
 
 	/* Allocate code table space */
 
-	firstcodestack = Malloc(4096);
-	lastcodestack = Malloc(4096);
-	codestack = Malloc(2*4096);
+	firstcodestack = (uchar *)malloc(4096);
+	lastcodestack = (uchar *)malloc(4096);
+	codestack = (short int *)malloc(2*4096);
 
 	p=q=b;
 	bitsleft = 8;
@@ -175,7 +87,7 @@ static bool unpackimage(FILE *fp,int bits)
 	codesize2 = 1 << (codesize = bits + 1);
 	oldcode = oldtoken = NO_CODE;
 
-	if ((linebuffer = Malloc(imageBlock.width)) == NULL)
+	if ((linebuffer = (uchar *)malloc(pImg->width)) == NULL)
 		return FALSE;
 
 	/* loop until something breaks */
@@ -185,10 +97,10 @@ static bool unpackimage(FILE *fp,int bits)
 		if (bitsleft == 8)
 			{
 			if (++p >= q &&
-			(((blocksize = fgetc(fp)) < 1) ||
-			(q= (p=b) + fread(b,1,blocksize,fp)) < (b+blocksize)))
+			(((blocksize = IStoreStream_Getc(pStream)) < 1) ||
+			(q= (p=b) + IStoreStream_Read(pStream, blocksize, (char *)b)) < (b+blocksize)))
 				{
-				Free(linebuffer);
+				free(linebuffer);
 				return FALSE;
 				}
 			bitsleft = 0;
@@ -203,10 +115,10 @@ static bool unpackimage(FILE *fp,int bits)
 		else
 			{
 			if (++p >= q &&
-			  (((blocksize = fgetc(fp)) < 1) ||
-			  (q=(p=b)+fread(b,1,blocksize,fp)) < (b+blocksize)))
+			  (((blocksize = IStoreStream_Getc(pStream)) < 1) ||
+			  (q=(p=b)+IStoreStream_Read(pStream, blocksize, (char *)b)) < (b+blocksize)))
 				{
-				Free(linebuffer);
+				free(linebuffer);
 				return FALSE;
 				}
 			thiscode |= *p << (8 - bitsleft);
@@ -215,10 +127,10 @@ static bool unpackimage(FILE *fp,int bits)
 			else
 				{
 				if (++p >= q &&
-				  (((blocksize = fgetc(fp)) < 1) ||
-				  (q=(p=b) + fread(b,1,blocksize,fp)) < (b+blocksize)))
+				  (((blocksize = IStoreStream_Getc(pStream)) < 1) ||
+				  (q=(p=b) + IStoreStream_Read(pStream, blocksize, (char *)b)) < (b+blocksize)))
 					{
-					Free(linebuffer);
+					free(linebuffer);
    				return FALSE;
 					}
 				thiscode |= *p << (16 - bitsleft);
@@ -231,7 +143,7 @@ static bool unpackimage(FILE *fp,int bits)
 		if (thiscode == (bits2+1)) break;	/* found EOI */
 		if (thiscode > nextcode)
 			{
-			Free(linebuffer);
+			free(linebuffer);
 			return FALSE;
 			}
 
@@ -249,7 +161,7 @@ static bool unpackimage(FILE *fp,int bits)
 			{
 			if (oldcode==NO_CODE)
 				{
-				Free(linebuffer);
+				free(linebuffer);
             return FALSE;
 				}
 			*u++ = oldtoken;
@@ -266,19 +178,19 @@ static bool unpackimage(FILE *fp,int bits)
 		do {
 			linebuffer[byte++]=thiscode;
 
-			if (byte >= imageBlock.width)
+			if (byte >= pImg->width)
 				{
             // Hmmm, I think this means write out the line
-				if (line < imageBlock.depth)
-					memcpy(buffer + (long) line * (long) imageBlock.width,
-						linebuffer, imageBlock.width);
+				if (line < pImg->depth)
+					memcpy(buffer + (long) line * (long) pImg->width,
+						linebuffer, pImg->width);
 				byte=0;
 
 				/* check for interlaced image */
-				if (imageBlock.flags & 0x40)
+				if (pImg->flags & 0x40)
 					{
 					line+=inctable[pass];
-					if(line >= imageBlock.depth)
+					if(line >= pImg->depth)
 					    line=startable[++pass];
 					}
 				else
@@ -299,25 +211,25 @@ static bool unpackimage(FILE *fp,int bits)
 		oldcode = currentcode;
 		}
 
-	Free(linebuffer);
-	Free(firstcodestack);
-	Free(lastcodestack);
-	Free(codestack);
+	free(linebuffer);
+	free(firstcodestack);
+	free(lastcodestack);
+	free(codestack);
 
 	return TRUE;
 }
 
 //	---------------------------------------------------------------
 //
-//	putextension() is called when the GIF decoder encounters an extension
+//	ResPutExtension() is called when the GIF decoder encounters an extension
 
-static void putextension(FILE *fp)
+void ResPutExtension(IStoreStream *pStream)
 {
-	int n,i;
+	int n;
 	int header_size;
    int tail;
 
-	switch (fgetc(fp))
+	switch ((short)IStoreStream_Getc(pStream))
 		{
 		case 0x0001:		/* plain text descriptor */
 			header_size = 13;
@@ -338,19 +250,102 @@ static void putextension(FILE *fp)
 		default:		/* something else */
 			header_size = 0;
 			tail = 0;
-			n=fgetc(fp);
-			for(i=0;i<n;++i) fgetc(fp);
+			n=(short)IStoreStream_Getc(pStream);
+			IStoreStream_SetPos(pStream, IStoreStream_GetPos(pStream) + n);
 			break;
 		}
 
-	for (i = 0; i< header_size; i++) fgetc(fp);
+	IStoreStream_SetPos(pStream, IStoreStream_GetPos(pStream) + header_size);
 
 	if (tail == 1)
 		{
 		do {
-			n=fgetc(fp);
-			for(i=0;i<n;++i) fgetc(fp);
+			n=(short)IStoreStream_Getc(pStream);
+			IStoreStream_SetPos(pStream, IStoreStream_GetPos(pStream) + n);
 			} while(n > 0 && n != EOF);
  	 	}
 }
 
+//	-------------------------------------------------------
+//		READ ROUTINE
+//	-------------------------------------------------------
+//
+//	ResGifReadImage() reads in a GIF file.
+
+grs_bitmap *ResGifReadImage(IStoreStream *pStream, IResMemOverride *pResMem)
+{
+	GifHeader gifHeader;
+	ImageBlock imageBlock;
+	grs_bitmap *pbm;
+	int sizePall;
+	int c;
+
+//	Read header, if not valid GIF file return
+
+	IStoreStream_Read(pStream, sizeof(GifHeader), (char *) &gifHeader);
+	if (memcmp(gifHeader.sig, "GIF", 3))
+		return NULL;
+
+//	Skip palette if there is one
+
+	if (gifHeader.flags & 0x80)
+		{
+		sizePall = (1 << ((gifHeader.flags & 7) + 1));
+		IStoreStream_SetPos(pStream, IStoreStream_GetPos(pStream) + 3 * sizePall);
+		}
+
+//	Step through the blocks, looking for 1st image block
+
+	c = (short)IStoreStream_Getc(pStream);
+	while ((c != EOF) && ((c == ',') || (c == '!') || (c == 0)))
+		{
+		/* if it's an image block... */
+		if (c == ',')
+			{
+			/* get the start of the image block */
+			IStoreStream_Read(pStream, sizeof(ImageBlock), (char *) &imageBlock);
+
+			/* skip the local colour map if there is one */
+			if (imageBlock.flags & 0x80)
+				IStoreStream_SetPos(pStream, IStoreStream_GetPos(pStream) + 3 * 256);
+
+			/* get the initial code size */
+			if ((c = (short)IStoreStream_Getc(pStream)) == EOF)
+				return NULL;
+
+			/* unpack the image */
+			pbm = (grs_bitmap *) pResMem->ResMalloc(imageBlock.width * imageBlock.depth + sizeof(grs_bitmap));
+			if (!ResUnpackImage(pStream, c, (uchar *) (pbm + 1), &imageBlock))
+				{
+				pResMem->ResFree(pbm);
+				return NULL;
+				}
+			gr_init_bitmap(pbm, (uchar *) (pbm + 1), BMT_FLAT8, 0, imageBlock.width, imageBlock.depth);
+			return pbm;
+			}
+		/* otherwise, it's an extension */
+		if (c == '!')
+			ResPutExtension(pStream);
+		c = (short)IStoreStream_Getc(pStream);
+		}
+
+	return NULL;
+}
+
+//	-------------------------------------------------------
+//
+//	ResGifReadPalette() reads the global palette of a GIF file.
+
+void *ResGifReadPalette(IStoreStream *pStream, IResMemOverride *pResMem)
+{
+	GifHeader gifHeader;
+	IStoreStream_Read(pStream, sizeof(GifHeader), (char *) &gifHeader);
+	if (memcmp(gifHeader.sig, "GIF", 3) || !(gifHeader.flags & 0x80))
+		return NULL;
+
+	int sizePall = (1 << ((gifHeader.flags & 7) + 1));
+	uchar *ppall = (uchar *) pResMem->ResMalloc(3 * 256);
+	memset(ppall, 0, 3 * 256);
+	IStoreStream_Read(pStream, 3 * sizePall, (char *) ppall);
+	return ppall;
+}

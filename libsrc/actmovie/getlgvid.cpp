@@ -10,6 +10,7 @@
 #include <filespec.h>
 #include <filepath.h>
 #include <getlgvid.h>
+#include <mprintf.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -186,11 +187,14 @@ HRESULT LGAPI GetLGVideoRenderer()
     if (rendererSpec.FileExists())
         return SetLGVidRegistryEntries(rendererSpec.GetName());
 
+#ifndef SHIP
     rendererSpec.SetFilePath("x:\\prj\\tech\\bin\\");
     rendererSpec.MakeFullPath();
     if (rendererSpec.FileExists())
         return SetLGVidRegistryEntries(rendererSpec.GetName());
+#endif
 
+    mprintf("%s not found: avi's will not play\n", pszVideoRendererName);
     return E_FAIL;
 }
 

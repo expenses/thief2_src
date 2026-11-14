@@ -42,16 +42,24 @@ SndCreateSource( sSndAttribs *pAttribs )
    return (ISndSource *) pSrc;
 }
 
+extern "C" ISndSource *
+SndCreateSourceEx( sSndAttribs *pAttribs, uint32 maxLabels, uint32 maxGates )
+{
+   cSndSource *pSrc = new cSndSource( maxLabels, maxGates );
+   pSrc->SetAttribs( pAttribs );
+   return (ISndSource *) pSrc;
+}
+
 
 ///////////////////////////////////
 // cSndSource constructor
 //
 
-cSndSource::cSndSource()
+cSndSource::cSndSource( uint32 maxLabels, uint32 maxGates )
 {
    mSourcesMade++;
    mSerialNum = mNextSerialNum++;
-   LOG3( "SSrc::Constructor [%d] %ld made %ld destroyed", mSerialNum,
+   TLOG3( "SSrc::Constructor [%d] %ld made %ld destroyed", mSerialNum,
          mSourcesMade, mSourcesDestroyed );
 
    mpPlayer = NULL;
@@ -89,6 +97,12 @@ cSndSource::cSndSource()
 
    mResyncNeeded = FALSE;
    mResyncPos = 0;
+
+   mMaxLabels = maxLabels;
+   mMaxGates = maxGates;
+   mpLabels = new SndPlaylistElement *[maxLabels];
+   mpGates = new uint32[maxGates];
+   mMostRecentLabel = (uint32) -1;
 }
 
 
@@ -99,8 +113,10 @@ cSndSource::cSndSource()
 cSndSource::~cSndSource()
 {
    mSourcesDestroyed++;
-   LOG3( "SSrc::Destructor [%d] %ld made %ld destroyed", mSerialNum,
+   TLOG3( "SSrc::Destructor [%d] %ld made %ld destroyed", mSerialNum,
          mSourcesMade, mSourcesDestroyed );
+   delete [] mpGates;
+   delete [] mpLabels;
    // TBD - what if a player is still connected?
    if ( mpSrc1 != NULL ) {
       delete mpSrc1;
@@ -165,13 +181,17 @@ cSndSource::SetAttribs( sSndAttribs *pAttribs )
 // SetGate - set loop control variable
 //
 STDMETHODIMP_(BOOL)
-cSndSource::SetGate( uint32   /* gateNum */,
+cSndSource::SetGate( uint32   gateNum,
                      uint32   gateValue )
 {
-   // for now, only support a single gate (ignore gateNum)
-   mGateValue = gateValue;
+   mpGates[gateNum] = gateValue;
 
    return TRUE;
+}
+
+STDMETHODIMP_(uint32) cSndSource::GetGate(uint32 gateNum)
+{
+   return mpGates[gateNum];
 }
 
 

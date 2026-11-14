@@ -36,11 +36,6 @@ DEFINE_GUID(CLSID_A3d,
 DEFINE_GUID(IID_IA3d,
 0xd8f1eee1, 0xf634, 0x11cf, 0x87, 0x0, 0x0, 0xa0, 0x24, 0x5d, 0x91, 0x8b);
 
-// GUID generated from UUGENID.EXE, Good until the year 3400 AD
-// A3d Interface ID! {fb80d1e0-98d3-11d1-90fb-006008a1f441}
-DEFINE_GUID(IID_IA3d2,
-0xfb80d1e0, 0x98d3, 0x11d1, 0x90, 0xfb, 0x00, 0x60, 0x08, 0xa1, 0xf4, 0x41);
-
 // Bits for manipulating output modes
 
 // Values for bOutputMode
@@ -238,8 +233,8 @@ extern HRESULT WINAPI A3dInitialize(void);
 
 extern void    WINAPI A3dUninitialize(void);
 
-extern HRESULT WINAPI A3dCreate(GUID * lpGUID,				/* in,  Prefered Driver Guid, NULL ok */
-				                 void **ppDS,				/* out, Direct Sound pointer */
+extern HRESULT WINAPI A3dCreate(const GUID * lpGUID,		/* in,  Prefered Driver Guid, NULL ok */
+				                 LPDIRECTSOUND *ppDS,		/* out, Direct Sound pointer */
 				                 IUnknown FAR *pUnkOuter);	/* in,  Outer COM object, for Aggregate only NULL oK */
 
 #ifdef __cplusplus

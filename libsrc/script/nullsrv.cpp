@@ -127,7 +127,13 @@ DECLARE_SCRIPT_SERVICE_IMPL(cNullScrSrv, Null)
 
    void NullCall()
    {
+#line 125
       CriticalMsg("Script service is not supported!");
+
+
+
+
+
    }
 
 };

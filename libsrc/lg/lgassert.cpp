@@ -167,9 +167,6 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
     }
     fInAssert = TRUE;
 
-    if (pfnNotificationHandler)
-        (*pfnNotificationHandler)(kCritMsgEnter);
-
     // Display the message
 #if 1
     char szScratch[1024];
@@ -190,6 +187,9 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
             snprintf(szScratch, sizeof(szScratch) - 1,  pszMessageBoxCriticalMsg, pszMessage, pszTrimmedFile, uLine);
         else
             snprintf(szScratch, sizeof(szScratch) - 1,  pszMessageBoxCriticalMsgNoFileLine, pszMessage);
+
+        if (pfnNotificationHandler)
+            (*pfnNotificationHandler)(kCritMsgEnter);
 
         int previousThreadPriority = GetThreadPriority(GetCurrentThread());
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -219,6 +219,8 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
                 (*pfnNotificationHandler)(kCritMsgIgnoring);
             g_fQuietAssert = TRUE; // ho-hum
         }
+        if (pfnNotificationHandler)
+            (*pfnNotificationHandler)(kCritMsgExit);
     }
 
 #else
@@ -293,8 +295,6 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
     #endif
 #endif
 #ifdef _WIN32
-    if (pfnNotificationHandler)
-        (*pfnNotificationHandler)(kCritMsgExit);
     fInAssert = FALSE;
 #endif
 #endif

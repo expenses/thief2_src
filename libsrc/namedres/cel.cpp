@@ -22,258 +22,17 @@
 
 #include <string.h>
 
+#include <windows.h>
 #include <lg.h>
-#include <gfile.h>
-#include <pjstypes.h>
+#include <cel.h>
 #include <pjfli.h>
-
-bool CelReadFrame(GfileInfo *pgfi, FILE *fp);
-void CelGetPall(GfileInfo *pgfi, uchar *buff, int shifter);
-void CelExpandBrun(GfileInfo *pgfi, uchar *ps);
-void CelExpandByteDelta(GfileInfo *pgfi, uchar *ps);
-void CelExpandWordDelta(GfileInfo *pgfi, uchar *ps);
-
-//	------------------------------------------------------
-//
-//	CelRead() reads in a .CEL file.
-
-bool CelRead(GfileInfo *pgfi, FILE *fp)
-{
-	Fli_head celHead;
-
-//	Read header, check for error
-
-	fread(&celHead, sizeof(celHead), 1, fp);
-	if ((celHead.type != FLIHR_MAGIC) && (celHead.type != FLIH_MAGIC))
-		{
-		Warning(("CelRead: invalid CEL/FLC/FLI magic type: %d\n", celHead.type));
-		return FALSE;
-		}
-
-//	Assume no palette
-
-	pgfi->ppall = NULL;
-
-//	Seek to first frame, set up bitmap, read it
-
-	fseek(fp, celHead.frame1_oset, SEEK_SET);
-
-	pgfi->bm.type = BMT_FLAT8;
-	pgfi->bm.align = 0;
-	pgfi->bm.flags = 0;
-	pgfi->bm.w = celHead.width;
-	pgfi->bm.h = celHead.height;
-	pgfi->bm.row = pgfi->bm.w;
-	pgfi->bm.bits = Malloc((long) pgfi->bm.row * (long) pgfi->bm.h);
-	if (pgfi->bm.bits == NULL)
-		goto BADRET;
-
-	if (!CelReadFrame(pgfi, fp))
-		goto BADRET;
-
-	return TRUE;
-
-//	Error, clean up
-
-BADRET:
-
-	GfileFree(pgfi);
-	return FALSE;
-}
-
-//	----------------------------------------------------------
-//
-//	CelReadFrame() reads in a frame from the .cel file.
-
-static bool CelReadFrame(GfileInfo *pgfi, FILE *fp)
-{
-	Fli_frame frameInfo;
-	Chunk_id chunk;
-	int ichunk;
-	long nextOffset;
-	bool frameDone;
-	long fullLen;
-	uchar *buff;
-
-//	Buffer not allocated yet
-
-	buff = NULL;
-
-READFRAME:
-
-//	Read frame info header, check for errors, report if verbose
-
-	fread(&frameInfo, sizeof(frameInfo), 1, fp);
-	if (frameInfo.type != FCID_FRAME)
-		{
-		Warning(("CelReadFrame: missing frame chunk\n"));
-		goto BADRET;
-		}
-
-//	Allocate buffer
-
-	if (buff == NULL)
-		{
-		fullLen = (long) pgfi->bm.row * (long) pgfi->bm.h;
-		buff = Malloc(max(fullLen, frameInfo.size));
-		if (buff == NULL)
-			return FALSE;
-		}
-
-//	If no frame chunks, add time to previous frame & retry
-
-	if (frameInfo.chunks == 0)
-		{
-		fseek(fp, frameInfo.size - sizeof(frameInfo), SEEK_CUR);
-		goto READFRAME;
-		}
-
-//	Else process all chunks in frame
-
-	else
-		{
-		frameDone = FALSE;
-
-		for (ichunk = 0; ichunk < frameInfo.chunks; ichunk++)
-			{
-			fread(&chunk, sizeof(chunk), 1, fp);
-			nextOffset = ftell(fp) + chunk.size - sizeof(chunk);
-			switch (chunk.type)
-				{
-				case FLI_COLOR256:
-					fread(buff, chunk.size - sizeof(chunk), 1, fp);
-					if (pgfi->ppall == NULL)
-						pgfi->ppall = Malloc(3 * 256);
-					if (pgfi->ppall == NULL)
-						goto BADRET;
-					CelGetPall(pgfi, buff, 0);
-					break;
-
-				case FLI_SS2:
-					fread(buff, chunk.size - sizeof(chunk), 1, fp);
-					CelExpandWordDelta(pgfi, buff);
-					frameDone = TRUE;
-					break;
-
-				case FLI_COLOR:
-					fread(buff, chunk.size - sizeof(chunk), 1, fp);
-					if (pgfi->ppall == NULL)
-						pgfi->ppall = Malloc(3 * 256);
-					if (pgfi->ppall == NULL)
-						goto BADRET;
-					CelGetPall(pgfi, buff, 2);
-					break;
-
-				case FLI_LC:
-					fread(buff, chunk.size - sizeof(chunk), 1, fp);
-					CelExpandByteDelta(pgfi, buff);
-					frameDone = TRUE;
-					break;
-
-				case FLI_COLOR_0:
-					memset(pgfi->bm.bits, 0, fullLen);
-					frameDone = TRUE;
-					break;
-
-				case FLI_BRUN:
-					fread(buff, chunk.size - sizeof(chunk), 1, fp);
-					CelExpandBrun(pgfi, buff);
-					frameDone = TRUE;
-					break;
-
-				case FLI_COPY:
-#ifdef OMIT		// amazingly, this relation isn't always true!
-					if ((chunk.size - sizeof(chunk)) != fullLen)
-						{
-						Warning(("CelReadFrame: invalid FLI_COPY chunk size,\n\
-chunk.size - sizeof(chunk) = %d, fullLen = %d\n",
-chunk.size - sizeof(chunk), fullLen));
-						goto BADRET;
-						}
-#endif
-					fread(pgfi->bm.bits, fullLen, 1, fp);
-					frameDone = TRUE;
-					break;
-
-				default:
-					break;
-				}
-
-			fseek(fp, nextOffset, SEEK_SET);
-			}
-		}
-
-//	Make sure got some data in that chunk, bump current frame & return
-
-	if (!frameDone)
-		{
-		Warning(("CelReadFrame: no frame data!\n"));
-		goto BADRET;
-		}
-
-	Free(buff);
-	buff = NULL;
-	return TRUE;
-
-//	Bad return
-
-BADRET:
-
-	if (buff)
-		{
-		Free(buff);
-		buff = NULL;
-		}
-	return FALSE;
-}
-
-//	----------------------------------------------------------
-//		INTERNAL ROUTINES
-//	----------------------------------------------------------
-//
-//	CelGetPall() gets pallette
-
-static void CelGetPall(GfileInfo *pgfi, uchar *buff, int shifter)
-{
-	uchar *pd;
-	short index;
-	short numPackets;
-	short ipacket;
-	short count;
-	short i;
-
-	pd = pgfi->ppall;
-	index = 0;
-
-//	First word is # color packets
-
-	numPackets = *(short *)buff;
-	buff += 2;
-
-	for (ipacket = 0; ipacket < numPackets; ipacket++)
-		{
-//	Each packet is index,count,rgb[]
-
-		index += *buff++;
-		count = *buff++;
-		if (count == 0)
-			count = 256;
-
-		if ((index != 0) || (count != 256))
-			{
-			Warning(("CelGetPall: can't handle partial pallettes\n"));
-			}
-
-		for (i = 0; i < (count * 3); i++)
-			*pd++ = *buff++ << shifter;
-		}
-}
+#include <bitmap.h>
 
 //	----------------------------------------------------------
 //
 //	CelExpandBrun() expands a FLI_BRUN chunk.
 
-static void CelExpandBrun(GfileInfo *pgfi, uchar *ps)
+void CelExpandBrun(uchar *ps, uchar *bits, short w, short h)
 {
 	uchar *pd;
 	short y;
@@ -283,18 +42,18 @@ static void CelExpandBrun(GfileInfo *pgfi, uchar *ps)
 
 //	Init destination
 
-	pd = pgfi->bm.bits;
+	pd = bits;
 
 //	Byte-Run-length is always full-screen
 
-	for (y = 0; y < pgfi->bm.h; y++)
+	for (y = 0; y < h; y++)
 		{
 		ps++;									// skip packet count;
 		pixels = 0;							// init pixel count
 
 //	Get pixels till hit end of line
 
-		while (pixels < pgfi->bm.w)
+		while (pixels < w)
 			{
 			npix = *(signed char *)ps;	// get signed count
 			ps++;
@@ -315,7 +74,7 @@ static void CelExpandBrun(GfileInfo *pgfi, uchar *ps)
 
 //	At end of line, check for errors
 
-		if (pixels > pgfi->bm.w)
+		if (pixels > w)
 			{
 			Warning(("CelExpandBrun: decompress error\n"));
 			return;
@@ -327,7 +86,7 @@ static void CelExpandBrun(GfileInfo *pgfi, uchar *ps)
 //
 //	CelExpandByteDelta() expands a FLI_LC chunk.
 
-static void CelExpandByteDelta(GfileInfo *pgfi, uchar *ps)
+void CelExpandByteDelta(uchar *ps, uchar *bits, short w)
 {
 	uchar *pd;
 	short nskip;
@@ -341,7 +100,7 @@ static void CelExpandByteDelta(GfileInfo *pgfi, uchar *ps)
 
 //	Init dest
 
-	pd = pgfi->bm.bits;
+	pd = bits;
 
 //	First word is # lines to skip
 
@@ -350,7 +109,7 @@ static void CelExpandByteDelta(GfileInfo *pgfi, uchar *ps)
 
 	for (y = 0; y < nskip; y++)
 		{
-		for (i = 0; i < pgfi->bm.w; i++)
+		for (i = 0; i < w; i++)
 			*pd++ = 0;
 		}
 
@@ -411,14 +170,14 @@ static void CelExpandByteDelta(GfileInfo *pgfi, uchar *ps)
 
 //	At end of packets, check for errors & fill in rest of line with skip
 
-		if (xpos > pgfi->bm.w)
+		if (xpos > w)
 			{
 			Warning(("CelExpandByteDelta: decompress error\n"));
 			return;
 			}
-		else if (xpos < pgfi->bm.w)
+		else if (xpos < w)
 			{
-			for (i = xpos; i < pgfi->bm.w; i++)
+			for (i = xpos; i < w; i++)
 				*pd++ = 0;
 			}
 		}
@@ -428,7 +187,7 @@ static void CelExpandByteDelta(GfileInfo *pgfi, uchar *ps)
 //
 //	CelExpandWordDelta() expands a FLI_SS2 chunk.
 
-static void CelExpandWordDelta(GfileInfo *pgfi, uchar *ps)
+void CelExpandWordDelta(uchar *ps, uchar *bits, short w)
 {
 	uchar *pd;
 	short nlines;
@@ -444,7 +203,7 @@ static void CelExpandWordDelta(GfileInfo *pgfi, uchar *ps)
 
 //	Init dest
 
-	pd = pgfi->bm.bits;
+	pd = bits;
 
 //	First word is # lines in chunk
 
@@ -465,7 +224,7 @@ static void CelExpandWordDelta(GfileInfo *pgfi, uchar *ps)
 			if ((word & 0xC000) == 0xC000)	// 11xxxxxx: skip lines
 				{
 				for (i = 0; i < -word; i++)
-					for (j = 0; j < pgfi->bm.w; j++)
+					for (j = 0; j < w; j++)
 						*pd++ = 0;
 				}
 			else if ((word & 0xC000) == 0x8000)	// 10xxxxxx: single byte patch
@@ -535,14 +294,14 @@ static void CelExpandWordDelta(GfileInfo *pgfi, uchar *ps)
 
 //	At end of packets, check for errors & fill in rest of line with skip
 
-		if (xpos > pgfi->bm.w)
+		if (xpos > w)
 			{
 			Warning(("CelExpandWordDelta: decompress error\n"));
 			return;
 			}
-		else if (xpos < pgfi->bm.w)
+		else if (xpos < w)
 			{
-			for (i = xpos; i < pgfi->bm.w; i++)
+			for (i = xpos; i < w; i++)
 				*pd++ = 0;
 			}
 		if (lastByte >= 0)
@@ -550,4 +309,227 @@ static void CelExpandWordDelta(GfileInfo *pgfi, uchar *ps)
 		}
 }
 
-
+
+//	----------------------------------------------------------
+//		INTERNAL ROUTINES
+//	----------------------------------------------------------
+//
+//	CelGetPall() gets pallette
+
+void CelGetPall(uchar *pall, uchar *buff, int shifter)
+{
+	uchar *pd;
+	short index;
+	short numPackets;
+	short ipacket;
+	short count;
+	short i;
+
+	pd = pall;
+	index = 0;
+
+//	First word is # color packets
+
+	numPackets = *(short *)buff;
+	buff += 2;
+
+	for (ipacket = 0; ipacket < numPackets; ipacket++)
+		{
+//	Each packet is index,count,rgb[]
+
+		index += *buff++;
+		count = *buff++;
+		if (count == 0)
+			count = 256;
+
+		if ((index != 0) || (count != 256))
+			{
+			Warning(("CelGetPall: can't handle partial pallettes\n"));
+			}
+
+		for (i = 0; i < (count * 3); i++)
+			*pd++ = *buff++ << shifter;
+		}
+}
+
+//	----------------------------------------------------------
+//
+//	CelReadFrame() reads in a frame from the .cel file.
+
+bool CelReadFrame(IStoreStream *pStream, uchar *bits, short w, short h, bool palOnly)
+{
+	Fli_frame frameInfo;
+	Chunk_id chunk;
+	int ichunk;
+	long nextOffset;
+	bool frameDone;
+	long fullLen;
+	uchar *buff;
+
+//	Buffer not allocated yet
+
+	buff = NULL;
+
+READFRAME:
+
+//	Read frame info header, check for errors, report if verbose
+
+	pStream->Read(sizeof(frameInfo), (char *) &frameInfo);
+	if (frameInfo.type != FCID_FRAME)
+		{
+		Warning(("CelReadFrame: missing frame chunk\n"));
+		if (buff)
+			{
+			Free(buff);
+			return FALSE;
+			}
+		}
+
+//	Allocate buffer
+
+	if (buff == NULL)
+		{
+		fullLen = (long) w * (long) h;
+		if (fullLen < frameInfo.size)
+			buff = (uchar *) Malloc(fullLen);
+		else
+			buff = (uchar *) Malloc(frameInfo.size);
+		if (buff == NULL)
+			return FALSE;
+		}
+
+//	If no frame chunks, add time to previous frame & retry
+
+	if (frameInfo.chunks == 0)
+		{
+		pStream->SetPos(pStream->GetPos() - sizeof(frameInfo) + frameInfo.size);
+		goto READFRAME;
+		}
+
+//	Else process all chunks in frame
+
+	else
+		{
+		frameDone = FALSE;
+
+		for (ichunk = 0; ichunk < frameInfo.chunks; ichunk++)
+			{
+			pStream->Read(sizeof(chunk), (char *) &chunk);
+			nextOffset = pStream->GetPos() + chunk.size - sizeof(chunk);
+			switch (chunk.type)
+				{
+				case FLI_COLOR256:
+					pStream->Read(chunk.size - sizeof(chunk), (char *) buff);
+					if (palOnly)
+						{
+						CelGetPall(bits, buff, 0);
+						return TRUE;
+						}
+					break;
+
+				case FLI_SS2:
+					pStream->Read(chunk.size - sizeof(chunk), (char *) buff);
+					CelExpandWordDelta(buff, bits, w);
+					frameDone = TRUE;
+					break;
+
+				case FLI_COLOR:
+					pStream->Read(chunk.size - sizeof(chunk), (char *) buff);
+					if (palOnly)
+						{
+						CelGetPall(bits, buff, 2);
+						return TRUE;
+						}
+					break;
+
+				case FLI_LC:
+					pStream->Read(chunk.size - sizeof(chunk), (char *) buff);
+					CelExpandByteDelta(buff, bits, w);
+					frameDone = TRUE;
+					break;
+
+				case FLI_COLOR_0:
+					memset(bits, 0, fullLen);
+					frameDone = TRUE;
+					break;
+
+				case FLI_BRUN:
+					pStream->Read(chunk.size - sizeof(chunk), (char *) buff);
+					CelExpandBrun(buff, bits, w, h);
+					frameDone = TRUE;
+					break;
+
+				case FLI_COPY:
+#ifdef OMIT		// amazingly, this relation isn't always true!
+					if ((chunk.size - sizeof(chunk)) != fullLen)
+						{
+						Warning(("CelReadFrame: invalid FLI_COPY chunk size,\n\
+chunk.size - sizeof(chunk) = %d, fullLen = %d\n",
+chunk.size - sizeof(chunk), fullLen));
+						goto BADRET;
+						}
+#endif
+					pStream->Read(fullLen, (char *) bits);
+					frameDone = TRUE;
+					break;
+
+				default:
+					break;
+				}
+
+			pStream->SetPos(nextOffset);
+			}
+		}
+
+//	Make sure got some data in that chunk, bump current frame & return
+
+	Free(buff);
+	if (frameDone && !palOnly)
+		return TRUE;
+	return FALSE;
+}
+
+grs_bitmap *ResCelReadImage(IStoreStream *pStream, IResMemOverride *pResMem)
+{
+	Fli_head celHead;
+	grs_bitmap *bm;
+	uchar *bits;
+
+//	Read header, check for error
+
+	pStream->Read(sizeof(celHead), (char *) &celHead);
+	if ((celHead.type != FLIHR_MAGIC) && (celHead.type != FLIH_MAGIC))
+		return NULL;
+
+//	Seek to first frame, set up bitmap, read it
+
+	bm = (grs_bitmap *) pResMem->ResMalloc(celHead.width * celHead.height + sizeof(grs_bitmap));
+	bits = (uchar *) (bm + 1);
+	pStream->SetPos(celHead.frame1_oset);
+	if (!CelReadFrame(pStream, bits, celHead.width, celHead.height, FALSE))
+		{
+		pResMem->ResFree(bm);
+		return NULL;
+		}
+	gr_init_bitmap(bm, bits, BMT_FLAT8, 0, celHead.width, celHead.height);
+	return bm;
+}
+
+void *ResCelReadPalette(IStoreStream *pStream, IResMemOverride *pResMem)
+{
+	Fli_head celHead;
+	uint8 *pal;
+
+	pStream->Read(sizeof(celHead), (char *) &celHead);
+	if ((celHead.type != FLIHR_MAGIC) && (celHead.type != FLIH_MAGIC))
+		return NULL;
+
+	pal = (uint8 *) pResMem->ResMalloc(256 * 3);
+	pStream->SetPos(celHead.frame1_oset);
+	if (!CelReadFrame(pStream, pal, celHead.width, celHead.height, TRUE))
+		{
+		pResMem->ResFree(pal);
+		return NULL;
+		}
+	return pal;
+}

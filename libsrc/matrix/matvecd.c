@@ -107,4 +107,42 @@ void mxd_mat_tmuleq_vec(const mxds_matrix *m,mxds_vector *v)
    mxd_copy_vec(v,&t);
 }
 
+double mxd_mat_look_at_z(mxds_matrix *dest,const mxds_vector *v,const mxds_vector *z)
+{
+   double mag;
 
+   mag = mxd_norm_vec(&dest->vec[0],v);
+   mxd_cross_norm_vec(&dest->vec[1],z,&dest->vec[0]);
+   mxd_cross_vec(&dest->vec[2],&dest->vec[0],&dest->vec[1]);
+   return mag;
+}
+
+double mxd_mat_look_at(mxds_matrix *dest,const mxds_vector *v)
+{
+   mxds_vector z;
+
+   z.x = 0;
+   z.y = 0;
+   z.z = 1;
+   return mxd_mat_look_at_z(dest,v,&z);
+}
+
+double mxd_mat_look_at_safe(mxds_matrix *dest,const mxds_vector *v)
+{
+   mxds_vector z;
+   double mag;
+
+   mag = mxd_norm_vec(&dest->vec[0],v);
+   if (dest->el[0] == 0 && dest->el[1] == 0) {
+      z.x = 1;
+      z.y = 0;
+      z.z = 0;
+   } else {
+      z.x = 0;
+      z.y = 0;
+      z.z = 1;
+   }
+   mxd_cross_norm_vec(&dest->vec[1],&z,&dest->vec[0]);
+   mxd_cross_vec(&dest->vec[2],&dest->vec[0],&dest->vec[1]);
+   return mag;
+}

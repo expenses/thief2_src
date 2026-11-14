@@ -47,10 +47,10 @@ int dmp_find_free_file(char *buff,char *prefix,char *suffix)
    }
    
    if ((fp = open(fname,O_CREAT|O_BINARY|O_WRONLY,S_IREAD|S_IWRITE))==-1)
-      return -1;
-   if (buff != NULL)
-      strcpy(buff,fname);
-   return fp;
+      return 0;
+   strcpy(buff,fname);
+   close(fp);
+   return 1;
 }
 
 

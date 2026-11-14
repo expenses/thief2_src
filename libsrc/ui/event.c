@@ -158,6 +158,7 @@ errtype uiSetRegionHandlerMask(Region* r, int id, int evmask)
 // OPACITY
 // -------
 
+bool uiAllowOverlappingRegions = FALSE;
 ulong uiDefaultRegionOpacity = 0;
 
 ulong uiGetRegionOpacity(Region* reg)
@@ -462,7 +463,7 @@ uchar ui_traverse_point(Region* reg, Point pos, uiEvent* data)
       {
          retval = ui_traverse_point(child,pos,data);
          if (!TRAVERSE_FAIL(retval)) return retval;
-         if (retval != TRAVERSE_CONTINUE) break;
+         if (!uiAllowOverlappingRegions && retval != TRAVERSE_CONTINUE) break;
       }
    if (!reg->event_order)
    {
@@ -738,6 +739,7 @@ errtype uiMakeMotionEvent(uiMouseEvent* ev)
    ev->action = MOUSE_MOTION;
    ev->tstamp = mouse_get_time();
    ev->buttons = (ubyte)(ui_buttonstate|ui_joy_state);
+   ev->wheel = 0;
    return OK;
 }
 
@@ -749,7 +751,6 @@ Point ui_poll_mouse_position(void)
    uiDispatchEvent((uiEvent *)(&ev));
    return ev.pos;
 }
-
 
 bool uiJoystickMouseEmulation = TRUE;
 
@@ -930,6 +931,7 @@ errtype uiPoll(void)
             out.subtype = mse.type;
             mout->tstamp = mse.timestamp;
             mout->buttons = mse.buttons | ui_joy_state;
+            mout->wheel = mse.wheel;
             ui_dispatch_mouse_event(mout);
 //            uiDispatchEvent((uiEvent*)mout);
          }

@@ -93,6 +93,7 @@ cSndMixer::cSndMixer()
    mpWinDisplayDevice = NULL;
    mpInaudibleListHead = NULL;
    mpAudibleListHead = NULL;
+   mInPriorityCB = FALSE;
 
    m3DMixMethod = kSnd3DMethodNone;
    origin.x = 0.0;
@@ -306,6 +307,7 @@ cSndMixer::FadeGroupVolume( uint32         group,
                             eSndFadeFlags  flags )
 {
    cSndGroupVolumeFadeTask    *pFade;
+   MIXER_MUTEX;
 
    TLOG3( "Mix::FadeGroupVolume group %d volume %d time %d", group, newVolume, time );
    if ( group == kSndMasterGroup ) {
@@ -338,6 +340,8 @@ cSndMixer::RegisterGroupFadeCallback( uint32          group,
                                       SndEndCallback  endFunc,
                                       void            *pCBData )
 {
+   MIXER_MUTEX;
+
    if ( group == kSndMasterGroup ) {
       // the master volume fade is in the last (extra) element of mpGroupFades
       group = kSndNumGroups;
@@ -390,8 +394,12 @@ cSndMixer::CreateSampleFromRez(
 //
 
 BOOL
-cSndMixer::AllocChannel( ISndSample    *pSample )
+cSndMixer::AllocChannel( cSndSample    *pSample,
+                         uint32        flags,
+                         eSnd3DMethod  method )
 {
+   BOOL freed;
+
    if ( mNumFreeMixerChans == 0 ) {
 
       // no channels so see if there is a priority function
@@ -399,7 +407,10 @@ cSndMixer::AllocChannel( ISndSample    *pSample )
          TLOG1( "Mix::AllocChannel %s, no priority CB!", SAMPLE_NAME( pSample ) );
          return FALSE;
       }
-      if ( (*fnPriorityCB)( this, pSample, mpPriorityCBData ) == FALSE ) {
+      mInPriorityCB = TRUE;
+      freed = (*fnPriorityCB)( this, pSample, mpPriorityCBData );
+      mInPriorityCB = FALSE;
+      if ( freed == FALSE ) {
          // couldn't free a channel
          TLOG1( "Mix::AllocChannel %s, priority CB failed!", SAMPLE_NAME( pSample ) );
          return FALSE;
@@ -419,10 +430,11 @@ cSndMixer::AllocChannel( ISndSample    *pSample )
 //
 
 void
-cSndMixer::FreeChannel()
+cSndMixer::FreeChannel( cSndSample *pSample )
 {
    mNumFreeMixerChans++;
    TLOG1( "Mix::FreeChannel %d left", mNumFreeMixerChans );
+   if ( fnFreeChannelCB && !mInPriorityCB ) {
    if ( fnFreeChannelCB ) {
       // tell app that there is a free channel
       (*fnFreeChannelCB)( this, mpFreeChannelCBData );
@@ -956,7 +968,7 @@ cSndMixer::Get3DDistanceVolume( float range )
 
    // return volume offset for range
    // note: returned values do not take into account group & sample volume
-   vol = DistanceToMilliBels( dist );
+   vol = DistanceToMilliBels( dist ) * m3DEnvironment.rolloffFactor;
    TLOG2( "Mix::Get3DDistanceVolume distance %d volume %d", dist, vol );
 
    return vol;
@@ -973,7 +985,14 @@ cSndMixer::Get3DDistanceFromVolume( int32 vol )
 {
    float dist;
 
-   dist = pow( 2.0, ((float)-vol) / 600.0);
+   if ( m3DEnvironment.rolloffFactor == 0.0 )
+#ifdef SHIP
+      dist = 1.0;
+#else
+      dist = 0.0;
+#endif
+   else
+      dist = pow( 2.0, (((float)-vol) / m3DEnvironment.rolloffFactor) / 600.0);
    if ( m3DEnvironment.distanceFactor != 0.0 ) {
       dist /= m3DEnvironment.distanceFactor;
    }
@@ -1002,7 +1021,7 @@ cSndMixer::Get3DPositionVolume( sSndVector  *pSrcPos )
 
    // return volume offset for range
    // note: returned values do not take into account group & sample volume
-   vol = DistanceToMilliBels( range );
+   vol = DistanceToMilliBels( range ) * m3DEnvironment.rolloffFactor;
    TLOG1( "Mix::Get3DPositionVolume volume %d", vol );
 
    return vol;
@@ -1077,7 +1096,7 @@ cSndMixer::Get3DPositionPanVolume( sSndVector  *pSrcPos,
    }
 
    // add in volume offset for range
-   *pVol = DistanceToMilliBels( range );
+   *pVol = DistanceToMilliBels( range ) * m3DEnvironment.rolloffFactor;
 
    // TBD: calculate left & right volumes
    if ( leftVolume > rightVolume ) {
@@ -1104,6 +1123,16 @@ STDMETHODIMP_(void)
 cSndMixer::Set3DDeferMode( BOOL  deferOn )
 {
    m3DDeferFlag = deferOn;
+}
+
+
+STDMETHODIMP_(void)
+cSndMixer::FreeHWChannelCount( int32 *pHWChans, int32 *p3DHWChans )
+{
+   if (pHWChans)
+      *pHWChans = 0;
+   if (p3DHWChans)
+      *p3DHWChans = 0;
 }
 
 
@@ -1496,7 +1525,9 @@ cMixerThread::ThreadProc( void )
                   break;
 
                default:
+#line 1567
                   CriticalMsg("Unknown call to Mixer Stream-refill Thread");
+#line 1518
                   Reply(E_FAIL);
                   break;
             }

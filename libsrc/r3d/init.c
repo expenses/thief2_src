@@ -7,6 +7,9 @@
 #include <_ctxt.h>
 #include <_xfrm.h>
 
+void r3_index_init(void);
+void r3_index_term(void);
+
 r3s_global_context r3d_glob;     // global context
 r3s_global_state   r3d_state;    // global state
 
@@ -31,6 +34,7 @@ void r3_init_defaults(int trans_depth,int clip_planes,r3e_space space,int ctxt_c
    X2MAT(&r3d_state.world)->m3 = -1.0;
    X2MAT(&r3d_state.world)->m7 = -1.0;
 
+   r3_index_init();
    r3_use_g2(); // set the default driver
 }
 
@@ -43,6 +47,7 @@ void r3_init(void)
 void r3_close(void)
 {
    r3_close_context();
+   r3_index_term();
 }
 
 // Sets a world coord system inherited by all subsequent context creations.  

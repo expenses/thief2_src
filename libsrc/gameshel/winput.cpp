@@ -75,6 +75,9 @@ BOOL cWinInputDevices::IsJapaneseNec98()
 // Handle a message from owning cWinGameShell instance
 //
 
+#define WM_MOUSEWHEEL 0x020A
+#define WHEEL_DELTA 120
+
 BOOL cWinInputDevices::ProcessMessage(UINT msg, WPARAM wParam, LPARAM lParam, long & RetVal)
 {
     if (!m_Sinks.Count())
@@ -119,6 +122,11 @@ BOOL cWinInputDevices::ProcessMessage(UINT msg, WPARAM wParam, LPARAM lParam, lo
                 else
                     DebugMsgEx1(KEYBOARD, "Received keyboard event (%s)", LogStrWinMsg(m_pOuter->GetHwnd(), msg, wParam, lParam));
         }
+    }
+    else if (msg == WM_MOUSEWHEEL)
+    {
+        DispatchMouseEvent(msg, wParam, lParam);
+        return FALSE;
     }
     else if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
     {
@@ -330,7 +338,7 @@ BOOL cWinInputDevices::WinKeyToLGKey(UINT msg, WPARAM /*wParam*/, LPARAM lParam,
         uchar tempCode = Result.code;
         Result.code=(uchar) nec2pc[Result.code];
     }
-
+    if (Result.code == KBC_LSHIFT) Result.code = KBC_RSHIFT;
     if (IsAltDown(lParam))
         Result.code |= KBC_SHIFT_PREFIX;
     if (IsExtendedKey(lParam))
@@ -345,7 +353,7 @@ BOOL cWinInputDevices::WinKeyToLGKey(UINT msg, WPARAM /*wParam*/, LPARAM lParam,
 // Function to convert Windows message to mouse events. Does no x/y adjustment
 //
 
-BOOL cWinInputDevices::WinMouseToLGMouse(UINT msg, WPARAM /*wParam*/, LPARAM lParam, sInpMouseEvent & Result)
+BOOL cWinInputDevices::WinMouseToLGMouse(UINT msg, WPARAM wParam, LPARAM lParam, sInpMouseEvent & Result)
 {
     memset(&Result, 0, sizeof(sInpMouseEvent));
 
@@ -363,13 +371,25 @@ BOOL cWinInputDevices::WinMouseToLGMouse(UINT msg, WPARAM /*wParam*/, LPARAM lPa
         0,
         MOUSE_CDOWN,                   // WM_MBUTTONDOWN
         MOUSE_CUP,                     // WM_MBUTTONUP
-        0                              // WM_MBUTTONDBLCLK/WM_MOUSELAST
+        0,                             // WM_MBUTTONDBLCLK
+        MOUSE_WHEEL,                   // WM_MOUSEWHEEL
+        0
     };
 
-    // Scale mouse coordinates and make the lgMouseEvent
-    int x = LOWORD(lParam);
-    int y = HIWORD(lParam);
-    m_pOuter->ClientToGamePoint(x, y);
+    int x, y;
+    if (msg == WM_MOUSEWHEEL)
+    {
+        int buttons;
+        Result.wheel = (short)HIWORD(wParam) / WHEEL_DELTA;
+        GetMouseState(&x, &y, &buttons);
+    }
+    else
+    {
+        // Scale mouse coordinates and make the lgMouseEvent
+        x = LOWORD(lParam);
+        y = HIWORD(lParam);
+        m_pOuter->ClientToGamePoint(x, y);
+    }
 
     Result.x = (short) x;
     Result.y = (short) y;

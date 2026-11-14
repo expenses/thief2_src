@@ -91,4 +91,18 @@ void cWinDisplayModeOperations::DoFlushRect(int /*x0*/, int /*y0*/, int /*x1*/, 
     DoFlush();
 }
 
+///////////////////////////////////////
+
+BOOL cWinDisplayModeOperations::DoSetGamma(double)
+{
+    return FALSE;
+}
+
+///////////////////////////////////////
+
+BOOL cWinDisplayModeOperations::DoSetFlip(int)
+{
+    return FALSE;
+}
+
 ///////////////////////////////////////////////////////////////////////////////

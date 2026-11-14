@@ -83,6 +83,7 @@ void * DoRefLock(Ref ref, BOOL fPartial = FALSE, unsigned partialIndex = 0)
    ResThreadLock();
 //  Check for valid ref
 
+#line 92
    ValidateRef(ref);
 
    DBG(DSRC_RES_ChkIdRef,
@@ -98,9 +99,14 @@ void * DoRefLock(Ref ref, BOOL fPartial = FALSE, unsigned partialIndex = 0)
 //  Load block if not in ram
 
    prd = RESDESC(id);
+   if (prd->lock >= RES_MAXLOCK)
+   {
+      ResThreadUnlock();
+      return NULL;
+   }
    prd2 = RESDESC2(id);
 
-   AssertMsg3(prd->lock < RES_MAXLOCK, 
+   AssertMsg3(prd->lock < RES_MAXLOCK,
              "Bad ref lock count (%d) for res %d (%x)\n",
              prd->lock, id, id);
 
@@ -149,13 +155,13 @@ void * DoRefLock(Ref ref, BOOL fPartial = FALSE, unsigned partialIndex = 0)
       if (!RefIndexValid(prt, index))         \
             Warning(("RefLock: reference: $%x bad, index out of range\n", ref));
    });
-
    ValidateRef(ref);
 
+   void *result = ((uchar *) prt) + (prt->offset[index]);
    ResThreadUnlock();
 
 //  Return ptr
-   return (((uchar *) prt) + (prt->offset[index]));
+   return result;
 }
 
 //  ---------------------------------------------------------
@@ -191,6 +197,7 @@ void *RefGet(Ref ref)
    ResThreadLock();
 //  Check for valid ref
 
+#line 202
    ValidateRef(ref);
 
    id = REFID(ref);
@@ -229,14 +236,14 @@ void *RefGet(Ref ref)
       if (!RefIndexValid(prt, index))         \
             Warning(("RefGet: reference: $%x bad, index out of range\n", ref));
    });
-
    AssertMsg1(RefIndexValid(prt, index), "Bad index for reference 0x%x", ref);
-   ResThreadUnlock();
 
    ValidateRef(ref);
+   void *result = ((uchar *) prt) + (prt->offset[index]);
+   ResThreadUnlock();
 
 //  Return ptr
-   return (((uchar *) prt) + (prt->offset[index]));
+   return result;
 }
 //  ---------------------------------------------------------
 //
@@ -418,6 +425,7 @@ void *RefExtract(RefTable * prt, Ref ref, void *buff)
    ResThreadLock();
 //  Check id, get file number
 
+#line 416
    ValidateRef(ref);
 
    prd = RESDESC(REFID(ref));
@@ -485,7 +493,6 @@ void *RefExtract(RefTable * prt, Ref ref, void *buff)
       lseek(fd, offset - REFTABLESIZE(numrefs), SEEK_CUR);
       read(fd, buff, refsize);
    }
-
    ValidateRef(ref);
 
    ResThreadUnlock();

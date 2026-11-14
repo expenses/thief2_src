@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/libsrc/gadget/gadget.c,v 1.56 1998/09/09 14:59:27 KEVIN Exp $
 
 // library includes
@@ -129,25 +130,19 @@ static ulong get_color_default(LGadBox* vb, ulong stylecol, ulong def)
 Cursor push_cursor;
 bool push_cursor_used = FALSE;
 
-int LGadSetCursor(Ref r, int paltype, Cursor *c)
+int LGadSetCursor(grs_bitmap *bm, Point anchor, int paltype, Cursor *c)
 {
-   Point p; // to find the hotspot
-   grs_bitmap *cbm; // bitmap of art
-
-   cbm = UtilLockBitmapRef(r);
-   cbm->align = CURSOR_ALIGN;
-   UtilRefAnchor(r,&p);
+   bm->align = CURSOR_ALIGN;
 
    lgad_set_pal16(paltype,CURSOR_ALIGN);
-   uiMakeBitmapCursor(c, cbm, p);
+   uiMakeBitmapCursor(c, bm, anchor);
    uiSetGlobalDefaultCursor(c);
-   RefUnlock(r);
 
    return(0);
    
 }
 
-int LGadPushCursor(Ref r, int paltype)
+int LGadPushCursor(IDataSource *pCurs, Point anchor, int paltype)
 {
    Point p; // to find the hotspot
    grs_bitmap *cbm; // bitmap of art
@@ -157,14 +152,12 @@ int LGadPushCursor(Ref r, int paltype)
       Warning(("LGadPushCursor: temp cursor already in use!\n"));
       return(-1);
    }
-   cbm = UtilLockBitmapRef(r);
+   cbm = (grs_bitmap *)IDataSource_Lock(pCurs);
    cbm->align = CURSOR_ALIGN;
-   UtilRefAnchor(r,&p);
 
    lgad_set_pal16(paltype,CURSOR_ALIGN);
    uiMakeBitmapCursor(&push_cursor, cbm, p);
    uiPushGlobalCursor(&push_cursor);
-   RefUnlock(r);
    push_cursor_used = TRUE;
 
    return(0);
@@ -222,7 +215,7 @@ bool LGadMouseHandler(uiEvent *e, Region *r, void *data)
 
    cb = vb->vmc;
    if ((e->type == UI_EVENT_MOUSE) && cb)
-      return(cb(me->pos.x,me->pos.y,(short)me->action,vb));
+      return(cb(me->pos.x,me->pos.y,(short)me->action,me->wheel,vb));
    return(FALSE);
 }
 
@@ -287,10 +280,9 @@ the inner callback. */
    } while(0)
 
 
-LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, Ref curs_id, int paltype)
+LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, IDataSource *pCurs, Point anchor, int paltype)
 {
    grs_bitmap *c;
-   Point p;
 
    if (vr == NULL)
    {
@@ -316,13 +308,11 @@ LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, Ref curs_id, int paltype
       return(NULL);
    }
 #endif
-
-   if (curs_id != 0)
-      c = UtilLockBitmapRef(curs_id);
+   if (pCurs)
+      c = (grs_bitmap*)IDataSource_Lock(pCurs);
    else
       c = NULL;
-
-   vr->cursor_id = curs_id;
+   vr->pCursor = pCurs;
 
 #ifdef FAIL_ON_NO_CURSOR
    if (c == NULL)
@@ -338,15 +328,15 @@ LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, Ref curs_id, int paltype
 
    vr->subroot = FALSE;
 
-   if (c != NULL)
+   if (c)
    {
       c->align = CURSOR_ALIGN;
       lgad_set_pal16(paltype,CURSOR_ALIGN);
 
-      UtilRefAnchor(curs_id,&p);
       vr->curs = Malloc(sizeof(Cursor));
+#line 337
       AssertMsg(vr->curs != NULL, "Not enough memory for cursor");
-      uiMakeBitmapCursor(vr->curs, c, p);
+      uiMakeBitmapCursor(vr->curs, c, anchor);
    }
    else
    {
@@ -363,6 +353,43 @@ LGadRoot *LGadSetupRoot(LGadRoot *vr, short w, short h, Ref curs_id, int paltype
    uiMakeSlab(vr->root_slab,&(vr->box.r),vr->curs);
    uiGrabSlabFocus(vr->root_slab,&(vr->box.r),ALL_EVENTS);
    return(vr);
+}
+
+void LGadSetRootCursor(LGadRoot *vr, IDataSource *pCurs, Point anchor)
+{
+   grs_bitmap *c = NULL;
+   Cursor *oldcurs = vr->curs;
+   IDataSource *oldsrc = vr->pCursor;
+
+   if (pCurs)
+      c = (grs_bitmap*)IDataSource_Lock(pCurs);
+   vr->pCursor = pCurs;
+
+   if (c)
+   {
+      c->align = CURSOR_ALIGN;
+      vr->curs = Malloc(sizeof(Cursor));
+
+
+
+
+      AssertMsg(vr->curs != NULL, "Not enough memory for cursor");
+      uiMakeBitmapCursor(vr->curs, c, anchor);
+   }
+   else
+   {
+      vr->curs = NULL;
+   }
+
+   if (vr->subroot)
+      uiSetRegionDefaultCursor(&vr->box.r, vr->curs);
+   else
+      uiSetSlabDefaultCursor(vr->root_slab, vr->curs);
+
+   if (oldsrc)
+      IDataSource_Unlock(oldsrc);
+   if (oldcurs)
+      Free(oldcurs);
 }
 
 /* Makes the given LGadRoot the new actual UI root, for input purposes.  Returns zero for success,
@@ -393,8 +420,8 @@ int LGadDestroyRoot(LGadRoot *deadroot)
    if (!deadroot->subroot)
    {
       uiDestroySlab(deadroot->root_slab);
-      if (deadroot->cursor_id != 0)
-         RefUnlock(deadroot->cursor_id);
+      if (deadroot->pCursor)
+          IDataSource_Unlock(deadroot->pCursor);
       if (deadroot->curs != NULL)
          Free(deadroot->curs);
       if (deadroot->root_slab != NULL)
@@ -410,6 +437,8 @@ LGadRoot* LGadSetupSubRoot(LGadRoot* subroot, LGadRoot* parent, short x, short y
    if (subroot == NULL)
    {
       subroot = Malloc(sizeof(LGadRoot));
+
+
       AssertMsg(subroot != NULL, "Could not allocate LGad subroot");
       memset(subroot,0,sizeof(*subroot));
       subroot->free_self = TRUE;
@@ -852,7 +881,7 @@ int LGadDrawBoxInternal(LGadBox *vb, void *data,Rect* drawrect)
       {
          ulong pal = lgad_lookup_pal16(vb->paltype);
 
-         if (pal != 0) flags |= ComposeFlagClear;
+         if (pal != 0 || (vb->box_flags & BOXFLAG_CLEAR)) flags |= ComposeFlagClear;
 
          GUIsetup(&compose,&r,flags,GUI_CANV_ANY);
 
@@ -921,6 +950,8 @@ int LGadDestroyBox(LGadBox *vb, bool free_self)
       Warning(("LGadDestroyBox: vb is NULL!\n"));
       return(-1);
    }
+
+
    AssertMsg(vb->box_flags & BOXFLAG_ACTIVE, "LGadDestroyBox: Cannot erase an inactive gadget!");
 
    LGadRemoveOverlay(vb); // safe to do even if it wasn't on the overlay list
@@ -961,7 +992,7 @@ int LGadEraseBox(LGadBox *vb, bool free_self)
 #ifdef OLD_LGAD_BUTTONS
 
 #pragma off(unreferenced)
-bool ButtonMouseHandler(short x, short y, short action, LGadBox *vb)
+bool ButtonMouseHandler(short x, short y, short action, short wheel, LGadBox *vb)
 {
    bool retval=FALSE; // return value of our callback, if any
    LGadButton *vbutt = (LGadButton *)vb;  // our actual button, cast from the LGadBox param
@@ -1168,7 +1199,7 @@ the pointer, and keep the value in the range of 0 to max_val-1.  As the button c
 each click, it passes in the contents of the variable as the data parameter. */
 
 #pragma off(unreferenced)
-bool ToggleMouseHandler(short x, short y, short action, LGadBox *vb)
+bool ToggleMouseHandler(short x, short y, short action, short wheel, LGadBox *vb)
 {
    bool retval=FALSE; // return value of our callback, if any
    LGadToggle *vt = (LGadToggle *)vb;  // our actual toggle, cast from the LGadBox param
@@ -1351,7 +1382,7 @@ bool ScaleMotionHandler(short x, short y, LGadBox *vb)
    return(retval);
 }
 
-bool ScaleMouseHandler(short x, short y, short action, LGadBox *vb)
+bool ScaleMouseHandler(short x, short y, short action, short wheel, LGadBox *vb)
 {
    LGadScale *vs;
    Rect *r = (BOX_RECT(vb));
@@ -1395,7 +1426,7 @@ bool ScaleMouseHandler(short x, short y, short action, LGadBox *vb)
    if (action & (MOUSE_LUP|MOUSE_RUP))
    {
       if ((!vs->down) && !(vs->scale_flags & SCALE_NOTOGGLE))
-         retval = ToggleMouseHandler(x,y,action,vb); // otherwise, act like a toggle
+         retval = ToggleMouseHandler(x,y,action,wheel,vb); // otherwise, act like a toggle
       else
       {
          if (vs->buttonfunc)
@@ -1797,7 +1828,7 @@ static void defer_menu_destroy(LGadMenu* menu)
    uiDefer(do_deferred_menu_destroy,menu);
 }
 
-bool MenuMouseHandler(short x, short y, short action, LGadBox *vb)
+bool MenuMouseHandler(short x, short y, short action, short wheel, LGadBox *vb)
 {
    LGadMenu *vm = (LGadMenu *)vb; // the menu, duh
    Region* reg = LGadBoxRegion(vb);
@@ -3070,6 +3101,7 @@ int LGadInit(void)
 
 int LGadTerm(void)
 {
+   LGadSetDefaultFont(NULL);
    hotkey_shutdown();
 
    return(0);

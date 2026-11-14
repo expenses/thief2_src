@@ -199,7 +199,7 @@ cSndSample::MakeInaudible()
       LLRelease();
       MoveToList( mpMixer->InaudibleHead() );
       ClearFlags( kSndFlagAudible );
-      mpMixer->FreeChannel();
+      mpMixer->FreeChannel( this );
    }
 }
 
@@ -226,7 +226,7 @@ cSndSample::Init( sSndAttribs    *pAttribs,
 
    mFrequency = pAttribs->sampleRate;
 
-   if ( mFlags == kSndSampleStream ) {
+   if ( mFlags & kSndSampleStream ) {
       SetFlags( kSndFlagStream );
    }
    LLInit();
@@ -351,6 +351,7 @@ STDMETHODIMP_(void) cSndSample::Play()
 
 STDMETHODIMP_(void) cSndSample::Stop()
 {
+   MIXER_MUTEX;
    TLOG1( "\nSmp::Stop %s\n", SAMPLE_NAME );
 
    if ( (mStateFlags & (kSndFlagMuted | kSndFlagPaused)) ==  kSndFlagMuted ) {
@@ -689,7 +690,7 @@ STDMETHODIMP_(void) cSndSample::SetPosition(uint32 pos)
          mLastWrite = 0;
       }
 
-      LLSetPosition( pos * mBytesPerSample );
+      LLSetPosition( pos );
    } else {
       // since we're inaudible, just change the estimated time base
       mBaseTime = timeGetTime();
@@ -1402,6 +1403,17 @@ cSndSample::GetAmbientVolume( void )
    return mAmbientVolume;
 }
 
+
+STDMETHODIMP_(void)
+cSndSample::Set3DOcclusion(int32 occlusionMillibels)
+{
+}
+
+STDMETHODIMP_(int32)
+cSndSample::Kludge(int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct)
+{
+   return 0;
+}
 
 //
 // debug aid

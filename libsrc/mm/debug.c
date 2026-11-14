@@ -12,7 +12,7 @@
 
 static void draw_mark(mxs_trans *trans)
 {
-   r3s_point point;
+   r3s_point point,p1,p2;
    float w=0.15,h=0.15;
    fix sw,sh;
    fix maxw=fix_make(grd_bm.w,0),maxh=fix_make(grd_bm.h,0);
@@ -34,21 +34,18 @@ static void draw_mark(mxs_trans *trans)
    sw=fix_from_float(r3_get_hsize(point.p.z,w));
    sh=fix_from_float(r3_get_vsize(point.p.z,h));
 
-   ocol=gr_get_fcolor();
-   gr_set_fcolor(255);
-   v1.x=max(0,point.grp.sx-sw);
-   v1.y=max(0,point.grp.sy-sh);
-   v2.x=min(maxw,point.grp.sx+sw);
-   v2.y=min(maxh,point.grp.sy+sh);
-   gr_line(&v1,&v2);
+   p1=point;
+   p2=point;
+   p1.grp.sx=point.grp.sx-sw;
+   p2.grp.sx=point.grp.sx+sw;
+   r3_draw_line(&p1,&p2);
 
-   v1.x=max(0,point.grp.sx-sw);
-   v1.y=min(maxh,point.grp.sy+sh);
-   v2.x=min(maxw,point.grp.sx+sw);
-   v2.y=max(0,point.grp.sy-sh);
-   gr_line(&v1,&v2);
+   p1=point;
+   p2=point;
+   p1.grp.sy=point.grp.sy-sh;
+   p2.grp.sy=point.grp.sy+sh;
+   r3_draw_line(&p1,&p2);
 
-   gr_set_fcolor(ocol);
    r3_end_block();
    r3_end_object();
 }
@@ -58,6 +55,7 @@ void mm_dbg_draw_joints(mms_model *m)
    int i;
    mxs_trans trans;
 
+   r3_set_color(0xffffff);
    for(i=0;i<mmd_model->segs;i++)
    {
       if(mmd_segs[i].flags&MMSEG_FLAG_STRETCHY)
@@ -67,20 +65,34 @@ void mm_dbg_draw_joints(mms_model *m)
    }
 }
 
+static void draw_box(r3s_point *p, fix r)
+{
+   r3s_point p2;
+   int i,j,ir;
+
+   p2=*p;
+   ir=r/128;
+   r3_start_block();
+   for(i=-ir;i<=ir;i++)
+      for(j=-ir;j<=ir;j++)
+      {
+         p2.grp.sx=((p->grp.sx+(i<<16))&0xFFFF0000)|0x8000;
+         p2.grp.sy=((p->grp.sy+(j<<16))&0xFFFF0000)|0x8000;
+         r3_draw_point(&p2);
+      }
+   r3_end_block();
+}
+
 static void draw_seg_verts(mms_model *m, mms_segment *pseg, fix r)
 {
    int j,k;
    mms_smatseg *pss;
-   r3s_point *pptr;
 
    for(j=0;j<pseg->smatsegs;j++)
    {
       pss=&mmd_smatsegs[mmd_mappings[pseg->map_start+j]];
       for(k=pss->data.vert_start;k<pss->data.vert_start+pss->data.verts;k++)
-      {
-         pptr=mmd_buff_point(k);
-         g2_disk(pptr->grp.sx,pptr->grp.sy,r);
-      }
+         draw_box(mmd_buff_point(k),r);
    }
 }
 
@@ -90,14 +102,12 @@ void mm_dbg_draw_seg_colored_verts(mms_model *m,int index,fix r)
    // choose colors evenly distributed in color space, one color
    // for each segment.  hope transparency isn't an issue.
    int bdepth=grd_bpp;
-   ulong max,col,ocol;
+   ulong max;
    float inc;
    int i;
    mms_segment *pseg;
 
    void *buff;
-
-   ocol=gr_get_fcolor();
 
    // allocate space for the buffer
    buff = (void *)Malloc(mm_buffsize(m, NULL));
@@ -116,21 +126,17 @@ void mm_dbg_draw_seg_colored_verts(mms_model *m,int index,fix r)
       inc=0;
    if(index>0&&index<m->segs) // only draw that seg
    {
-      col=inc*index;
-      gr_set_fcolor(col);
+      r3_set_color(inc*index);
       draw_seg_verts(m,&mmd_segs[index],r);
    } else
    {
       pseg=mmd_segs;
       for(i=0;i<m->segs;i++,pseg++)
       {
-         col=inc*i;
-         gr_set_fcolor(col);
+         r3_set_color(inc*i);
          draw_seg_verts(m,pseg,r);
       }
    }
-
-   gr_set_fcolor(ocol);
 
    Free(buff);
 }

@@ -18,38 +18,54 @@ static poly_setup_func poly_g2_setup_funcs[] =
    g2_spoly_setup,           //      solid gouraud clipped
    g2_poly_setup_null,       //      solid rgb gouraud
    g2_poly_setup_null,       //      solid rgb gouraud clipped
-   g2_poly_setup_null,       //      solid pal gouraud
-   g2_poly_setup_null,       //      solid pal gouraud clipped
+   g2_poly_setup_null,       //      solid rgba gouraud
+   g2_poly_setup_null,       //      solid rgba gouraud clipped
+   g2_poly_setup_null,       //      solid rgba fog gouraud
+   g2_poly_setup_null,       //      solid rgba fog gouraud clipped
+   g2_poly_setup_null,       //      solid diffuse specular
+   g2_poly_setup_null,       //      solid diffuse specular clipped
 
-   // 4
+   // 12
    g2_poly_setup_null,       //      transluc unlit
    g2_poly_setup_null,       //      transluc unlit clipped
    g2_poly_setup_null,       //      transluc gouraud
    g2_poly_setup_null,       //      transluc gouraud clipped
    g2_poly_setup_null,       //      transluc rgb gouraud
    g2_poly_setup_null,       //      transluc rgb gouraud clipped
-   g2_poly_setup_null,       //      transluc pal gouraud
-   g2_poly_setup_null,       //      transluc pal gouraud clipped
+   g2_poly_setup_null,       //      transluc rgba gouraud
+   g2_poly_setup_null,       //      transluc rgba gouraud clipped
+   g2_poly_setup_null,       //      transluc rgba fog gouraud
+   g2_poly_setup_null,       //      transluc rgba fog gouraud clipped
+   g2_poly_setup_null,       //      transluc diffuse specular
+   g2_poly_setup_null,       //      transluc diffuse specular clipped
 
-   // 8
+   // 24
    g2_per_umap_setup,        //      texture unlit
    g2_per_map_setup,         //      texture unlit clipped
    g2_lit_per_umap_setup,    //      texture gouraud
    g2_lit_per_map_setup,     //      texture gouraud clipped
    g2_poly_setup_null,       //      texture rgb gouraud
    g2_poly_setup_null,       //      texture rgb gouraud clipped
-   g2_poly_setup_null,       //      texture pal gouraud
-   g2_poly_setup_null,       //      texture pal gouraud clipped
+   g2_poly_setup_null,       //      texture rgba gouraud
+   g2_poly_setup_null,       //      texture rgba gouraud clipped
+   g2_poly_setup_null,       //      texture rgba fog gouraud
+   g2_poly_setup_null,       //      texture rgba fog gouraud clipped
+   g2_poly_setup_null,       //      texture diffuse specular
+   g2_poly_setup_null,       //      texture diffuse specular clipped
 
-   // 16
+   // 36
    g2_lin_umap_setup,        //      linear unlit
    g2_lin_map_setup,         //      linear unlit clipped
    g2_lit_lin_umap_setup,    //      linear gouraud
    g2_lit_lin_map_setup,     //      linear gouraud clipped
    g2_poly_setup_null,       //      linear rgb gouraud
    g2_poly_setup_null,       //      linear rgb gouraud clipped
-   g2_poly_setup_null,       //      linear pal gouraud
-   g2_poly_setup_null        //      linear pal gouraud clipped
+   g2_poly_setup_null,       //      linear rgba gouraud
+   g2_poly_setup_null,       //      linear rgba gouraud clipped
+   g2_poly_setup_null,       //      linear rgba fog gouraud
+   g2_poly_setup_null,       //      linear rgba fog gouraud clipped
+   g2_poly_setup_null,       //      linear diffuse specular
+   g2_poly_setup_null        //      linear diffuse specular clipped
 };
 
 
@@ -83,6 +99,11 @@ static int g2_convert(int n, r3s_phandle *vp)
    return result;
 }
 
+static int g2_convert_indexed(int n, r3s_phandle *vp, struct r3ixs_info *info)
+{
+   return g2_convert(n, vp);
+}
+
 static int do_g2_line(r3s_phandle p0, r3s_phandle p1)
 {
    grs_vertex v0, v1;
@@ -103,7 +124,9 @@ static int do_g2_point(r3s_phandle p)
 // use this to return to the default driver (g2)
 void r3_use_g2(void)
 {
-   r3_setup_prim_funcs(poly_g2_setup_funcs, g2_convert, do_g2_line, do_g2_point);
+   r3_setup_prim_funcs(poly_g2_setup_funcs, g2_convert,
+      g2_convert_indexed,
+      do_g2_line, do_g2_point);
    r3_set_prim();
 }
 

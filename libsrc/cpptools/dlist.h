@@ -13,6 +13,7 @@
 #include <lgassert.h>
 #include <templexp.h>
 
+#include <dbmem.h>
 ///////////////////////////////////////////////////////////////////////////////
 //
 // ===================
@@ -133,6 +134,7 @@ extern const char * g_pszDlistInsertError;
 // List node base class
 //
 
+#line 136
 class __CPPTOOLSAPI cDListNodeBase
 {
 friend class cDListBase;
@@ -608,6 +610,8 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <undbmem.h>
 
 #endif /* !__DLIST_H */
 

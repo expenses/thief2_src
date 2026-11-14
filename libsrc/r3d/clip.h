@@ -18,6 +18,7 @@ typedef enum {
 EXTERN void r3_set_clipmode(r3e_clipmode e);
 EXTERN r3e_clipmode r3_get_clipmode();
 EXTERN void r3_set_clip_flags(int flags);
+EXTERN int r3_get_clip_flags(void);
 EXTERN void r3_set_near_plane(mxs_real dist);
 EXTERN mxs_real r3_get_near_plane();
 

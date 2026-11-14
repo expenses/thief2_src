@@ -6,6 +6,7 @@
 #include <xformseg.h>
 #include <r3d.h>
 #include <mmd.h>
+#include <lgd3d.h>
 
 // global variables
 int current_smatr_id=-1;
@@ -50,11 +51,27 @@ ulong       mmd_tmap_mode=R3_PL_TEXTURE;  // default to perspective
 // internal for knowing where stuff is
 static int buff_norm_off;  // where the norm values are start
 static int buff_spgon_off; // where sorted polygons start
+static int buff_polysort_off;
+mms_polysort_elt *_mmd_polysort_elts;
+int _mmd_num_polysort;
 static int buff_attach_off;// transforms for attachments
 
 // other misc globals
 static BOOL use_debug=FALSE;
 bool mmd_rgb_lighting;
+bool mmd_indexed = FALSE;
+static ulong mm_version;
+
+// alpha stuff
+static float mm_fGlobalAlphaFactor = 1.0;
+static int mm_bGlobalAlphaUsed = FALSE;
+int mm_bGlobalGlowUsed = FALSE;
+float mm_fGlobalGlowLevel = 0.0;
+static float mm_fMatGlowFactor = 1.0;
+static int mm_bMatGlowUsed = FALSE;
+static float mm_fMatGlowLevel = 0.0;
+static float mm_fMatAlphaFactor;
+static int mm_bMatAlphaUsed;
 
 // renderer pipeline stuff
 
@@ -72,6 +89,8 @@ void _mm_hardware_sort(mms_model *m, ulong flags);
 void _mm_hardware_render(mms_model *m);
 int _mm_hardware_buffsize(mms_model *m, mms_custom_data *d);
 void _mm_hardware_set_buff(mms_model *m, mms_custom_data *d, void *buff);
+
+void mm_setup_xform_funcs(char flags);
 
 typedef void(*mmf_transform_func)(mms_model *m, ulong flags);
 typedef void(*mmf_sort_func)(mms_model *m, ulong flags);
@@ -164,6 +183,10 @@ mmf_polysort mmd_polysorts[] = { \
 };
 mmf_polysort polysort=NULL;
 
+BOOL mm_punt_render = FALSE;
+BOOL mm_punt_xform = FALSE;
+BOOL mm_punt_sort = FALSE;
+
 #define SET_POLYSORT(layout,flags) (polysort=mmd_polysorts[(layout)])
 
 // segment render stuff
@@ -178,8 +201,16 @@ mmf_polysort polysort=NULL;
          return; \
       } \
    } while(0)
+   #define TEST_VERSION_RANGE(fname,model)   \
+   do { \
+      if (model->version<1 || model->version>MM_CUR_VER) { \
+         CriticalMsg2("%s: model is old version %d",fname,model->version); \
+         return; \
+      } \
+   } while(0)
 #else
    #define TEST_VERSION(fname,model) 
+   #define TEST_VERSION_RANGE(fname,model) 
 #endif
 
 
@@ -320,6 +351,7 @@ void mm_set_render_pipeline(ubyte pipe)
 {
    if (pipe >= mmd_num_rpipes || !mmd_rpipelines[pipe].transform)
    {
+#line 352
       CriticalMsg1("mm_set_render_pipeline: pipeline %d not supported\n",pipe);
       return;
    }
@@ -331,10 +363,23 @@ void mm_render_model(mms_model *m, mms_custom_data *d, ulong flags)
 {
    void *buff;
 
-   TEST_VERSION("mm_render_model", m);
+
+
+
+   TEST_VERSION_RANGE("mm_render_model", m);
 
    AssertMsg(render_pipeline,
              "must call mm_init before rendering mesh model\n");
+
+   mm_version = m->version;
+   mm_bMatAlphaUsed = 0;
+   mm_bMatGlowUsed = 0;
+   mmd_indexed = FALSE;
+   if ((flags & MMF_INDEXED) && !mm_is_self_illum_material(m))
+   {
+      mmd_indexed = TRUE;
+      r3_start_indexed_block();
+   }
 
    // The real work, as you can see, varies by pipeline.
    {
@@ -344,13 +389,34 @@ void mm_render_model(mms_model *m, mms_custom_data *d, ulong flags)
       _mm_set_globals(m, d);
 
       // transform points per segment, as well as normals and lights
-      render_pipeline->transform(m, flags);
+      if (!mm_punt_xform)
+         render_pipeline->transform(m, flags);
 
       // sort--or not
-      render_pipeline->sort(m, flags);
+      if (!mm_punt_sort)
+         render_pipeline->sort(m, flags);
 
       // call appropriate render func
-      render_pipeline->render(m);
+      if (!mm_punt_render)
+         render_pipeline->render(m);
+   }
+
+   if (mmd_indexed)
+   {
+      r3_free_indexed_range(0, m->verts);
+      r3_end_indexed_block();
+      mmd_indexed = FALSE;
+   }
+   if (mm_bGlobalAlphaUsed || mm_bMatAlphaUsed)
+   {
+      lgd3d_set_alpha(1.0);
+      lgd3d_set_blend(FALSE);
+      mm_bMatAlphaUsed = 0;
+   }
+   if (mm_bMatGlowUsed)
+   {
+      mm_bMatGlowUsed = 0;
+      mm_fMatGlowLevel = 0;
    }
 
    Free(buff);
@@ -364,7 +430,8 @@ void mm_render_model(mms_model *m, mms_custom_data *d, ulong flags)
 
 void mm_transform_only(mms_model *m, ulong flags)
 {
-   TEST_VERSION("mm_transform_only", m);
+#line 440
+   TEST_VERSION_RANGE("mm_transform_only", m);
    _mm_set_globals(m, mmd_custom_data);
    render_pipeline->transform(m, flags);
 }
@@ -418,6 +485,7 @@ static void _mm_poly_transform(mms_model *m, ulong flags)
 
    // decide which segment transformer to use
    SET_SEG_TRANSFORM(m->layout, flags);
+   mm_setup_xform_funcs(flags);
 
    segptr = mmd_segs;
    // iterate through segs, transforming vertex positions and normals,
@@ -450,21 +518,27 @@ static void _mm_poly_sort(mms_model *m, ulong flags)
 static void _mm_poly_render(mms_model *m)
 {
    int i;
-   current_smatr_id=-1; // cached material value;
-
-   block_render_cback(mmd_buff_sorted_pgons, m->pgons);
-//   if(m->smatrs==1) // don't bother 
-//   {
-//      mm_setup_material(0);
-//      mm_render_pgon_smatr_block(mmd_buff_sorted_pgons,m->pgons);
-//   } else
-//   {
-//      mm_render_pgon_block(mmd_buff_sorted_pgons,m->pgons);
-//   }
-
-   for (i = mmd_custom_data->num_attachments - 1; i >= 0; --i)
-      (*mmd_attachment_cback)(&mmd_buff_attach_trans[i],
-                              &mmd_custom_data->attachment_list[i]);
+   int num_polys = 0;
+   mms_polysort_elt *e = _mmd_polysort_elts;
+   current_smatr_id=-1;
+   for (i = 0; i < _mmd_num_polysort; ++i)
+   {
+      if (e->kind == 2)
+      {
+         if (num_polys)
+         {
+            block_render_cback(mmd_buff_sorted_pgons, num_polys);
+            num_polys = 0;
+         }
+         (*mmd_attachment_cback)(&((mms_attach_trans *)mmd_buff_attach_trans)[e->index].rel_trans,
+                                 &mmd_custom_data->attachment_list[e->index]);
+      }
+      else
+         mmd_buff_sorted_pgons[num_polys++] = mmd_pgons[e->index];
+      ++e;
+   }
+   if (num_polys)
+      block_render_cback(mmd_buff_sorted_pgons, num_polys);
 
    current_smatr_id=-1; // cached material value;
    if(use_debug) // draw joint positions
@@ -480,6 +554,7 @@ static void _mm_poly_render(mms_model *m)
 static int _mm_poly_buffsize(mms_model *m, mms_custom_data *d)
 {
    int size;
+   int max_sort_elems;
 
    // need space for transformed points
    size=m->verts*r3d_glob.cur_stride;
@@ -492,9 +567,15 @@ static int _mm_poly_buffsize(mms_model *m, mms_custom_data *d)
    buff_spgon_off = size;
    size+=sizeof(mms_pgon)*(m->pgons);
 
+   buff_polysort_off = size;
+   max_sort_elems = m->pgons;
+   if (d)
+      max_sort_elems += d->num_attachments;
+   size += sizeof(mms_polysort_elt) * max_sort_elems;
+
    buff_attach_off = size;
    if (d) 
-      size += sizeof(mxs_trans) * (d->num_attachments);
+      size += sizeof(mms_attach_trans) * (d->num_attachments);
 
    return size;
 }
@@ -506,6 +587,7 @@ static void _mm_poly_set_buff(mms_model *m, mms_custom_data *d, void *buff)
    mmd_buff_points=buff;
    mmd_buff_norms = (float *)((uchar *)buff + buff_norm_off);
    mmd_buff_sorted_pgons=(mms_pgon *)((uchar *)buff + buff_spgon_off);
+   _mmd_polysort_elts = (mms_polysort_elt *)((uchar *)buff + buff_polysort_off);
    mmd_buff_attach_trans = (mxs_trans *)((uchar*)buff + buff_attach_off);
 }
 
@@ -541,7 +623,7 @@ static void _mm_hardware_render(mms_model *m)
 
    // use callback to render any attachments
    for (i = mmd_custom_data->num_attachments - 1; i >= 0; --i)
-      (*mmd_attachment_cback)(&mmd_buff_attach_trans[i],
+      (*mmd_attachment_cback)(&((mms_attach_trans *)mmd_buff_attach_trans)[i].rel_trans,
                               &mmd_custom_data->attachment_list[i]);
 
    if (use_debug) // draw joint positions
@@ -557,7 +639,10 @@ static int _mm_hardware_buffsize(mms_model *m, mms_custom_data *d)
    int size;
 
    // need space for transformed points
-   size = m->verts * r3d_glob.cur_stride;
+   if (mmd_indexed)
+      size = 0;
+   else
+      size = m->verts * r3d_glob.cur_stride;
 
    // space for normal dot prods
    buff_norm_off = size;
@@ -565,7 +650,7 @@ static int _mm_hardware_buffsize(mms_model *m, mms_custom_data *d)
 
    buff_attach_off = size;
    if (d) 
-      size +=sizeof(mxs_trans) * (d->num_attachments);
+      size += sizeof(mms_attach_trans) * (d->num_attachments);
 
    return size;
 }
@@ -575,28 +660,153 @@ static void _mm_hardware_set_buff(mms_model *m, mms_custom_data *d,
                                   void *buff)
 {
    mmd_buff = buff;
-   mmd_buff_points = buff;
+   if (mmd_indexed)
+      mmd_buff_points = r3_get_indexed_phandle(0);
+   else
+      mmd_buff_points = buff;
    mmd_buff_norms = (float *)((uchar *)buff + buff_norm_off);
    mmd_buff_attach_trans = (mxs_trans *)((uchar*)buff + buff_attach_off);
+}
+
+float mm_set_global_alpha(float fNewGlobalAlpha)
+{
+   float fRet;
+
+   fRet = mm_fGlobalAlphaFactor;
+   mm_fGlobalAlphaFactor = fNewGlobalAlpha;
+   if (fNewGlobalAlpha >= 1.0f)
+   {
+      mm_fGlobalAlphaFactor = 1.0f;
+      mm_bGlobalAlphaUsed = 1;
+   }
+   else if (fNewGlobalAlpha <= 0.0f)
+      mm_fGlobalAlphaFactor = 0.0f;
+   else
+      mm_bGlobalAlphaUsed = 1;
+   return fRet;
+}
+
+float mm_set_global_glow_level(float fNewGlowLevel)
+{
+   float fRet;
+
+   fRet = mm_fGlobalGlowLevel;
+   mm_fGlobalGlowLevel = fNewGlowLevel;
+   if (fNewGlowLevel >= 1.0f)
+   {
+      mm_fGlobalGlowLevel = 1.0f;
+      mm_bGlobalGlowUsed = 1;
+   }
+   else if (fNewGlowLevel <= 0.0f)
+      mm_fGlobalGlowLevel = 0.0f;
+   else
+      mm_bGlobalGlowUsed = 1;
+   return fRet;
+}
+
+int mm_is_self_illum_material(mms_model *m)
+{
+   int i;
+   mms_smatr *mats;
+
+   if (!m)
+      return 0;
+   mats = (mms_smatr *)&m->id[m->smatr_off];
+   if (m->version != 2)
+      return 0;
+   for (i = 0; i < m->smatrs; ++i, ++mats)
+   {
+      if ((mats->dwCaps & 2) != 0)
+         return 1;
+
+   }
+   return 0;
 }
 
 
 ///////////
 
 // currently assumes always gouraud shaded.
+typedef struct _mms_smatr_v1
+{
+   char name[16];
+   ulong handle;
+   union {
+      float uv;
+      ulong ipal;
+   };
+   mme_mat type;
+   uchar smatsegs;
+   uchar map_start;
+   uchar flags;
+   mms_data_chunk data;
+} mms_smatr_v1;
+
 static void mm_setup_material(int index)
 {
    mms_smatr *r=&mmd_smatrs[index];
    int gouraud = mmd_rgb_lighting ? R3_PL_RGB_GOURAUD : R3_PL_GOURAUD;
 
-   if(r->type==MM_MAT_TMAP)
+   mm_fMatAlphaFactor = 1.0;
+   if (mm_version == 1)
    {
-      r3_set_polygon_context(gouraud | R3_PL_POLYGON | mmd_tmap_mode);
-      r3_set_texture((r3s_texture)r->handle);
-   } else
+      mms_smatr_v1 *r = &((mms_smatr_v1 *)mmd_smatrs)[index];
+
+      gouraud = mmd_rgb_lighting ? 0x200 : R3_PL_GOURAUD;
+      if (r->type == MM_MAT_TMAP)
+      {
+         r3_set_polygon_context(gouraud | R3_PL_POLYGON | mmd_tmap_mode);
+         r3_set_texture((r3s_texture)r->handle);
+      } else
+      {
+         r3_set_polygon_context(gouraud | R3_PL_POLYGON);
+         r3_set_color(((index+50)%255)+1);
+      }
+   }
+   else if (mm_version == 2)
    {
-      r3_set_polygon_context(gouraud | R3_PL_POLYGON);
-      r3_set_color(((index+50)%255)+1);
+      mms_smatr *r = &mmd_smatrs[index];
+
+      gouraud = mmd_rgb_lighting ? 0x200 : R3_PL_GOURAUD;
+      if (r->type == MM_MAT_TMAP)
+      {
+         r3_set_polygon_context(gouraud | R3_PL_POLYGON | mmd_tmap_mode);
+         r3_set_texture((r3s_texture)r->handle);
+      } else
+      {
+         r3_set_polygon_context(gouraud | R3_PL_POLYGON);
+         r3_set_color(((index+50)%255)+1);
+      }
+      if (r->dwCaps & kUseAlpha)
+      {
+         mm_fMatAlphaFactor = r->fAlpha;
+         mm_bMatAlphaUsed = 1;
+      }
+      else if (mm_bMatAlphaUsed)
+      {
+         mm_fMatAlphaFactor = 1.0;
+         mm_bMatAlphaUsed = 0;
+      }
+      if (r->dwCaps & kUseSelfIllumination)
+      {
+         mm_fMatGlowLevel = r->fSelfIllumination;
+         mm_bMatGlowUsed = 1;
+      }
+      else if (mm_bMatGlowUsed)
+      {
+         mm_bMatGlowUsed = 0;
+         mm_fMatGlowLevel = 0;
+      }
+   }
+   if (!mm_bGlobalAlphaUsed && !mm_bMatAlphaUsed)
+   {
+      lgd3d_set_alpha(1.0f);
+      lgd3d_set_blend(FALSE);
+   }
+   else
+   {
+      lgd3d_set_alpha(mm_fGlobalAlphaFactor * mm_fMatAlphaFactor);
+      lgd3d_set_blend(TRUE);
    }
    current_smatr_id=index;
 }
@@ -607,6 +817,8 @@ static void setup_fake_material(int index)
    r3_set_color(((index+50)%255)+1);
 }
 
+#define MM_GLOW_PT_SIZE 0xa0
+static uchar verta[3][MM_GLOW_PT_SIZE];
 static r3s_phandle vlist[3];
 
 // XXX TO DO: make these for loops better
@@ -627,7 +839,7 @@ void mm_render_pgon_block(mms_pgon *pgons, int num)
          continue;
     
       // set context if material has changed
-      if(p->smatr_id!=current_smatr_id)
+      if(p->smatr_id!=(ushort)current_smatr_id)
       {
          mm_setup_material(p->smatr_id);
       }
@@ -638,10 +850,49 @@ void mm_render_pgon_block(mms_pgon *pgons, int num)
          setup_fake_material(p->norm);
       }
 #endif
-      // Set vlist to contain the list of verts
-      vlist[2] = mmd_buff_point(p->v[0]);
-      vlist[1] = mmd_buff_point(p->v[1]);
-      vlist[0] = mmd_buff_point(p->v[2]);
+      if (mmd_indexed)
+      {
+         short tri[3];
+
+         tri[2] = p->v[0];
+         tri[1] = p->v[1];
+         tri[0] = p->v[2];
+         r3d_glob.prim_tab.draw_indexed_3d_poly(3, tri);
+         continue;
+      }
+
+      if (mm_bMatGlowUsed)
+      {
+         int j;
+#ifdef SHIP
+         float fGlow = mm_fMatGlowFactor * mm_fMatGlowLevel;
+#else
+         float fGlow = mm_fMatGlowLevel * mm_fMatGlowFactor;
+#endif
+
+         memcpy(verta[2], mmd_buff_point(p->v[0]), MM_GLOW_PT_SIZE);
+         memcpy(verta[1], mmd_buff_point(p->v[1]), MM_GLOW_PT_SIZE);
+         memcpy(verta[0], mmd_buff_point(p->v[2]), MM_GLOW_PT_SIZE);
+         for (j = 0; j < 3; ++j)
+         {
+            g2s_point *g2p = (g2s_point *) &((r3s_point *) verta[j])->grp;
+
+            vlist[j] = (r3s_phandle) verta[j];
+            g2p->i += fGlow;
+            if (mmd_rgb_lighting)
+            {
+               g2p->h += fGlow;
+               g2p->d += fGlow;
+            }
+         }
+      }
+      else
+      {
+         // Set vlist to contain the list of verts
+         vlist[2] = mmd_buff_point(p->v[0]);
+         vlist[1] = mmd_buff_point(p->v[1]);
+         vlist[0] = mmd_buff_point(p->v[2]);
+      }
 
       r3_draw_poly(3,vlist);
    }
@@ -916,4 +1167,22 @@ BOOL mm_ray_hit_detect(mms_model *model,
 
 done:
    return detect_info->result;
+}
+
+float mm_set_global_glow_factors(float fNewGlowLevel)
+{
+   float fRet;
+
+   fRet = mm_fMatGlowFactor;
+   mm_fMatGlowFactor = fNewGlowLevel;
+   if (fNewGlowLevel < 1.0)
+   {
+      if (mm_fMatGlowFactor <= 0.0)
+         mm_fMatGlowFactor = 0.0;
+   }
+   else
+   {
+      mm_fMatGlowFactor = 1.0;
+   }
+   return fRet;
 }

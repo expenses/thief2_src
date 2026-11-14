@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////////////
 // $Source: x:/prj/tech/libsrc/appcore/RCS/appcore.cpp $
 // $Author: TOML $
@@ -11,10 +12,10 @@
 
 #include <lg.h>
 #include <codewrit.h>
-
 #include <appagg.h>
 #include <objcguid.h>
 #include <objcoll.h>
+#include <exceptio.h>
 #include <stdlib.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,30 +90,39 @@ int LGAPI _AppMain(int argc, const char *argv[])
     #pragma message("Need a way to increase available file handles")
     #endif
 
+    int mainRetVal = 1;
+
+    BEGIN_EXCEPT_TRY
+    {
     // Create the core aggregate entity
     _AppAggregateCreate(IID_IAggregate);
 
     // Tell the app to create the application-level COM objects
-    if (AppCreateObjects(argc, argv) != NOERROR)
-        return 1;
+    if (AppCreateObjects(argc, argv) == NOERROR)
+    {
+        // Clean-up is done through exit()
+        atexit(AppOnExit);
 
-    // Clean-up is done through exit()
-    atexit(AppOnExit);
+        // Initialize the components
+        if (pAppAggregate)
+            pAppAggregate->Init();
 
-    // Initialize the components
-    if (pAppAggregate)
-        pAppAggregate->Init();
+        // Tell the app the components are initialized
+        if (AppInit() == NOERROR)
+        {
+            // Set flag indicating successful initialization, so should call AppExit()
+            g_fCallAppExit = TRUE;
 
-    // Tell the app the components are initialized
-    if (AppInit() != NOERROR)
-        return 1;
-
-    // Set flag indicating successful initialization, so should call AppExit()
-    g_fCallAppExit = TRUE;
-
-    // Start the application
-    int mainRetVal = AppMain(argc, argv);
+            // Start the application
+            mainRetVal = AppMain(argc, argv);
+        }
+    }
     g_fReturnedFromMain = TRUE;
+    }
+    BEGIN_EXCEPT_CATCH("_AppMain()")
+    {
+    }
+
     return mainRetVal;
 }
 

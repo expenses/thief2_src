@@ -420,3 +420,121 @@ void md_mipmap_render_pgon(mds_pgon *p, r3s_phandle *v,grs_bitmap *bm, ulong col
 
 
 
+
+
+int md_sizeof_mipmap_bits(grs_bitmap* mmap)
+{
+   int size = 0;
+
+   while (1) {
+      size += mmap->row * mmap->h;
+      if (mmap->w == 1 && mmap->h == 1)
+         return size;
+      mmap++;
+   }
+}
+
+int md_sizeof_mipmap_type(int *size_out, int code, int w, int h)
+{
+   int bpp;
+   int total;
+   int wlog, hlog, maxlog;
+
+   switch (code) {
+   case 2: bpp = 1; break;
+   case 3: bpp = 2; break;
+   case 5: bpp = 3; break;
+   case 10: bpp = 4; break;
+   default:
+      bpp = 1;
+      Warning(("mipmap.c Unknown bitmap type\n"));
+      break;
+   }
+
+   wlog = 0;
+   while ((1 << wlog) < w) wlog++;
+   hlog = 0;
+   while ((1 << hlog) < h) hlog++;
+
+   maxlog = (hlog > wlog) ? hlog : wlog;
+   maxlog++;
+   total = maxlog * 16;
+
+   wlog = w;
+   hlog = h;
+   while (1) {
+      total += wlog * hlog * bpp;
+      if (wlog == 1 && hlog == 1)
+         break;
+      if (wlog > 1) wlog >>= 1;
+      if (hlog > 1) hlog >>= 1;
+   }
+
+   *size_out = maxlog;
+   return total;
+}
+
+int PlaneSize(int w, int h)
+{
+   int size = 0;
+
+   while (1) {
+      size += w * h;
+      if (h == 1 && w == 1)
+         break;
+      if (w > 1) w >>= 1;
+      if (h > 1) h >>= 1;
+   }
+   return size;
+}
+
+uchar *PlaneDownsample(uchar *src, int w, int h)
+{
+   uchar *dst = src + w*h;
+   int i, j;
+   int w2, h2;
+   int val;
+   int srcstride = w;
+
+   if (w == 1) {
+      h2 = h/2;
+      for (i=0; i<h2; i++) {
+         val = *src++;
+         val += *src++;
+         *dst++ = (uchar)((val+1)>>1);
+      }
+   } else if (h == 1) {
+      w2 = w/2;
+      for (i=0; i<w2; i++) {
+         val = *src++;
+         val += *src++;
+         *dst++ = (uchar)((val+1)>>1);
+      }
+   } else {
+      w2 = w/2;
+      h2 = h/2;
+      for (j=0; j<h2; j++) {
+         for (i=0; i<w2; i++) {
+            val = *src;
+            val += *(src + srcstride);
+            src++;
+            val += *src;
+            val += *(src + srcstride);
+            src++;
+            *dst++ = (uchar)((val+2)>>2);
+         }
+         src += srcstride;
+      }
+   }
+   return src;
+}
+
+uchar *PlaneProcess(uchar *src, int w, int h)
+{
+   while (h > 1 || w > 1) {
+      src = PlaneDownsample(src, w, h);
+      if (w > 1) w >>= 1;
+      if (h > 1) h >>= 1;
+   }
+   return src;
+}

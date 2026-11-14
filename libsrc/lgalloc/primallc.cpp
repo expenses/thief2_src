@@ -52,6 +52,9 @@ ulong LGAPI cPrimaryMalloc::DefPageFunc(ulong needed, sAllocLimits * pLimits)
 
 ///////////////////////////////////////
 
+
+
+
 STDMETHODIMP_(void *) cPrimaryMalloc::Alloc(ULONG size)
 {
     // @Note (toml 07-14-97): This code is block copied in AllocEx and should be kept in sync
@@ -66,7 +69,7 @@ STDMETHODIMP_(void *) cPrimaryMalloc::Alloc(ULONG size)
     do
     {
         // Page memory if over limit
-        if (totalAlloc > allocCap)
+        if (totalAlloc > allocCap && m_pfnPage)
             fMoreToPage = ((*m_pfnPage)(size, this) != 0);
 
         // Allocate our block
@@ -82,7 +85,10 @@ STDMETHODIMP_(void *) cPrimaryMalloc::Alloc(ULONG size)
             AllocThreadUnlock();
             return p;
         }
-        AllocThreadUnlock();
+        else
+        {
+            AllocThreadUnlock();
+        }
 
     } while (fMoreToPage);
 
@@ -93,6 +99,7 @@ STDMETHODIMP_(void *) cPrimaryMalloc::Alloc(ULONG size)
 }
 
 ///////////////////////////////////////
+
 
 STDMETHODIMP_(void *) cPrimaryMalloc::Realloc(void * pOld, ULONG newClientSize)
 {
@@ -238,6 +245,10 @@ STDMETHODIMP_(void *) cPrimaryMalloc::AllocEx(ULONG size, const char * pszFile, 
     } while (fMoreToPage);
 
     g_fQuietAssert = FALSE;
+
+
+
+
     CriticalMsg("Out of memory");
 
     return NULL;
@@ -290,6 +301,8 @@ STDMETHODIMP_(void *) cPrimaryMalloc::ReallocEx(void * pOld, ULONG newClientSize
     else
     {
         g_fQuietAssert = FALSE;
+
+
         CriticalMsg("Out of memory");
     }
 

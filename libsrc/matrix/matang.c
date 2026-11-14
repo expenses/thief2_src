@@ -223,7 +223,7 @@ void mx_mk_rot_vec_mat(mxs_matrix *m, const mxs_vector *v, mxs_ang ang)
    mxs_vector axis;
 
    mx_norm_vec(&axis,v);
-   mx_mk_move_x_mat(&n,v);
+   mx_mk_move_x_mat(&n,&axis);
    mx_inv_mat(&nInv,&n);
    mx_mk_rot_x_mat(&r,ang);
    mx_muleq_mat(&r,&nInv);
@@ -328,17 +328,25 @@ void mx_mat2rad(mxs_vector* dest, const mxs_matrix* m)
 
    dest->y = asin(-m->m2);
 
-   // yaw (Z) = atan2( sinZ, cosZ)                      
-   // Since cosY is always positive, this is the same as
-   // atan2(sinZcosY, cosZcosY )                        
-   // mat->m[0][0] is cosZcosY, mat->m[0][1] is sinZcosY
+   if (fabs(m->m2) <= 0.999995)
+   {
+      // yaw (Z) = atan2( sinZ, cosZ)                      
+      // Since cosY is always positive, this is the same as
+      // atan2(sinZcosY, cosZcosY )                        
+      // mat->m[0][0] is cosZcosY, mat->m[0][1] is sinZcosY
 
-   dest->z = atan2(m->m1,m->m0);
+      dest->z = atan2(m->m1,m->m0);
 
-   // Similar argument goes for roll (X)
-   // mat->m[1][2] is sinXcosY, mat->m[2][2] is cosXcosY
+      // Similar argument goes for roll (X)
+      // mat->m[1][2] is sinXcosY, mat->m[2][2] is cosXcosY
 
-   dest->x = atan2(m->m5,m->m8);
+      dest->x = atan2(m->m5,m->m8);
+   }
+   else
+   {
+      dest->x = 0.0f;
+      dest->z = atan2(-m->m3,m->m4);
+   }
 }
 
 void mx_mk_rot_x_mat_rad(mxs_matrix *m, float ang)

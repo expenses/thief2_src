@@ -73,8 +73,8 @@ private:
     virtual BOOL DoOpen(sGrModeCap *, int flags);
     virtual BOOL DoClose();
     virtual cWinDisplayModeOperations * DoSetMode(const sGrModeInfo &, int flags, sGrModeCap * pReturnModeInfo);
-    virtual BOOL DoGetDirectDraw(IDirectDraw **);
-    virtual BOOL DoGetBitmapSurface(sGrBitmap *, IDirectDrawSurface **);
+    virtual BOOL DoGetDirectDraw(IDirectDraw4 **);
+    virtual BOOL DoGetBitmapSurface(sGrBitmap *, IDirectDrawSurface4 **);
 
     ///////////////////////////////////
 
@@ -83,7 +83,7 @@ private:
 
     ///////////////////////////////////
 
-    LPDIRECTDRAW        m_pDD;          // DirectDraw object
+    LPDIRECTDRAW4       m_pDD;          // DirectDraw object
 
     DWORD               m_DDCoopFlags;
     DWORD               m_PalFlags;
@@ -99,7 +99,7 @@ private:
 
     int                 m_Flags;
 
-    static HRESULT CALLBACK EnumDisplayModesCallback(LPDDSURFACEDESC pddsd, LPVOID Context);
+    static HRESULT CALLBACK EnumDisplayModesCallback(LPDDSURFACEDESC2 pddsd, LPVOID Context);
     friend class cDDCritMsgHandler;
 };
 

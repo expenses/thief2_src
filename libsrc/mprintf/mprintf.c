@@ -283,6 +283,11 @@ int mono_setmode (int mode)
    return mono_mode;
 }
 
+int mono_getmode (void)
+{
+   return mono_mode;
+}
+
 /* setup for wrapping on mono as opposed to scrolling */
 void mono_set_flags(int flags, char *msg)
 {
@@ -797,17 +802,25 @@ int _mprint(const char *s, int n)
 /* printf to the monochrome screen.  has the same arguments and return value
    as printf (returns number of items printed).  uses vsprintf to print into
    a 1k buffer which is then transferred to the mono screen char by char. */
+
+static int in_mprintf;
+
 int mprintf(const char *fmt, ...)
 {
    char buf[1024];
    int n;
    va_list ap;
 
+   if (in_mprintf)
+      return 0;
+   in_mprintf = 1;
+
    CoreThreadLock();
 
    if (!_mono_top())
       if (!_mono_log())
       {
+         in_mprintf = 0;
          CoreThreadUnlock();
 	      return -1;
 	   }
@@ -819,6 +832,7 @@ int mprintf(const char *fmt, ...)
    /* punt if there was an error. */
    if (n < 0)
    {
+      in_mprintf = 0;
       CoreThreadUnlock();
       return n;
    }
@@ -826,6 +840,7 @@ int mprintf(const char *fmt, ...)
    /* write this string if we're logging. */
    _mprint(buf,n);
 
+   in_mprintf = 0;
    CoreThreadUnlock();
    return n;
 }

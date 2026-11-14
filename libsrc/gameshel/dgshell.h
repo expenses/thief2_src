@@ -46,6 +46,8 @@ protected:
     // Release locks, ensure screen is up-to-date
     STDMETHOD_(void, EndFrame)();
 
+    STDMETHOD (BringToFront)() { return 0; }
+
     // Holder/Sink methods
     STDMETHOD (Obsolete1)() { return 0; }
     STDMETHOD (Obsolete2)() { return 0; }

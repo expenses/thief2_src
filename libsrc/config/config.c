@@ -446,7 +446,7 @@ void _change_dir(char* path)
 }
 #endif // NEED_CHANGE_DRIVE
 
-errtype config_write_file(const char* in,writefunc writable)
+errtype config_write_file(const char* input_fn,writefunc writable)
 {
    errtype err;
    int ofd,ifd;
@@ -454,7 +454,10 @@ errtype config_write_file(const char* in,writefunc writable)
    char dbuf[80],fbuf[FN_BUFSIZE];
    citer iter;
    Hashtable seen_vars;
+   char in[1024];
 
+   strncpy(in,input_fn,sizeof(in)-1);
+   in[sizeof(in)-1] = '\0';
    err = hash_copy(&seen_vars,&config_table);
    if (err != OK) return err;
    if (config_enabled <= 0) return ERR_NULL;
@@ -799,6 +802,16 @@ void config_set_writable_table(config_write_spec* tbl)
    cfg_write_table = tbl;
 }
 
+void config_set_int(const char *varname, int val)
+{
+   config_set_single_value(varname, CONFIG_INT_TYPE, (config_valtype)val);
+}
+
+void config_set_string(const char *varname, const char *val)
+{
+   config_set_single_value(varname, CONFIG_STRING_TYPE, (config_valtype)val);
+}
+
 
 
 #pragma off(unreferenced)
@@ -920,6 +933,18 @@ void config_add_to_or_extract_from_recording( void )
 
 bool config_spew_on = TRUE;
 static char* _spewsrc = NULL;
+
+void config_set_float(const char *varname, float val)
+{
+   config_set_single_value(varname, CONFIG_FLOAT_TYPE, (*(config_valtype *)(&val)));
+}
+
+bool config_is_nonzero(const char *pVarName)
+{
+   char pBuf[64];
+   bool raw = config_get_raw(pVarName, pBuf, 64);
+   return (raw && strcmp(pBuf, "0") != 0);
+}
 
 bool CfgSpewTest(char* var)
 {

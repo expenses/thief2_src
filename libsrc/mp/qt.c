@@ -46,9 +46,12 @@ void quat_to_matrix(mxs_matrix * m, quat * q)
 	float r1, r2;
 #endif
 
-	//s = 2.0 / (q->w*q->w + q->x*q->x + q->y*q->y + q->z*q->z);
-// Magnitude should always be 1, so forget the division.
-	s = 2.0;
+	s = q->w*q->w + q->x*q->x + q->y*q->y + q->z*q->z;
+	if (s > 0.0)
+		s = 2.0 / s;
+	else
+		// Magnitude should always be 1, so forget the division.
+		s = 2.0;
 
 	xs = q->x * s;
 	ys = q->y * s;
@@ -239,13 +242,66 @@ void quat_scale(quat * dest, quat * q, float scale)
 //
 #define MX_REAL_HALF_PI	(MX_REAL_PI / 2.0)
 
-void quat_slerp(quat * dest, quat * q1, quat * q2, float t)
+void quat_slerp_cached_info(quat *dest, quat * q1, quat * q2, float t, mxs_vector *omega_info, bool flip)
+{
+	float cos_omega, omega, inv_sin_omega, s1, s2;
+	quat qs;
+
+	cos_omega = omega_info->x;
+	inv_sin_omega = omega_info->y;
+	omega = omega_info->z;
+
+	if (flip)
+	{
+		qs.w = -q2->w;
+		qs.x = -q2->x;
+		qs.y = -q2->y;
+		qs.z = -q2->z;
+	}
+	else
+	{
+		quat_copy(&qs, q2);
+	}
+
+	if ((1.0 + cos_omega) > EPSILON)
+	{
+		if ((1.0 - cos_omega) > EPSILON)
+		{
+			s1 = sin((1.0 - t) * omega) * inv_sin_omega;
+			s2 = sin(t * omega) * inv_sin_omega;
+		}
+		else
+		{
+			s1 = 1.0 - t;
+			s2 = t;
+		}
+
+		dest->w = s1 * q1->w + s2 * qs.w;
+		dest->x = s1 * q1->x + s2 * qs.x;
+		dest->y = s1 * q1->y + s2 * qs.y;
+		dest->z = s1 * q1->z + s2 * qs.z;
+	}
+	else
+	{
+		dest->w = q1->z;
+		dest->x = -q1->y;
+		dest->y = q1->x;
+		dest->z = -q1->w;
+
+		s1 = sin((1.0 - t) * MX_REAL_HALF_PI);
+		s2 = sin(t * MX_REAL_HALF_PI);
+		dest->x = s1 * q1->x + s2 * dest->x;
+		dest->y = s1 * q1->y + s2 * dest->y;
+		dest->z = s1 * q1->z + s2 * dest->z;
+	}
+}
+
+bool quat_get_slerp_info(mxs_vector *omega_info, quat * q1, quat * q2)
 {
 	float cos_omega, omega, sin_omega, s1, s2;
 	quat sum, dif, qs;
-
+	bool flip;
 // Make sure we're taking the shorter arc.
-
 	sum.w = q1->w + q2->w;
 	sum.x = q1->x + q2->x;
 	sum.y = q1->y + q2->y;
@@ -265,13 +321,16 @@ void quat_slerp(quat * dest, quat * q1, quat * q2, float t)
 		qs.x = -q2->x;
 		qs.y = -q2->y;
 		qs.z = -q2->z;
+		flip = TRUE;
 	}
 	else
 	{
 		quat_copy(&qs, q2);
+		flip = FALSE;
 	}
 
 	cos_omega = q1->w * qs.w + q1->x * qs.x + q1->y * qs.y + q1->z * qs.z;
+	omega_info->x = cos_omega;
 
 // Check for cases where rotations are nearly opposite, which causes numerical
 // weirdness.
@@ -283,38 +342,20 @@ void quat_slerp(quat * dest, quat * q1, quat * q2, float t)
 		{
 			omega = acos(cos_omega);
 			sin_omega = sin(omega);
-	
-			s1 = sin((1.0 - t) * omega) / sin_omega;
-			s2 = sin(t * omega) / sin_omega;
+			omega_info->y = 1.0 / sin_omega;
+			omega_info->z = omega;
 		}
-		else
-		{
-		// Too close, do plain old linear interpolation.
-			s1 = 1.0 - t;
-			s2 = t;
-		}
-
-		dest->w = s1 * q1->w + s2 * qs.w;
-		dest->x = s1 * q1->x + s2 * qs.x;
-		dest->y = s1 * q1->y + s2 * qs.y;
-		dest->z = s1 * q1->z + s2 * qs.z;
 	}
-	else
-	{
-		dest->w = q1->z;
-		dest->x = -q1->y;
-		dest->y = q1->x;
-		dest->z = -q1->w;
+	return flip;
+}
 
-		s1 = sin((1.0 - t) * MX_REAL_HALF_PI);
-		s2 = sin(t * MX_REAL_HALF_PI);
-//#define MP_SRC	DBGSRC(31, 1)
-		dest->x = s1 * q1->x + s2 * dest->x;
-		dest->y = s1 * q1->y + s2 * dest->y;
-		dest->z = s1 * q1->z + s2 * dest->z;
-//		Spew(MP_SRC, ("using reverse quat interpolation.\n"));
-	}
+void quat_slerp(quat * dest, quat * q1, quat * q2, float t)
+{
+	mxs_vector omega_info;
+	bool flip;
 
+	flip = quat_get_slerp_info(&omega_info, q1, q2);
+	quat_slerp_cached_info(dest, q1, q2, t, &omega_info, flip);
 }
 
 //

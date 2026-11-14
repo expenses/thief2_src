@@ -188,7 +188,7 @@ SndCrackWaveHeader(
    mmio.pchBuffer = (char *) pRezData;
    mmio.cchBuffer = rezLen;
 
-   hmmio = mmioOpen(NULL, &mmio, MMIO_READWRITE);
+   hmmio = mmioOpen(NULL, &mmio, MMIO_READ);
    if(hmmio==NULL)
       return TRUE;
 

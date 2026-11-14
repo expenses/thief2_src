@@ -251,7 +251,7 @@ cDDProvider::~cDDProvider()
 ///////////////////////////////////////
 
 HRESULT CALLBACK
-  cDDProvider::EnumDisplayModesCallback(LPDDSURFACEDESC pSurfaceDesc, LPVOID context)
+  cDDProvider::EnumDisplayModesCallback(LPDDSURFACEDESC2 pSurfaceDesc, LPVOID context)
 {
     int bitDepth = pSurfaceDesc->ddpfPixelFormat.dwRGBBitCount;
 
@@ -432,7 +432,7 @@ void cDDProvider::DoGetInfo(sGrDeviceInfo * pGrDeviceInfo, sGrModeInfo * pModeIn
     //
 
     // Get info about default user desktop mode
-    DDSURFACEDESC desktopSurfaceDesc;
+    DDSURFACEDESC2 desktopSurfaceDesc;
 
     memset(&desktopSurfaceDesc, 0, sizeof(desktopSurfaceDesc));
     desktopSurfaceDesc.dwSize = sizeof(desktopSurfaceDesc);
@@ -468,17 +468,28 @@ void cDDProvider::DoGetInfo(sGrDeviceInfo * pGrDeviceInfo, sGrModeInfo * pModeIn
 
 BOOL cDDProvider::DoOpen(sGrModeCap *, int)
 {
-    BEGIN_DEBUG_MSG("cDDProvider::DoOpen()");
-
     HRESULT result;
+    LPDIRECTDRAW pDDraw;
 
     // Create an instance of a Direct Draw object.
-    result = DynDirectDrawCreate(m_pDisplayDevice->m_pDDrawGuid, &m_pDD, NULL);
+    result = DynDirectDrawCreate(m_pDisplayDevice->m_pDDrawGuid, &pDDraw, NULL);
     if (result != DD_OK)
     {
         DebugMsgIfErr("DoOpen: DirectDrawCreate", result);
         return FALSE;
     }
+
+    result = pDDraw->QueryInterface(IID_IDirectDraw4, (LPVOID *)&m_pDD);
+    if (result != DD_OK)
+    {
+        DebugMsgIfErr("DoOpen: QueryInterface for DD4", result);
+
+        return FALSE;
+    }
+
+    if (pDDraw)
+        pDDraw->Release();
+    pDDraw = NULL;
 
     m_NormalWindowStyle = GetWindowLong(GetMainWnd(), GWL_STYLE);
     m_NormalWindowExStyle = GetWindowLong(GetMainWnd(), GWL_EXSTYLE);
@@ -492,8 +503,6 @@ BOOL cDDProvider::DoOpen(sGrModeCap *, int)
     g_DDCritMsgNotificationHandler.Set(this);
 
     return TRUE;
-
-    END_DEBUG;
 }
 
 ///////////////////////////////////////
@@ -571,6 +580,7 @@ cDDProvider::DoSetMode(const sGrModeInfo & modeInfo,
             }
 
             default:
+
                 CriticalMsg("Unknown display device kind");
         }
     }
@@ -646,7 +656,7 @@ cDDProvider::DoSetMode(const sGrModeInfo & modeInfo,
     DebugMsgEx2(SETMODE, "using flags = 0x%x, m_Flags = 0x%x", flags, m_Flags);
 
     // For now, we always emulate modeX modes, and (only for now), windowed operation
-    BOOL bUseEmulation = (flags & kGrSetWindowed) || (m_Flags & kAlwaysEmulate) || !fModeIsNative || (!(flags & kGrSetWindowed) && modeInfo.w < 400);
+    BOOL bUseEmulation = (m_Flags & kAlwaysEmulate) || !fModeIsNative || (!(flags & kGrSetWindowed) && modeInfo.w < 400);
 
     if (modeInfo.w == 512 && !fModeIsNative) // @Note (toml 12-09-96): hack for Dark.  Need real support for direct-faked subregion modes
     {
@@ -759,7 +769,7 @@ cDDProvider::DoSetMode(const sGrModeInfo & modeInfo,
 
 ///////////////////////////////////////
 
-BOOL cDDProvider::DoGetDirectDraw(IDirectDraw ** ppDD)
+BOOL cDDProvider::DoGetDirectDraw(IDirectDraw4 ** ppDD)
 {
     *ppDD = m_pDD;
 
@@ -773,10 +783,10 @@ BOOL cDDProvider::DoGetDirectDraw(IDirectDraw ** ppDD)
 ///////////////////////////////////////
 
 #pragma off(unreferenced)
-BOOL cDDProvider::DoGetBitmapSurface(sGrBitmap * pBm, IDirectDrawSurface ** ppDDS)
+BOOL cDDProvider::DoGetBitmapSurface(sGrBitmap * pBm, IDirectDrawSurface4 ** ppDDS)
 {
 // @Note (toml 05-23-97): hey, this implementation is wrong but will do the job for Kevin: MUST FIX, or decide a better api for doing this
-    IDirectDrawSurface *pPrimary = NULL, *pSecondary = NULL;
+    IDirectDrawSurface4 *pPrimary = NULL, *pSecondary = NULL;
 
     m_pModeOps->GetSurfaces(&pPrimary, &pSecondary);
 

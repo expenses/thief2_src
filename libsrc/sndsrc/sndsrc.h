@@ -90,6 +90,10 @@ DECLARE_INTERFACE_(ISndSource, IUnknown)
 
 	STDMETHOD_( uint32, TimeToSamples ) ( THIS_ uint32 milliSecs ) PURE;
 
+	STDMETHOD_( void, BranchToLabel ) ( THIS_ uint32 BranchToLabel ) PURE;
+
+	STDMETHOD_( uint32, GetMostRecentLabel ) ( THIS ) PURE;
+
 };
 
 #define ISndSource_GetSerialNumber( p )            COMCall0( p, GetSerialNumber )
@@ -104,6 +108,8 @@ DECLARE_INTERFACE_(ISndSource, IUnknown)
 #define ISndSource_GetAttribs( p, a )              COMCall1( p, GetAttribs, a )
 #define ISndSource_SamplesToTime( p, a )           COMCall1( p, SamplesToTime, a )
 #define ISndSource_TimeToSamples( p, a )           COMCall1( p, TimeToSamples, a )
+#define ISndSource_BranchToLabel( p, a )           COMCall1( p, BranchToLabel, a )
+#define ISndSource_GetMostRecentLabel( p )         COMCall0( p, GetMostRecentLabel )
 #define ISndSource_Release( p )                    COMCall0(p, Release)
 
 

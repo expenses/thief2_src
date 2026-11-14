@@ -21,6 +21,7 @@
 
 // Other required LG libraries
 #include <dev2d.h>
+#include <math.h>
 
 // Windows display implementation headers
 #include <wdisp.h>
@@ -101,8 +102,8 @@ BOOL cDDModeOpsBase::DoSetPalette(LOGPALETTE & logicalPalette, unsigned uStart, 
 
 ///////////////////////////////////////
 
-void cDDModeOpsBase::GetSurfaces(IDirectDrawSurface ** ppPrimarySurface,
-                                 IDirectDrawSurface ** ppSecondarySurface)
+void cDDModeOpsBase::GetSurfaces(IDirectDrawSurface4 ** ppPrimarySurface,
+                                 IDirectDrawSurface4 ** ppSecondarySurface)
 
 {
     if (ppPrimarySurface)
@@ -118,7 +119,7 @@ void cDDModeOpsBase::GetSurfaces(IDirectDrawSurface ** ppPrimarySurface,
     
     if (ppSecondarySurface)
     {
-        if (m_pSecondarySurface)
+        if (m_pSecondarySurface && m_bFlip)
         {
             *ppSecondarySurface = m_pSecondarySurface;
             m_pSecondarySurface->AddRef();
@@ -155,7 +156,7 @@ void cDDModeOpsBase::SetClipToWindow(BOOL fWantClipping)
 
 ///////////////////////////////////////
 
-void cDDModeOpsBase::SetModeInfoFromSurfaceDesc(const DDSURFACEDESC & renderTargetDesc,
+void cDDModeOpsBase::SetModeInfoFromSurfaceDesc(const DDSURFACEDESC2 & renderTargetDesc,
                                                 int flags,
                                                 sGrModeCap * pReturnModeInfo)
 {
@@ -164,6 +165,8 @@ void cDDModeOpsBase::SetModeInfoFromSurfaceDesc(const DDSURFACEDESC & renderTarg
     DoUnlock();
 
     // Fill out various info structures (2d and internal)
+
+
     AssertMsg(renderTargetDesc.dwFlags & DDSD_PIXELFORMAT, "Didn't get pixel format in descriptor!");
 
     if (flags & kGrModeIsWindowed)
@@ -207,13 +210,13 @@ void cDDModeOpsBase::SetModeInfoFromSurfaceDesc(const DDSURFACEDESC & renderTarg
 
 ///////////////////////////////////////
 
-BOOL cDDModeOpsBase::WipeSurface(IDirectDrawSurface *pdds)
+BOOL cDDModeOpsBase::WipeSurface(IDirectDrawSurface4 *pdds)
 {
     if (pdds)
     {
         BEGIN_DEBUG_MSG_EX1(VERBOSE, "WipeSurface(0x%lx)", pdds);
 
-        DDSURFACEDESC surfaceDesc;
+        DDSURFACEDESC2 surfaceDesc;
         surfaceDesc.dwSize = sizeof(surfaceDesc);
         HRESULT result = pdds->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
         DebugMsgIfErr("WipeSurface Lock failed.", result);
@@ -233,6 +236,24 @@ BOOL cDDModeOpsBase::WipeSurface(IDirectDrawSurface *pdds)
     }
 
     return TRUE;
+}
+
+///////////////////////////////////////
+
+BOOL cDDModeOpsBase::DoSetGamma(double gamma)
+{
+    IDirectDrawGammaControl * pGammaControl = NULL;
+
+    if (m_pPrimarySurface->QueryInterface(IID_IDirectDrawGammaControl, (void **)&pGammaControl) < 0)
+        return FALSE;
+
+    DDGAMMARAMP ramp;
+    for (int i = 0; i < 256; i++)
+        ramp.red[i] = ramp.green[i] = ramp.blue[i] = (WORD)(pow(i * (1.0 / 255.0), gamma) * 65535.0);
+
+    HRESULT result = pGammaControl->SetGammaRamp(0, &ramp);
+    SafeRelease(pGammaControl);
+    return (result >= 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -270,6 +291,95 @@ BOOL cDirectDDModeOps::StartMode(const sGrModeInfo & modeInfo,
     SafeRelease(m_pPrimarySurface);          // Sets m_pPrimarySurface to null
     SafeRelease(m_pSecondarySurface);
 
+    DDSURFACEDESC2 surfaceDesc;
+    memset(&surfaceDesc, 0, sizeof(surfaceDesc));
+    surfaceDesc.dwSize = sizeof(surfaceDesc);
+
+#ifndef SHIP
+    m_bHIW = (m_pDisplayDevice->GetCreateFlags() & kDispAttempt3D) && (m_pDisplayDevice->GetCreateFlags() & kDispAttemptFlippable)
+             && (GetCoopFlags() & DDSCL_NORMAL);
+    if (m_bHIW)
+    {
+        IDirectDrawClipper * piClipper;
+
+        surfaceDesc.dwFlags = DDSD_CAPS;
+        surfaceDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+        result = GetDD()->CreateSurface(&surfaceDesc, &m_pPrimarySurface, NULL);
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode: CreateSurface", result);
+            return FALSE;
+        }
+        result = GetDD()->CreateClipper(0, &piClipper, NULL);
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode: CreateClipper", result);
+            return FALSE;
+        }
+        result = piClipper->SetHWnd(0, m_pOuter->GetMainWnd());
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode: SetHWnd", result);
+            return FALSE;
+        }
+        result = m_pPrimarySurface->SetClipper(piClipper);
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode: SetClipper", result);
+            return FALSE;
+        }
+        SafeRelease(piClipper);
+
+        surfaceDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+        surfaceDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
+        surfaceDesc.dwWidth = modeInfo.w;
+        surfaceDesc.dwHeight = modeInfo.h;
+        result = GetDD()->CreateSurface(&surfaceDesc, &m_pSecondarySurface, NULL);
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode: CreateSurface", result);
+            return FALSE;
+        }
+
+        RestoreSurfaces();
+        result = m_pPrimarySurface->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+        DebugMsgIfErr("StartMode: DirectDrawSurface->Lock", result);
+        if (result == DDERR_SURFACELOST)
+        {
+            RestoreSurfaces();
+            result = m_pPrimarySurface->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+        }
+        if (result != DD_OK)
+        {
+#line 386
+            CriticalMsg1("Failed to lock primary DirectDraw surface (%s)", WhatDDError(result));
+            return FALSE;
+        }
+        m_pPrimarySurface->Unlock(NULL);
+
+        m_PrimaryDesc.dwSize = sizeof(m_PrimaryDesc);
+        result = m_pPrimarySurface->GetSurfaceDesc(&m_PrimaryDesc);
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode: GetSurfaceDesc", result);
+            return FALSE;
+        }
+        m_SecondaryDesc.dwSize = sizeof(m_SecondaryDesc);
+        result = m_pSecondarySurface->GetSurfaceDesc(&m_SecondaryDesc);
+        if (result != DD_OK)
+        {
+            DebugMsgIfErr("DoSetMode::GetSurfaceDesc", result);
+            return FALSE;
+        }
+        m_bFlip = TRUE;
+        SetModeInfoFromSurfaceDesc(m_SecondaryDesc,
+                                   (flags & kGrSetWindowed) ? (kGrModeIsWindowed | kGrModeIsDirect) : kGrModeIsDirect,
+                                   pReturnModeInfo);
+        pReturnModeInfo->vbase2 = NULL;
+        return TRUE;
+    }
+#endif
+
     // If we're not running in a window, set the screen display mode
     if (!(GetCoopFlags() & DDSCL_NORMAL))
     {
@@ -292,9 +402,6 @@ BOOL cDirectDDModeOps::StartMode(const sGrModeInfo & modeInfo,
     // Create the new surface(s)
     const BOOL fAttemptFlippable = (m_pDisplayDevice->GetCreateFlags() & kDispAttemptFlippable) && !(GetCoopFlags() & DDSCL_NORMAL);
     const BOOL fAttempt3D = (m_pDisplayDevice->GetCreateFlags() & kDispAttempt3D);
-
-    DDSURFACEDESC surfaceDesc;
-    surfaceDesc.dwSize = sizeof(surfaceDesc);
 
     DebugMsgEx(SETMODE, "Creating the surface(s)...");
 
@@ -363,6 +470,7 @@ BOOL cDirectDDModeOps::StartMode(const sGrModeInfo & modeInfo,
 
     if (result != DD_OK)
     {
+#line 532
         CriticalMsg1("Failed to lock primary DirectDraw surface (%s)", WhatDDError(result));
         return FALSE;
     }
@@ -370,7 +478,7 @@ BOOL cDirectDDModeOps::StartMode(const sGrModeInfo & modeInfo,
         m_pPrimarySurface->Unlock(NULL);
 
     // Get the back buffer, if any.  Store pointer in secondary surface
-    DDSCAPS ddsCaps;
+    DDSCAPS2 ddsCaps;
     ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
     result = m_pPrimarySurface->GetAttachedSurface(&ddsCaps, &m_pSecondarySurface);
 
@@ -402,7 +510,10 @@ BOOL cDirectDDModeOps::StartMode(const sGrModeInfo & modeInfo,
         }
 
         DebugMsgDesc(m_SecondaryDesc);
+        m_bFlip = TRUE;
     }
+    else
+        m_bFlip = FALSE;
 
     SetModeInfoFromSurfaceDesc((!m_pSecondarySurface) ? m_PrimaryDesc : m_SecondaryDesc,
                                (flags & kGrSetWindowed) ? (kGrModeIsWindowed | kGrModeIsDirect) : kGrModeIsDirect,
@@ -427,9 +538,9 @@ BOOL cDirectDDModeOps::StartMode(const sGrModeInfo & modeInfo,
     END_DEBUG;
 }
 
-static void lock_bitmap_from_surface(grs_bitmap *bm, LPDIRECTDRAWSURFACE surf)
+static void lock_bitmap_from_surface(grs_bitmap *bm, LPDIRECTDRAWSURFACE4 surf)
 {
-   DDSURFACEDESC surfaceDesc;
+   DDSURFACEDESC2 surfaceDesc;
    HRESULT result;
 
    surfaceDesc.dwSize = sizeof(surfaceDesc);
@@ -443,7 +554,7 @@ static void lock_bitmap_from_surface(grs_bitmap *bm, LPDIRECTDRAWSURFACE surf)
        memcpy(bm, grd_screen_canvas, sizeof(*bm));
    else
        gr_init_bitmap(bm, NULL, 
-           BMT_DEVICE_VIDMEM_TO_FLAT, 0,
+           BMT_OLD_DEVICE_VIDMEM_TO_FLAT, 0,
            bm->w, bm->h);
 
    result = surf->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
@@ -458,7 +569,7 @@ static void lock_bitmap_from_surface(grs_bitmap *bm, LPDIRECTDRAWSURFACE surf)
 // when our apps can repaint themselves, we should get rid of this
 #define PAUSE_BLIT
 
-void cDirectDDModeOps::PauseBlit(LPDIRECTDRAWSURFACE pDest,LPDIRECTDRAWSURFACE pSource)
+void cDirectDDModeOps::PauseBlit(LPDIRECTDRAWSURFACE4 pDest,LPDIRECTDRAWSURFACE4 pSource)
 {
 #ifdef PAUSE_BLIT
     // Jacobson, 3-4-96
@@ -493,8 +604,8 @@ void cDirectDDModeOps::PauseBlit(LPDIRECTDRAWSURFACE pDest,LPDIRECTDRAWSURFACE p
             gr_push_canvas(&dst_cnv);
             gr_bitmap(&src_bm, 0, 0);
             gr_pop_canvas();
-            pSource->Unlock((void *)src_bm.bits);
-            pDest->Unlock((void *)dst_bm.bits);
+            pSource->Unlock(NULL);
+            pDest->Unlock(NULL);
         }
 
         m_pDisplayDevice->RestoreLock(iLock);
@@ -504,6 +615,21 @@ void cDirectDDModeOps::PauseBlit(LPDIRECTDRAWSURFACE pDest,LPDIRECTDRAWSURFACE p
 
     END_DEBUG;
 #endif
+}
+
+///////////////////////////////////////
+
+BOOL cDirectDDModeOps::DoSetFlip(int bFlip)
+{
+    int count = m_pDisplayDevice->BreakLock();
+#ifndef SHIP
+    if (m_bHIW)
+        m_bFlip = TRUE;
+    else
+#endif
+        m_bFlip = bFlip && m_pSecondarySurface != NULL;
+    m_pDisplayDevice->RestoreLock(count);
+    return m_bFlip;
 }
 
 ///////////////////////////////////////
@@ -616,27 +742,60 @@ BOOL cDirectDDModeOps::DoPageFlip()
 {
     DebugMsgEx(VERBOSE, "PageFlip");
 
-    if (m_pSecondarySurface)
+#ifndef SHIP
+    if (m_bHIW)
     {
-        // Make sure surfaces were not discarded, or are restored
-        RestoreSurfaces();
+        HRESULT result;
+        int iLock;
+        RECT sScreenRect;
 
-        int iLock = m_pDisplayDevice->BreakLock();
+        RestoreSurfaces();
+        GetClientRect(m_pOuter->GetMainWnd(), &sScreenRect);
+        ClientToScreen(m_pOuter->GetMainWnd(), (POINT *)&sScreenRect.left);
+        ClientToScreen(m_pOuter->GetMainWnd(), (POINT *)&sScreenRect.right);
+        iLock = m_pDisplayDevice->BreakLock();
         while (1)
         {
-            HRESULT result;
-            result = m_pPrimarySurface->Flip(NULL, DDFLIP_WAIT); // force synchoniousity (Alas, I miss noah's splleing...)
+            result = m_pPrimarySurface->Blt(&sScreenRect, m_pSecondarySurface, NULL, DDFLIP_WAIT, NULL);
             if (result == DD_OK)
                 break;
-
             if (result != DDERR_WASSTILLDRAWING)
             {
-                DebugMsgIfErr("DoPageFlip: Flip", result);
-                CriticalMsg("Flip failed!");
+                DebugMsgIfErr("DoPageFlip: Blt", result);
+#line 836
+                CriticalMsg("Blt failed!");
                 break;
             }
         }
         m_pDisplayDevice->RestoreLock(iLock);
+        return NO_ERROR;
+    }
+#endif
+
+    if (m_pSecondarySurface)
+    {
+        if (m_bFlip)
+        {
+            HRESULT result;
+            int iLock;
+
+            RestoreSurfaces();
+            iLock = m_pDisplayDevice->BreakLock();
+            while (1)
+            {
+                result = m_pPrimarySurface->Flip(NULL, DDFLIP_WAIT);
+                if (result == DD_OK)
+                    break;
+                if (result != DDERR_WASSTILLDRAWING)
+                {
+                    DebugMsgIfErr("DoPageFlip: Flip", result);
+#line 861
+                    CriticalMsg("Flip failed!");
+                    break;
+                }
+            }
+            m_pDisplayDevice->RestoreLock(iLock);
+        }
     }
     return NO_ERROR;
 }
@@ -648,26 +807,45 @@ BOOL cDirectDDModeOps::DoLock(sGrModeCap * pReturnModeInfo)
 #ifndef SHIP
     static BOOL bShowLockFailWarning = TRUE;
 #endif
-
     AssertMsg(m_pPrimarySurface != NULL, "Attempt to lock uninitialized display device");
     DebugMsgEx(VERBOSE, "cDirectDDModeOps::DoLock()");
 
     // Make sure surfaces were not discarded, or are restored
     RestoreSurfaces();
 
-    IDirectDrawSurface * pClientTargetSurface = (m_pSecondarySurface) ? m_pSecondarySurface : m_pPrimarySurface;
+    IDirectDrawSurface4 * pClientTarget;
+    DDSURFACEDESC2 surfaceDesc;
     HRESULT result;
-    DDSURFACEDESC surfaceDesc;
+
+    memset(&surfaceDesc, 0, sizeof(surfaceDesc));
     surfaceDesc.dwSize = sizeof(surfaceDesc);
 
-    put_mono('L');
-    result = pClientTargetSurface->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+#ifndef SHIP
+    if (m_bHIW)
+    {
+        pClientTarget = m_pSecondarySurface;
+        result = pClientTarget->Lock(NULL, &surfaceDesc, DDLOCK_WAIT, NULL);
+        if (result == DDERR_SURFACELOST)
+        {
+            RestoreSurfaces();
+            result = pClientTarget->Lock(NULL, &surfaceDesc, DDLOCK_WAIT, NULL);
+        }
+        if (result != DD_OK)
+            return FALSE;
+        pReturnModeInfo->vbase = (uchar *)surfaceDesc.lpSurface;
+        pReturnModeInfo->vbase2 = NULL;
+        return !!pReturnModeInfo->vbase;
+    }
+#endif
 
+    pClientTarget = (m_pSecondarySurface && m_bFlip) ? m_pSecondarySurface : m_pPrimarySurface;
+
+    result = pClientTarget->Lock(NULL, &surfaceDesc, DDLOCK_WAIT, NULL);
     if (result == DDERR_SURFACELOST)
     {
         put_mono('?');
         RestoreSurfaces();
-        result = pClientTargetSurface->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+        result = pClientTarget->Lock(NULL, &surfaceDesc, DDLOCK_WAIT, NULL);
     }
     put_mono('.');
 
@@ -717,7 +895,7 @@ BOOL cDirectDDModeOps::DoUnlock()
 
     HRESULT result;
 
-    IDirectDrawSurface * pClientTargetSurface = (m_pSecondarySurface) ? m_pSecondarySurface : m_pPrimarySurface;
+    IDirectDrawSurface4 * pClientTargetSurface = (m_pSecondarySurface && m_bFlip) ? m_pSecondarySurface : m_pPrimarySurface;
     if (pClientTargetSurface != NULL)
     {
         result = pClientTargetSurface->Unlock(NULL);
@@ -725,6 +903,9 @@ BOOL cDirectDDModeOps::DoUnlock()
 
         if (result != DD_OK)
         {
+
+
+
             CriticalMsg1("Lock count of DirectDraw surfaces appears corrupted (%s)", WhatDDError(result));
             // No way to recover...
             SafeRelease(m_pSecondarySurface);
@@ -845,7 +1026,7 @@ BOOL cOffVideoDDModeOps::StartMode(const sGrModeInfo & modeInfo, int flags, sGrM
     // Create the primary ("real") surface
     DebugMsgEx(SETMODE, "Creating primary surface...");
 
-    DDSURFACEDESC surfaceDesc;
+    DDSURFACEDESC2 surfaceDesc;
     memset(&surfaceDesc, 0, sizeof(surfaceDesc));
     surfaceDesc.dwSize = sizeof(surfaceDesc);
 
@@ -1081,7 +1262,7 @@ BOOL cOffVideoDDModeOps::DoLock(sGrModeCap * pReturnModeInfo)
     RestoreSurfaces();
 
     HRESULT result;
-    DDSURFACEDESC surfaceDesc;
+    DDSURFACEDESC2 surfaceDesc;
     memset(&surfaceDesc, 0, sizeof(surfaceDesc));
     surfaceDesc.dwSize = sizeof(surfaceDesc);
 

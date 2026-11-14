@@ -22,9 +22,9 @@ motion_callback *mp_callbacks;
 
 
 static void mp_default_capture_comp_xlat_func(multiped *mp,mps_motion_info *m, mps_comp_motion *cm, int frame, mxs_vector *data);
-static void mp_default_capture_comp_rot_func(mps_motion_info *m, mps_comp_motion *cm, int frame, quat *data);
+static void mp_default_capture_comp_rot_func(mps_motion_info *m, mps_comp_motion *cm, float frame, quat *data);
 // @HACK:
-void mp_default_capture_root_rot_func(multiped *mp,mps_motion_info *m, int frame, quat *data);
+void mp_default_capture_root_rot_func(multiped *mp,mps_motion_info *m, float frame, quat *data);
 
 // this is externed by mpupdate.c and mpmot.c
 mps_component_xlat_callback_func mp_capture_component_xlat_func=mp_default_capture_comp_xlat_func;
@@ -37,6 +37,8 @@ mps_motion_state_callback mp_motion_end_callback=NULL;
 
 void (*mp_compute_limb_normal)(mxs_vector * normal, multiped * mp, limb * l, 
 							   mxs_vector * end_pos) = NULL;
+
+
 
 //
 // Some functions.
@@ -172,6 +174,162 @@ void mp_free_multiped(multiped * mp)
 	}
 
 	mp_free(mp->joint_map);
+}
+
+
+static int mp_get_write_motlist_bufsize(mps_motion_list *list);
+static int mp_motlist_num_writeable_motions(mps_motion_list *list, mps_motion_node **ppnode);
+static void mp_write_motlist(mps_motion_list *list, void *buf);
+static int mp_read_motlist(mps_motion_list *list, void *buf, int (*swizzle_func)(int, motion_callback *pcallback));
+
+#define MP_READ_OKAY 1
+#define MP_READ_BAD_CONFIG 0
+#define MP_READ_BAD_MOTIONS -1
+
+int mp_get_write_buffsize(multiped *mp);
+void mp_write_multiped(multiped *mp, void *buf);
+int mp_read_multiped(multiped *mp, void *buf, int (*swizzle_func)(int, motion_callback *pcallback));
+void mp_get_multiped_motions(multiped *mp, int *mots, int *max_mots);
+
+int mp_get_write_buffsize(multiped *mp)
+{
+	return sizeof(mxs_matrix) + sizeof(int) + mp->num_joints + (mp->num_joints + 1) * sizeof(quat) + mp_get_write_motlist_bufsize(&mp->main_motion);
+}
+
+static int mp_get_write_motlist_bufsize(mps_motion_list *list)
+{
+	return mp_motlist_num_writeable_motions(list, NULL) * sizeof(mps_motion_node) + 12;
+}
+
+static int mp_motlist_num_writeable_motions(mps_motion_list *list, mps_motion_node **ppnode)
+{
+	int found = 0;
+	mps_stack_node *node;
+
+	node = list->head;
+	while (node)
+	{
+		if (node->type == MN_MOTION && MP_MOTNUM_FROM_NODE_HANDLE(((mps_motion_node *)node)->handle) != 0x3fffffff)
+		{
+			found = 1;
+			if (ppnode)
+				*ppnode = (mps_motion_node *)node;
+			break;
+		}
+		node = node->next;
+	}
+
+
+
+	return found;
+}
+
+void mp_write_multiped(multiped *mp, void *buf)
+{
+	uchar *p;
+	int i, n;
+
+	mx_copy_mat((mxs_matrix *)buf, &mp->global_orient);
+	p = (uchar *)buf + sizeof(mxs_matrix);
+	*(int *)p = mp->num_joints;
+	p += 4;
+	memcpy(p, mp->joint_map, mp->num_joints);
+	p += mp->num_joints;
+	n = mp->num_joints + 1;
+	for (i = 0; i < n; p += sizeof(quat), i++)
+	{
+		quat_copy((quat *)p, &mp->rel_orients[i]);
+	}
+	mp_write_motlist(&mp->main_motion, p);
+}
+
+static void mp_write_motlist(mps_motion_list *list, void *buf)
+{
+	mps_motion_node *node;
+	int found;
+
+	if (list)
+	{
+		*((uint *)buf)++ = list->signature;
+		*((uint *)buf)++ = list->flags;
+		found = mp_motlist_num_writeable_motions(list, &node);
+		*((uint *)buf)++ = found;
+		if (found)
+			memcpy(buf, node, sizeof(mps_motion_node));
+	}
+}
+
+int mp_read_multiped(multiped *mp, void *buf, int (*swizzle_func)(int, motion_callback *pcallback))
+{
+	uchar *p;
+	int n;
+	mxs_vector v;
+
+	p = (uchar *)buf + sizeof(mxs_matrix);
+	mx_copy_mat(&mp->global_orient, (mxs_matrix *)buf);
+	n = *(int *)p;
+	p += 4;
+	if (n != mp->num_joints)
+		return MP_READ_BAD_CONFIG;
+	memcpy(mp->joint_map, p, mp->num_joints);
+	p += mp->num_joints;
+	mx_zero_vec(&v);
+	mp_apply_motion(mp, (quat *)p, &v, -1);
+	p += (mp->num_joints + 1) * sizeof(quat);
+	return mp_read_motlist(&mp->main_motion, p, swizzle_func);
+}
+
+static int mp_read_motlist(mps_motion_list *list, void *buf, int (*swizzle_func)(int, motion_callback *pcallback))
+{
+	mps_motion_node *node;
+	uint *p;
+	uint mot;
+	int result = MP_READ_OKAY;
+
+	int nmots;
+
+	if (!list)
+		return MP_READ_OKAY;
+	mp_list_init(list);
+	p = (uint *)buf;
+	list->signature = *p++;
+	list->flags = *p++;
+	nmots = *p++;
+	if (nmots)
+	{
+#line 322
+		AssertMsg(nmots == 1, "mp_read_motlist: cannot deal with list with more than one motion");
+
+		node = (mps_motion_node *)mp_alloc(sizeof(mps_motion_node), __FILE__, __LINE__);
+		memcpy(node, p, sizeof(mps_motion_node));
+		if (swizzle_func)
+			mot = swizzle_func(MP_MOTNUM_FROM_NODE_HANDLE(node->handle), &node->callback);
+		else
+			mot = MP_MOTNUM_FROM_NODE_HANDLE(node->handle);
+		if (mot == (uint)-1)
+		{
+			result = mot;
+			mp_free(node);
+			list->count = 0;
+		}
+		else
+		{
+			node->handle = (node->handle & (MP_KILL_FLAG | MP_END_FLAG)) | mot;
+			mp_list_add(list, (mps_stack_node *)node);
+		}
+	}
+	return result;
+}
+
+void mp_get_multiped_motions(multiped *mp, int *mots, int *max_mots)
+{
+	mps_motion_node *node;
+
+	if (*max_mots > 0)
+	{
+		*max_mots = mp_motlist_num_writeable_motions(&mp->main_motion, &node);
+		*mots = MP_MOTNUM_FROM_NODE_HANDLE(node->handle);
+	}
 }
 
 
@@ -329,6 +487,7 @@ void mp_build_tables(void)
 	float * r;
 
 // Build ramp table.
+#line 532
 	mp_ramp_table = (float *) mp_alloc(sizeof(float) * 256, __FILE__, __LINE__);
 
 	r = mp_ramp_table;
@@ -410,29 +569,29 @@ void mp_set_callback(int callback_num, motion_callback callback)
 
 //
 
-void mp_default_capture_comp_xlat_func(multiped *mp, mps_motion_info *m, mps_comp_motion *cm, int frame, mxs_vector *data)
+void mp_default_capture_comp_xlat_func(multiped *mp, mps_motion_info *m, mps_comp_motion *cm, float frame, mxs_vector *data)
 {
    mxs_vector *vec;
 
    vec = (mxs_vector *) RefLock((Ref)cm->handle);
-   mx_copy_vec(data, &vec[frame]);
+   mx_copy_vec(data, &vec[(int)frame]);
    RefUnlock((Ref)cm->handle);
 }
 
 //
 
-void mp_default_capture_comp_rot_func(mps_motion_info *m, mps_comp_motion *cm, int frame, quat *data)
+void mp_default_capture_comp_rot_func(mps_motion_info *m, mps_comp_motion *cm, float frame, quat *data)
 {
    quat *q;
 
    q = (quat *) RefLock((Ref)cm->handle);
-   quat_copy(data, &q[frame]);
+   quat_copy(data, &q[(int)frame]);
    RefUnlock((Ref)cm->handle);
 }
 
 //
 
-void mp_default_capture_root_rot_func(multiped *mp, mps_motion_info *m, int frame, quat *data)
+void mp_default_capture_root_rot_func(multiped *mp, mps_motion_info *m, float frame, quat *data)
 {
    quat_identity(data);      
 }

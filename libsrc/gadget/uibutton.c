@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 /*
  * $Source: r:/t2repos/thief2/libsrc/gadget/uibutton.c,v $
  * $Revision: 1.17 $
@@ -526,6 +527,9 @@ bool buttonlist_mouse_handler(uiEvent* _ev, Region* reg, void* data)
       int i;
       int newbutt = -1;
 
+      if (ev->wheel)
+         return retval;
+
       for (i = 0; i < list->num_buttons; i++)
       {
          if (RECT_TEST_PT(&list->rvec[i],pos))
@@ -620,15 +624,14 @@ errtype ButtonListInit(Region* parent, ButtonList* list, int z, int n, Rect rvec
 
    int i;
 
+   listrect = rvec[0];
    list->statevec = Malloc(sizeof(list->statevec[0])*n);
+   list->statevec[0] = dsNORMAL;
 
-   for (i = 0; i < n; i++)
+   for (i = 1; i < n; i++)
    {
       list->statevec[i] = dsNORMAL;
-      if (i == 0)
-         listrect = rvec[i];
-      else
-         RECT_UNION(&listrect,&rvec[i],&listrect);
+      RECT_UNION(&listrect,&rvec[i],&listrect);
    }
  
    LGadCreateBoxInternal(&list->gadg.box,parent,listrect.ul.x,listrect.ul.y,

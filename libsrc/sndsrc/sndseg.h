@@ -20,6 +20,7 @@
 #ifndef _LG_SOUND_H
 #include <lgsound.h>
 #endif
+#include <imaadpcm.h>
 
 class cSndSource;
 
@@ -76,7 +77,7 @@ protected:
    BOOL           mInited;          // TRUE iff Init has been done
    int            mBytesPerSample;  // size of output samples
 
-   uint32         mDecompState;     // IMA ADPCM decompressor state
+   IMA_ADPCM      *mpDecoder;        // IMA ADPCM decompressor state
 };
 
 #endif

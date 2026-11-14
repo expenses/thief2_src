@@ -11,5 +11,5 @@
 
 #define r3_2d_line_func       prmtab.draw_2d_line
 #define r3_2d_point_func      prmtab.draw_2d_point
-#define r3_2d_poly_setup_func prmtab.draw_2d_tmap
-#define r3_convert_func       prmtab.draw_2d_poly
+#define r3_2d_poly_setup_func prmtab.poly_setup
+#define r3_convert_func       prmtab.convert_poly

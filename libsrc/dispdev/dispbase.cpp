@@ -90,6 +90,26 @@ STDMETHODIMP_(void) cDisplayDevice::SetKind2(eDisplayDeviceKind newKind, int fNe
 
 ///////////////////////////////////////
 //
+// Set gamma correction level
+//
+
+STDMETHODIMP_(BOOL) cDisplayDevice::SetGamma(double)
+{
+    return FALSE;
+}
+
+///////////////////////////////////////
+//
+// Set page flipping
+//
+
+STDMETHODIMP_(BOOL) cDisplayDevice::SetFlip(BOOL)
+{
+    return FALSE;
+}
+
+///////////////////////////////////////
+//
 // Get information about the device
 //
 

@@ -126,6 +126,7 @@ struct sHDModuleInfo
    size_t          maxRealSize;
    size_t          realSize;
    unsigned        nAllocs;
+   unsigned        nPeakAllocs;
    const char   *  pszFileName;
 };
 
@@ -145,8 +146,9 @@ struct sHDModuleInfo
 // bad frees and test all outstanding blocks
 //
 
-cHeapDebug::cHeapDebug()
+cHeapDebug::cHeapDebug(unsigned flags)
 {
+    m_flags = flags;
     m_nAllocs = 0;
     m_nBytesAlloced = 0;
     m_nMaxBytesAlloced = 0;
@@ -209,7 +211,11 @@ STDMETHODIMP_(void) cHeapDebug::Free(void * p)
 STDMETHODIMP_(ULONG) cHeapDebug::GetSize(void * p)
 {
     if (VerifyAlloc(p) == S_OK)
-        return SizeLessDebug(m_pNext->GetSize(ClientToDebug(p)));
+    {
+        sHDTraceInfo * pInfo = TraceSearch(p);
+        if (pInfo)
+            return pInfo->size;
+    }
     return 0;
 }
 
@@ -235,6 +241,10 @@ STDMETHODIMP_(void *) cHeapDebug::AllocEx(ulong size, const char * pszFile,
     if (!size)
         size = 1;  // For VC compatibility, allow 0 sized allocations.
 
+#line 254
+    if (size >= 0x8000000)
+        CriticalMsg1("Huge block (%d) requested from allocator", size);
+
     void * p;
 
     p = m_pNext->Alloc(SizeWithDebug(size));
@@ -246,6 +256,7 @@ STDMETHODIMP_(void *) cHeapDebug::AllocEx(ulong size, const char * pszFile,
         SetDebug(p, size);
         memset(p, kMallocFill, size);
         TraceMalloc(p, size, pszFile, line);
+#line 268
         AssertMsg((ulong)p % 2 == 0, "Odd allocation!");
     }
     
@@ -266,6 +277,10 @@ STDMETHODIMP_(void *) cHeapDebug::ReallocEx(void * pOld, ULONG newClientSize, co
         return 0;
     }
 
+#line 287
+    if (newClientSize >= 0x8000000)
+        CriticalMsg1("Huge block (%d) requested from allocator", newClientSize);
+
     // We always return a different block to help trap stray
     // references to the old block
     const int oldClientSize = GetSize(pOld);
@@ -285,15 +300,13 @@ STDMETHODIMP_(void *) cHeapDebug::ReallocEx(void * pOld, ULONG newClientSize, co
 
 STDMETHODIMP_(void) cHeapDebug::FreeEx(void * p, const char * pszFile, int line)
 {
-    if (!p)
-        return;
-
-    if (VerifyAlloc(p) == S_OK)
+    if (p && VerifyAlloc(p) == S_OK)
     {
         TraceFree(p, pszFile, line);
 
         // Move back from client position and blast the block
         p = ClientToDebug(p);
+#line 324
         Assert_(p < (void *) m_TraceTable || p >= (void *) &m_TraceTable[kTraceTableSize]);
         memset(p, kFreeFill, m_pNext->GetSize(p));
         m_pNext->Free(p);
@@ -317,6 +330,7 @@ STDMETHODIMP cHeapDebug::VerifyAlloc(void * p)
                 CriticalMsg1("Dynamic memory error (0x%x): Pointer not a valid heap pointer, probable double free", p);
             else
 #endif
+#line 371
                 CriticalMsg1("Dynamic memory error (0x%x): Pointer not a valid heap pointer", p);
             return E_FAIL;
         }
@@ -347,6 +361,7 @@ STDMETHODIMP cHeapDebug::VerifyAlloc(void * p)
 #endif
             {
                 if (pInfo->pszFile)
+
                     CriticalMsg4("Dynamic memory error (0x%x): %s \n[%s@%d]", p, pszFailureMessage,
                                  pInfo->pszFile,
                                  pInfo->line);
@@ -360,6 +375,7 @@ STDMETHODIMP cHeapDebug::VerifyAlloc(void * p)
 #endif
             }
             else
+#line 425
                 CriticalMsg2("Dynamic memory error (0x%x): %s ", p, pszFailureMessage);
 
             return E_FAIL;
@@ -471,7 +487,8 @@ STDMETHODIMP_(void) cHeapDebug::DumpBlocks()
 STDMETHODIMP_(void) cHeapDebug::DumpModules()
 {
     mprintf("Memory use by module:\n");
-    mprintf("     Bytes    Peak    Num\n");
+    mprintf("        Current              Peak          Num Allocs\n");
+    mprintf("   Logical    Real    Logical    Real     Current  Peak    %%Ovr  kOvr\n");
 
     for (int i = 0; i < kModuleTableSize; ++i) 
     {
@@ -480,7 +497,12 @@ STDMETHODIMP_(void) cHeapDebug::DumpModules()
        pModule = m_ModuleTable[i];
        while (pModule) 
        {
-          mprintf("   %7d %7d %6d  %s\n", pModule->currentSize, pModule->maxSize, pModule->nAllocs, pModule->pszFileName);
+          mprintf("   %6d   %6d    %6d   %6d   %6d   %6d     %2d   %4d   %s\n",
+                  pModule->currentSize, pModule->realSize, pModule->maxSize, pModule->maxRealSize,
+                  pModule->nAllocs, pModule->nPeakAllocs,
+                  (int)(((float)pModule->maxRealSize / (float)pModule->maxSize - 1.0) * 100),
+                  (pModule->maxRealSize - pModule->maxSize) / 1024,
+                  pModule->pszFileName);
           pModule = pModule->pNext;
        }
     }
@@ -493,6 +515,7 @@ STDMETHODIMP_(void) cHeapDebug::DumpModules()
 STDMETHODIMP_(void) cHeapDebug::PushCredit(const char * pszFile, int line)
 {
    m_iCreditStack++;
+
    AssertMsg(m_iCreditStack < kCreditStackSize, "Credit stack overflow");
    m_CreditStack[m_iCreditStack].pszFile = pszFile;
    m_CreditStack[m_iCreditStack].line = line;
@@ -557,7 +580,7 @@ void cHeapDebug::TraceMalloc(void * p, size_t clientSize, const char * pszFile, 
        // Update per-module info
        //
        sHDModuleInfo * pModuleInfo = ModuleInfoGet(pszFile);
-       int             realSize    = m_pNext->GetSize(ClientToDebug(p)) - kSizeofMemDebug;
+       int             realSize    = m_pNext->GetSize(ClientToDebug(p)) - sizeof(sHDSentinel) * 2;
        
        pModuleInfo->currentSize += clientSize;
        pModuleInfo->realSize += realSize;
@@ -568,6 +591,9 @@ void cHeapDebug::TraceMalloc(void * p, size_t clientSize, const char * pszFile, 
 
        if (pModuleInfo->realSize > pModuleInfo->maxRealSize)
           pModuleInfo->maxRealSize = pModuleInfo->realSize;
+
+       if (pModuleInfo->nAllocs > pModuleInfo->nPeakAllocs)
+          pModuleInfo->nPeakAllocs = pModuleInfo->nAllocs;
 
        //
        // Update heap-wide info
@@ -586,6 +612,7 @@ void cHeapDebug::TraceMalloc(void * p, size_t clientSize, const char * pszFile, 
        return;
    }
 
+#line 658
    CriticalMsg3("Malloc returned a pointer 0x%x that previously commited to [%s@%d]",
                 p,
                 pInfo->pszFile ? pInfo->pszFile : "unknown",
@@ -600,7 +627,7 @@ void cHeapDebug::TraceFree(void * p, const char *, int)
 
    if (pInfo)
    {
-      int realSize = m_pNext->GetSize(ClientToDebug(p)) - kSizeofMemDebug;
+      int realSize = m_pNext->GetSize(ClientToDebug(p)) - sizeof(sHDSentinel) * 2;
       
       //
       // Update module info

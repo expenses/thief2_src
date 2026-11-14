@@ -9,6 +9,8 @@
  */
 
 #include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <lg.h>
 #include <dev2d.h>
 #include <dump.h>
@@ -21,11 +23,11 @@
 int dmp_pcx_file(char *buff,char *prefix)
 {
    int fd = dmp_find_free_file(buff,prefix,"pcx");
-   if (fd > 0) {
-      dmp_pcx_dump_screen(fd);
-   } else return -1;
+   if (fd == 0) {
+       return 0;
+   }
 
-   return 0;
+   return dmp_pcx_dump_screen(buff);
 }
 
 typedef struct {
@@ -48,13 +50,19 @@ typedef struct {
 static int writepcxline(uchar *p,int fp,int bytes);
 
 // Dumps an 8 bit image
-int  dmp_pcx_dump_screen(int fp)
+int  dmp_pcx_dump_screen(char *name)
 {
    dps_head pcx;
    int i,j,bytes;
    char c;
    uchar *p;
    grs_bitmap *bmbuff;
+   int fd;
+
+   fd = open(name,O_CREAT|O_BINARY|O_WRONLY,S_IREAD|S_IWRITE);
+   if (fd == -1) {
+       return 0;
+   }
 
    pcx.manufacturer = 10;
    pcx.version = 5;
@@ -70,7 +78,7 @@ int  dmp_pcx_dump_screen(int fp)
    pcx.bytes_per_line = grd_bm.w;
    pcx.palette_type = 0;
 
-   write(fp,&pcx,sizeof(dps_head));
+   write(fd,&pcx,sizeof(dps_head));
 
    bytes=pcx.bytes_per_line;
 
@@ -83,26 +91,26 @@ int  dmp_pcx_dump_screen(int fp)
 
       switch(grd_mode_info[grd_mode].bitDepth)
       {
-         case 16:
-         {
-            gmask = 0x3F;
-            bshift = 11;
-            break;
-         }
          case 15:
          {
             gmask = 0x1F;
             bshift = 10;
             break;
          }
+         case 16:
+         {
+            gmask = 0x3F;
+            bshift = 11;
+            break;
+         }
          default:
          {
-            return -1;
+            return 0;
          }
       }
 
       // allocate a line buffer for pcx insanity
-      if ((p=Malloc(RGB_SIZE*bytes)) == NULL) return -1;
+      if ((p=Malloc(RGB_SIZE*bytes)) == NULL) return 0;
 
       // allocate a bitmap for non-flat8 weirdness
       bmbuff = gr_alloc_bitmap(BMT_FLAT16,0,bytes,1);
@@ -125,9 +133,9 @@ int  dmp_pcx_dump_screen(int fp)
    
          // We've split a line, spew to disk
          for(j=0;j<RGB_SIZE;++j) {
-            if(writepcxline(p+(j*bytes),fp,bytes) != bytes) {
+            if(writepcxline(p+(j*bytes),fd,bytes) != bytes) {
                free(p);
-               return -1;
+               return 0;
             }
          }
       }
@@ -141,8 +149,8 @@ int  dmp_pcx_dump_screen(int fp)
 
       for(i=0;i<grd_bm.h;++i) {
          gr_get_bitmap(bmbuff,0,i);
-         if(writepcxline(bmbuff->bits,fp,bytes) != bytes) {
-            return -1;
+         if(writepcxline(bmbuff->bits,fd,bytes) != bytes) {
+            return 0;
          }
       }
 
@@ -150,21 +158,22 @@ int  dmp_pcx_dump_screen(int fp)
 
       // flag for people to know the palette is next
       c = 12;
-      write(fp,&c,sizeof(char));
+      write(fd,&c,sizeof(char));
 
-      write(fp,grd_pal,768);
+      write(fd,grd_pal,768);
    }
 
-   close(fp);
+   close(fd);
 
-   return 0;
+   return 1;
 }
 
 // write and encode into a PCX line
 static int writepcxline(uchar *p,int fp,int bytes)
 {
-   int n=0,i;
-   uchar c,d;
+   int n=0,i,j=0;
+   uchar c;
+   uchar buf[10000];
 
    do {
       c = p[n++];
@@ -173,11 +182,10 @@ static int writepcxline(uchar *p,int fp,int bytes)
          ++i;
          ++n;
       }
-      if ( (i>1) || (c>0x3f) ) {
-         d = (0xc0 + i);
-         write(fp,&d,sizeof(char));
-      }
-      write(fp,&c,sizeof(char));
+      if ( (i>1) || (c>0x3f) )
+         buf[j++] = (0xc0 + i);
+      buf[j++] = c;
    } while(n < bytes);
+   write(fp,buf,j);
    return n;
 }

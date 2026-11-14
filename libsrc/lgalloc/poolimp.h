@@ -22,10 +22,10 @@
 //
 
 #ifndef _WIN32
-#define PoolCoreAllocPage()   malloc(kPageSize)
+#define PoolCoreAllocPage(size)   malloc(size)
 #define PoolCoreFreePage(p)   free(p)
 #else
-#define PoolCoreAllocPage()   cPoolCore::AllocPage()
+#define PoolCoreAllocPage(size)   cPoolCore::AllocPage(size)
 #define PoolCoreFreePage(p)   cPoolCore::FreePage(p)
 #endif
 
@@ -44,6 +44,8 @@
 // as there is no destructor and thus there would be a memory leak if NOT static.
 //
 
+const int kPoolBlockSize = 2048;
+
 struct sPoolBlock;
 
 class cPoolAllocator
@@ -57,6 +59,8 @@ public:
 
     void * Alloc();
     void Free(void *);
+
+    size_t GetElementSize() { return m_nElementSize; }
 
     void DumpAllocs();
 

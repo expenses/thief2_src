@@ -32,7 +32,7 @@
 class cPoolCore
 {
 public:
-    static void * AllocPage();
+    static void * AllocPage(size_t size);
     static void   FreePage(void *);
 
 private:
@@ -51,21 +51,25 @@ void * cPoolCore::gm_pCoreStackLimit;
 ulong cPoolCore::gm_nTotalCoreBytes;
 #endif
 
-void * cPoolCore::AllocPage()
+void * cPoolCore::AllocPage(size_t size)
 {
-//    if (size % 2 != 0)
-//        MessageBox(NULL, "Only even allocations?!", NULL, MB_OK);
+    if (size % 4 != 0)
+        size += 4 - size % 4;
 
     if (!gm_pCoreStack)
     {
         gm_pCoreStack = VirtualAlloc(NULL, kPoolCoreMaxSize, MEM_RESERVE, PAGE_READWRITE);
+
+
+
+
         AssertMsg(gm_pCoreStack, "VirtualAlloc failed!");
         VirtualAlloc(gm_pCoreStack, kPoolCoreGrowSize, MEM_COMMIT, PAGE_READWRITE);
         gm_pCoreStackLimit = (uchar *)gm_pCoreStack + kPoolCoreGrowSize;
     }
 
     void * pReturn = gm_pCoreStack;
-    gm_pCoreStack = (uchar *)gm_pCoreStack + kPageSize;
+    gm_pCoreStack = (uchar *)gm_pCoreStack + size;
 
     while (gm_pCoreStack > gm_pCoreStackLimit)
     {
@@ -75,13 +79,17 @@ void * cPoolCore::AllocPage()
         }
         else
         {
+
+
+
+
             CriticalMsg("VirtualAlloc failed!");
             return NULL;
         }
     }
 
 #ifdef DEBUG
-    gm_nTotalCoreBytes += kPageSize;
+    gm_nTotalCoreBytes += size;
 #endif
 
     return pReturn;
@@ -163,11 +171,12 @@ void    cPoolAllocator::Init(size_t elemSize)
     m_nMaxTakes     = 0;
     m_pAllocList    = 0;
 #endif
-
     if (m_nElementSize < sizeof(sFreePoolPart))
         m_nElementSize = sizeof(sFreePoolPart);
 
-    m_nBlockingFactor = kPageSize / RealElemSize(m_nElementSize);
+    m_nBlockingFactor = kPoolBlockSize / RealElemSize(m_nElementSize);
+    if (!m_nBlockingFactor)
+        m_nBlockingFactor = 1;
 
     m_pNextPool = m_pPools;
     m_pPools = this;
@@ -182,10 +191,12 @@ void cPoolAllocator::ThreadNewBlock()
 {
     DebugMsg1("Getting new block of %d", kPageSize);
 
+
+
     AssertMsg(!m_pFreeList, "ThreadNew called when not empty");
 
     // First get a new batch ...
-    m_pFreeList = (sPoolBlock *)(PoolCoreAllocPage());
+    m_pFreeList = (sPoolBlock *)(PoolCoreAllocPage(m_nElementSize * m_nBlockingFactor));
 
     if (!m_pFreeList)
         return;

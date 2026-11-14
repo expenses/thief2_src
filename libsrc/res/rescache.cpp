@@ -16,6 +16,7 @@
 #include <dlist.h>
 
 #include <mprintf.h>
+#include <allocapi.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -604,6 +605,9 @@ STDMETHODIMP cResSharedCache::FindClient(const GUID * pID, ICache ** ppResult)
 STDMETHODIMP cResSharedCache::Touch(const GUID * /*pID*/)
 {
     cAutoResThreadLock lock;
+
+
+
     CriticalMsg("Unimplemented functionality");
     return E_FAIL;
 }
@@ -655,6 +659,27 @@ STDMETHODIMP_(ulong) cResSharedCache::Purge(ulong nBytesToPurge)
 {
     cAutoResThreadLock lock;
     return cResCache::SharedPurge(nBytesToPurge);
+}
+
+///////////////////////////////////////
+
+STDMETHODIMP_(void) cResSharedCache::GetStats(sCacheStats * pStats)
+{
+    MEMORYSTATUS memoryStatus;
+    memoryStatus.dwLength = sizeof(memoryStatus);
+    GlobalMemoryStatus(&memoryStatus);
+    memcpy(pStats, &memoryStatus, sizeof(memoryStatus));
+
+    sCacheState state;
+    sAllocLimits limits;
+
+    g_pResSharedCache->GetState(&state);
+    AllocGetLimits(&limits);
+
+    pStats->allocCap = limits.allocCap;
+    pStats->totalMalloc = limits.totalAlloc;
+    pStats->lockedMalloc = limits.totalAlloc - state.nBytes;
+    pStats->cachedMalloc = state.nBytes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ extern "C"
 
 #include <mouse.h>
 #include <kb.h>
+#include <kbcook.h>
 
 #include <initguid.h>
 #include <lgvdguid.h>
@@ -76,6 +77,7 @@ cActiveMoviePlayer1::cActiveMoviePlayer1(IUnknown * pOuterUnknown, unsigned flag
     m_pGraphBuilder(NULL),
     m_pMediaEvent(NULL),
     m_pMediaControl(NULL),
+    m_pBasicAudio(NULL),
     m_pActiveMovieDraw(NULL),
     m_fCanPlay(FALSE),
     m_fCreateFlags(flags)
@@ -96,6 +98,8 @@ cActiveMoviePlayer1::cActiveMoviePlayer1(IUnknown * pOuterUnknown, unsigned flag
 
 ///////////////////////////////////
 
+
+
 cActiveMoviePlayer1::~cActiveMoviePlayer1()
 {
     AssertMsg(m_state == kMP1NothingOpen, "Movie cannot be open at this point");
@@ -109,6 +113,7 @@ cActiveMoviePlayer1::~cActiveMoviePlayer1()
 
 HRESULT cActiveMoviePlayer1::Init()
 {
+    m_szTermKeys[0] = 0;
     if (GetLGVideoRenderer() == S_OK)
         m_fCanPlay = TRUE;
     return CoInitialize(NULL);
@@ -202,7 +207,7 @@ IFilter *cActiveMoviePlayer1::FindNamedFilterFromRegistry(LPSTR filterName)
       // now do match for the rendering filters
       if (SUCCEEDED(pFM->EnumMatchingFilters(&pEnum,
                                              MERIT_UNLIKELY, TRUE, GUID_NULL, GUID_NULL,
-                                             TRUE, FALSE, GUID_NULL, GUID_NULL)))
+                                             FALSE, FALSE, GUID_NULL, GUID_NULL)))
       {
          // Look through the rendering filters
          while (!found && SUCCEEDED(pEnum->Next(1, &pRegFilter, &cFetched)) && (cFetched == 1))
@@ -489,6 +494,7 @@ STDMETHODIMP_(void) cActiveMoviePlayer1::Close()
         SafeRelease(m_pGraphBuilder);
         SafeRelease(m_pMediaEvent);
         SafeRelease(m_pMediaControl);
+        SafeRelease(m_pBasicAudio);
     }
 
     m_hNotify = NULL;
@@ -606,10 +612,21 @@ STDMETHODIMP_(BOOL) cActiveMoviePlayer1::Play(int flags)
                             mouse_flush();
                         }
 
-                        keyEvent = kb_look_next();
-                        if (keyEvent.code != KBC_NONE)
+                        keyEvent = kb_next();
+                        if (!m_szTermKeys[0])
                         {
-                            fQuit = TRUE;
+                            if (keyEvent.code != KBC_NONE)
+                                fQuit = TRUE;
+                        }
+                        else
+                        {
+                            ushort keycode;
+                            bool results;
+                            kb_cook_real(keyEvent, &keycode, &results, FALSE);
+                            int kc = keycode & ~KB_FLAG_DOWN;
+                            for (unsigned n = 0; n < strlen(m_szTermKeys); n++)
+                                if (kc == m_szTermKeys[n])
+                                    fQuit = TRUE;
                         }
 
                         pDisplayDevice->Unlock();
@@ -656,6 +673,7 @@ STDMETHODIMP_(BOOL) cActiveMoviePlayer1::Play(int flags)
 
 STDMETHODIMP_(BOOL) cActiveMoviePlayer1::Pause()
 {
+#line 689
     CriticalMsg("cActiveMoviePlayer1::Pause() is not implemented");
     return FALSE;
 }
@@ -683,6 +701,26 @@ STDMETHODIMP_(BOOL) cActiveMoviePlayer1::Stop()
     return FALSE;
 }
 
+STDMETHODIMP_(BOOL) cActiveMoviePlayer1::GetVolume(int* pOutVol)
+{
+    if (!m_pBasicAudio)
+        return FALSE;
+    return SUCCEEDED(m_pBasicAudio->get_Volume((long*)pOutVol));
+}
+
+STDMETHODIMP_(BOOL) cActiveMoviePlayer1::SetVolume(int inVol)
+{
+    if (!m_pBasicAudio)
+        return FALSE;
+    return SUCCEEDED(m_pBasicAudio->put_Volume(inVol));
+}
+
+STDMETHODIMP_(void) cActiveMoviePlayer1::SetTermKeys(char *keylist)
+{
+    strncpy(m_szTermKeys, keylist, sizeof(m_szTermKeys));
+    m_szTermKeys[sizeof(m_szTermKeys) - 1] = 0;
+}
+
 
 ///////////////////////////////////
 //
@@ -691,6 +729,23 @@ STDMETHODIMP_(BOOL) cActiveMoviePlayer1::Stop()
 
 STDMETHODIMP_(eMP1State) cActiveMoviePlayer1::GetState()
 {
+    long eventCode, pIgnored1, pIgnored2;
+
+    if (m_state == kMP1Playing)
+    {
+        if (WaitForSingleObject(m_hNotify, 0) == WAIT_OBJECT_0)
+        {
+            if (m_pMediaEvent->GetEvent(&eventCode, &pIgnored1, &pIgnored2, 0) == NOERROR)
+            {
+                if ((eventCode == EC_COMPLETE) ||
+                    (eventCode == EC_USERABORT) ||
+                    (eventCode == EC_ERRORABORT))
+                {
+                    Stop();
+                }
+            }
+        }
+    }
     return m_state;
 }
 
@@ -702,6 +757,7 @@ STDMETHODIMP_(eMP1State) cActiveMoviePlayer1::GetState()
 
 BOOL cActiveMoviePlayer1::PlayAsynchronous()
 {
+#line 806
     BEGIN_DEBUG_MSG("cActiveMoviePlayer1::PlayAsynchronous()");
 
     if (m_pMediaControl && (m_state == kMP1Ready || m_state == kMP1Paused))
@@ -743,8 +799,9 @@ BOOL cActiveMoviePlayer1::CreateGraphBuilder()
     {
         m_pGraphBuilder->QueryInterface(IID_IMediaEvent, (void **)&m_pMediaEvent);
         m_pGraphBuilder->QueryInterface(IID_IMediaControl, (void **)&m_pMediaControl);
+        m_pGraphBuilder->QueryInterface(IID_IBasicAudio, (void **)&m_pBasicAudio);
 
-        if (m_pMediaEvent && m_pMediaControl)
+        if (m_pMediaEvent && m_pMediaControl && m_pBasicAudio)
         {
             if (m_pMediaEvent->GetEventHandle((OAEVENT*)&m_hNotify) == NOERROR)
                 return TRUE;
@@ -758,6 +815,7 @@ BOOL cActiveMoviePlayer1::CreateGraphBuilder()
     SafeRelease(m_pGraphBuilder);
     SafeRelease(m_pMediaEvent);
     SafeRelease(m_pMediaControl);
+    SafeRelease(m_pBasicAudio);
 
     return FALSE;
     END_DEBUG;
@@ -858,6 +916,7 @@ void cActiveMovieDraw::SetupBitmapFromMediaSample(grs_bitmap *pBitmap, IMediaSam
 }
 
 #pragma off(unreferenced)
+
 // This is called with an IMediaSample interface on the image to be drawn.
 STDMETHODIMP_(BOOL) cActiveMovieDraw::DrawImage(IMediaSample *pMediaSample)
 {
@@ -1202,20 +1261,8 @@ STDMETHODIMP cActiveMovieAlloc::SetProperties(ALLOCATOR_PROPERTIES *pRequest, AL
 
    HRESULT hr;
 
-   if ((DWORD)pRequest->cbBuffer!=CanvasSize())
-   {
-      // well, the decompressor wouldn't go to the size we wanted
-      // so we'll have to provide two buffers of the right size
-      // and resize in the blit
-      pRequest->cBuffers = min(pRequest->cBuffers, 2);
-      m_bUsingCanvas = FALSE;
-   }
-   else
-   {
-      // we just have one buffer!
-      pRequest->cBuffers = 1;
-      m_bUsingCanvas = TRUE;
-   }
+   pRequest->cBuffers = min(pRequest->cBuffers, 2);
+   m_bUsingCanvas = FALSE;
    // reject buffer prefixes
    if (pRequest->cbPrefix>0)
       return E_INVALIDARG;
@@ -1225,6 +1272,7 @@ STDMETHODIMP cActiveMovieAlloc::SetProperties(ALLOCATOR_PROPERTIES *pRequest, AL
 
    END_DEBUG;
 }
+
 
 void cActiveMovieAlloc::Free(void)
 {

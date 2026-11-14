@@ -9,19 +9,18 @@
 */
 
 #include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <lg.h>
 #include <dev2d.h>
 #include <dump.h>
 
 int dmp_bmp_file(char *buff,char *prefix)
 {
-   int fd = dmp_find_free_file(buff,prefix,"bmp");
-
-   if (fd <= 0) return -1;
-
-   dmp_bmp_dump_screen(fd);
-
-   return 0;
+   if (dmp_find_free_file(buff,prefix,"bmp"))
+      return dmp_bmp_dump_screen(buff);
+   else
+      return 0;
 }
 
 typedef struct {
@@ -48,11 +47,12 @@ typedef struct {
 } dps_bitmap_head;
 
 // Dumps an 8 or 16 or 15 bit image
-int  dmp_bmp_dump_screen(int fp)
+int  dmp_bmp_dump_screen(char *fname)
 {
    dps_file_head bmp;
    dps_bitmap_head bhd;
    int i;
+   int fp;
 
    // determine size and offbits after we know pixel depth
    bmp.bfType[0] = 'B';
@@ -69,6 +69,10 @@ int  dmp_bmp_dump_screen(int fp)
    bhd.biYPelsPerMeter = 0;
    bhd.biClrUsed = 0;
    bhd.biClrImportant = 0;
+
+   fp = open(fname,O_CREAT|O_BINARY|O_WRONLY,S_IREAD|S_IWRITE);
+   if (fp == -1)
+      return 0;
 
    if (grd_mode_info[grd_mode].bitDepth==8) {
       uchar *pal;
@@ -133,7 +137,7 @@ int  dmp_bmp_dump_screen(int fp)
          }
          default:
          {
-            return -1;
+            return 0;
          }
       }
 
@@ -180,6 +184,6 @@ int  dmp_bmp_dump_screen(int fp)
 
    close(fp);
 
-   return 0;
+   return 1;
 }
 

@@ -427,6 +427,7 @@ BOOL ObjUpdateLocs (ObjID obj)
    void          *pos;          // position of object
    void          *bins; 
 
+#line 425
    Assert_(obj > 0); 
 
    pos = gObjPosFunc(obj);

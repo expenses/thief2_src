@@ -61,7 +61,7 @@ private:
     enum eConstants
     {
         kMaxPool = 1024L,
-        kNumPools = 128L, // kMaxPool / 8
+        kNumPools = 256L, // kMaxPool / 4
        
         kConstantsEnumWindener = 0xffffffff
     };

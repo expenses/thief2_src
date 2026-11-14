@@ -17,6 +17,9 @@
 #include <amvideo.h>
 #include <dev2d.h>
 #include <thrdtool.h>
+#include <aggmemb.h>
+
+struct IBasicAudio;
 
 F_DECLARE_INTERFACE(IGraphBuilder);
 F_DECLARE_INTERFACE(IMediaEvent);
@@ -182,6 +185,15 @@ private:
     // Stop the currently playing movie
     STDMETHOD_(BOOL, Stop)();
 
+    // Get the sound volume
+    STDMETHOD_(BOOL, GetVolume)(int* pOutVol);
+
+    // Set the sound volume
+    STDMETHOD_(BOOL, SetVolume)(int inVol);
+
+    // Specify the list of keys that terminate movie playing
+    STDMETHOD_(void, SetTermKeys)(char *keylist);
+
     // Query the state of the player
     STDMETHOD_(eMP1State, GetState)();
 
@@ -224,10 +236,12 @@ private:
     IGraphBuilder *     m_pGraphBuilder;         // the filter graph for the current movie
     IMediaEvent *       m_pMediaEvent;
     IMediaControl *     m_pMediaControl;
+    IBasicAudio *       m_pBasicAudio;
 
     cActiveMovieDraw *  m_pActiveMovieDraw;     // the helper class for drawing
     
     unsigned m_fCreateFlags;
+    char                m_szTermKeys[256];
 
 };
 

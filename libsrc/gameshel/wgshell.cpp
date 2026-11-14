@@ -13,6 +13,7 @@
 
 #include <gshelapi.h>
 #include <dispapi.h>
+#include <emode.h>
 #include <movieapi.h>
 #include <wappapi.h>
 #include <appapi.h>
@@ -200,7 +201,7 @@ STDMETHODIMP_(void) cWinGameShell::BeginFrame()
     PumpEvents();
 
     // Lock the display device, if appropriate
-    if (m_fCreateFlags & kLockFrame)
+    if ((m_fCreateFlags & kLockFrame) && m_pDisplayDevice->GetMode(NULL) < GRD_MODES)
         m_pDisplayDevice->Lock();
 }
 
@@ -211,16 +212,19 @@ STDMETHODIMP_(void) cWinGameShell::BeginFrame()
 
 STDMETHODIMP_(void) cWinGameShell::EndFrame()
 {
-    // Unlock the display device, if appropriate
-    if (m_fCreateFlags & kLockFrame)
-        m_pDisplayDevice->Unlock();
+    if (m_pDisplayDevice->GetMode(NULL) < GRD_MODES)
+    {
+        // Unlock the display device, if appropriate
+        if (m_fCreateFlags & kLockFrame)
+            m_pDisplayDevice->Unlock();
 
-    // Flush & optionally flip
-    if (m_fCreateFlags & kFlushOnEndFrame)
-        m_pDisplayDevice->Flush();
+        // Flush & optionally flip
+        if (m_fCreateFlags & kFlushOnEndFrame)
+            m_pDisplayDevice->Flush();
 
-    if (m_fCreateFlags & kFlipOnEndFrame)
-        m_pDisplayDevice->PageFlip();
+        if (m_fCreateFlags & kFlipOnEndFrame)
+            m_pDisplayDevice->PageFlip();
+    }
 
     PumpEvents();
 
@@ -259,7 +263,7 @@ STDMETHODIMP_(void) cWinGameShell::PumpEvents(int /*fPumpFlags*/)
             SetQuitting(TRUE);
 
             AutoAppIPtr(Application);
-            if (pApplication)
+            if (pApplication != NULL)
                 pApplication->QueryQuit();
 
             // If we reach here, we didn't quit...
@@ -397,6 +401,7 @@ STDMETHODIMP_(BOOL) cWinGameShell::GetFlags(int * pfFlags )
 
 HRESULT cWinGameShell::Connect()
 {
+#line 405
     SelfConnectRequired(DisplayDevice);
     SelfConnectRequired(WinApp);
     SelfConnectRequired(WinDisplayDevice);
@@ -419,12 +424,12 @@ HRESULT cWinGameShell::Init()
 
     // Hook up for PreTranslateMessage()
     AutoConIPtr(Aggregate, this);
-    if (pAggregate)
+    if (pAggregate != NULL)
         pAggregate->BeginSelfReference();
 
     m_pWinApp->Advise(&m_WinAppAdviseSink, &m_WinAppAdviseCookie);
 
-    if (pAggregate)
+    if (pAggregate != NULL)
         pAggregate->EndSelfReference();
 
     CreateGameWindow();
@@ -466,12 +471,12 @@ HRESULT cWinGameShell::End()
     m_flags &= ~kAllowPump;
 
     AutoConIPtr(Aggregate, this);
-    if (pAggregate)
+    if (pAggregate != NULL)
         pAggregate->BeginSelfReference();
 
     m_pWinApp->Unadvise(m_WinAppAdviseCookie);
 
-    if (pAggregate)
+    if (pAggregate != NULL)
         pAggregate->EndSelfReference();
 
     return NOERROR;
@@ -511,6 +516,7 @@ void cWinGameShell::CreateGameWindow()
 
     if (!RegisterClass(&wndClass))
     {
+#line 519
         CriticalMsg("Failed to register class");
         return;
     }
@@ -866,7 +872,7 @@ long cWinGameShell::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
                 default:
                 {
                     AutoAppIPtr(Application);
-                    if (pApplication)
+                    if (pApplication != NULL)
                         pApplication->AppCommand(wParam);
                 }
             }

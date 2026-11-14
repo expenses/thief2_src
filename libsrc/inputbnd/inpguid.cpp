@@ -3,7 +3,6 @@
 #include <objbase.h>
 #include <comtools.h>
 #include <initguid.h>
-#include <inpinit.h>
 #include <inpguid.h>
 
 

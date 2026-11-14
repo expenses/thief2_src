@@ -138,6 +138,8 @@ static bool find_elem(Hashtable* h, void* elem, int* idx)
 
 //   mprintf ("hash is %d\n size is %d\n hash%size is %d\n",hash,h->size,hash%h->size);
 
+   if (h->size == 0) return FALSE;
+
    for (j = 0, index = hash%h->size;  j < h->size && h->statvec[index] != HASH_EMPTY;
          j++,index = (index + (1 << hash%h->sizelog2)) % h->size)
    {
@@ -160,6 +162,7 @@ static int find_index(Hashtable* h, void* elem)
    int j;
    int index;
    Spew(DSRC_DSTRUCT_Hash,("find_index(%x,%x) hash is %d\n",h,elem,hash));
+   if (h->size == 0) return INDEX_NOT_FOUND;
    for (j = 0, index = hash%h->size;  j < h->size && h->statvec[index] == HASH_FULL;
        j++,index = (index + (1 << hash%h->sizelog2)) % h->size)
          Spew(DSRC_DSTRUCT_Hash,("find_index(): found status %d\n",h->statvec[index]));

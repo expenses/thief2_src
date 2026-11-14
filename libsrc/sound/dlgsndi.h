@@ -53,25 +53,44 @@ public:
 	STDMETHOD_(void,					Pause)(void);
 	STDMETHOD_(void,					Resume)(void);
 
-   STDMETHOD_(void,     Set3DPosition)(sSndVector *pPosition);
-   STDMETHOD_(void,     Set3DOrientation)(sSndVector *pFront, sSndVector *pTop);
-   STDMETHOD_(void,     Set3DVelocity)(sSndVector *pVel);
-   STDMETHOD_(void,     Set3DEnvironment)(sSndEnvironment *pParams);
-   STDMETHOD_(void,     Set3DMethod)(eSnd3DMethod method);
-   STDMETHOD_(void,     Get3DMethodCapabilities)(uint32 *pMethods);
-   STDMETHOD_(void,     Set3DDeferMode)(BOOL deferOn);
+
+	STDMETHOD_(void,     Set3DPosition)(sSndVector *pPosition);
+    STDMETHOD_(void,     Set3DOrientation)(sSndVector *pFront, sSndVector *pTop);
+    STDMETHOD_(void,     Set3DVelocity)(sSndVector *pVel);
+    STDMETHOD_(void,     Set3DEnvironment)(sSndEnvironment *pParams);
+    STDMETHOD_(void,     Set3DMethod)(eSnd3DMethod method);
+    STDMETHOD_(void,     Get3DMethodCapabilities)(uint32 *pMethods);
+    STDMETHOD_(void,     Set3DDeferMode)(BOOL deferOn);
+    STDMETHOD_(void,     FreeHWChannelCount)(int32 *pHWChans, int32 *p3DHWChans);
+    STDMETHOD_(int32,    Init3DReverb)(THIS);
+    STDMETHOD_(void,     Shutdown3DReverb)(THIS);
+    STDMETHOD_(BOOL,     Have3DReverb)(THIS);
+    STDMETHOD_(BOOL,     CanDo3DReverb)(THIS);
+    STDMETHOD_(BOOL,     Set3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings);
+    STDMETHOD_(BOOL,     Get3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings);
+    STDMETHOD_(BOOL,     Have3DOcclusion)(THIS);
+    STDMETHOD_(int32,    Kludge)(THIS_ int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct);
+    virtual BOOL EAXLevelSupported(void);
 
 	cDSndDevice * GetDevice();
    void SetA3d( BOOL useA3d );
    void UsePanVol( void );
 
 private:
+   BOOL EAXInit(void);
+   void EAXRelease(void);
 
    BOOL                    mbUseA3d;
 	cDSndDevice             *mSoundDevice;                // the device
 	IDirectSoundBuffer      *mpPrimaryBuffer;
    IDirectSound3DListener  *mpListener;
    BOOL                    mbPanVolInUse;
+
+public:
+   IDirectSoundBuffer *	mpEAXDummyBuffer;
+   IDirectSoundBuffer *	mpEAXDummy3DBuffer;
+   IKsPropertySet *	mpEAX;
+   int                     mEAXLevel;
 };
 
 inline void
@@ -108,6 +127,8 @@ public:
 
    STDMETHOD_(uint32,   AvailToWrite)(void);
    STDMETHOD_(void,     CheckStream)(void);
+   STDMETHOD_(void,     Set3DOcclusion)(int32 occlusionMillibels);
+   STDMETHOD_(void,     Set3DReverbMix)(float mix);
 
    STDMETHOD_(BOOL,     BufferReady)(uint32 len);
    STDMETHOD_(eSndError,LoadBufferIndirect)(SndLoadFunction funk, void *pData, uint32 len);
@@ -155,10 +176,19 @@ protected:
 
 	friend class cDSndMixer;
 
+   void     _Update3DReverbMix( void );
+
 private:
 	cSndSampleImp  *mpSampleImp;
    IDirectSound3DBuffer *mp3DBuffer;
+   float          mReverbMix;
 };
+
+EXTERN_C const GUID CLSID_EAXDirectSound;
+EXTERN_C const GUID DSPROPSETID_EAX20_ListenerProperties;
+EXTERN_C const GUID DSPROPSETID_EAX20_BufferProperties;
+EXTERN_C const GUID DSPROPSETID_EAX_ReverbProperties;
+EXTERN_C const GUID DSPROPSETID_EAXBUFFER_ReverbProperties;
 
 //
 // Macros for reporting DirectSound errors

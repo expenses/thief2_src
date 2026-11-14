@@ -15,7 +15,7 @@
 #include <clipprim.h>
 
 // Number of total parameters in a big r3s_point
-#define NUM_PARAMETERS   8
+#define NUM_PARAMETERS   11
 
 typedef struct _r3s_point_extended {
    mxs_vector p;   // 12

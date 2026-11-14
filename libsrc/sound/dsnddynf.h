@@ -21,6 +21,10 @@
 DeclDynFunc_( HRESULT, WINAPI, DirectSoundCreate, (GUID FAR * lpGUID, LPDIRECTSOUND * ppDS, IUnknown FAR *pUnkOuter ) );
 #define DynDirectSoundCreate     (DynFunc(DirectSoundCreate).GetProcAddress())
 
+DeclDynFunc_( HRESULT, WINAPI, A3dCreate, (const GUID FAR * lpGUID, LPDIRECTSOUND * ppDS, IUnknown FAR *pUnkOuter ) );
+#define DynA3dCreate     (DynFunc(A3dCreate).GetProcAddress())
+
 BOOL LoadDirectSound();
+BOOL LoadA3D();
 
 #endif /* !__DSNDDYNF_H */

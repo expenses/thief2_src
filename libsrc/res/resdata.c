@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //////////
 //
 // $Header: r:/t2repos/thief2/src/framewrk/resdata.c,v 1.3 1998/09/29 20:43:27 dc Exp $
@@ -61,7 +60,7 @@ static void _show_list(void)
    int i;
    mprintf("Free head %d cur num %d\n",free_head,cur_num_appdata);
    for (i=0; i<cur_num_appdata; i++)
-      if (appdata[i].pRes!=NULL)
+      if (appdata[i].pRes)
          mprintf("ad %d free %d is %s\n",i,appdata[i].next_free,IRes_GetName(appdata[i].pRes));
       else
          mprintf("ad %d free %d\n",i,appdata[i].next_free);

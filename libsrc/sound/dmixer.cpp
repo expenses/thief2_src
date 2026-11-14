@@ -25,6 +25,7 @@
 #include <dispapi.h>
 
 #include <dsnddynf.h>
+#include <waildynf.h>
 #include <mprintf.h>
 #include <dbg.h>
 
@@ -125,6 +126,10 @@ cDSndMixer::cDSndMixer()
    mbUseA3d = FALSE;
    m3DDeferFlag = DS3D_IMMEDIATE;
    mbPanVolInUse = FALSE;
+   mpEAXDummyBuffer = NULL;
+   mpEAXDummy3DBuffer = NULL;
+   mpEAX = NULL;
+   mEAXLevel = 0;
    // end DirectSound Specific stuff
 }
 
@@ -140,6 +145,7 @@ cDSndMixer::~cDSndMixer()
    int blockCookie = BlockDisplay();
 
    Destroy();
+   EAXRelease();
 
    // free the 3D listener
    SafeRelease( mpListener );
@@ -177,6 +183,8 @@ cDSndMixer::Init( sSndSetup    *setup,
    int                  i;
    DSBUFFERDESC         db;
    WAVEFORMATEX         fmt;
+   WAVEFORMATEX         actualFmt;
+   DWORD                fmtSize;
    HRESULT              res;
    BOOL                 howDegrading = FALSE;
 
@@ -191,7 +199,10 @@ cDSndMixer::Init( sSndSetup    *setup,
    // attemp to create the DirectSound object
 #ifdef USE_A3D
    if ( mbUseA3d ) {
-      res = A3dCreate(NULL, &mSoundDevice, NULL);
+      if ( LoadA3D() == FALSE ) {
+         return kSndCantCreateDevice;
+      }
+      res = DynA3dCreate(NULL, &mSoundDevice, NULL);
    } else {
       res = DynDirectSoundCreate(NULL, &mSoundDevice, NULL);
    }
@@ -200,6 +211,18 @@ cDSndMixer::Init( sSndSetup    *setup,
 #endif
    if ( FAILED(res) ) {
       DSOUND_ERROR( res, "MixInit / DirectSoundCreate" );
+      return kSndCantCreateDevice;
+   }
+
+   caps.dwSize = sizeof(caps);
+   res = mSoundDevice->GetCaps(&caps);
+   if ( FAILED(res) ) {
+      DSOUND_ERROR( res, "MixInit / GetCaps" );
+      SafeRelease(mSoundDevice);
+      return kSndCantCreateDevice;
+   }
+   if ( mbUseA3d && (caps.dwMaxHw3DAllBuffers == 0) ) {
+      SafeRelease(mSoundDevice);
       return kSndCantCreateDevice;
    }
 
@@ -216,7 +239,6 @@ cDSndMixer::Init( sSndSetup    *setup,
       return kSndCantSetupDevice;
    }
 
-   caps.dwSize = sizeof(caps);
 
 //     mSoundDevice->GetCaps(&caps);
 
@@ -246,13 +268,6 @@ cDSndMixer::Init( sSndSetup    *setup,
 
    TLOG3( "\nMix::Init rate %d bits %d DSound channels %d\n", mPrimaryAttribs.sampleRate,
          mPrimaryAttribs.bitsPerSample, numChannels );
-
-   // fill in the primary attribs which user can't control
-   mPrimaryAttribs.dataType = kSndDataPCM;
-   mPrimaryAttribs.bytesPerBlock = (mPrimaryAttribs.bitsPerSample
-                                    * mPrimaryAttribs.nChannels) / 8;
-   mPrimaryAttribs.samplesPerBlock = 1;
-   mPrimaryAttribs.numSamples = ~0;
 
    //
    // create the primary DirectSoundBuffer, which controls the
@@ -319,6 +334,18 @@ cDSndMixer::Init( sSndSetup    *setup,
          }
       }
    }
+
+   // find out what format the primary buffer really has, and
+   //  fill in the primary attribs from that
+   mpPrimaryBuffer->GetFormat( &actualFmt, sizeof(actualFmt), &fmtSize );
+   mPrimaryAttribs.dataType = kSndDataPCM;
+   mPrimaryAttribs.samplesPerBlock = 1;
+   mPrimaryAttribs.sampleRate = actualFmt.nSamplesPerSec;
+   mPrimaryAttribs.bitsPerSample = actualFmt.wBitsPerSample;
+   mPrimaryAttribs.nChannels = actualFmt.nChannels;
+   mPrimaryAttribs.bytesPerBlock = (mPrimaryAttribs.bitsPerSample
+                                    * mPrimaryAttribs.nChannels) >> 3;
+   mPrimaryAttribs.numSamples = ~0;
 
    if ( (mpPrimaryBuffer == NULL) || (res != DS_OK) ) {
       SafeRelease(mSoundDevice);
@@ -658,3 +685,314 @@ cDSndMixer::GetDevice()
 }
 
 
+EXTERN_C const GUID CLSID_EAXDirectSound = {0x4FF53B81, 0x1CE0, 0x11D3, {0xAA, 0xB8, 0x00, 0xA0, 0xC9, 0x59, 0x49, 0xD5}};
+EXTERN_C const GUID DSPROPSETID_EAX20_ListenerProperties = {0x0306A6A8, 0xB224, 0x11D2, {0x99, 0xE5, 0x00, 0x00, 0xE8, 0xD8, 0xC7, 0x22}};
+EXTERN_C const GUID DSPROPSETID_EAX20_BufferProperties = {0x0306A6A7, 0xB224, 0x11D2, {0x99, 0xE5, 0x00, 0x00, 0xE8, 0xD8, 0xC7, 0x22}};
+EXTERN_C const GUID DSPROPSETID_EAX_ReverbProperties = {0x4A4E6FC1, 0xC341, 0x11D1, {0xB7, 0x3A, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+EXTERN_C const GUID DSPROPSETID_EAXBUFFER_ReverbProperties = {0x4A4E6FC0, 0xC341, 0x11D1, {0xB7, 0x3A, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+
+static int g_eaxReverbType[kREVERB_COUNT] = {
+   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
+};
+
+static BOOL g_occlusionChecked = FALSE;
+static BOOL g_occlusionPresent = FALSE;
+
+STDMETHODIMP_(void)
+cDSndMixer::FreeHWChannelCount(int32 *pHWChans, int32 *p3DHWChans)
+{
+   DSCAPS caps;
+
+   memset(&caps, 0, sizeof(caps));
+   caps.dwSize = sizeof(caps);
+   mSoundDevice->GetCaps(&caps);
+   if (pHWChans)
+      *pHWChans = caps.dwFreeHwMixingStreamingBuffers;
+   if (p3DHWChans)
+      *p3DHWChans = caps.dwFreeHw3DStreamingBuffers;
+}
+
+STDMETHODIMP_(int32)
+cDSndMixer::Kludge(int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct)
+{
+   switch (kludgeSelector)
+   {
+      case 0:
+         *(int32 *)pKludgeStruct = sizeKludgeStruct;
+         return mSoundDevice->GetCaps((LPDSCAPS)pKludgeStruct);
+      case 1:
+         return (int32)mSoundDevice;
+   }
+   return 0;
+}
+
+STDMETHODIMP_(int32)
+cDSndMixer::Init3DReverb(void)
+{
+   return EAXInit() != 0;
+}
+
+STDMETHODIMP_(void)
+cDSndMixer::Shutdown3DReverb(void)
+{
+   EAXRelease();
+}
+
+STDMETHODIMP_(BOOL)
+cDSndMixer::Have3DReverb(void)
+{
+   return mpEAX != NULL;
+}
+
+STDMETHODIMP_(BOOL)
+cDSndMixer::Have3DOcclusion(void)
+{
+   DWORD support = 0;
+
+   if (!g_occlusionChecked)
+   {
+      g_occlusionPresent = FALSE;
+      if (mpEAX && mEAXLevel > 1)
+      {
+         mpEAX->QuerySupport(DSPROPSETID_EAX20_BufferProperties, 9, &support);
+         if ((support & 3) == 3)
+            g_occlusionPresent = TRUE;
+      }
+      g_occlusionChecked = TRUE;
+   }
+   return g_occlusionPresent;
+}
+
+STDMETHODIMP_(BOOL)
+cDSndMixer::CanDo3DReverb(void)
+{
+   if (mpEAX)
+      return TRUE;
+   if (EAXInit())
+   {
+      EAXRelease();
+      return TRUE;
+   }
+   return FALSE;
+}
+
+STDMETHODIMP_(BOOL)
+cDSndMixer::Set3DReverbSettings(ReverbSettings *pSettings)
+{
+   HRESULT res;
+   int env;
+   long val;
+
+   if (mpEAX == NULL)
+      return FALSE;
+
+   env = g_eaxReverbType[pSettings->type];
+   if (pSettings->flags & kREVERB_FlagType)
+   {
+      switch (mEAXLevel)
+      {
+         case 1:
+            res = mpEAX->Set(DSPROPSETID_EAX_ReverbProperties, 1, NULL, 0, &env, sizeof(env));
+            break;
+         case 2:
+            res = mpEAX->Set(DSPROPSETID_EAX20_ListenerProperties, 11, NULL, 0, &env, sizeof(env));
+            break;
+      }
+      if (res < 0)
+         return FALSE;
+   }
+   if (pSettings->flags & kREVERB_FlagLevel)
+   {
+      switch (mEAXLevel)
+      {
+         case 1:
+            res = mpEAX->Set(DSPROPSETID_EAX_ReverbProperties, 2, NULL, 0, &pSettings->level, sizeof(float));
+            break;
+         case 2:
+            val = (long)((1.0 - pSettings->level) * -10000.0);
+            res = mpEAX->Set(DSPROPSETID_EAX20_ListenerProperties, 9, NULL, 0, &val, sizeof(val));
+            break;
+      }
+      if (res < 0)
+         return FALSE;
+   }
+   if (pSettings->flags & kREVERB_FlagDecay)
+   {
+      switch (mEAXLevel)
+      {
+         case 1:
+            res = mpEAX->Set(DSPROPSETID_EAX_ReverbProperties, 3, NULL, 0, &pSettings->level, sizeof(float));
+            break;
+         case 2:
+            res = mpEAX->Set(DSPROPSETID_EAX20_ListenerProperties, 5, NULL, 0, &pSettings->decay, sizeof(float));
+            break;
+      }
+      if (res < 0)
+         return FALSE;
+   }
+   if (pSettings->flags & kREVERB_FlagDamping)
+   {
+      switch (mEAXLevel)
+      {
+         case 1:
+            res = mpEAX->Set(DSPROPSETID_EAX_ReverbProperties, 4, NULL, 0, &pSettings->level, sizeof(float));
+            break;
+         case 2:
+            res = mpEAX->Set(DSPROPSETID_EAX20_ListenerProperties, 6, NULL, 0, &pSettings->damping, sizeof(float));
+            break;
+      }
+      if (res < 0)
+         return FALSE;
+   }
+   return TRUE;
+}
+
+STDMETHODIMP_(BOOL)
+cDSndMixer::Get3DReverbSettings(ReverbSettings *pSettings)
+{
+   HRESULT res;
+   int env;
+   DWORD bytes;
+   DWORD val;
+   BOOL found;
+   int i;
+
+   if (mpEAX == NULL)
+      return FALSE;
+
+   switch (mEAXLevel)
+   {
+      case 1:
+         res = mpEAX->Get(DSPROPSETID_EAX_ReverbProperties, 1, NULL, 0, &env, sizeof(env), &bytes);
+         break;
+      case 2:
+         res = mpEAX->Get(DSPROPSETID_EAX20_ListenerProperties, 11, NULL, 0, &env, sizeof(env), &bytes);
+         break;
+   }
+   if (res < 0)
+      return FALSE;
+
+   found = FALSE;
+   for (i = 0; i < kREVERB_COUNT; i++)
+   {
+      if (g_eaxReverbType[i] == env)
+      {
+         pSettings->type = i;
+         found = TRUE;
+      }
+   }
+   if (!found)
+      return FALSE;
+
+   switch (mEAXLevel)
+   {
+      case 1:
+         res = mpEAX->Get(DSPROPSETID_EAX_ReverbProperties, 2, NULL, 0, &pSettings->level, sizeof(float), &bytes);
+         break;
+      case 2:
+         res = mpEAX->Get(DSPROPSETID_EAX20_ListenerProperties, 9, NULL, 0, &val, sizeof(val), &bytes);
+         pSettings->level = 1.0 + (-0.0001f * (float)val);
+         break;
+   }
+   if (res < 0)
+      return FALSE;
+
+   switch (mEAXLevel)
+   {
+      case 1:
+         res = mpEAX->Get(DSPROPSETID_EAX_ReverbProperties, 3, NULL, 0, &pSettings->decay, sizeof(float), &bytes);
+         break;
+      case 2:
+         res = mpEAX->Get(DSPROPSETID_EAX20_ListenerProperties, 5, NULL, 0, &pSettings->decay, sizeof(float), &bytes);
+         break;
+   }
+   if (res < 0)
+      return FALSE;
+
+   switch (mEAXLevel)
+   {
+      case 1:
+         res = mpEAX->Get(DSPROPSETID_EAX_ReverbProperties, 4, NULL, 0, &pSettings->damping, sizeof(float), &bytes);
+         break;
+      case 2:
+         res = mpEAX->Get(DSPROPSETID_EAX20_ListenerProperties, 6, NULL, 0, &pSettings->damping, sizeof(float), &bytes);
+         break;
+   }
+   if (res < 0)
+      return FALSE;
+
+   pSettings->flags = 0xf;
+   return TRUE;
+}
+
+BOOL
+cDSndMixer::EAXInit(void)
+{
+   WAVEFORMATEX fmt;
+   DSBUFFERDESC db;
+   DWORD support;
+
+   fmt.wFormatTag = WAVE_FORMAT_PCM;
+   fmt.nChannels = 2;
+   fmt.nSamplesPerSec = 22050;
+   fmt.nAvgBytesPerSec = 88200;
+   fmt.nBlockAlign = 4;
+   fmt.wBitsPerSample = 16;
+   fmt.cbSize = 0;
+   support = 0;
+
+   cDSndMixer::EAXRelease();
+
+   memset(&db, 0, sizeof(db));
+   db.dwSize = sizeof(DSBUFFERDESC);
+   db.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRL3D;
+   db.dwBufferBytes = 128;
+   db.lpwfxFormat = &fmt;
+
+   if (mSoundDevice->CreateSoundBuffer(&db, &mpEAXDummyBuffer, NULL) == 0
+    && mpEAXDummyBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void **)&mpEAXDummy3DBuffer) == 0
+    && mpEAXDummy3DBuffer->QueryInterface(IID_IKsPropertySet, (void **)&mpEAX) == 0)
+   {
+      mEAXLevel = 0;
+      if (mpEAX->QuerySupport(DSPROPSETID_EAX20_ListenerProperties, 1, &support) == 0 && (support & 3) == 3)
+      {
+         mEAXLevel = 2;
+         return TRUE;
+      }
+      if (mpEAX->QuerySupport(DSPROPSETID_EAX_ReverbProperties, 0, &support) == 0 && (support & 3) == 3)
+      {
+         mEAXLevel = 1;
+         return TRUE;
+      }
+   }
+   cDSndMixer::EAXRelease();
+   return FALSE;
+}
+
+void
+cDSndMixer::EAXRelease(void)
+{
+   ReverbSettings rs;
+
+   if (mpEAX)
+   {
+      rs.flags = 3;
+      rs.type = 0;
+      rs.level = 0;
+      Set3DReverbSettings(&rs);
+      mpEAX->Release();
+   }
+   if (mpEAXDummy3DBuffer)
+      mpEAXDummy3DBuffer->Release();
+   if (mpEAXDummyBuffer)
+      mpEAXDummyBuffer->Release();
+   mpEAX = NULL;
+   mpEAXDummy3DBuffer = NULL;
+   mpEAXDummyBuffer = NULL;
+}
+
+BOOL
+cDSndMixer::EAXLevelSupported(void)
+{
+   return mEAXLevel;
+}

@@ -2,6 +2,8 @@
 #include <matrix.h>
 #include <r3d.h>
 #include <md.h>
+#include <md_.h>
+#include <math.h>
 
 // Just set these directly
 mxs_vector mdd_sun_vec;
@@ -11,6 +13,7 @@ float mdd_lt_spec;   // specular value
 
 // sun vector in object space
 static mxs_vector obj_sun;
+static mxs_vector obj_view;
 static bool light_invalid = TRUE;
 static float amb;
 static uchar ltype;
@@ -30,24 +33,40 @@ void md_light_recompute()
    // transform into object space
    r3_rotate_w2o(&obj_sun,&mdd_sun_vec);
 
-   scale = mdd_lt_diff;
-   if (ltype&MD_LT_SPEC) scale += mdd_lt_spec;
-
-   // scale the vector by the diff
-   // okay, so sue me, faking specular by saturating
-   mx_scaleeq_vec(&obj_sun,scale);
+   obj_view = *r3_get_view_in_obj();
+   mx_normeq_vec(&obj_view);
 
    // set amb
-   amb = (ltype&MD_LT_AMB)?mdd_lt_amb:0.0;
+   amb = mdd_lt_amb;
+}
+
+
+static float CalcSpecularTerm(mxs_vector *norm)
+{
+   mxs_vector half;
+   float val;
+
+   if (mx_dot_vec(norm,&obj_view) <= 0.0f)
+      return 0.0f;
+
+   mx_add_vec(&half,&obj_sun,&obj_view);
+   mx_normeq_vec(&half);
+
+   val = mx_dot_vec(&half,norm);
+   if (val < 0.0f)
+      val = 0.0f;
+
+   return (float)pow(val,mdd_lt_spec) * (mdd_lt_spec * 0.5 + 1.0);
 }
 
 
 // starkly light from the side
-void md_light_cback(int num,float *ivals,mds_light *lts,mxs_vector *pts,r3s_point *tpts)
+void md_light_cback(int num,float *ivals,mds_light *lts)
 {
+   mds_model *m;
    int i;
-   float l;
    mxs_vector norm;
+   float diffuse;
 
    // punt if no lighting set.
    if (ltype == MD_LT_NONE) return;
@@ -55,29 +74,123 @@ void md_light_cback(int num,float *ivals,mds_light *lts,mxs_vector *pts,r3s_poin
    if (light_invalid)
       md_light_recompute();
 
-   // Diffuse and/or specular
-   if (ltype&(MD_LT_DIFF|MD_LT_SPEC)) {
-      for (i=0;i<num;++i) {
-         norm.x = X_NORM(lts[i].norm);      
-         norm.y = Y_NORM(lts[i].norm);      
-         norm.z = Z_NORM(lts[i].norm);
+   if (!mdd.use_illum) {
+      if (ltype & (MD_LT_DIFF | MD_LT_SPEC)) {
+         // Diffuse and/or specular
+         for (i = 0; i < num; i++) {
+            norm.x = X_NORM(lts[i].norm);
+            norm.y = Y_NORM(lts[i].norm);
+            norm.z = Z_NORM(lts[i].norm);
 
-         l = mx_dot_vec(&norm,&obj_sun);
+            if (ltype & MD_LT_SPEC) {
+               diffuse = CalcSpecularTerm(&norm);
+            } else {
+               diffuse = mx_dot_vec(&norm,&obj_sun);
+               if (diffuse < 0.0f)
+                  diffuse = 0.0f;
+            }
 
-         if (l<0)
-            l = amb;
-         else
-            l += amb;
-
-         ivals[i] = l;
+            ivals[i] = (diffuse *= mdd_lt_diff) + amb;
+         }
+      } else {
+         // Just ambient
+         for (i = 0; i < num; i++) {
+            ivals[i] = amb;
+         }
       }
    } else {
-      // Just ambient
-      for (i=0;i<num;++i) {
-         ivals[i] = amb;
+      m = mdd.model;
+      if (ltype & (MD_LT_DIFF | MD_LT_SPEC)) {
+         for (i = 0; i < num; i++) {
+            norm.x = X_NORM(lts[i].norm);
+            norm.y = Y_NORM(lts[i].norm);
+            norm.z = Z_NORM(lts[i].norm);
+
+            if (ltype & MD_LT_SPEC) {
+               diffuse = CalcSpecularTerm(&norm);
+            } else {
+               diffuse = mx_dot_vec(&norm,&obj_sun);
+               if (diffuse < 0.0f)
+                  diffuse = 0.0f;
+            }
+
+            ivals[i] = (diffuse *= mdd_lt_diff) + amb + md_amat(m, lts[i].mat)->illum;
+         }
+      } else {
+         for (i = 0; i < num; i++) {
+            ivals[i] = amb;
+            ivals[i] += md_amat(m, lts[i].mat)->illum;
+         }
       }
    }
 }
+
+
+void md_mesh_light_cback(int num,float *ivals,mds_light *lights)
+{
+   mds_model *m;
+   int i;
+   mxs_vector norm;
+   float diffuse;
+
+   // punt if no lighting set.
+   if (ltype == '\0')
+      return;
+
+   if (light_invalid)
+      md_light_recompute();
+
+   if (!mdd.use_illum) {
+      if (ltype & (MD_LT_DIFF | MD_LT_SPEC)) {
+         // Diffuse and/or specular
+         for (i = 0; i < num; i++) {
+            norm.x = X_NORM(lights[i].norm);
+            norm.y = Y_NORM(lights[i].norm);
+            norm.z = Z_NORM(lights[i].norm);
+
+            if (ltype & MD_LT_SPEC) {
+               diffuse = CalcSpecularTerm(&norm);
+            } else {
+               diffuse = mx_dot_vec(&norm,&obj_sun);
+               if (diffuse < 0.0f)
+                  diffuse = 0.0f;
+            }
+
+            ivals[i] = (diffuse *= mdd_lt_diff) + amb;
+         }
+      } else {
+         // Just ambient
+         for (i = 0; i < num; i++) {
+            ivals[i] = amb;
+         }
+      }
+   } else {
+      m = mdd.model;
+      if (ltype & (MD_LT_DIFF | MD_LT_SPEC)) {
+         for (i = 0; i < num; i++) {
+            norm.x = X_NORM(lights[i].norm);
+            norm.y = Y_NORM(lights[i].norm);
+            norm.z = Z_NORM(lights[i].norm);
+
+            if (ltype & MD_LT_SPEC) {
+               diffuse = CalcSpecularTerm(&norm);
+            } else {
+               diffuse = mx_dot_vec(&norm,&obj_sun);
+               if (diffuse < 0.0f)
+                  diffuse = 0.0f;
+            }
+
+            ivals[i] = (diffuse *= mdd_lt_diff) + amb + md_amat(m, lights[i].mat)->illum;
+         }
+      } else {
+         for (i = 0; i < num; i++) {
+            ivals[i] = amb;
+            ivals[i] += md_amat(m, lights[i].mat)->illum;
+         }
+      }
+   }
+}
+
 
 // Recomputes light vals
 void md_light_obj(int which)
@@ -90,7 +203,7 @@ void md_light_obj(int which)
 void md_light_init()
 {
    // install the lighting routine
-   md_set_light_callback(md_light_cback);
+   md_set_light_callback((mdf_light_cback)md_light_cback);
    md_set_light_obj_callback(md_light_obj);
 
    // Make default lighting be a soothing 50/50

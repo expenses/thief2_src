@@ -40,6 +40,14 @@ void md_reset_tables()
 
 // All the context that's fit to save
 mds_con mdd;
+r3s_phandle mdd_vlist[64];
+
+void (*g_fp_md_set_alpha_data)(int on, float alpha) = NULL;
+void (*g_fp_md_unset_alpha_data)(void) = NULL;
+void (*g_fp_md_set_mdf_pgon_cback)(void) = NULL;
+int (*g_fp_md_set_mdf_indexedpgon_cback)(int n, r3s_phandle *vpl, void *info, void *bm) = NULL;
+int (*g_fp_md_set_mdf_texchk_cback)(void *bm) = NULL;
+void (*g_fp_md_set_mdf_set_textures_cback)(mds_model *m, mds_mesh *meshes) = NULL;
 
 // These are all kind of global
 // These are for controlling the lighting type, and the
@@ -52,12 +60,11 @@ ubyte      mdd_type_or=0;   // mask for pgon type at render time
 ulong       mdd_tmap_mode=R3_PL_TEXTURE;  // default to perspective
 
 // global
-static bool render_b2f = TRUE; //render back to front?
+uchar mdd_render_b2f = TRUE; //render back to front?
 
 bool        mdd_rgb_lighting = FALSE; // if true, use RGB lighting
 
 // Pgon callback, global
-static mdf_pgon_cback pgon_callback=md_render_pgon;
 static mdf_render_pgon_cback render_pgon_callback=0;
 
 // Subobject callback, global
@@ -68,18 +75,33 @@ static mdf_light_setup_cback mdd_light_setup_cback=NULL;
 static mdf_light_cback mdd_light_cback=NULL;
 static mdf_light_obj_cback mdd_light_obj_cback=NULL;
 
-// Vertex list.  Pretty darn big.
-// Temporary state
-static r3s_phandle vlist[64];
-
 // temporary
 static int buff_light_off; // where the light vals start
 static int buff_norm_off;  // where the norm values are start
 
+static uchar _use_alpha = TRUE;
+static uchar _use_illum = TRUE;
+static float _alpha_scale = 1.0f;
+
+
+mds_mesh    *msh_meshes;
+SubOMeshList *msh_sml;
+ushort       msh_NumMeshes;
+ushort       msh_indexpnts;
+
+
+mdf_mesh_cback      render_mesh_callback = md_mesh_rg_render_pgon;
+mdf_meshpgon_cback  render_meshpgon_callback = md_render_meshpgon_render_callback;
+mdf_pgon_cback pgon_callback=md_render_pgon;
+void (*mdd_mesh_light_cback)(int num, float *ivals, mds_light *lights) = md_mesh_light_cback;
+
+EXTERN void stack_init(void);
+EXTERN void stack_transform_o2w(mxs_vector *dst, mxs_vector *src);
+
 #ifndef SHIP
    #define TEST_VERSION(fname,model)   \
    do { \
-      if (model->ver!=MD_CUR_VER) { \
+      if (model->ver<MD_CUR_VER) { \
          char safename[10]; \
          strncpy(safename,model->name,8); \
          safename[8]='\0'; \
@@ -100,7 +122,7 @@ void update_stride(mds_model *m)
    static int last_stride;
    BOOL recompute_index = FALSE;
 
-   if (m->verts > max_points) {
+   if (m->verts > max_points || !max_points) {
       max_points = m->verts;
 
       if (mdd_index_table)
@@ -136,8 +158,12 @@ void md_set_globals(mds_model *m)
    mdd.points= md_point_list(m);
    mdd.lights= md_light_list(m);
    mdd.norms = md_norm_list(m);
-   mdd.pgons = (uchar *)((uchar *)m+m->pgon_off);
-   mdd.nodes = (uchar *)((uchar *)m+m->node_off);
+   mdd.pgons = ((uchar *)m+m->pgon_off);
+   mdd.nodes = ((uchar *)m+m->node_off);
+
+   mdd.use_alpha = _use_alpha && md_has_alpha(m);
+   mdd.alpha_scale = _alpha_scale;
+   mdd.use_illum = _use_illum && md_has_illum(m);
 
    update_stride(m);
 }
@@ -450,8 +476,10 @@ void md_render_vcall(mds_model *m)
 
    TEST_VERSION("md_render_vcall",m);
 
+   if (m->ver == MD_NEW_VER) { 
+
    // allocate space for the buffer
-   buff = (void *)Malloc(md_buffsize(m));
+   mdd.buff_norms = (float *)Malloc((m->mesh_off - m->norm_off) * sizeof(float));
 
    md_set_buff(m,buff);
    md_set_globals(m);
@@ -462,17 +490,23 @@ void md_render_vcall(mds_model *m)
    // children, to get the transforms right.  
    traverse_subobjs(md_transform_subobj,0);
 
+   md_set_buff(m, buff);
+   md_set_globals(m);
+
+   r3_end_block();
+   traverse_subobjs(md_transform_subobj, 0);
    r3_start_block();
    
    // render first node of first object
-   if (render_b2f) 
+   if (mdd_render_b2f) 
       render_node_b2f((uchar *)mdd.nodes);
    else 
       render_node_f2b((uchar *)mdd.nodes);
    
    r3_end_block();
-
    Free(buff);
+
+   }
 
    pop_context();
 
@@ -485,19 +519,47 @@ void md_render_model(mds_model *m,mds_parm parms[])
 {
    void *buff;
 
+#line 671
    TEST_VERSION("md_render_model",m);
 
-   // allocate space for the buffer
-   buff = (void *)Malloc(md_buffsize(m));
+   if (m->ver == MD_NEW_VER) {
 
-   md_set_buff(m,buff);
-   
-   // Now transform points and normals and lights
-   md_transform_only(m,parms);
-   // Now render the bastard
-   md_render_only(m,parms);
-   
-   Free(buff);
+      ushort i;
+
+      // allocate space for the buffer
+      mdd.buff_norms = (float *)Malloc((m->mesh_off - m->norm_off) * sizeof(float));
+
+      r3_start_indexed_block();
+      msh_indexpnts = 0;
+      md_mesh_init(m);
+      g_fp_md_set_mdf_set_textures_cback(m, msh_meshes);
+      md_mesh_transform_only(m, parms);
+      msh_indexpnts = 0;
+      md_mesh_render_only(m, parms);
+      r3_free_indexed_range(0, msh_indexpnts);
+      r3_end_indexed_block();
+      r3_start_block();
+      mesh_render_node((uchar *)mdd.nodes, 0);
+      r3_end_block();
+
+      for (i = 0; i < msh_NumMeshes; i++)
+         Free(msh_meshes[i].ivals);
+      Free(msh_meshes);
+      for (i = 0; i < m->subobjs; i++)
+         if (msh_sml[i].numMeshes > 0)
+            Free(msh_sml[i].subobj);
+      Free(msh_sml);
+      Free(mdd.buff_norms);
+   } else {
+
+      buff = (void *)Malloc(md_buffsize(m));
+      md_set_buff(m,buff);
+      // Now transform points and normals and lights
+      md_transform_only(m,parms);
+      // Now render the bastard
+      md_render_only(m,parms);
+      Free(buff);
+   }
 }
 
 // Given a model, returns the needed size of the buffer for it
@@ -554,14 +616,14 @@ void md_transform_subobj(int i)
    
    s = &mdd.subs[i];
 
-   // start the block
-   r3_start_block();
-   
-   // transform into the buffer
-   r3_transform_block(s->point_num, md_buff_point(s->point_start), &mdd.points[s->point_start]);
-
-   // end your block
-   r3_end_block();
+   if (s->point_num > 0) {
+      // start the block
+      r3_start_block();
+      // transform into the buffer
+      r3_transform_block(s->point_num, md_buff_point(s->point_start), mdd.points + s->point_start);
+      // end your block
+      r3_end_block();
+   }
 
    if (mdd_subobj_cback)
       mdd_subobj_cback(s);
@@ -570,8 +632,13 @@ void md_transform_subobj(int i)
    // passing in number of lights, i list, light list, and object space
    // and camera space points
    if (mdd_light_cback) {
+      uint light_start;
+      if (mdd_rgb_lighting)
+         light_start = s->light_start * 3;
+      else
+         light_start = s->light_start;
       mdd_light_cback(s->light_num
-         ,&mdd.buff_lights[s->light_start]
+         ,&mdd.buff_lights[light_start]
          ,&mdd.lights[s->light_start]
          ,&mdd.points[s->point_start]
          ,md_buff_point(s->point_start) );
@@ -594,6 +661,7 @@ void md_transform_subobj(int i)
 // into the buffer.  Does not render.
 void md_transform_only(mds_model *m,mds_parm p[])
 {
+#line 817
    TEST_VERSION("md_transform_only",m);
 
    // Per object lighting setup
@@ -617,147 +685,6 @@ void md_transform_only(mds_model *m,mds_parm p[])
    if (mdd_light_obj_cback)
       mdd_light_obj_cback(MD_OBJ_POP);
 
-}
-
-
-void md_render_pgon(mds_pgon *p)
-{
-   int i;
-   int j;
-   ulong flag=0;
-   ulong type;
-
-   // Bail if it isn't facing you
-   // use the cached normal dot prod
-   if ((mdd.buff_norms[p->norm] + p->d) <= 0.0) return;
-   
-   // Set vlist to contain the list of verts
-   for (i=0;i<p->num;++i) {
-      vlist[i] = md_buff_point(p->verts[i]);
-   }
-
-   // Set the type, accounting for rendering mode,
-   // ie, no lighting, or a particular prim type
-   type = (p->type&mdd_type_and)|mdd_type_or;
-
-   // lighting on
-   if (type&MD_PGON_LIGHT_ON) {
-      // Set lighting values
-      if (!mdd_rgb_lighting) {
-         flag |= R3_PL_GOURAUD;
-         for (i=0,j=p->num;i<p->num;++i,++j) {
-            vlist[i]->grp.i = mdd.buff_lights[p->verts[j]];
-         }
-      } else {
-         flag |= R3_PL_RGB_GOURAUD;
-         for (i=0,j=p->num;i<p->num;++i,++j) {
-            int offset = p->verts[j] * 3;
-            g2s_point *g2p = (g2s_point *) &vlist[i]->grp;
-            g2p->i = mdd.buff_lights[offset];
-            g2p->h = mdd.buff_lights[offset+1];
-            g2p->d = mdd.buff_lights[offset+2];
-         }
-      }
-   }
-
-   switch (type&MD_PGON_COLOR_MASK) {
-      case MD_PGON_COLOR_PAL:
-      {
-         // punt stupid encoding
-         r3_set_color(p->data);
-         break;
-      }   
-      case MD_PGON_COLOR_VCOL:
-      {
-         r3_set_color(mdd_vcolor_tab[p->data]);
-         break;
-      }
-   }
-
-   switch(type&MD_PGON_PRIM_MASK) {
-      case MD_PGON_PRIM_SOLID:
-      {
-         r3_set_polygon_context(flag | R3_PL_POLYGON);
-         r3_draw_poly(p->num,vlist);
-         return;
-      }
-      case MD_PGON_PRIM_WIRE:
-      {
-         j = p->num-1;
-         for (i=0;i<p->num;++i) {
-            r3_draw_line(vlist[j],vlist[i]);
-            j = i;
-         }
-         return;
-      }
-      case MD_PGON_PRIM_TMAP: 
-      {   
-         for (i=0,j=2*p->num;i<p->num;++j,++i) {
-            vlist[i]->grp.u = mdd.uvs[p->verts[j]].u;
-            vlist[i]->grp.v = mdd.uvs[p->verts[j]].v;
-         }
-         // Set the requested texture map and context
-         r3_set_texture(mdd_vtext_tab[p->data]);
-         r3_set_polygon_context(flag | R3_PL_POLYGON | mdd_tmap_mode);
-         r3_draw_poly(p->num,vlist);
-         return;
-      }
-   }
-}
-
-void md_render_pgon_render_callback(mds_pgon *p)
-{
-   int i,j;
-   grs_bitmap *bm;
-   ulong color;
-   ulong type;
-
-   // Bail if it isn't facing you
-   // use the cached normal dot prod
-   if ((mdd.buff_norms[p->norm] + p->d) <= 0.0) return;
-   
-   // Set vlist to contain the list of verts
-   for (i=0;i<p->num;++i) {
-      vlist[i] = md_buff_point(p->verts[i]);
-   }
-
-   // Set the type, accounting for rendering mode,
-   // ie, no lighting, or a particular prim type
-   type = (p->type&mdd_type_and)|mdd_type_or;
-
-   // lighting on
-   if (type&MD_PGON_LIGHT_ON) {
-      // Set lighting values
-      if (!mdd_rgb_lighting) {
-         for (i=0,j=p->num;i<p->num;++i,++j) {
-            vlist[i]->grp.i = mdd.buff_lights[p->verts[j]];
-         }
-      } else {
-         for (i=0,j=p->num;i<p->num;++i,++j) {
-            int offset = p->verts[j] * 3;
-            g2s_point *g2p = (g2s_point *) &vlist[i]->grp;
-            g2p->i = mdd.buff_lights[offset];
-            g2p->h = mdd.buff_lights[offset+1];
-            g2p->d = mdd.buff_lights[offset+2];
-         }
-      }
-   }
-
-   if ((type & MD_PGON_COLOR_MASK) == MD_PGON_COLOR_VCOL)
-      color = mdd_vcolor_tab[p->data];
-   else
-      color = p->data;
-
-   if ((type & MD_PGON_PRIM_MASK) == MD_PGON_PRIM_TMAP) {
-      for (i=0,j=2*p->num;i<p->num;++j,++i) {
-         vlist[i]->grp.u = mdd.uvs[p->verts[j]].u;
-         vlist[i]->grp.v = mdd.uvs[p->verts[j]].v;
-      }
-      bm = mdd_vtext_tab[p->data];
-   } else
-      bm = 0;
-
-   render_pgon_callback(p, vlist, bm, color, type);
 }
 
 
@@ -806,6 +733,9 @@ void md_set_render_light(bool l)
 void md_render_only(mds_model *m,mds_parm pm[])
 {
 
+
+
+
    TEST_VERSION("md_render_only",m);
 
    md_set_globals(m);
@@ -818,7 +748,7 @@ void md_render_only(mds_model *m,mds_parm pm[])
    r3_start_block();
    
    // render first node of first object
-   if (render_b2f) 
+   if (mdd_render_b2f)
       render_node_b2f((uchar *)mdd.nodes);
    else 
       render_node_f2b((uchar *)mdd.nodes);
@@ -827,7 +757,7 @@ void md_render_only(mds_model *m,mds_parm pm[])
 
    // Reset the polygon callback, so
    // we don't use it again
-   pgon_callback = md_render_pgon;
+   g_fp_md_set_mdf_pgon_cback();
    render_pgon_callback = NULL;
 
    // notify the lighting system
@@ -879,6 +809,73 @@ mdf_pgon_cback md_set_pgon_callback(mdf_pgon_cback func)
    return last;
 }
 
+void md_render_pgon_render_callback(mds_pgon *p)
+{
+   int i,j;
+   grs_bitmap *bm;
+   ulong color;
+   ulong type;
+
+   // Bail if it isn't facing you
+   // use the cached normal dot prod
+   if ((mdd.buff_norms[p->norm] + p->d) <= 0.0) return;
+   
+   // Set vlist to contain the list of verts
+   for (i=0;i<p->num;++i) {
+      mdd_vlist[i] = md_buff_point(p->verts[i]);
+   }
+
+   // Set the type, accounting for rendering mode,
+   // ie, no lighting, or a particular prim type
+   type = (p->type&mdd_type_and)|mdd_type_or;
+
+   // lighting on
+   if (type&MD_PGON_LIGHT_ON) {
+      // Set lighting values
+      if (!mdd_rgb_lighting) {
+         for (i=0,j=p->num;i<p->num;++i,++j) {
+            mdd_vlist[i]->grp.i = mdd.buff_lights[p->verts[j]];
+         }
+      } else {
+         for (i=0,j=p->num;i<p->num;++i,++j) {
+            int offset = p->verts[j] * 3;
+            g2s_point *g2p = (g2s_point *) &mdd_vlist[i]->grp;
+            g2p->i = mdd.buff_lights[offset];
+            g2p->h = mdd.buff_lights[offset+1];
+            g2p->d = mdd.buff_lights[offset+2];
+         }
+      }
+   }
+
+   if ((type & MD_PGON_COLOR_MASK) == MD_PGON_COLOR_VCOL)
+      color = mdd_vcolor_tab[p->data];
+   else
+      color = p->data;
+
+   if ((type & MD_PGON_PRIM_MASK) == MD_PGON_PRIM_TMAP) {
+      for (i=0,j=2*p->num;i<p->num;++j,++i) {
+         mdd_vlist[i]->grp.u = mdd.uvs[p->verts[j]].u;
+         mdd_vlist[i]->grp.v = mdd.uvs[p->verts[j]].v;
+      }
+      bm = mdd_vtext_tab[p->data];
+   } else
+      bm = 0;
+
+
+   if (mdd.use_alpha) {
+      mds_pgon_aux *aux = (mds_pgon_aux *)&p->verts[(2 + ((type & MD_PGON_PRIM_MASK) == MD_PGON_PRIM_TMAP)) * p->num];
+      mds_amat *amat = md_amat(mdd.model, aux->mat);
+      float trans = amat->trans;
+      int alpha_on = (trans > 0.0f) ? 1 : 0;
+      g_fp_md_set_alpha_data(alpha_on, trans * mdd.alpha_scale);
+   }
+
+   render_pgon_callback(p, mdd_vlist, bm, color, type);
+
+   if (mdd.use_alpha)
+      g_fp_md_unset_alpha_data();
+}
+
 mdf_pgon_cback md_set_render_pgon_callback(mdf_render_pgon_cback func)
 {
    mdf_pgon_cback last;
@@ -892,7 +889,7 @@ mdf_pgon_cback md_set_render_pgon_callback(mdf_render_pgon_cback func)
 // clipping, and potentially Z buffer.
 void md_render_back_to_front(bool f)
 {
-   render_b2f = f;
+   mdd_render_b2f = f;
 }
 
 // per subobject callback.  Use it for whatever you want; my personal reason is for hazing...
@@ -956,3 +953,455 @@ void md_set_tmap_linear(bool l)
    mdd_tmap_mode = l?R3_PL_TEXTURE_LINEAR:R3_PL_TEXTURE;
 }
 
+
+
+
+void md_mesh_init(mds_model *m)
+{
+   int offset;
+   int pnts_ofs, uvs_ofs, lights_ofs, normals_ofs, trilist_ofs, ply_info_ofs;
+   ushort i;
+   ushort j;
+   mds_model *mod;
+
+   mod = m;
+
+   msh_NumMeshes = mod->meshes;
+   msh_meshes = (mds_mesh *)Malloc(msh_NumMeshes * sizeof(mds_mesh));
+   msh_sml = (SubOMeshList *)Malloc(mod->subobjs * sizeof(SubOMeshList));
+
+   offset = mod->mesh_off;
+   for (i = 0; i < msh_NumMeshes; i++) {
+      memcpy(&msh_meshes[i].pgons, (uchar *)mod + offset, 2); offset += 2;
+      memcpy(&msh_meshes[i].verts, (uchar *)mod + offset, 2); offset += 2;
+      memcpy(&msh_meshes[i].mat, (uchar *)mod + offset, 2); offset += 2;
+
+      memcpy(&pnts_ofs, (uchar *)mod + offset, 4); offset += 4;
+      msh_meshes[i].pnts = (mxs_vector *)((uchar *)mod + pnts_ofs);
+
+      memcpy(&uvs_ofs, (uchar *)mod + offset, 4); offset += 4;
+      msh_meshes[i].uvs = (float *)((uchar *)mod + uvs_ofs);
+
+      memcpy(&lights_ofs, (uchar *)mod + offset, 4); offset += 4;
+      msh_meshes[i].lights = (mds_light *)((uchar *)mod + lights_ofs);
+
+      memcpy(&normals_ofs, (uchar *)mod + offset, 4); offset += 4;
+      msh_meshes[i].normals = (mxs_vector *)((uchar *)mod + normals_ofs);
+
+      memcpy(&trilist_ofs, (uchar *)mod + offset, 4); offset += 4;
+      msh_meshes[i].trilist = (short *)((uchar *)mod + trilist_ofs);
+
+      memcpy(&ply_info_ofs, (uchar *)mod + offset, 4); offset += 4;
+      msh_meshes[i].ply_info = (mds_plyinfo *)((uchar *)mod + ply_info_ofs);
+
+      msh_meshes[i].ivals = (float *)Malloc(msh_meshes[i].verts * sizeof(float));
+   }
+
+   offset = mod->submeshlist_off;
+   for (i = 0; i < mod->subobjs; i++) {
+      memcpy(&msh_sml[i].numMeshes, (uchar *)mod + offset, 2); offset += 2;
+      if (msh_sml[i].numMeshes > 0) {
+         msh_sml[i].subobj = (SubObMeshList *)Malloc(msh_sml[i].numMeshes * sizeof(SubObMeshList));
+         for (j = 0; j < msh_sml[i].numMeshes; j++) {
+            memcpy(&msh_sml[i].subobj[j], (uchar *)mod + offset, sizeof(SubObMeshList));
+            offset += sizeof(SubObMeshList);
+         }
+      }
+   }
+}
+
+void md_mesh_transform_only(mds_model *m, mds_parm p[])
+{
+#line 1265
+   TEST_VERSION("md_transform_only",m);
+
+   if (mdd_light_setup_cback)
+      mdd_light_setup_cback(&m->bmin, &m->bmax);
+
+   md_set_globals(m);
+   mdd_parms = p;
+
+   if (mdd_light_obj_cback)
+      mdd_light_obj_cback(MD_OBJ_PUSH);
+
+   traverse_subobjs(md_mesh_transform_subobj, 0);
+
+   if (mdd_light_obj_cback)
+      mdd_light_obj_cback(MD_OBJ_POP);
+}
+
+void md_mesh_transform_subobj(int i)
+{
+   mds_subobj *s;
+   int j;
+   int k;
+   mxs_vector *viewer;
+   ushort startpnt;
+   ushort numpnts;
+   mds_mesh *CurMesh;
+
+   s = &mdd.subs[i];
+   r3_start_block();
+   for (j = 0; j < msh_sml[i].numMeshes; ++j) {
+      startpnt = msh_sml[i].subobj[j].startpnt;
+      CurMesh = &msh_meshes[msh_sml[i].subobj[j].meshnum];
+      numpnts = msh_sml[i].subobj[j].numpnts;
+      r3_transform_block_indexed(msh_indexpnts, numpnts, CurMesh->pnts + startpnt);
+      if (CurMesh->mat != 0xFFFF)
+         r3_set_strided_uvs_indexed(msh_indexpnts, numpnts, CurMesh->uvs + startpnt * 2, 8);
+      if (mdd_light_cback) {
+         mdd_mesh_light_cback(numpnts, CurMesh->ivals + startpnt, CurMesh->lights + startpnt);
+         r3_set_strided_is_indexed(msh_indexpnts, numpnts, CurMesh->ivals + startpnt, 4);
+      }
+
+      msh_indexpnts += numpnts;
+   }
+
+   r3_end_block();
+
+   if (mdd_subobj_cback)
+      mdd_subobj_cback(s);
+
+   viewer = r3_get_view_in_obj();
+   if (msh_sml[i].numMeshes > 0) {
+      for (k = s->norm_start; k < s->norm_num + s->norm_start; ++k)
+         mdd.buff_norms[k] = mx_dot_vec(viewer, &msh_meshes[msh_sml[i].subobj->meshnum].normals[k]);
+   }
+}
+
+void md_mesh_render_only(mds_model *m, mds_parm pm[])
+{
+#line 1356
+   TEST_VERSION("md_render_only",m);
+
+   mdd_parms = pm;
+
+   if (mdd_light_obj_cback)
+      mdd_light_obj_cback(MD_OBJ_PUSH);
+
+   r3_start_block();
+   mesh_render_subobj(0);
+   r3_end_block();
+
+   g_fp_md_set_mdf_pgon_cback();
+   render_pgon_callback = NULL;
+
+   if (mdd_light_obj_cback)
+      mdd_light_obj_cback(MD_OBJ_POP);
+
+   mdd_tmap_mode = R3_PL_TEXTURE;
+}
+
+void mesh_render_subobj(int i)
+{
+   if (i == -1)
+      return;
+
+   render_mesh_callback(msh_meshes, msh_sml, i, mdd.buff_norms, &msh_indexpnts);
+
+   mesh_render_subobj(mdd.subs[i].child);
+   mesh_render_subobj(mdd.subs[i].next);
+}
+
+void mesh_render_node(uchar *n, ushort data)
+{
+   static int k;
+   static int j;
+
+   switch (*n) {
+      case MD_NODE_CALL:
+      {
+         mesh_render_node(mdd.nodes + ((mds_node_call *)n)->node_call, data);
+         break;
+      }
+      case MD_NODE_SPLIT:
+      {
+         mesh_render_node(mdd.nodes + ((mds_node_split *)n)->node_front, data);
+         mesh_render_node(mdd.nodes + ((mds_node_split *)n)->node_behind, data);
+         break;
+      }
+      case MD_NODE_SUBOBJ:
+      {
+         r3_end_block();
+         md_start_subobj(((mds_node_subobj *)n)->index);
+         r3_start_block();
+         mesh_render_node(n + sizeof(mds_node_subobj), data);
+         r3_end_block();
+         md_end_subobj(((mds_node_subobj *)n)->index);
+         r3_start_block();
+         break;
+      }
+      case MD_NODE_VCALL:
+      {
+         if (mdd_vcall_tab[((mds_node_vcall *)n)->index])
+            (*mdd_vcall_tab[((mds_node_vcall *)n)->index])((mds_node_vcall *)n);
+         break;
+      }
+   }
+}
+
+
+
+int md_rg_indexed_tmap(int n, short *vi, r3s_texture bm)
+{
+   r3s_phandle *vpl;
+   int clipped_n;
+   r3s_phandle *clipped;
+   r3ixs_info *info;
+   int result;
+
+   vpl = r3_get_vpl_from_index(n, vi);
+   clipped_n = r3_raw_clip_polygon(n, vpl, &clipped);
+   if (clipped_n != 0) {
+      r3_force_texture(bm);
+      if (vpl == clipped) {
+         info = r3_get_info_from_index(n, vi);
+      } else {
+         info = r3_get_clipped_info_from_index(n, vpl, clipped_n, clipped, vi);
+      }
+      result = (*g_fp_md_set_mdf_indexedpgon_cback)(clipped_n, clipped, info, bm);
+      temp_free(info);
+   } else {
+      result = 0x10;
+   }
+   temp_free(vpl);
+   return result;
+}
+
+void md_render_meshpgon_render_callback(short *trilist, void *bm, ulong color, ulong type)
+{
+   ulong flag = 0;
+
+   if ((type & MD_PGON_LIGHT_ON) != 0) {
+      flag = 0x100;
+   }
+   switch (type & MD_PGON_PRIM_MASK) {
+      case MD_PGON_PRIM_TMAP:
+         r3_set_clip_flags(7);
+         if ((*g_fp_md_set_mdf_texchk_cback)(bm) == -1) {
+            r3_set_color(color);
+            r3_set_polygon_context(flag);
+            (*r3d_glob.prim_tab.draw_indexed_3d_poly)(3, trilist);
+         } else {
+            r3_set_polygon_context(mdd_tmap_mode);
+            md_rg_indexed_tmap(3, trilist, (r3s_texture)bm);
+         }
+         break;
+      case MD_PGON_PRIM_WIRE:
+      {
+         ushort i, j;
+         r3s_phandle *vpl;
+         ushort clipped_n;
+         r3s_phandle *clipped;
+
+         r3_set_color(color);
+         vpl = r3_get_vpl_from_index(3, trilist);
+         r3_set_clip_flags(7);
+         clipped_n = r3_raw_clip_polygon(3, vpl, &clipped);
+         j = clipped_n - 1;
+         for (i = 0; i < clipped_n; i++) {
+            r3_draw_line(clipped[j], clipped[i]);
+            j = i;
+         }
+         temp_free(vpl);
+         break;
+      }
+      case MD_PGON_PRIM_SOLID:
+         r3_set_clip_flags(7);
+         r3_set_color(color);
+         r3_set_polygon_context(flag);
+         (*r3d_glob.prim_tab.draw_indexed_3d_poly)(3, trilist);
+         break;
+   }
+}
+
+void md_mesh_rg_render_pgon(mds_mesh *meshes, SubOMeshList *sml, int SubObjNum,
+                            float *norms, ushort *indexpnts)
+{
+   static short trilist[3];
+   int j;
+   int i;
+   ulong type;
+   ulong flag = 0;
+   ulong color;
+   float alpha = 0.0f;
+
+   for (i = 0; i < sml[SubObjNum].numMeshes; i++) {
+      void *texture;
+      ushort matI;
+      mds_mesh *CurMesh;
+      ushort startply;
+      ushort startpnt;
+      mds_plyinfo *pi;
+
+      CurMesh = &meshes[sml[SubObjNum].subobj[i].meshnum];
+      startply = sml[SubObjNum].subobj[i].startply;
+      startpnt = sml[SubObjNum].subobj[i].startpnt;
+      pi = CurMesh->ply_info;
+
+      if (CurMesh->mat != 0xFFFF) {
+         matI = CurMesh->mat;
+         texture = (void *)mdd_vtext_tab[mdd.mats[matI].num];
+      } else {
+         matI = 0;
+         texture = NULL;
+      }
+
+      for (j = 0; j < sml[SubObjNum].subobj[i].pgons; j++) {
+         if (0.0 < (norms[pi[startply + j].normi] + pi[startply + j].d)) {
+            type = (pi[startply + j].type & mdd_type_and) | mdd_type_or;
+
+            if ((type & MD_PGON_COLOR_MASK) == MD_PGON_COLOR_VCOL)
+               color = mdd_vcolor_tab[pi[startply + j].data];
+            else
+               color = pi[startply + j].data;
+
+            if (mdd.use_alpha) {
+               alpha = md_amat(mdd.model, mdd.mats[matI].num)->trans;
+               (*g_fp_md_set_alpha_data)(alpha > 0.0f, alpha * mdd.alpha_scale);
+            }
+
+            trilist[0] = CurMesh->trilist[(startply + j) * 3 + 0] - startpnt + *indexpnts;
+            trilist[1] = CurMesh->trilist[(startply + j) * 3 + 1] - startpnt + *indexpnts;
+            trilist[2] = CurMesh->trilist[(startply + j) * 3 + 2] - startpnt + *indexpnts;
+            (*render_meshpgon_callback)(trilist, texture, color, type);
+
+            if (mdd.use_alpha)
+               (*g_fp_md_unset_alpha_data)();
+         }
+      }
+
+      *indexpnts += sml[SubObjNum].subobj[i].numpnts;
+   }
+}
+
+
+void md_start_subobj_object(int i);
+void md_end_subobj_object(int i);
+void traverse_subobjs_object(mdf_subrecur cback, int i);
+void md_eval_vhot_subobj_object(int i);
+
+
+
+
+
+
+
+
+void md_traverse_subobjs(mds_model *m, mdf_subrecur cback)
+{
+   TEST_VERSION("md_traverse_subobjs",m);
+   md_set_globals(m);
+   r3_start_block();
+   traverse_subobjs(cback, 0);
+   r3_end_block();
+}
+
+
+
+void md_eval_vhots_object(mds_model *m, mds_parm p[])
+{
+   stack_init();
+   mdd_parms = p;
+   mdd.vhots = md_vhot_list(m);
+   mdd.subs = md_subobj_list(m);
+   traverse_subobjs_object(md_eval_vhot_subobj_object, 0);
+}
+
+
+void md_start_subobj_object(int i)
+{
+   uchar type;
+
+   type = mdd.subs[i].type;
+   if (type == 0) return;
+
+   switch(type) {
+   case 1:
+   {
+      mxs_vector zero;
+      mx_mk_vec(&zero, 0.0f, 0.0f, 0.0f);
+      r3_start_object_trans(&mdd.subs[i].trans);
+      r3_start_object_n(&zero, mdd_parms[mdd.subs[i].parm].ang, 0);
+      break;
+   }
+   case 2:
+   {
+      mxs_vector v;
+      r3_start_object_trans(&mdd.subs[i].trans);
+      mx_mk_vec(&v, mdd_parms[mdd.subs[i].parm].slide, 0.0f, 0.0f);
+      r3_start_object(&v);
+      break;
+   }
+   }
+}
+
+void md_end_subobj_object(int i)
+{
+   uchar type;
+
+   type = mdd.subs[i].type;
+   if (type != 0 && type < 3) {
+      r3_end_object();
+      r3_end_object();
+   }
+}
+
+
+
+void traverse_subobjs_object(mdf_subrecur cback, int i)
+{
+   if (i == -1) return;
+
+   md_start_subobj_object(i);
+   cback(i);
+   traverse_subobjs_object(cback, mdd.subs[i].child);
+   md_end_subobj_object(i);
+   traverse_subobjs_object(cback, mdd.subs[i].next);
+}
+
+
+void md_set_alpha(bool on)
+{
+   _use_alpha = on;
+}
+
+void md_set_alpha_scale(float s)
+{
+   _alpha_scale = s;
+}
+
+void md_set_illum(bool on)
+{
+   _use_illum = on;
+}
+
+
+mdf_mesh_cback md_set_mesh_callback(mdf_mesh_cback func)
+{
+   mdf_mesh_cback old = render_mesh_callback;
+   render_mesh_callback = func;
+   return old;
+}
+
+mdf_mesh_cback md_set_render_meshpgon_callback(mdf_meshpgon_cback func)
+{
+   mdf_mesh_cback old;
+
+   old = md_set_mesh_callback(render_mesh_callback);
+   render_meshpgon_callback = func;
+   return old;
+}
+
+void md_eval_vhot_subobj_object(int i)
+{
+   ushort vhot_start;
+   ushort vhot_num;
+   uint j;
+
+   vhot_start = mdd.subs[i].vhot_start;
+   vhot_num = mdd.subs[i].vhot_num;
+   for (j = (uint)mdd.subs[i].vhot_start; (int)j < (int)((uint)vhot_start + (uint)vhot_num); j++) {
+      stack_transform_o2w(&mdd_vhot_tab[mdd.vhots[j].id], &mdd.vhots[j].v);
+   }
+}

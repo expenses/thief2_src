@@ -2,6 +2,7 @@
 // $Source: x:/prj/tech/libsrc/dispdev/RCS/wdisp.cpp $
 // $Author: KEVIN $
 // $Date: 1998/04/14 15:02:01 $
+#line 1
 // $Revision: 1.46 $
 //
 // @TBD (toml 09-09-96): mode operations, sGrModeInfoEx, sGrModeInfo
@@ -9,6 +10,7 @@
 //
 
 #include <windows.h>
+#include <ddraw.h>
 
 #include <lg.h>
 #include <comtools.h>
@@ -23,6 +25,9 @@
 #include <wdspmode.h>
 
 #include <wdcreate.h>
+#include <dddynf.h>
+#include <wdispgdi.h>
+#include <wdispdd.h>
 
 #include <dev2d.h>
 
@@ -732,6 +737,20 @@ STDMETHODIMP_(int) cWinDisplayDevice::IsLocked()
     return !!m_iLock;
 }
 
+STDMETHODIMP_(BOOL) cWinDisplayDevice::SetGamma(double gamma)
+{
+    if (m_pDisplayModeOperations)
+        return m_pDisplayModeOperations->DoSetGamma(gamma);
+    return FALSE;
+}
+
+STDMETHODIMP_(BOOL) cWinDisplayDevice::SetFlip(BOOL bFlip)
+{
+    if (m_pDisplayModeOperations)
+        return m_pDisplayModeOperations->DoSetFlip(bFlip);
+    return FALSE;
+}
+
 ///////////////////////////////////////
 //
 // Set the stored palette
@@ -977,7 +996,7 @@ STDMETHODIMP_(void) cWinDisplayDevice::cIWinDisplayDeviceProxy::
 
 ///////////////////////////////////////
 
-STDMETHODIMP_(BOOL) cWinDisplayDevice::cIWinDisplayDeviceProxy::GetDirectDraw(IDirectDraw ** ppDD)
+STDMETHODIMP_(BOOL) cWinDisplayDevice::cIWinDisplayDeviceProxy::GetDirectDraw(IDirectDraw4 ** ppDD)
 {
     if (m_pOuter->m_pDisplayProvider)
         return m_pOuter->m_pDisplayProvider->DoGetDirectDraw(ppDD);
@@ -1014,7 +1033,7 @@ STDMETHODIMP_(void) cWinDisplayDevice::cIWinDisplayDeviceProxy::CursorBltToGDISc
 
 ///////////////////////////////////////
 
-STDMETHODIMP_(BOOL) cWinDisplayDevice::cIWinDisplayDeviceProxy::GetBitmapSurface(sGrBitmap * pBm, IDirectDrawSurface ** ppDDS)
+STDMETHODIMP_(BOOL) cWinDisplayDevice::cIWinDisplayDeviceProxy::GetBitmapSurface(sGrBitmap * pBm, IDirectDrawSurface4 ** ppDDS)
 {
     if (m_pOuter->m_pDisplayProvider)
         return m_pOuter->m_pDisplayProvider->DoGetBitmapSurface(pBm, ppDDS);
@@ -1022,3 +1041,4 @@ STDMETHODIMP_(BOOL) cWinDisplayDevice::cIWinDisplayDeviceProxy::GetBitmapSurface
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+

@@ -87,7 +87,7 @@ inline size_t SizeFromIndex(int index)
 
 inline size_t IndexFromSize(size_t size_val)
 {
-    return (size_val - 1) >> 3;
+    return (size_val - 1) >> 2;
 }
 
 ///////////////////////////////////////
@@ -95,10 +95,7 @@ inline size_t IndexFromSize(size_t size_val)
 // Compute the maximum uncompensated size available  given an uncompensated size
 //
 
-inline size_t MaxFit(size_t size_val)
-{
-    return SizeFromIndex(IndexFromSize(size_val));
-}
+#define MaxFit(size_val) (m_pPoolArray[IndexFromSize(size_val)]->GetElementSize() - kHeaderSize)
 
 ///////////////////////////////////////
 //
@@ -242,7 +239,7 @@ cMultiPool::~cMultiPool()
 
         DebugMsg2("            %ld maximum takes (%ldk)",
                   m_pPoolArray[i]->GetMaxTakes(),
-                  (m_pPoolArray[i]->GetMaxTakes() * (i + 1) * 8) / 1024);
+                  (m_pPoolArray[i]->GetMaxTakes() * (i + 1) * 4) / 1024);
     }
 #endif
 }
@@ -269,10 +266,10 @@ void cMultiPool::Init()
     cPoolAllocator * pLast;
 
 // @TBD (toml 03-10-97): This brute logic needs to be cleaned up & the client should be able to tune based on usage
-    // For 0 - 64, we go by 8
-    for (i = 1; i <= kNumPools && i <= 8; i++)
+    // For 0 - 64, we go by 4
+    for (i = 1; i <= kNumPools && i <= 16; i++)
     {
-        elemsize += 8;
+        elemsize += 4;
 
         m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
 //            AssertMsg(m_pPoolArray[i - 1], "Failed to allocate pool");
@@ -281,10 +278,23 @@ void cMultiPool::Init()
 
     }
 
-    // For 65 - 128, we go by 16
-    for (; i <= kNumPools && i <= 16; i++)
+    // For 65 - 128, we go by 8
+    for (; i <= kNumPools && i <= 32; i++)
     {
         if (i % 2 == 1)
+        {
+            elemsize += 8;
+            pLast = m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
+            new(m_pPoolArray[i - 1]) cPoolAllocator(elemsize + kHeaderSize);
+        }
+        else
+            m_pPoolArray[i - 1] = pLast;
+    }
+
+    // For 129 - 256, we go by 16
+    for (; i <= kNumPools && i <= 64; i++)
+    {
+        if (i % 4 == 1)
         {
             elemsize += 16;
             pLast = m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
@@ -295,10 +305,11 @@ void cMultiPool::Init()
             m_pPoolArray[i - 1] = pLast;
     }
 
-    // For 129 - 256, we go by 32
-    for (; i <= kNumPools && i <= 32; i++)
+
+    // For 257 - 512, we go by 32
+    for (; i <= kNumPools && i <= 128; i++)
     {
-        if (i % 4 == 1)
+        if (i % 8 == 1)
         {
             elemsize += 32;
             pLast = m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
@@ -309,11 +320,10 @@ void cMultiPool::Init()
             m_pPoolArray[i - 1] = pLast;
     }
 
-
-    // For 257 - 512, we go by 64
-    for (; i <= kNumPools && i <= 64; i++)
+    // For 513 - 768, we go by 64
+    for (; i <= kNumPools && i <= 192; i++)
     {
-        if (i % 8 == 1)
+        if (i % 16 == 1)
         {
             elemsize += 64;
             pLast = m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
@@ -323,11 +333,11 @@ void cMultiPool::Init()
         else
             m_pPoolArray[i - 1] = pLast;
     }
-
-    // For 513 - 768, we go by 128
-    for (; i <= kNumPools && i <= 96; i++)
+    
+    // For 769 - 1024, we go by 128
+    for (; i <= kNumPools && i <= 256; i++)
     {
-        if (i % 16 == 1)
+        if (i % 32 == 1)
         {
             elemsize += 128;
             pLast = m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
@@ -337,21 +347,8 @@ void cMultiPool::Init()
         else
             m_pPoolArray[i - 1] = pLast;
     }
-    
-    // For 769 - 1024, we go by 256
-    for (; i <= kNumPools && i <= 128; i++)
-    {
-        if (i % 32 == 1)
-        {
-            elemsize += 256;
-            pLast = m_pPoolArray[i - 1] = (cPoolAllocator *)OuterHeapAlloc(sizeof(cPoolAllocator));
-//                AssertMsg(m_pPoolArray[i - 1], "Failed to allocate pool");
-            new(m_pPoolArray[i - 1]) cPoolAllocator(elemsize + kHeaderSize);
-        }
-        else
-            m_pPoolArray[i - 1] = pLast;
-    }
 
+#line 525
     AssertMsg(i == kNumPools + 1, "Max multipool size is 1k");
 
     DebugMsgEx(HEAP, "Allocated MultiPool");
@@ -397,7 +394,8 @@ STDMETHODIMP_(void *) cMultiPool::Realloc(void * pMem, ULONG cb)
     if (*pMemInfo <= kMaxPool)
     {
         // ...and we still want to remain within the same pool
-        if (cb <= MaxFit(*pMemInfo))
+        ULONG maxFit = MaxFit(*pMemInfo);
+        if (cb <= maxFit)
         {
             // ...then just change the size
             *pMemInfo = cb;
@@ -405,18 +403,15 @@ STDMETHODIMP_(void *) cMultiPool::Realloc(void * pMem, ULONG cb)
         }
 
         // Just alloc, copy, and free.
-        void *pNewMem = SelectAlloc(cb);
+        tMPAllocHeader *pNewInfo = (tMPAllocHeader *)SelectAlloc(cb);
 
-        if (pNewMem)
-        {
-            // Set the size (warning: conversion from unsigned long to
-            // tMPAllocHeader)
-            *GetMPAllocHeader(pNewMem) = cb;
+        if (!pNewInfo)
+            return 0;
 
-            memcpy(GetMPAllocHeader(pNewMem) + 1, pMem, *pMemInfo);
-            SelectFree(pMemInfo);
-            return GetMPAllocHeader(pNewMem) + 1;
-        }
+        *pNewInfo = cb;
+        memcpy(pNewInfo + 1, pMem, maxFit);
+        SelectFree(pMemInfo);
+        return pNewInfo + 1;
     }
 
     // ...else we are not in a pool and we want to get bigger...
@@ -465,12 +460,10 @@ unsigned long cMultiPool::GetSize(void *pMem)
     DebugMsgEx1(HEAP, "...Size is %lu", *pMemInfo);
 
     // If we are in the pool...
-    if (*pMemInfo <= kMaxPool)
-        MaxFit(*pMemInfo);
-    else
+    if (*pMemInfo > kMaxPool)
         return OuterHeapGetSize(pMemInfo) - kHeaderSize;
 
-    return (*pMemInfo);
+    return MaxFit(*pMemInfo);
 }
 
 ///////////////////////////////////////

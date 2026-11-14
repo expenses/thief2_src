@@ -373,11 +373,10 @@ extern void lgd3d_release_indexed_primitives( void );
 extern void lgd3d_set_texture_map_method( ulong flag );
 
 //2 levels texturing:
-#define LGD3D_MULTITEXTURE_COLOR             0L  //default
-#define LGD3D_MULTITEXTURE_ALPHA             1L  
-#define LGD3D_MULTITEXTURE_BLEND_TEX_ALPHA   2L  
+#define LGD3D_MULTITEXTURE_COLOR       0L  //default
+#define LGD3D_MULTITEXTURE_ALPHA       1L  
 
-#define LGD3D_MULTITEXTURE_NO_STATES         3L
+#define LGD3D_MULTITEXTURE_NO_STATES   2L
 
 extern void lgd3d_set_light_map_method( ulong flag ); //from the above
 

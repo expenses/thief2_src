@@ -1,3 +1,4 @@
+
 // $Header: x:/prj/tech/libsrc/mp/RCS/mpupdate.c 1.23 1998/06/21 15:13:57 kate Exp $
 
 //
@@ -571,6 +572,8 @@ void mp_apply_motion(multiped * mp, quat * rot, mxs_vector * trans, int stop_joi
       }
       else
       {
+#line 574
+         AssertMsg2(t->parent < mp->num_torsos, "MP.lib mp_apply_motion:  parent id (%d) greater than # torsos (%d)(parent id should be a torso index) check .mjo & .c file", t->parent, mp->num_torsos);
          quat_mul(op, rp, &Orients[mp->torsos[t->parent].joint]);
       }
 
@@ -652,8 +655,8 @@ mp_finished:
 
 bool mp_get_motion_data(multiped * mp, 
                         mps_motion * m, 
-                        int frame, 
-                        quat * rot, 
+                        float frame,
+                        quat * rot,
                         mxs_vector * trans)
 {
    int i;
@@ -780,9 +783,9 @@ void mp_kill_motions(multiped *mp,mps_motion_list * list)
             node = temp;
          }
       }
+      else mprintf("suspect badness will happen to joint map\n");
    }
 }
-
 //
 /*
   void mp_compute_joint_map(multiped * mp, int * map)

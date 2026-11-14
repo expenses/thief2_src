@@ -29,7 +29,7 @@ static void push_stack(void)
       #endif
 
       cx.stack_max *= 2;
-      n = (r3s_trans *)Realloc(cx.stack_base,cx.stack_max);
+      n = (r3s_trans *)Realloc(cx.stack_base,cx.stack_max * sizeof(r3s_trans));
  
       #ifdef DBG_ON
       if (cx.stack_base == NULL) {

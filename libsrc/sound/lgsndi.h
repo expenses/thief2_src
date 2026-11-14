@@ -124,6 +124,15 @@ public:
    STDMETHOD_(void,     Get3DEnvironment)(sSndEnvironment *pParams);
    STDMETHOD_(void,     Set3DMethod)(eSnd3DMethod method) = 0;
    STDMETHOD_(void,     Get3DMethodCapabilities)(uint32 *pMethods) = 0;
+   STDMETHOD_(int32,    Init3DReverb)(THIS);
+   STDMETHOD_(void,     Shutdown3DReverb)(THIS);
+   STDMETHOD_(BOOL,     Have3DReverb)(THIS);
+   STDMETHOD_(BOOL,     CanDo3DReverb)(THIS);
+   STDMETHOD_(BOOL,     Set3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings);
+   STDMETHOD_(BOOL,     Get3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings);
+   STDMETHOD_(BOOL,     Have3DOcclusion)(THIS);
+   STDMETHOD_(int32,    Kludge)(THIS_ int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct) { return 0; }
+   STDMETHOD_(void,     FreeHWChannelCount)(THIS_ int32 *pHWChans, int32 *p3DHWChans);
    STDMETHOD_(int32,    Get3DDistanceVolume)(THIS_ float dist);
    STDMETHOD_(float,    Get3DDistanceFromVolume)(THIS_ int32 vol);
    STDMETHOD_(int32,    Get3DPositionVolume)(THIS_ sSndVector *pSrcPos);
@@ -138,15 +147,16 @@ public:
    void CheckTimer( void );
    void StartTimer( void );
 
-   BOOL  AllocChannel( ISndSample *pSample );
-   void  FreeChannel( void );
+   virtual BOOL  AllocChannel( cSndSample *pSample, uint32 flags, eSnd3DMethod method );
+   virtual void  FreeChannel( cSndSample *pSample );
 
    // allow cSndSample to wank on our sample lists
    cSndSample ** AudibleHead( void );
    cSndSample ** InaudibleHead( void );
 
    cThreadMutex & MutexRef( void );
-	BOOL CheckStreams(void);
+	virtual BOOL CheckStreams(void);
+   virtual BOOL EAXLevelSupported(void);
 
    void DoFreeChannelCB(void);
 
@@ -202,6 +212,7 @@ protected:
    void                    *mpPriorityCBData;
    SndFreeChannelCallback  fnFreeChannelCB;
    void                    *mpFreeChannelCBData;
+   BOOL                    mInPriorityCB;
    SndTraceCallback        fnTraceCB;
 
    eSndTimerState          mTimerState;
@@ -218,7 +229,47 @@ protected:
    eSnd3DMethod            m3DMixMethod;
    uint32                  m3DMethodCapabilities;
    uint32                  m3DDeferFlag;
+   ReverbSettings          mReverbSettings;
 };
+
+inline int32 cSndMixer::Init3DReverb()
+{
+    return 0;
+}
+
+inline void cSndMixer::Shutdown3DReverb()
+{
+}
+
+inline BOOL cSndMixer::Have3DReverb()
+{
+    return FALSE;
+}
+
+inline BOOL cSndMixer::CanDo3DReverb()
+{
+    return FALSE;
+}
+
+inline BOOL cSndMixer::Set3DReverbSettings(ReverbSettings *)
+{
+    return FALSE;
+}
+
+inline BOOL cSndMixer::EAXLevelSupported()
+{
+    return 0;
+}
+
+inline BOOL cSndMixer::Get3DReverbSettings(ReverbSettings *)
+{
+    return FALSE;
+}
+
+inline BOOL cSndMixer::Have3DOcclusion()
+{
+    return FALSE;
+}
 
 inline int32 cSndMixer::NumberOfChannels()
 {
@@ -451,6 +502,9 @@ public:
    STDMETHOD_(int32,    GetAmbientVolume)(void);
    STDMETHOD_(void,     Set3DMethod)(THIS_ eSnd3DMethod method) = 0;
    STDMETHOD_(eSnd3DMethod, Get3DMethod)(THIS);
+   STDMETHOD_(void,     Set3DReverbMix)(THIS_ float mix);
+   STDMETHOD_(void,     Set3DOcclusion)(int32 occlusionMillibels);
+   STDMETHOD_(int32,    Kludge)(int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct);
 
    // Here is some of the nasty stuff to let things happen 
    // between cSndMixer and cSndSample
@@ -621,6 +675,12 @@ inline uint32
 cSndSample::GetGroupQuick()
 {
    return mGroup;
+}
+
+
+inline void
+cSndSample::Set3DReverbMix( float )
+{
 }
 
 

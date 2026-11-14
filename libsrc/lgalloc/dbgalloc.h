@@ -35,7 +35,7 @@ public:
     // Constructor, destructor and architectural hooks
     //
 
-    cHeapDebug();
+    cHeapDebug(unsigned flags = 0);
     ~cHeapDebug();
 
     void LeakTrackStart();
@@ -89,6 +89,7 @@ private:
     sHDTraceInfo * TraceSearch(void * p);
     sHDTraceInfo * TraceRemove(void * p);
 
+    ulong m_flags;
     ulong m_nAllocs;
     ulong m_nBytesAlloced;
     ulong m_nMaxBytesAlloced;
@@ -110,10 +111,10 @@ private:
     ulong m_TimeLeakTrackStart;
     ulong m_HeapTestInterval;
 
-    #define kTraceTableSize 0x9e81
+    #define kTraceTableSize 128021
     sHDTraceInfo * m_TraceTable[kTraceTableSize];
 
-    #define kModuleTableSize 257
+    #define kModuleTableSize 521
     sHDModuleInfo *m_ModuleTable[kModuleTableSize];
     
     #define kCreditStackSize 32

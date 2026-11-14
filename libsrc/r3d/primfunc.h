@@ -30,6 +30,7 @@ typedef void (*poly_setup_func)(r3s_texture tm);
 EXTERN void r3_setup_prim_funcs(
    poly_setup_func *setup_func_list,
    int (*convert)(int n, r3s_phandle *vl),
+   int (*convert_indexed)(int n, r3s_phandle *vl, r3ixs_info *info),
    int (*line_func)(r3s_phandle p0, r3s_phandle p1),
    int (*point_func)(r3s_phandle p));
 

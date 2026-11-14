@@ -8,9 +8,10 @@
 #include <lgassert.h>
 #include <memall.h>
 #include <dev2d.h>
-
+#include <d6check.h>
 #include <lgd3d.h>
 #include <setup.h>
+#include <dbg.h>
 
 #ifndef SHIP
 #include <mprintf.h>
@@ -33,121 +34,156 @@ typedef struct lgd3ds_device_enum_info {
    char *   p_ddraw_desc;
    short    supported_modes[GRD_MODES];
    int      num_supported;
+   ulong    requested_flags;
 } lgd3ds_device_enum_info;
 
 static int num_devices = -2;
-static lgd3ds_device_info *device_list[MAX_DEVICES];
+static lgd3ds_device_info *psDeviceList[MAX_DEVICES];
 static BOOL no_d3d = TRUE;
+static int bDepthBuffer;
+static int bWindowed;
 
-#pragma off (unreferenced)
-static HRESULT WINAPI
-EnumDeviceCallback(LPGUID       p_device_guid, 
-                   LPSTR           description,
-                   LPSTR           name,
-                   LPD3DDEVICEDESC device_desc,
-                   LPD3DDEVICEDESC ,
-                   LPVOID          user_arg)
+static BOOL PASCAL c_DDEnumCallback(LPGUID lpGUID, char *lpDriverDescription, char *lpDriverName, void *lpContext);
+static void GetDevices(lgd3ds_device_enum_info *info);
+static HRESULT WINAPI c_EnumDisplayModesCallback(LPDDSURFACEDESC pSD, LPVOID data);
+static HRESULT WINAPI c_EnumDevicesCallback(LPGUID lpGuid, LPSTR lpDeviceDescription, LPSTR lpDeviceName, LPD3DDEVICEDESC pDeviceDesc, LPD3DDEVICEDESC lpD3DHELDeviceDesc, LPVOID lpUserArg);
+
+int lgd3d_enumerate_devices(void)
 {
-   lgd3ds_device_enum_info *info = (lgd3ds_device_enum_info *)user_arg;
-   lgd3ds_device_info *device_info;
-
-// If there is no hardware support then the color model is zero.
-
-   if (0UL == device_desc->dcmColorModel)
-      return D3DENUMRET_OK;
-
-#ifdef PRINT_ENUM
-   mprintf("Device Name: %s\n", name);
-   mprintf("Device Description: %s\n", description);
-#endif
-
-// Does the device render at the depth we want?
-
-   if (0UL == (device_desc->dwDeviceRenderBitDepth & DDBD_16)) {
-      spew("No 16 bit.\n");
-      return D3DENUMRET_OK;
-   }
-
-   if ((D3DCOLOR_RGB & device_desc->dcmColorModel)==0) {
-      spew("device not RGB.\n");
-      return D3DENUMRET_OK;
-   }
-
-   if ((device_desc->dpcTriCaps.dwShadeCaps & D3DPSHADECAPS_COLORGOURAUDRGB)==0) {
-      spew("no color gouraud shading.\n");
-      return D3DENUMRET_OK;
-   }
-
-   if ((device_desc->dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_ALPHA) == 0) {
-      spew("no alpha blending.\n");
-      return D3DENUMRET_OK;
-   }
-
-
-   if ((device_desc->dwDevCaps & TEXTURE_FLAGS) == 0) {
-      spew("no texture mapping.\n");
-      return D3DENUMRET_OK;
-   }
-
-   if ((device_desc->dpcTriCaps.dwRasterCaps &
-        (D3DPRASTERCAPS_FOGTABLE|D3DPRASTERCAPS_FOGVERTEX)) == 0) {
-      spew("no fog available\n");
-      return D3DENUMRET_OK;
-   }
-
-#if 0
-   if ((device_desc->dwMaxTextureWidth < 256) ||
-       (device_desc->dwMaxTextureHeight < 256) ||
-       (device_desc->dwMinTextureWidth > 256) ||
-       (device_desc->dwMinTextureHeight > 256)) {
-       spew("no 256x256 texture support\n");
-      return D3DENUMRET_OK;
-   }
-#endif
-
-   // tbd: check for colorkey, etc.
-
-   AssertMsg(info->device_number < MAX_DEVICES, "Too many d3d devices available.");
-
-   int malloc_size = 
-      sizeof (*device_info) +                      // info structure
-      (info->num_supported + 1) * sizeof(short) +  // mode list
-      sizeof(DevDesc) +                            // D3D Device description
-      strlen(info->p_ddraw_desc) + 1;              // ddraw driver description string
-
-   if (info->p_ddraw_guid != NULL) {
-      device_info = (lgd3ds_device_info *)Malloc (malloc_size + sizeof(GUID));
-      device_info->p_ddraw_guid = (GUID *)(((uchar *)device_info) + malloc_size);
-      CopyMemory(device_info->p_ddraw_guid, info->p_ddraw_guid, sizeof(GUID));
-   } else {
-      device_info = (lgd3ds_device_info *)Malloc (malloc_size);
-      device_info->p_ddraw_guid = NULL;
-   }
-
-   CopyMemory(&device_info->device_guid, p_device_guid, sizeof(GUID));
-
-   device_info->supported_modes = (short *)(device_info+1);
-   if (info->num_supported>0)
-      CopyMemory(device_info->supported_modes, &info->supported_modes[0], info->num_supported * sizeof(short));
-   device_info->supported_modes[info->num_supported] = -1;
-
-   device_info->device_desc = (DevDesc *)(&device_info->supported_modes[info->num_supported+1]);
-   *(device_info->device_desc) = *device_desc;
-
-   device_info->p_ddraw_desc = (char *)(device_info->device_desc + 1);
-   strcpy(device_info->p_ddraw_desc, info->p_ddraw_desc);
-
-   device_info->flags = 0;
-
-   device_list[info->device_number++] = device_info;
-
-   return D3DENUMRET_OK;
+    return lgd3d_enumerate_devices_capable_of(0);
 }
-#pragma on (unreferenced)
+
+int lgd3d_enumerate_devices_capable_of(DWORD flags)
+{
+    if (num_devices < -1)
+    {
+        if (LoadDirectDraw())
+        {
+            lgd3ds_device_enum_info sDEinfo;
+            sDEinfo.device_number = 0;
+            sDEinfo.requested_flags = flags;
+            DynDirectDrawEnumerate(c_DDEnumCallback, &sDEinfo);
+            if (no_d3d && sDEinfo.device_number == 0)
+            {
+                num_devices = -1;
+            }
+            else
+            {
+                num_devices = sDEinfo.device_number;
+            }
+        }
+        else
+        {
+            num_devices = -1;
+        }
+    }
+    return num_devices;
+}
+
+extern "C" void lgd3d_unenumerate_devices(void)
+{
+   int i;
+   for (i = 0; i < num_devices; i++) {
+
+      free(psDeviceList[i]);
+      psDeviceList[i] = NULL;
+   }
+   num_devices = -2;
+}
 
 
-static HRESULT WINAPI
-  EnumDisplayModesCallback(LPDDSURFACEDESC pSD, LPVOID data)
+lgd3ds_device_info *lgd3d_get_device_info(int device_number)
+{
+#line 144
+   AssertMsg1(num_devices > device_number, "Invalid device number: %d", device_number);
+   return psDeviceList[device_number];
+}
+
+#ifdef SHIP
+#define EnumSpew(x)
+#else
+#define EnumSpew(x) mprintf x
+#endif
+
+static BOOL PASCAL c_DDEnumCallback(LPGUID lpGUID, char *lpDriverDescription, char *lpDriverName, void *lpContext)
+{
+   lgd3ds_device_enum_info *info = (lgd3ds_device_enum_info *)lpContext;
+
+   info->p_ddraw_guid = lpGUID;
+   info->p_ddraw_desc = lpDriverDescription;
+   GetDevices(info);
+
+   return DDENUMRET_OK;
+}
+
+static void GetDevices(lgd3ds_device_enum_info *info)
+{
+   HRESULT hResult;
+   LPDIRECTDRAW lpdd;
+   LPDIRECTDRAW4 lpdd4;
+   LPDIRECT3D3 lpd3d;
+   DDCAPS ddcaps;
+
+   hResult = DynDirectDrawCreate(info->p_ddraw_guid, &lpdd, NULL);
+   if (hResult >= 0)
+   {
+      hResult = lpdd->QueryInterface(IID_IDirectDraw4, (void**)&lpdd4);
+      if (hResult == 0)
+      {
+         memset(&ddcaps, 0, sizeof(ddcaps));
+         ddcaps.dwSize = sizeof(ddcaps);
+         hResult = lpdd4->GetCaps(&ddcaps, NULL);
+         if (hResult == 0 && (ddcaps.dwCaps & 1) != 0)
+         {
+            bDepthBuffer = (ddcaps.ddsCaps.dwCaps & DDSCAPS_ZBUFFER) != 0;
+            bWindowed = (ddcaps.dwCaps2 & DDCAPS2_CANRENDERWINDOWED) != 0;
+            hResult = lpdd4->QueryInterface(IID_IDirect3D3, (void**)&lpd3d);
+            if (hResult == 0)
+            {
+               no_d3d = FALSE;
+               info->num_supported = 0;
+               ((IDirectDraw*)lpdd4)->EnumDisplayModes(0, NULL, info, c_EnumDisplayModesCallback);
+               if (info->num_supported > 0) {
+                  hResult = lpd3d->EnumDevices(c_EnumDevicesCallback, info);
+                  if (hResult != 0) {
+                     Warning(("EnumDevices failed."));
+                  }
+               }
+               else {
+                  Warning(("Couldn't find any display modes"));
+               }
+               if (lpd3d) {
+                  lpd3d->Release();
+               }
+               lpd3d = NULL;
+            }
+            else {
+               Warning(("Can't obtain D3D interface."));
+            }
+         }
+         else {
+            Warning(("Not a 3d accelerator."));
+         }
+         if (lpdd4) {
+            lpdd4->Release();
+         }
+         lpdd4 = NULL;
+      }
+      else {
+         Warning(("Can't obtain DDraw4 interface."));
+      }
+      if (lpdd) {
+         lpdd->Release();
+      }
+      lpdd = NULL;
+   }
+   else {
+      Warning(("Can't create ddraw object."));
+   }
+}
+
+
+static HRESULT WINAPI c_EnumDisplayModesCallback(LPDDSURFACEDESC pSD, LPVOID data)
 {
    lgd3ds_device_enum_info *info = (lgd3ds_device_enum_info *)data;
    int mode = gr_mode_from_info(pSD->dwWidth, pSD->dwHeight, 
@@ -168,92 +204,113 @@ static HRESULT WINAPI
    return D3DENUMRET_OK;
 }
 
-static void GetDevices(lgd3ds_device_enum_info *info)
+static HRESULT WINAPI c_EnumDevicesCallback(LPGUID lpGuid, LPSTR lpDeviceDescription, LPSTR lpDeviceName, LPD3DDEVICEDESC pDeviceDesc, LPD3DDEVICEDESC lpD3DHELDeviceDesc, LPVOID lpUserArg)
 {
-   HRESULT        hRes;
-   LPD3DI         lpd3d;
-   LPDIRECTDRAW   lpdd;
+    lgd3ds_device_enum_info* info = (lgd3ds_device_enum_info*)lpUserArg;
+    lgd3ds_device_info* device_info;
+    ulong capabilities_flags;
+    int malloc_size;
 
-// get directdraw object
+    if (pDeviceDesc->dcmColorModel == 0)
+        return D3DENUMRET_OK;
 
-   hRes = DynDirectDrawCreate(info->p_ddraw_guid, &lpdd, NULL);
-   AssertMsg(!FAILED(hRes), "Can't create ddraw object.");
+    capabilities_flags = 0;
+    if (!(pDeviceDesc->dwDeviceRenderBitDepth & DDBD_16))
+    {
+        EnumSpew(("No 16 bit.\n"));
+        return D3DENUMRET_OK;
+    }
+    if (!(pDeviceDesc->dcmColorModel & D3DCOLOR_RGB))
+    {
+        EnumSpew(("device not RGB.\n"));
+        return D3DENUMRET_OK;
+    }
+    if (!(pDeviceDesc->dpcTriCaps.dwShadeCaps & D3DPSHADECAPS_COLORGOURAUDRGB))
+    {
+        EnumSpew(("no color gouraud shading.\n"));
+        return D3DENUMRET_OK;
+    }
+    if (!(pDeviceDesc->dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_ALPHA))
+    {
+        EnumSpew(("no alpha blending.\n"));
+        return D3DENUMRET_OK;
+    }
+    if (!(pDeviceDesc->dwDevCaps & TEXTURE_FLAGS))
+    {
+        EnumSpew(("no texture mapping.\n"));
+        return D3DENUMRET_OK;
+    }
 
-// get direct3d object
+    if (pDeviceDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR)
+        pDeviceDesc->dpcTriCaps.dwRasterCaps &= ~D3DPRASTERCAPS_FOGTABLE;
 
-   hRes = lpdd->QueryInterface(IID_ID3D, (void **)&lpd3d);
-   if ((FAILED(hRes)) || (NULL == lpd3d)) {
-      SafeRelease(lpdd);
-      return;
-   }
-   no_d3d = FALSE;
+    if (pDeviceDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGTABLE)
+        capabilities_flags = LGD3DF_CAN_DO_TABLE_FOG;
+    else if (info->requested_flags & LGD3DF_TABLE_FOG)
+    {
+        EnumSpew(("no table fog\n"));
+        return D3DENUMRET_OK;
+    }
 
-   info->num_supported = 0;
-   lpdd->EnumDisplayModes(0, NULL, info, EnumDisplayModesCallback);
+    if (pDeviceDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGVERTEX)
+        capabilities_flags |= LGD3DF_CAN_DO_VERTEX_FOG;
+    else if (info->requested_flags & LGD3DF_VERTEX_FOG)
+    {
+        EnumSpew(("no vertex fog\n"));
+        return D3DENUMRET_OK;
+    }
 
-   if (info->num_supported > 0) {
-      hRes = lpd3d->EnumDevices(EnumDeviceCallback, info);
-      AssertMsg(!FAILED(hRes), "EnumDevices failed.");
-   }
+    if (pDeviceDesc->dpcTriCaps.dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND)
+        capabilities_flags |= LGD3DF_CAN_DO_ITERATE_ALPHA;
 
-   SafeRelease(lpd3d);
-   SafeRelease(lpdd);
+    if (bDepthBuffer)
+    {
+        capabilities_flags |= LGD3DF_CAN_DO_ZBUFFER;
+        if (pDeviceDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_WBUFFER)
+            capabilities_flags |= LGD3DF_CAN_DO_WBUFFER;
+    }
+
+    if (bWindowed)
+        capabilities_flags |= LGD3DF_CAN_DO_WINDOWED;
+
+    if (pDeviceDesc->wMaxTextureBlendStages >= 2 && pDeviceDesc->wMaxSimultaneousTextures >= 2
+        && (WORD)pDeviceDesc->dwFVFCaps >= 2)
+        capabilities_flags |= LGD3DF_CAN_DO_SINGLE_PASS_MT;
+
+    if (pDeviceDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER)
+        capabilities_flags |= LGD3DF_CAN_DO_DITHER;
+
+    if (pDeviceDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT)
+        capabilities_flags |= LGD3DF_CAN_DO_ANTIALIAS;
+
+#line 416
+    AssertMsg(info->device_number < MAX_DEVICES, "Too many d3d devices available.");
+    malloc_size = sizeof(lgd3ds_device_info) + strlen(info->p_ddraw_desc) + 1
+        + sizeof(D3DDEVICEDESC) + (info->num_supported + 1) * sizeof(short);
+    if (info->p_ddraw_guid)
+    {
+        device_info = (lgd3ds_device_info*)malloc(malloc_size + sizeof(GUID));
+        device_info->p_ddraw_guid = (GUID*)((char*)device_info + malloc_size);
+        *device_info->p_ddraw_guid = *info->p_ddraw_guid;
+    }
+    else
+    {
+        device_info = (lgd3ds_device_info*)malloc(malloc_size);
+        device_info->p_ddraw_guid = NULL;
+    }
+
+    device_info->device_guid = *lpGuid;
+    device_info->supported_modes = (short*)(device_info + 1);
+    if (info->num_supported > 0)
+        memcpy(device_info->supported_modes, info->supported_modes, info->num_supported * sizeof(short));
+    device_info->supported_modes[info->num_supported] = -1;
+    device_info->device_desc = (DevDesc*)(device_info->supported_modes + info->num_supported + 1);
+    *device_info->device_desc = *pDeviceDesc;
+    device_info->p_ddraw_desc = (char*)(device_info->device_desc + 1);
+    strcpy(device_info->p_ddraw_desc, info->p_ddraw_desc);
+    device_info->flags = capabilities_flags;
+
+    psDeviceList[info->device_number++] = device_info;
+    return D3DENUMRET_OK;
 }
-
-#pragma off (unreferenced)
-static BOOL PASCAL DDEnumCallback(LPGUID guid, char *desc, char *name, void *user_arg)
-{
-   lgd3ds_device_enum_info *info = (lgd3ds_device_enum_info *)user_arg;
-
-#ifdef PRINT_ENUM
-   mprintf("ddraw name: %s\n", name);
-   mprintf("ddraw description: %s\n", desc);
-#endif
-
-   info->p_ddraw_guid = guid;
-   info->p_ddraw_desc = desc;
-   GetDevices(info);
-    
-   return DDENUMRET_OK;
-}
-#pragma on (unreferenced)
-
-// returns -1 if direct draw is unavailable,
-// number of suitable devices available otherwise
-int lgd3d_enumerate_devices(void)
-{
-   lgd3ds_device_enum_info info;
-
-   if (num_devices >= -1)
-      return num_devices;
-
-   if (!LoadDirectDraw())
-      return num_devices = -1;
-
-   info.device_number = 0;
-   DynDirectDrawEnumerate(DDEnumCallback, &info);
-   if (no_d3d && (info.device_number == 0))
-      // we couldn't get any d3d object
-      num_devices = -1;
-   else
-      num_devices = info.device_number;
-   return num_devices;
-}
-
-void lgd3d_unenumerate_devices(void)
-{
-   for (int i=0; i<num_devices; i++) {
-      Free(device_list[i]);
-      device_list[i] = NULL;
-   }
-   num_devices = -2;
-}
-
-
-lgd3ds_device_info *lgd3d_get_device_info(int device_number)
-{
-   AssertMsg(num_devices > device_number, "Invalid device number");
-   return device_list[device_number];
-}
-
 

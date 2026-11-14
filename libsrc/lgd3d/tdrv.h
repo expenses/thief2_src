@@ -11,7 +11,7 @@ typedef struct tdrv_texture_info {
    int scale_w;
    int scale_h;
    int w, h;
-   int size;
+   int size_index;
    uchar *bits;
    ulong cookie;
 } tdrv_texture_info;

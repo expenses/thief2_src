@@ -47,25 +47,26 @@ EXTERN BOOL r3d_do_setup;
 
    // lighting mode
 #define R3_PL_UNLIT            0
-#define R3_PL_GOURAUD          4
-#define R3_PL_RGB_GOURAUD      8
-#define R3_PL_PALETTE_GOURAUD  12
+#define R3_PL_GOURAUD          0x100
+#define R3_PL_RGB_GOURAUD      0x200
+#define R3_PL_RGBA_GOURAUD     0x300
+#define R3_PL_PALETTE_GOURAUD  0x300
 
    // fill modes
 #define R3_PL_SOLID             0
-#define R3_PL_TRANSLUCENT      16
-#define R3_PL_TEXTURE          32
-#define R3_PL_TEXTURE_LINEAR   48
+#define R3_PL_TRANSLUCENT      0x10000
+#define R3_PL_TEXTURE          0x20000
+#define R3_PL_TEXTURE_LINEAR   0x30000
 
    // outline in wireframe as well as draw normally
-#define R3_PL_WIRE             64
+#define R3_PL_WIRE             0x2000000
 
    // check facing using vertices
-#define R3_PL_CHECK_FACING     128
+#define R3_PL_CHECK_FACING     0x1000000
 
 #define R3_PL_MODE_MASK         3
-#define R3_PL_LIGHT_MASK       12
-#define R3_PL_TEXTURE_MASK     48
+#define R3_PL_LIGHT_MASK       0xff00
+#define R3_PL_TEXTURE_MASK     0xff0000
 
 #endif // __PRIM_H
 

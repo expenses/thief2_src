@@ -57,7 +57,6 @@
 include thunks.inc
 assume cs:_TEXT, ds:_DATA
 
-DGROUP group _DATA
 _DATA segment dword public USE32 'DATA'
 
 ; byteguess is in array of the best guess for the square root of that byte

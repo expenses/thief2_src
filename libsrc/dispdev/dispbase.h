@@ -110,6 +110,12 @@ public:
     // Query kind, flags, and ddraw guid
     STDMETHOD_(void, GetKind2)(eDisplayDeviceKind *, int *, GUID **);
 
+    // Set gamma correction level
+    STDMETHOD_(BOOL, SetGamma)(double gamma);
+
+    // Set page flipping
+    STDMETHOD_(BOOL, SetFlip)(BOOL bFlip);
+
     //
     // Interface to functions in the 2d. They are here self-contained to
     // make it easy to redo if this library moves into a DLL other than

@@ -57,6 +57,11 @@ static int null_convert(int n, r3s_phandle *vp)
    return CLIP_ALL;
 }
 
+static int null_convert_indexed(int n, r3s_phandle *vp, r3ixs_info *info)
+{
+   return CLIP_ALL;
+}
+
 static int null_line(r3s_phandle p0, r3s_phandle p1)
 {
    return CLIP_ALL;
@@ -74,6 +79,7 @@ void r3_use_null(void)
    r3_setup_prim_funcs(
       poly_null_setup_funcs,
       null_convert,
+      null_convert_indexed,
       null_line,
       null_point);
 }

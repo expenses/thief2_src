@@ -3,12 +3,14 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 
 // $Header: r:/t2repos/thief2/libsrc/gadget/drawelem.c,v 1.16 1998/07/20 22:45:43 mahk Exp $
 
 #include <drawelem.h>
 #include <2d.h>
 #include <res.h>
+#include <resapi.h>
 #include <lgsprntf.h>
 #include <rect.h>
 #include <string.h>
@@ -18,13 +20,27 @@
 #include <cfgdbg.h>
 
 Id lgad_btype_ids[MAX_BTYPES];
-Id lgad_default_font = 0;
+IDataSource *lgad_default_font = NULL;
 Id lgad_internal_id = 0;
 char *(*lgad_string_get)(int num, char *buf, int bufsize) = NULL;
 
 uchar elem_clut[256];
 
 static guiStyle* draw_style = NULL;
+
+void LGadSetDefaultFont(IDataSource* pFont)
+{
+    if (lgad_default_font)
+        (*lgad_default_font->lpVtbl->Release)(lgad_default_font);
+    if (pFont)
+        (*pFont->lpVtbl->AddRef)(pFont);
+    lgad_default_font = pFont;
+}
+
+IDataSource *LGadGetDefaultFont()
+{
+   return lgad_default_font;
+}
 
 void ElementSetStyle(guiStyle* style)
 {
@@ -193,7 +209,7 @@ void ElementDrawText(DrawElement *d, DrawElemState state, short x, short y, shor
 {
    char s[DRAWELEM_STRLEN],s2[DRAWELEM_STRLEN];  // s carries the final string, some use s2 for formatting or
                                                  // other temporary string storage
-   Id font_id = guiStyleAvail(draw_style) ? guiStyleGetFont(draw_style,StyleFontNormal) : lgad_default_font;  // what font to use, can be overriden
+   IDataSource *font_id = guiStyleAvail(draw_style) ? guiStyleGetFont(draw_style,StyleFontNormal) : lgad_default_font;  // what font to use, can be overriden
    short sw,sh; // size in width and height, used for centering and size-setting
    int *v; // variable contents
    int stylecol = textcols[state];
@@ -271,13 +287,13 @@ void ElementDrawText(DrawElement *d, DrawElemState state, short x, short y, shor
       case DRAWTYPE_TEXT:
       case DRAWTYPE_TEXTREF:
          if (d->draw_data2 != NULL)
-            font_id = (Id)(d->draw_data2);
+            font_id = (IDataSource *)(d->draw_data2);
          break;
    }
 
    // Actually do it
    gr_set_fcolor(color);
-   gr_set_font((grs_font *)ResLock(font_id));
+   gr_set_font((grs_font *)IDataSource_Lock(font_id));
 
    format = (d->draw_flags & DRAWFLAG_FORMAT_BITS) >> DRAWFLAG_FORMAT_SHIFT;
 
@@ -325,21 +341,20 @@ void ElementDrawText(DrawElement *d, DrawElemState state, short x, short y, shor
             break;
       }
    }
-   ResUnlock(font_id);
+   IDataSource_Unlock(font_id);
 }
 
 
 void ElementDrawBitmap(DrawElement *d, DrawElemState state, short x, short y, short w, short h, Point *size)
 {
    grs_bitmap *draw_me; // what we should actually draw
-   Ref draw_ref = 0; // What Ref we are drawing?
-   int offs = 0;
+   IRes* draw_res = NULL; // What Res we are drawing?
 
    switch(d->draw_type)
    {
       case DRAWTYPE_BITMAP:
          if (state == dsDEPRESSED && d->draw_data2)
-            draw_me = (grs_bitmap*)d->draw_data2; 
+            draw_me = (grs_bitmap*)d->draw_data2;
          else
             draw_me = (grs_bitmap *)d->draw_data;
          break;
@@ -354,57 +369,55 @@ void ElementDrawBitmap(DrawElement *d, DrawElemState state, short x, short y, sh
       }
       case DRAWTYPE_RES:
          if (state == dsDEPRESSED && d->draw_data2 != 0)
-            draw_ref = (Ref)d->draw_data2; 
+            draw_res = (IRes*)d->draw_data2;
          else
-            draw_ref = (Ref)d->draw_data;
+            draw_res = (IRes*)d->draw_data;
          goto common_ref;
 
       case DRAWTYPE_RESOFFSET:
-         draw_ref = (Ref)d->draw_data;
-         { 
+         {
             int limit = (int)d->draw_data2;
             if (limit == 0 || state < limit)
-            {
-               Ref ref = draw_ref + state; 
-               RefTable* tbl = ResLock(REFID(ref));
-               if (RefIndexValid(tbl,REFINDEX(ref)))
-                  draw_ref = ref;
-               ResUnlock(REFID(ref));
-            }
+               draw_res = ((IRes**)d->draw_data)[state];
+            else
+               draw_res = NULL;
          }
-         goto common_ref; 
+         goto common_ref;
       case DRAWTYPE_VARRES:
          {
             int *v; // the variable offset
-            Ref *rlist; // array of refs to offset into
-            rlist = (Ref *)d->draw_data;
+            IRes **rlist; // array of resources to offset into
+            rlist = (IRes **)d->draw_data;
             v = (int *)d->draw_data2;
-            AssertMsg(rlist, "ElementDrawBitmap: rlist is NULL for DRAWTYPE_VARRES!");
 
             if (rlist == NULL)
             {
-               Warning(("ElementDrawBitmap: rlist is NULL for DRAWTYPE_VARRES!\n"));
+#ifndef SHIP
+#line 397
+               CriticalMsg("ElementDrawBitmap: rlist is NULL for DRAWTYPE_VARRES!");
+#endif
                return;
             }
 
             if (v == NULL)
-               draw_ref = rlist[0];
+               draw_res = rlist[0];
             else
-               draw_ref = rlist[*v];
+               draw_res = rlist[*v];
          }
    common_ref:
-         draw_me = UtilLockBitmapRef(draw_ref);
+         draw_me = (grs_bitmap*)IRes_Lock(draw_res);
          break;
    }
 
-
-   AssertMsg(draw_me, "ElementDrawBitmap: draw_me is NULL!");
    if (draw_me == NULL)
    {
-      Warning(("ElementDrawBitmap: draw_me is NULL!\n"));
+#ifndef SHIP
+
+
+      CriticalMsg("ElementDrawBitmap: draw_me is NULL!");
+#endif
       return;
    }
-
 
    if (size)
    {
@@ -412,8 +425,8 @@ void ElementDrawBitmap(DrawElement *d, DrawElemState state, short x, short y, sh
    }
    else
       gr_bitmap(draw_me,x,y);
-   if (draw_ref)
-      RefUnlock(draw_ref);
+   if (draw_res)
+      IRes_Unlock(draw_res);
 }
 
 #pragma on(unreferenced)
@@ -502,57 +515,7 @@ void ElementDraw(DrawElement *d, DrawElemState state, short x, short y, short w,
          gr_set_fcolor(guiStyleGetColor(draw_style,StyleColorBevelDark));
          gr_vline(x+w-1,y,y+h-1);
          gr_vline(x,y,y+h-1);
-         x++;y++;w-=2;h-=2; // to compensate for smaller area
-         break;
-      case DRAWFLAG_BORDER_BITMAP:
-         {
-            grs_bitmap *trek_bms[NUM_TREK_BM];
-            int which_btype = (d->draw_flags & DRAWFLAG_BTYPE_BITS) >> DRAWFLAG_BTYPE_SHIFT;
-            AssertMsg1(which_btype <= MAX_BTYPES, "ElementDraw: btype of %d is invalid!\n", which_btype);
-            if (which_btype > MAX_BTYPES)
-            {
-               Warning(("ElementDraw: btype of %d is invalid!\n"));
-               which_btype = 0;
-            }
-
-
-            // fill in all the bitmaps
-            for (i=0; i < NUM_TREK_BM; i++)
-               trek_bms[i] = UtilLockBitmapRef(MKREF(lgad_btype_ids[which_btype],i));
-
-            // upper row
-            gr_clut_bitmap(trek_bms[TREK_UL],x,y,elem_clut);
-            gr_clut_bitmap(trek_bms[TREK_UR],x + w - trek_bms[TREK_UR]->w, y,elem_clut);
-            gr_clut_scale_bitmap(trek_bms[TREK_U], x + trek_bms[TREK_UL]->w, y,
-               w - trek_bms[TREK_UL]->w - trek_bms[TREK_UR]->w, trek_bms[TREK_U]->h,elem_clut);
-
-            // sides
-            gr_clut_scale_bitmap(trek_bms[TREK_L], x, y + trek_bms[TREK_UL]->h,
-               trek_bms[TREK_L]->w, h - trek_bms[TREK_UL]->h - trek_bms[TREK_BL]->h,elem_clut);
-            gr_clut_scale_bitmap(trek_bms[TREK_R], x + w - trek_bms[TREK_R]->w, y + trek_bms[TREK_UR]->h,
-               trek_bms[TREK_R]->w, h - trek_bms[TREK_UR]->h - trek_bms[TREK_BR]->h,elem_clut);
-
-            // bottom row
-            gr_clut_bitmap(trek_bms[TREK_BL], x, y + h - trek_bms[TREK_BL]->h,elem_clut);
-            gr_clut_bitmap(trek_bms[TREK_BR], x + w - trek_bms[TREK_BR]->w, y + h - trek_bms[TREK_BL]->h,elem_clut);
-            gr_clut_scale_bitmap(trek_bms[TREK_B], x + trek_bms[TREK_BL]->w, y + h - trek_bms[TREK_B]->h,
-               w - trek_bms[TREK_BL]->w - trek_bms[TREK_BR]->w, trek_bms[TREK_B]->h,elem_clut);
-
-            m = trek_bms[TREK_L]->w;
-            x = x + m; w = w - m;
-            w = w - trek_bms[TREK_R]->w;
-
-            m = max(max(trek_bms[TREK_UL]->h,trek_bms[TREK_U]->h),trek_bms[TREK_UR]->h);
-            y = y + m; h = h - m;
-            h = h - max(max(trek_bms[TREK_BL]->h,trek_bms[TREK_B]->h),trek_bms[TREK_BR]->h);
-
-            // unlock all those refs
-            for (i=0; i < NUM_TREK_BM; i++)
-            {
-               RefUnlock(MKREF(lgad_btype_ids[which_btype],i));
-               trek_bms[i] = NULL;
-            }
-         }
+         x++;y++;w -= 2;h -= 2;
          break;
    }
 
@@ -563,53 +526,10 @@ void ElementDraw(DrawElement *d, DrawElemState state, short x, short y, short w,
 //   }
 
    // internal draw controls
-   switch((d->draw_flags & DRAWFLAG_INTERNAL_BITS) >> DRAWFLAG_INTERNAL_SHIFT)
+   if (((d->draw_flags & DRAWFLAG_INTERNAL_BITS) >> DRAWFLAG_INTERNAL_SHIFT) == DRAWFLAG_INT_SOLID)
    {
-      case DRAWFLAG_INT_TRANSP:
-         break;
-      case DRAWFLAG_INT_SOLID:
-         // lay solid background
-         if (elem_bcolor(d))
-         {
-            gr_set_fcolor(elem_bcolor(d));
-            gr_rect(x,y,x+w,y+h);
-         }
-         break;
-
-      case DRAWFLAG_INT_TREK:
-         {
-            grs_bitmap *trek_int_bms[3];
-            // lock the art
-            for (i=0; i <= 2; i++)
-               trek_int_bms[i] = UtilLockBitmapRef(MKREF(lgad_internal_id,i));
-
-            // lay solid background
-            gr_set_fcolor(1); // um, why is this a hard-coded "1" ? 
-            gr_rect(x,y,x+w,y+h);
-
-            // draw the three parts
-            gr_bitmap(trek_int_bms[0],x,y);
-            gr_scale_bitmap(trek_int_bms[1],x + trek_int_bms[0]->w, y,
-               w - trek_int_bms[0]->w, trek_int_bms[1]->h);
-            gr_scale_bitmap(trek_int_bms[2],x, y + trek_int_bms[0]->h,
-               trek_int_bms[2]->w, h - trek_int_bms[0]->h);
-
-            // if there is an "inner" draw element put it over the title
-            if (d->inner)
-               ElementDraw(d->inner,NULL,x + trek_int_bms[0]->w, y, w - trek_int_bms[0]->w, trek_int_bms[1]->h);
-
-            // alter drawing area
-            x = x + trek_int_bms[2]->w;
-            w = w - trek_int_bms[2]->w;
-            m = max(trek_int_bms[0]->h,trek_int_bms[1]->h);
-            y = y + m;
-            h = h - m;
-
-            // unlock all our art
-            for (i=0; i <= 2; i++)
-               RefUnlock(MKREF(lgad_internal_id,i));
-         }
-         break;
+      gr_set_fcolor(elem_bcolor(d));
+      gr_rect(x,y,x+w,y+h);
    }
 
 
@@ -652,52 +572,11 @@ void ElementExtrasSize(DrawElement *d, short *pw, short *ph)
    int i; // iterator
    *pw = 0;
    *ph = 0;
-   switch((d->draw_flags & DRAWFLAG_BORDER_BITS) >> DRAWFLAG_BORDER_SHIFT)
+   switch (d->draw_flags & DRAWFLAG_BORDER_BITS)
    {
-      case DRAWFLAG_BORDER_BEVEL:
-      case DRAWFLAG_BORDER_OUTLINE:
-         *pw += 2;
-         *ph += 2;
-         break;
-      case DRAWFLAG_BORDER_BITMAP:  // note this could easily be extended to different types of border art
-                                  // by altering the base resource that is used
-         {
-            grs_bitmap *trek_bms[NUM_TREK_BM];
-            int which_btype = (d->draw_flags & DRAWFLAG_BTYPE_BITS) >> DRAWFLAG_BTYPE_SHIFT;
-
-            for (i=0; i < NUM_TREK_BM; i++)
-               trek_bms[i] = UtilLockBitmapRef(MKREF(lgad_btype_ids[which_btype],i));
-            *pw = *pw + trek_bms[TREK_L]->w;
-            *pw = *pw + trek_bms[TREK_R]->w;
-            *ph = *ph + max(max(trek_bms[TREK_UL]->h,trek_bms[TREK_U]->h),trek_bms[TREK_UR]->h);
-            *ph = *ph + max(max(trek_bms[TREK_BL]->h,trek_bms[TREK_B]->h),trek_bms[TREK_BR]->h);
-            // unlock all those refs
-            for (i=0; i < NUM_TREK_BM; i++)
-            {
-               RefUnlock(MKREF(lgad_btype_ids[which_btype],i));
-               trek_bms[i] = NULL;
-            }
-         }
-         break;
-   }
-   switch((d->draw_flags & DRAWFLAG_INTERNAL_BITS) >> DRAWFLAG_INTERNAL_SHIFT)
-   {
-      case DRAWFLAG_INT_TREK:
-         {
-            grs_bitmap *trek_bms[3];
-
-            // lock the art
-            for (i=0; i <= 2; i++)
-               trek_bms[i] = UtilLockBitmapRef(MKREF(lgad_internal_id,i));
-
-            *pw = *pw + trek_bms[2]->w;
-            *ph = *ph + max(trek_bms[0]->h,trek_bms[1]->h);
-
-            // unlock all our art
-            for (i=0; i <= 2; i++)
-               RefUnlock(MKREF(lgad_internal_id,i));
-         }
-         break;
+   case DRAWFLAG_BORDER_OUTLINE: case DRAWFLAG_BORDER_BEVEL:
+      *pw += 2;
+      *ph += 2;
    }
 }
 
@@ -708,7 +587,6 @@ void ElementExtrasSize(DrawElement *d, short *pw, short *ph)
 // for the upper and left
 void ElementOffset(DrawElement *d, short *pw, short *ph)
 {
-   int i; // iterator
    *pw = 0;
    *ph = 0;
    switch((d->draw_flags & DRAWFLAG_BORDER_BITS) >> DRAWFLAG_BORDER_SHIFT)
@@ -717,41 +595,6 @@ void ElementOffset(DrawElement *d, short *pw, short *ph)
       case DRAWFLAG_BORDER_OUTLINE:
          *pw += 1;
          *ph += 1;
-         break;
-      case DRAWFLAG_BORDER_BITMAP:
-         {
-            grs_bitmap *trek_bms[NUM_TREK_BM];
-            int which_btype = (d->draw_flags & DRAWFLAG_BTYPE_BITS) >> DRAWFLAG_BTYPE_SHIFT;
-
-            for (i=0; i < NUM_TREK_BM; i++)
-               trek_bms[i] = UtilLockBitmapRef(MKREF(lgad_btype_ids[which_btype],i));
-            *pw = *pw + trek_bms[TREK_L]->w;
-            *ph = *ph + max(max(trek_bms[TREK_UL]->h,trek_bms[TREK_U]->h),trek_bms[TREK_UR]->h);
-            // unlock all those refs
-            for (i=0; i < NUM_TREK_BM; i++)
-            {
-               RefUnlock(MKREF(lgad_btype_ids[which_btype],i));
-               trek_bms[i] = NULL;
-            }
-         }
-         break;
-   }
-   switch((d->draw_flags & DRAWFLAG_INTERNAL_BITS) >> DRAWFLAG_INTERNAL_SHIFT)
-   {
-      case DRAWFLAG_INT_TREK:
-         {
-            grs_bitmap *trek_bms[3];
-            // lock the art
-            for (i=0; i <= 2; i++)
-               trek_bms[i] = UtilLockBitmapRef(MKREF(lgad_internal_id,i));
-
-            *pw = *pw + trek_bms[2]->w;
-            *ph = *ph + max(trek_bms[0]->h,trek_bms[1]->h);
-
-            // unlock all our art
-            for (i=0; i <= 2; i++)
-               RefUnlock(MKREF(lgad_internal_id,i));
-         }
          break;
    }
 }

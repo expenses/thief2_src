@@ -9,44 +9,146 @@
 #include <g2.h>
 
 
+extern bool mmd_indexed;
+extern float mm_fGlobalGlowLevel;
+extern int mm_bGlobalGlowUsed;
+
+static void handle_light_cback(int num,int pt_start,mms_uvn *uvns,mxs_vector *loc);
+static void mm_add_self_illum(float fSILevel, int nNoEntries, float *pfColorEntries, unsigned int uiStride);
+static void mm_transform_stretchy_data_weighted(mms_data_chunk *d, mxs_vector *viewer, quat *qchild);
+static void mm_transform_stretchy_data_unweighted(mms_data_chunk *d);
+
+static void (*transform_stretchy_data_func)(mms_data_chunk *d, mxs_vector *viewer, quat *qchild);
+
+void mm_setup_xform_funcs(char flags)
+{
+   transform_stretchy_data_func = (void (*)(mms_data_chunk *, mxs_vector *, quat *))mm_transform_stretchy_data_unweighted;
+   if (!(flags & 1))
+      transform_stretchy_data_func = mm_transform_stretchy_data_weighted;
+}
+
 static set_uvs(int num, int pt_start, mms_uvn *uvns)
 {
-   r3s_point *p_ptr;
-   mms_uvn *uvn_ptr=uvns;
-   int i;
-
-   num+=pt_start;
-   for(i = pt_start; i < num; i++, uvn_ptr++)
+   if (mmd_indexed)
+      r3_set_strided_uvs_indexed(pt_start, num, (float *)uvns, sizeof(mms_uvn));
+   else
    {
-      p_ptr=mmd_buff_point(i);
-      p_ptr->grp.u=uvn_ptr->u;
-      p_ptr->grp.v=uvn_ptr->v;      
+      r3s_point *p_ptr;
+      mms_uvn *uvn_ptr=uvns;
+      int i;
+
+      num+=pt_start;
+      for(i = pt_start; i < num; i++, uvn_ptr++)
+      {
+         p_ptr=mmd_buff_point(i);
+         p_ptr->grp.u=uvn_ptr->u;
+         p_ptr->grp.v=uvn_ptr->v;
+      }
    }
 }
 
-void handle_light_cback(int num,r3s_point *pts,mms_uvn *uvns,mxs_vector *loc)
+static void mm_transform_stretchy_data_weighted(mms_data_chunk *d, mxs_vector *viewer, quat *qchild)
+{
+   if (d->verts) {
+      int i;
+      mxs_vector *vtemp;
+      quat q, qid;
+      mxs_matrix delta;
+      mxs_vector omega;
+      bool flip;
+
+      vtemp = (mxs_vector *)temp_malloc(12 * d->verts);
+      quat_identity(&qid);
+      flip = quat_get_slerp_info(&omega, &qid, qchild);
+      for (i = 0; i < d->verts; ++i) {
+         quat_slerp_cached_info(&q, &qid, qchild, mmd_weights[d->weight_start + i], &omega, flip);
+         quat_to_matrix(&delta, &q);
+         mx_mat_mul_vec(&vtemp[i], &delta, &mmd_vert_vecs[d->vert_start + i]);
+      }
+      if (mmd_indexed)
+         r3_transform_block_indexed(d->vert_start, d->verts, vtemp);
+      else
+         r3_transform_block(d->verts, mmd_buff_point(d->vert_start), vtemp);
+      temp_free(vtemp);
+      if (mmd_light_cback)
+         handle_light_cback(d->verts, d->vert_start, &mmd_vert_uvns[d->vert_start], &mmd_vert_vecs[d->vert_start]);
+      set_uvs(d->verts, d->vert_start, &mmd_vert_uvns[d->vert_start]);
+   }
+}
+
+static void handle_light_cback(int num,int pt_start,mms_uvn *uvns,mxs_vector *loc)
 {
    int j;
    float *output;
+   r3s_point *pts;
    if (mmd_rgb_lighting) {
       output = Malloc(3 * num * sizeof(*output));
       mmd_light_cback(num, output, uvns, loc);
-      for (j=0; j < num; ++j) {
-         g2s_point *g2p = (g2s_point *) &pts->grp;
-         g2p->i = output[j*3+0];
-         g2p->h = output[j*3+1];
-         g2p->d = output[j*3+2];
-         pts = (r3s_point *) ((char *) pts + r3d_glob.cur_stride);
+      if (mm_bGlobalGlowUsed)
+         mm_add_self_illum(mm_fGlobalGlowLevel, num, output, 3);
+      if (mmd_indexed)
+         r3_set_strided_rgbs_indexed(pt_start, num, output, 3 * sizeof(*output));
+      else {
+         pts = mmd_buff_point(pt_start);
+         for (j=0; j < num; ++j) {
+            g2s_point *g2p = (g2s_point *) &pts->grp;
+            g2p->i = output[j*3+0];
+            g2p->h = output[j*3+1];
+            g2p->d = output[j*3+2];
+            pts = (r3s_point *) ((char *) pts + r3d_glob.cur_stride);
+         }
       }
    } else {
       output = Malloc(num * sizeof(*output));
       mmd_light_cback(num, output, uvns, loc);
-      for (j=0; j < num; ++j) {
-         pts->grp.i = output[j];
-         pts = (r3s_point *) ((char *) pts + r3d_glob.cur_stride);
+      if (mm_bGlobalGlowUsed)
+         mm_add_self_illum(mm_fGlobalGlowLevel, num, output, 1);
+      if (mmd_indexed)
+         r3_set_strided_is_indexed(pt_start, num, output, sizeof(*output));
+      else {
+         pts = mmd_buff_point(pt_start);
+         for (j=0; j < num; ++j) {
+            pts->grp.i = output[j];
+            pts = (r3s_point *) ((char *) pts + r3d_glob.cur_stride);
+         }
       }
    }
    Free(output);
+}
+
+static void mm_add_self_illum(float fSILevel, int nNoEntries, float *pfColorEntries, unsigned int uiStride)
+{
+   int i, num_iters;
+   float *pfEntry;
+
+
+   if (fSILevel != 0.0f) {
+       if (!pfColorEntries); else {
+
+
+           num_iters = uiStride * nNoEntries;
+
+           pfEntry = pfColorEntries;
+
+
+           for (i = 0; i < num_iters; ++i, ++pfEntry) {
+               *pfEntry = fSILevel + *pfEntry;
+           }
+       }
+   }
+}
+
+static void mm_transform_stretchy_data_unweighted(mms_data_chunk *d)
+{
+   if (d->verts) {
+      if (mmd_indexed)
+         r3_transform_block_indexed(d->vert_start, d->verts, &mmd_vert_vecs[d->vert_start]);
+      else
+         r3_transform_block(d->verts, mmd_buff_point(d->vert_start), &mmd_vert_vecs[d->vert_start]);
+      if (mmd_light_cback)
+         handle_light_cback(d->verts, d->vert_start, &mmd_vert_uvns[d->vert_start], &mmd_vert_vecs[d->vert_start]);
+      set_uvs(d->verts, d->vert_start, &mmd_vert_uvns[d->vert_start]);
+   }
 }
 
 #define BIG_FLOAT 10000.0
@@ -90,8 +192,11 @@ static void mm_transform_data_chunk(mms_data_chunk *d,mxs_vector *viewer)
    if(!d->verts)
       return;
 
-   r3_transform_block(d->verts, mmd_buff_point(d->vert_start),
-                      &mmd_vert_vecs[d->vert_start]);
+   if (mmd_indexed)
+      r3_transform_block_indexed(d->vert_start, d->verts, &mmd_vert_vecs[d->vert_start]);
+   else
+      r3_transform_block(d->verts, mmd_buff_point(d->vert_start),
+                         &mmd_vert_vecs[d->vert_start]);
 
    // transform the normals, just need to do once
    for (j=d->pgon_start;j<d->pgon_start+d->pgons;j++) 
@@ -100,7 +205,7 @@ static void mm_transform_data_chunk(mms_data_chunk *d,mxs_vector *viewer)
    }
    if(mmd_light_cback) 
    {
-      handle_light_cback(d->verts, mmd_buff_point(d->vert_start),
+      handle_light_cback(d->verts, d->vert_start,
                       mmd_vert_uvns+d->vert_start, mmd_vert_vecs+d->vert_start);
       
    }
@@ -114,6 +219,9 @@ void mm_transform_stretchy_normals(mms_segment *s)
    mms_mapping *map;
    mms_pgon *p;
    mms_data_chunk *d;
+
+   if (mmd_indexed)
+      mmd_buff_points = r3_get_indexed_phandle(0);
 
    // XXX THIS IS A HACK!  normal is only used to determine visibility, and
    // we don't have normal sharing, so just make buff value be really
@@ -151,24 +259,29 @@ void mm_transform_stretchy_normals(mms_segment *s)
 }
 
 
+#ifdef SHIP
+#define MM_ATTACH_XFORM r3_transform_block_func
+#else
+#define MM_ATTACH_XFORM r3_rotate_block
+#endif
 static void _mm_transform_attachments(mxs_trans *segment_trans,
                                       int segment_index)
 {
    int num_attachments = mmd_custom_data->num_attachments;
+   mms_attach_trans *trans = (mms_attach_trans *)mmd_buff_attach_trans;
+   mms_attachment *attachment = mmd_custom_data->attachment_list;
+   int i;
 
-   if (num_attachments) {
-      int i;
-      mxs_trans *trans = mmd_buff_attach_trans;
-      mms_attachment *attachment = mmd_custom_data->attachment_list;
-
-      for (i = 0; i < num_attachments; ++i) {
-         if (attachment->segment_index == segment_index)
-            mx_mul_trans(trans, segment_trans, &attachment->relative_trans);
-
-         ++trans;
-         ++attachment;
+   r3_start_block();
+   for (i = 0; i < num_attachments; ++i) {
+      if (attachment->segment_index == segment_index) {
+         mx_mul_trans(&trans->rel_trans, segment_trans, &attachment->relative_trans);
+         MM_ATTACH_XFORM(1, &trans->point, &trans->rel_trans.vec);
       }
+      ++trans;
+      ++attachment;
    }
+   r3_end_block();
 }
 
 
@@ -199,7 +312,7 @@ void mm_transform_seg_any(mms_segment *s, int segment_index)
       r3_start_block();
       for(i = 0; i < num_smatsegs; ++map, ++i)
       {
-         mm_transform_weighted_data_chunk(&mmd_smatsegs[*map].data,viewer,&q);
+         transform_stretchy_data_func(&mmd_smatsegs[*map].data,viewer,&q);
       }
 
       r3_end_block();

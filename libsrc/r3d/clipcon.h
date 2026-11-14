@@ -1,6 +1,9 @@
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipcon.h 1.8 1998/06/30 18:45:55 buzzard Exp $
 
-#include <clip.h>
+#ifndef __CLIPCON_H
+#define __CLIPCON_H
+
+#include "clip.h"
 
 typedef struct {
    void *clip_data;
@@ -18,3 +21,9 @@ typedef struct {
 #define R3_CLIP_UV     6
 #define R3_CLIP_ALL    7
 #define R3_CLIP_RGB    (1+8+16)   // store RGB as I,*,*,H,D
+#define R3_CLIP_A      32
+#define R3_CLIP_RGBA   (R3_CLIP_RGB | R3_CLIP_A)
+#define R3_CLIP_FOG    64
+#define R3_CLIP_SPEC   (128+256+512+1024)
+
+#endif /* __CLIPCON_H */

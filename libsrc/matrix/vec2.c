@@ -43,4 +43,11 @@ void mx_maxeq_vec(mxs_vector *dest,const mxs_vector *v)
    if (v->z > dest->z) dest->z = v->z;
 }
 
+bool mx_is_identical(const mxs_vector *v1,const mxs_vector *v2,float eps)
+{
+   if (fabs(v1->x - v2->x) > eps) return 0;
+   if (fabs(v1->y - v2->y) > eps) return 0;
+   if (fabs(v1->z - v2->z) > eps) return 0;
+   return 1;
+}
 

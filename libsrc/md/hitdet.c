@@ -1,3 +1,4 @@
+#line 7
 // $Header: x:/prj/tech/libsrc/md/RCS/hitdet.c 1.3 1997/07/17 10:53:07 CCAROLLO Exp $
 //
 // Model hit detection.
@@ -16,6 +17,7 @@ static bool check_point_in_poly(mxs_vector *test, mds_pgon *p, mxs_vector *vlist
    int i,n = p->num;
    ushort *v_index = p->verts;
    mxs_vector *v0, *v1;
+   mxs_vector v10, vt0, cp;
 
    v0 = vlist + v_index[n-1];
    for (i=0; i<n; i++) {
@@ -166,6 +168,7 @@ static mds_pgon *get_next(mds_pgon *p)
 
 #define n_split(x) ((mds_node_split *)(x))
 #define n_raw(x)   ((mds_node_raw *)(x))
+#define n_call(x)  ((mds_node_call *)(x))
 
 // Prototype these so forward-referencing doesn't produce warnings
 void intersect_segment_node(mds_segment_hit_detect_info *hdi, uchar *n);
@@ -282,6 +285,30 @@ void intersect_segment_node(mds_segment_hit_detect_info *hdi, uchar *n)
          // Continue checking at the subobject's root node
          intersect_segment_node(hdi, (uchar *)(n + sizeof(mds_node_subobj)));
 
+         break;
+      }
+
+      case MD_NODE_CALL:
+      {
+         for (i=0; i<n_call(n)->pgons_after; ++i) {
+            check_pgon((mds_pgon *)(hdi->pgons + n_call(n)->polys[i+n_call(n)->pgons_before]), hdi);
+            if (hdi->hit && hdi->early_out) {
+               hdi->hit = TRUE;
+               if (hdi->early_out)
+                  return;
+            }
+         }
+
+         intersect_segment_node(hdi, ((uchar *)hdi->nodes + n_call(n)->node_call));
+
+         for (i=0; i<n_call(n)->pgons_before; ++i) {
+            check_pgon((mds_pgon *)(hdi->pgons + n_call(n)->polys[i]), hdi);
+            if (hdi->hit && hdi->early_out) {
+               hdi->hit = TRUE;
+               if (hdi->early_out)
+                  break;
+            }
+         }
          break;
       }
 
@@ -433,14 +460,141 @@ void intersect_sphere_node(mds_sphere_hit_detect_info *hdi, uchar *n)
          break;
       }
 
-      // Ignore other node types
-      default:
+      case MD_NODE_CALL:
+      {
+         for (i=0; i<n_call(n)->pgons_after; ++i) {
+            if (check_sphere_pgon((mds_pgon *)((uchar *)hdi->pgons + n_call(n)->polys[i+n_call(n)->pgons_before]), hdi)) {
+               hdi->hit = TRUE;
+               if (hdi->early_out)
+                  return;
+               hdi->polys[hdi->num] = n_call(n)->polys[i + n_call(n)->pgons_before];
+               hdi->num++;
+            }
+         }
+
+         intersect_sphere_node(hdi, ((uchar *)hdi->nodes + n_call(n)->node_call));
+
+         for (i=0; i<n_call(n)->pgons_before; ++i) {
+            if (check_sphere_pgon((mds_pgon *)((uchar *)hdi->pgons + n_call(n)->polys[i]), hdi)) {
+               hdi->hit = TRUE;
+               if (hdi->early_out)
+                  return;
+               hdi->polys[hdi->num] = n_call(n)->polys[i];
+               hdi->num++;
+            }
+         }
+
          break;
+      }
+
+// Ignore other node types
+   default:
+      break;
    }
 }
 
+#include <stddef.h>
+#include <string.h>
 
+static void msh_check_pgon(mxs_vector *plynorm, mxs_vector *pnts, mds_segment_hit_detect_info *hdi);
+static bool msh_check_point_in_poly(mxs_vector *test, mxs_vector *pnts, mxs_vector *norm);
 
+void md_msh_segment_hit_detect(mds_model *m, mds_segment_hit_detect_info *hdi)
+{
+   int i;
+   uchar *mesh;
+   ulong nextmesh;
+   mxs_vector *plynorm;
+   mxs_vector *meshpnts;
+   mxs_vector pnts[3];
+   ulong off;
+   mxs_vector *meshnorms;
+   mds_plyinfo *plyinfo;
+   ushort j;
+   short *trilist;
+   ushort npgons;
 
+   mesh = (uchar *)m + m->mesh_off;
+   nextmesh = 0;
+   hdi->hit = FALSE;
 
+   for (i=0; i<m->meshes; i++) {
+      memcpy(&npgons, mesh + nextmesh + offsetof(mds_mesh, pgons), sizeof(npgons));
+      memcpy(&off, mesh + nextmesh + offsetof(mds_mesh, pnts), sizeof(off));
+      meshpnts = (mxs_vector *)((uchar *)m + off);
+      memcpy(&off, mesh + nextmesh + offsetof(mds_mesh, normals), sizeof(off));
+      meshnorms = (mxs_vector *)((uchar *)m + off);
+      memcpy(&off, mesh + nextmesh + offsetof(mds_mesh, trilist), sizeof(off));
+      trilist = (short *)((uchar *)m + off);
+      memcpy(&off, mesh + nextmesh + offsetof(mds_mesh, ply_info), sizeof(off));
+      plyinfo = (mds_plyinfo *)((uchar *)m + off);
 
+      for (j=0; j<npgons; j++) {
+         pnts[0] = meshpnts[trilist[3*j]];
+         pnts[1] = meshpnts[trilist[3*j+1]];
+         pnts[2] = meshpnts[trilist[3*j+2]];
+         plynorm = meshnorms + plyinfo[j].normi;
+         msh_check_pgon(plynorm, pnts, hdi);
+         if (hdi->hit && hdi->early_out)
+            return;
+      }
+      nextmesh += offsetof(mds_mesh, ivals);
+   }
+}
+
+static void msh_check_pgon(mxs_vector *plynorm, mxs_vector *pnts, mds_segment_hit_detect_info *hdi)
+{
+   mxs_vector *norm;
+   mxs_real r;
+   mxs_vector *v;
+   mxs_real da, db;
+   mxs_vector temp, midp;
+
+   v = pnts;
+   norm = plynorm;
+
+   mx_sub_vec(&temp, hdi->a, v);
+   if ((da = mx_dot_vec(&temp, norm))<0)
+      return;
+   mx_sub_vec(&temp, v, hdi->b);
+   if ((db = mx_dot_vec(&temp, norm))<0)
+      return;
+
+   r = da/(db + da);
+   mx_interpolate_vec(&midp, hdi->a, hdi->b, r);
+
+   if (msh_check_point_in_poly(&midp, pnts, norm) == FALSE)
+      return;
+
+   if (hdi->hit==FALSE) {
+      hdi->hit = TRUE;
+      hdi->hit_normal = norm;
+      hdi->r = r;
+      return;
+   }
+   if (hdi->r < r)
+      return;
+
+   hdi->hit_normal = norm;
+   hdi->r = r;
+}
+
+static bool msh_check_point_in_poly(mxs_vector *test, mxs_vector *pnts, mxs_vector *norm)
+{
+   mxs_vector *v1;
+   int i;
+   mxs_vector *v0;
+   mxs_vector vt0, v10, cp;
+
+   v0 = pnts + 2;
+   for (i=0; i<3; i++) {
+      v1 = pnts + i;
+      mx_sub_vec(&vt0, test, v0);
+      mx_sub_vec(&v10, v1, v0);
+      mx_cross_vec(&cp, &vt0, &v10);
+      if (mx_dot_vec(&cp, norm) < 0.0)
+         return FALSE;
+      v0 = v1;
+   }
+   return TRUE;
+}

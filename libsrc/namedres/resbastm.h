@@ -51,10 +51,14 @@
 #include <resbase.h>
 #include <dbmem.h>
 
+#include <thrdtool.h>
+
 #undef INTERFACE
 
 #define RES_BASE_TEMPLATE  template <class INTERFACE, const GUID * pIID_INTERFACE>
 #define RES_BASE           cResourceBase<INTERFACE, pIID_INTERFACE>
+
+#define AUTO_RES_THREAD_LOCK() cAutoResThreadLock resThreadLock
 
 ///////////////////////////////////////
 
@@ -126,9 +130,11 @@ RES_BASE::cResourceBase(IStore *pStore,
 {
    IResMan *pResMan;
    pResMan = AppGetObj(IResMan);
+#line 124
    AssertMsg(pResMan, "No Resource Manager for a resource!");
    if (FAILED(pResMan->QueryInterface(IID_IResManHelper,
                                       (void **) &m_pResMan))) {
+#line 127
       CriticalMsg("Resource Manager does not implement IResManHelper!");
    }
    pResMan->Release();
@@ -313,7 +319,9 @@ STDMETHODIMP_(void *) RES_BASE::LoadData(ulong * pSize,
 
    LGALLOC_PUSH_CREDIT();
    pData = pResMem->ResMalloc(nSize);
+#line 321
    LGALLOC_POP_CREDIT();
+
 
    pStream->Read(nSize, (char *) (pData));
    pStream->Close();
@@ -349,6 +357,7 @@ STDMETHODIMP_(void *) RES_BASE::LoadTranslation
    /* OUT */ ulong *,
    IResMemOverride *)
 {
+#line 347
    CriticalMsg("StandardResource::LoadTranslation called!");
    return NULL;
 }
@@ -817,6 +826,7 @@ STDMETHODIMP_(void) RES_BASE::SetData(void *pNewData)
    AUTO_RES_THREAD_LOCK();
    if (!Drop()) {
       // It's locked, so we can't drop it
+#line 815
       CriticalMsg("Trying to SetData on a Locked Resource!");
       return;
    }

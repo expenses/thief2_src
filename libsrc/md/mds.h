@@ -22,7 +22,7 @@
 #include <r3ds.h>
 
 // Current MD version number
-#define MD_CUR_VER 4
+#define MD_CUR_VER 3
 // Current backwards compatible number
 #define MD_COMPATIBLE_VER 3
 

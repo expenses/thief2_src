@@ -13,6 +13,9 @@
 extern mps_component_xlat_callback_func mp_capture_component_xlat_func;
 //
 
+
+
+
 void mp_start_motion(multiped * mp, mps_start_info * info)
 {
 	if (info->motion_num < mp_num_motions)
@@ -131,7 +134,7 @@ void mp_start_motion(multiped * mp, mps_start_info * info)
 				mp_list_add(&ov->list, (mps_stack_node *) t);
 			}
 		}
-      mp_setup_motion(mp,m); // finish setup. need to happed after listadd call, so that
+      mp_setup_motion(mp,m,info->flags); // finish setup. need to happed after listadd call, so that
                              // start callback will have been made (and hence data locked).
 	}
 	else
@@ -180,7 +183,7 @@ mps_motion_node * mp_alloc_motion(multiped * mp, mps_start_info * info)
 
 //
 
-void mp_setup_motion(multiped * mp, mps_motion_node *m)
+void mp_setup_motion(multiped * mp, mps_motion_node *m, ulong flags)
 {
 	mps_motion * motion;
 	motion = mp_motion_list + m->handle;
@@ -191,7 +194,7 @@ void mp_setup_motion(multiped * mp, mps_motion_node *m)
 		float angle;
 		mxs_matrix mat;
 
-		if ((m->start_frame == 0) || (motion->info.type != MT_CAPTURE) || mp->frame_of_reference!=MFRT_REL_START)
+		if ((m->start_frame == 0) || (motion->info.type != MT_CAPTURE) || mp->frame_of_reference!=MFRT_REL_START || (flags & MStrtFlag_KeepXlat))
 		{
 			mx_zero_vec(&m->offset);
 		}
@@ -206,7 +209,7 @@ void mp_setup_motion(multiped * mp, mps_motion_node *m)
 		}
 	
    	// Set motion's start position & orient
-      if(mp->frame_of_reference==MFRT_GLOBAL)
+      if(mp->frame_of_reference!=MFRT_REL_START)
       {
          mx_zero_vec(&m->base_pos);
          quat_identity(&m->base_orient);
@@ -367,6 +370,7 @@ void mp_stop_all_motions(multiped * mp)
 
 mps_motion_node * mp_setup_current_pose(multiped * mp)
 {
+#line 380
 	mps_motion_node * m = (mps_motion_node *) mp_alloc(sizeof(mps_motion_node), __FILE__, __LINE__);
 
 	m->type = MN_MOTION;

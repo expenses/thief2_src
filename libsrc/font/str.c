@@ -41,7 +41,7 @@ int gr_font_string (grs_font *f, char *s, int x0, int y0)
             continue;
          offset = fi.off_tab[i];
          fi.bm.w = fi.off_tab[i+1]-offset;
-         fi.bm.align = offset&fi.align_mask + fi.align_base;
+         fi.bm.align = (offset&fi.align_mask) + fi.align_base;
          if (fi.align_mask != 0)
             offset >>= 3;
 	      fi.bm.bits = fi.bits + offset;

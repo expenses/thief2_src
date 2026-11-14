@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/libsrc/gadget/guistyle.c,v 1.1 1996/07/30 19:27:26 mahk Exp $
 
 #include <2d.h>
@@ -11,6 +12,7 @@
 #include <2dres.h>
 
 #include <guistyle.h>
+#include <gadbase.h>
 
 ////////////////////////////////////////////////////////////
 // Global style and methods
@@ -64,18 +66,20 @@ static bool default_setpal_func(StylePalette palette)
 
 static bool default_setfont_func(StyleFont font)
 {
-   if (font == 0 || !ResInUse(font)) 
+   if (font == NULL)
       return FALSE;
-   gr_set_font((grs_font*)ResLock(font));
+
+   gr_set_font((grs_font*)IDataSource_Lock(font));
    return TRUE;
 }
 
 static bool default_unsetfont_func(StyleFont font)
 {
-   if (font == 0 || !ResInUse(font)) 
-      return FALSE;
-   ResUnlock(font);
-   return TRUE;
+    if (font == NULL)
+        return FALSE;
+
+    IDataSource_Unlock(font);
+    return TRUE;
 }
 
 
@@ -103,6 +107,23 @@ StylePalette guiStyleGetPalette(guiStyle* style)
    return style->pal;
 }
 
+int guiScreenColor(int color)
+{
+    if (!(color & GUI_RGB_MASK))
+        return color;
+    return gr_make_screen_fcolor(color & 0xffffff);
+}
+
+void guiCompileStyleColors(guiStyle* targ, const guiStyle* src)
+{
+   int _pad;
+   int i;
+   memcpy(targ, src, sizeof(guiStyle));
+   for (i = 0; i < StyleNumColors; i++) {
+      targ->colors[i] = guiScreenColor(src->colors[i]);
+   }
+}
+
 
 // Yum, kill three accessors with one macro
 
@@ -112,10 +133,18 @@ Style##type guiStyleGet##type(guiStyle* style, Style##type##Kind idx) \
      SET_STYLE(style); \
      if (style == NULL) return 0; \
      return style->array[idx];\
-} 
+}
+
+#define IMPLEMENT_COLOR_ACCESSOR(type,array) \
+Style##type guiStyleGet##type(guiStyle* style, Style##type##Kind idx) \
+{ \
+     SET_STYLE(style); \
+     if (style == NULL) return 0; \
+     return guiScreenColor(style->array[idx]);\
+}
 
 
-IMPLEMENT_ACCESSOR(Color,colors)
+IMPLEMENT_COLOR_ACCESSOR(Color,colors)
 
 IMPLEMENT_ACCESSOR(Font,fonts)
 
@@ -134,7 +163,7 @@ bool guiStyleSetupPalette(guiStyle* style)
 bool guiStyleSetupFont(guiStyle* style, StyleFontKind font)
 {
    SET_STYLE(style);
-   if (style == NULL) return FALSE;
+   if (style == NULL) return METHOD_CALL(setfont_func,LGadGetDefaultFont());
    return METHOD_CALL(setfont_func,style->fonts[font]);
 }
 
@@ -142,7 +171,7 @@ bool guiStyleSetupFont(guiStyle* style, StyleFontKind font)
 bool guiStyleCleanupFont(guiStyle* style, StyleFontKind font)
 {
    SET_STYLE(style);
-   if (style == NULL) return FALSE;
+   if (style == NULL) return METHOD_CALL(unsetfont_func,LGadGetDefaultFont());
    return METHOD_CALL(unsetfont_func,style->fonts[font]);
 }
 

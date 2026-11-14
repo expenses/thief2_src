@@ -17,8 +17,17 @@
 //
 ImplDynFunc(DirectSoundCreate, "dsound.dll", "DirectSoundCreate", 0);
 
-
 BOOL LoadDirectSound()
 {
     return DynFunc(DirectSoundCreate).Load();
+}
+
+//
+// A3dCreate
+//
+ImplDynFunc(A3dCreate, "a3d.dll", "_A3dCreate@12", 0);
+
+BOOL LoadA3D(void)
+{
+    return DynFunc(A3dCreate).Load();
 }

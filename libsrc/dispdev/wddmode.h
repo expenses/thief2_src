@@ -40,6 +40,7 @@ public:
 
     virtual BOOL StartMode(const sGrModeInfo &, int flags, sGrModeCap * pReturnModeInfo) = 0;
     virtual BOOL DoSetPalette(LOGPALETTE & palette, unsigned uStart, unsigned n);
+    virtual BOOL DoSetGamma(double gamma);
 
     ///////////////////////////////
 
@@ -63,8 +64,8 @@ public:
 
     ///////////////////////////////
     
-    void GetSurfaces(IDirectDrawSurface ** ppPrimarySurface,
-                     IDirectDrawSurface ** ppSecondarySurface);
+    void GetSurfaces(IDirectDrawSurface4 ** ppPrimarySurface,
+                     IDirectDrawSurface4 ** ppSecondarySurface);
 
     ///////////////////////////////
     void RestoreSurfaces()
@@ -87,14 +88,13 @@ protected:
         return m_pOuter->m_DDCoopFlags;
     }
 
-    LPDIRECTDRAW GetDD()
+    LPDIRECTDRAW4 GetDD()
     {
         return m_pOuter->m_pDD;
     }
 
     HRESULT SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP)
     {
-        HRESULT result = m_pOuter->m_pDD->SetDisplayMode(dwWidth, dwHeight, dwBPP);
         YieldDisplay(m_pDisplayDevice);
 
         m_pOuter->SetCooperativeLevel(cDDProvider::kDDWindowedCoopFlags);
@@ -106,7 +106,7 @@ protected:
         m_pOuter->SetCooperativeLevel(cDDProvider::kDDFullScreenCoopFlags);
 
         RegainDisplay(m_pDisplayDevice);
-        return result;
+        return m_pOuter->m_pDD->SetDisplayMode(dwWidth, dwHeight, dwBPP, 0, 0);
     }
 
     PALETTEENTRY * GetPaletteEntries()
@@ -114,25 +114,26 @@ protected:
         return m_pDisplayDevice->GetPaletteEntries();
     }
 
-    void SetModeInfoFromSurfaceDesc(const DDSURFACEDESC &, int flags, sGrModeCap * pReturnModeInfo);
+    void SetModeInfoFromSurfaceDesc(const DDSURFACEDESC2 &, int flags, sGrModeCap * pReturnModeInfo);
 
     BOOL IsModeX()
     {
         return (m_PrimaryDesc.dwWidth < 400);
     }
 
-    BOOL WipeSurface(IDirectDrawSurface *pdds);
+    BOOL WipeSurface(IDirectDrawSurface4 *pdds);
 
     ///////////////////////////////
 
     cDDProvider * m_pOuter;
 
-    LPDIRECTDRAWSURFACE m_pPrimarySurface;  // DirectDraw primary surface
-    LPDIRECTDRAWSURFACE m_pSecondarySurface;     // DirectDraw back surface
+    LPDIRECTDRAWSURFACE4 m_pPrimarySurface;  // DirectDraw primary surface
+    LPDIRECTDRAWSURFACE4 m_pSecondarySurface;     // DirectDraw back surface
     LPDIRECTDRAWPALETTE m_pPalette;       // DirectDraw palette
-    DDSURFACEDESC       m_PrimaryDesc;
-    DDSURFACEDESC       m_SecondaryDesc;
+    DDSURFACEDESC2       m_PrimaryDesc;
+    DDSURFACEDESC2       m_SecondaryDesc;
     int                 m_Flags;
+    BOOL                m_bFlip;
 
     enum eFlags
     {
@@ -154,7 +155,8 @@ public:
     cDirectDDModeOps(cWinDisplayDevice * pDisplayDevice, cDDProvider * pOuter, LPDIRECTDRAWPALETTE pPalette)
       : cDDModeOpsBase(pDisplayDevice, pOuter, pPalette),
         m_pPauseSurface(NULL),
-        m_pPauseSurface2(NULL)
+        m_pPauseSurface2(NULL),
+        m_bHIW(FALSE)
     {
     }
 
@@ -165,15 +167,17 @@ public:
     virtual BOOL DoPageFlip();
     virtual BOOL DoLock(sGrModeCap *);
     virtual BOOL DoUnlock();
+    virtual BOOL DoSetFlip(int bFlip);
 
 private:
     // Jacobson, 3-4-96
     // These objects here are used to store off the contents of the
     // screen when the pause key is hit.
-    LPDIRECTDRAWSURFACE m_pPauseSurface;  // DirectDraw temp surface
-    LPDIRECTDRAWSURFACE m_pPauseSurface2; // DirectDraw temp surface
-    DDSURFACEDESC       m_PauseDesc;
-    void                PauseBlit(LPDIRECTDRAWSURFACE pDest,LPDIRECTDRAWSURFACE pSource);
+    LPDIRECTDRAWSURFACE4 m_pPauseSurface;  // DirectDraw temp surface
+    LPDIRECTDRAWSURFACE4 m_pPauseSurface2; // DirectDraw temp surface
+    DDSURFACEDESC2      m_PauseDesc;
+    int                 m_bHIW;
+    void                PauseBlit(LPDIRECTDRAWSURFACE4 pDest,LPDIRECTDRAWSURFACE4 pSource);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

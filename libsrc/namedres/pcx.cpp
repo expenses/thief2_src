@@ -40,23 +40,12 @@
 
 #include <string.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <lg.h>
-#include <gfile.h>
-
-#define  RGB_RED     0
-#define  RGB_GREEN   1
-#define  RGB_BLUE 2
-#define  RGB_SIZE 3
-
-typedef unsigned long 	rgb;
-
-rgb get_palrgb(uchar *paldata,int n);
-rgb get_rgb(uchar *paldata, uchar *data,int xres, uint x,uint y);
-
-/* Write a 24 bit PCX file, based on code in Supercharged Bitmap Graphics */
-/* or write an 8 bit PCX file */
+#include <windows.h>
+#include <pcx.h>
+#include <resapi.h>
+#include <storeapi.h>
+#include <grs.h>
+#include <bitmap.h>
 
 typedef struct {
    char manufacturer;
@@ -81,166 +70,6 @@ typedef PCXHEAD PcxHeader;
 static uchar *readBuff;
 static short readBuffIndex;
 
-int _writepcxline(uchar *p,FILE *fp,int bytes);
-
-bool PcxReadHeader(FILE *fp, PcxHeader *phead);
-void PcxReadPall(FILE *fp, GfileInfo *pgfi);
-bool PcxReadBody(FILE *fp, grs_bitmap *pbm);
-bool PcxReadRow(FILE *fp, uchar *p, short npixels);
-
-//	-------------------------------------------------------
-//		READ ROUTINE
-//	-------------------------------------------------------
-//
-//	PcxRead() reads in a PCX file.
-
-bool PcxRead(GfileInfo *pgfi, FILE *fp)
-{
-	PcxHeader pcxHeader;
-
-//	Read header, if not valid PCX file return
-
-	if (!PcxReadHeader(fp, &pcxHeader))
-		return FALSE;
-
-//	No palette so far
-
-	pgfi->ppall = NULL;
-
-//	Fill in bitmap
-
-	pgfi->bm.align = 0;
-	pgfi->bm.flags = 0;
-	pgfi->bm.w = (pcxHeader.xmax - pcxHeader.xmin) + 1;
-	pgfi->bm.h = (pcxHeader.ymax - pcxHeader.ymin) + 1;
-	if (pcxHeader.colour_planes == 1)
-		{
-		pgfi->bm.type = BMT_FLAT8;
-		pgfi->bm.row = pgfi->bm.w;
-		}
-	else if (pcxHeader.colour_planes == 3)
-		{
-		pgfi->bm.type = BMT_FLAT24;
-		pgfi->bm.row = pgfi->bm.w * 3;
-		}
-	else
-		{
-		Warning(("PCX file has %d planes!\n", pcxHeader.colour_planes));
-		return FALSE;
-		}
-
-//	Allocate bitmap bits
-
-	pgfi->bm.bits = Malloc((long) pgfi->bm.row * (long) pgfi->bm.h);
-	if (pgfi->bm.bits == NULL)
-		{
-		Warning(("Can't allocate bitmap bits in pcx reader\n"));
-		goto BADRET;
-		}
-
-//	Allocate palette and read it
-
-	if (pcxHeader.colour_planes == 1)
-		{
-		pgfi->ppall = Malloc(256 * 3);
-		if (pgfi->ppall == NULL)
-			{
-			Warning(("Can't allocate palette in pcx reader\n"));
-			goto BADRET;
-			}
-		PcxReadPall(fp, pgfi);
-		}
-
-//	Allocate read buffer
-
-	readBuff = Malloc(READBUFF_SIZE);
-	if (readBuff == NULL)
-		{
-		Warning(("Can't allocate buffer in pcx reader\n"));
-		goto BADRET;
-		}
-	readBuffIndex = READBUFF_SIZE;
-
-//	Read body and return
-
-	if (!PcxReadBody(fp, &pgfi->bm))
-		{
-		Warning(("Unable to read PCX file!\n"));
-		Free(readBuff);
-		goto BADRET;
-		}
-	else
-		{
-		Free(readBuff);
-		return TRUE;
-		}
-
-//	If error, free up properly
-
-BADRET:
-
-	GfileFree(pgfi);
-	return FALSE;
-}
-
-//	-----------------------------------------------------------------
-//		WRITE ROUTINE
-//	-----------------------------------------------------------------
-
-/* Writes a 24 bit image for 24 bit images and an 8 bit for 8 bit */
-bool PcxWrite(GfileInfo *pgfi, FILE *fp)
-{
-// (char *pathname,Image *im)
-   PCXHEAD pcx;
-   int i,bytes;
-   uchar *p;
-//   uchar r,g,b;
-
-   pcx.manufacturer = 10;
-   pcx.version = 5;
-   pcx.encoding = 1;
-   pcx.bits_per_pixel = 8;
-   pcx.xmin = 0;
-   pcx.ymin = 0;
-   pcx.xmax = pgfi->bm.w - 1;
-   pcx.ymax = pgfi->bm.h - 1;
-   pcx.hres = pcx.xmax - pcx.xmin + 1;    
-   pcx.vres = pcx.ymax - pcx.ymin + 1;
-   pcx.colour_planes = (pgfi->bm.type == BMT_FLAT8) ? 1 : 3;
-   pcx.bytes_per_line = pcx.hres;
-   pcx.palette_type = 0;
-
-   fwrite(&pcx,1,sizeof(PCXHEAD),fp);
-
-   bytes=pcx.bytes_per_line;
-
-   if (pcx.colour_planes==3) {
-      /* We know this is an RGB image, 24 bit */
-      Warning(("Hey!  Gfile doesn't know from 24 bit color!"));
-   }
-   else {
-      /* This is an 8 bit image */
-      /* Good thing too, since we can't do 24 bit right.  Fortunately, neither can the read
-         part of gfile -- Rob F. 10/18/93 */
-      p = pgfi->bm.bits;
-//      p = &(im->data[0]);
-
-      for(i=0;i<pcx.vres;++i) {
-         if(_writepcxline(p,fp,bytes) != bytes) {
-            return FALSE;
-         }
-         p += pcx.hres;
-      }
-
-      fputc(12,fp); // flag for people to know the palette is next
-
-      fwrite(pgfi->ppall, 256 * 3, 1, fp);
-   }
-
-   fclose(fp);
-   return TRUE;
-}
-
 //	--------------------------------------------------------
 //		INTERNAL ROUTINES
 //	--------------------------------------------------------
@@ -250,10 +79,10 @@ bool PcxWrite(GfileInfo *pgfi, FILE *fp)
 #define IGNORE_MANUFACTURER      // Windows 95 Paint writes an 'illegal'
                                  // value here...
 
-bool PcxReadHeader(FILE *fp, PcxHeader *phead)
+bool PcxReadHeader(IStoreStream *pStream, PcxHeader *phead)
 {
-	fseek(fp, 0L, SEEK_SET);
-	fread(phead, sizeof(PcxHeader), 1, fp);
+	pStream->SetPos(0);
+	pStream->Read(sizeof(PcxHeader), (char *) phead);
 
 #ifndef IGNORE_MANUFACTURER
 	if (phead->manufacturer != 10)
@@ -287,104 +116,11 @@ bool PcxReadHeader(FILE *fp, PcxHeader *phead)
 	return TRUE;
 }
 
-//	-------------------------------------------------------
-//
-//	PcxReadPall() reads in the pallette.
-
-void PcxReadPall(FILE *fp, GfileInfo *pgfi)
-{
-	uchar pallPresent;
-
-	fseek(fp, -769L, SEEK_END);
-	fread(&pallPresent, 1, 1, fp);
-	if (pallPresent == 12)
-		fread(pgfi->ppall, 256 * 3, 1, fp);
-	else
-		Warning(("Bad PCX trailer: pallette not found\n"));
-}
-
-//	-------------------------------------------------------
-//
-//	PcxReadBody() reads in the body.
-
-static short readBuffIndex;
-
-bool PcxReadBody(FILE *fp, grs_bitmap *pbm)
-{
-	uchar *p,*buff24,*pd;
-	int y,i,plane;
-
-//	Seek to start of color data
-
-	fseek(fp, 128L, SEEK_SET);
-
-//	If 24-bit, alloc buffer
-
-	if (pbm->type == BMT_FLAT24)
-		{
-		buff24 = Malloc(pbm->row);
-		if (buff24 == NULL)
-			{
-			Warning(("PCX reader can't alloc memory\n"));
-			return FALSE;
-			}
-		}
-
-//	Iterate across rows
-
-	p = pbm->bits;
-	for (y = 0; y < pbm->h; y++)
-		{
-
-//	If 8-bit, read row directly into bitmap
-
-		if (pbm->type == BMT_FLAT8)
-			{
-			if (!PcxReadRow(fp, p, pbm->w))
-				{
-				Warning(("PCX decompression error on line: %d\n", y));
-				return FALSE;
-				}
-			}
-
-//	If 24-bit, read 3 planes into row buffer, then interleave into bitmap
-
-		else
-			{
-			for (plane = 0; plane < 3; plane++)
-				{
-				if (!PcxReadRow(fp, buff24 + (plane * pbm->w), pbm->w))
-					{
-					Warning(("PCX decompression error on line: %d\n", y));
-					return FALSE;
-					}
-				}
-			for (i = 0, pd = p; i < pbm->w; i++)
-				{
-				*pd++ = buff24[i];
-				*pd++ = buff24[pbm->w + i];
-				*pd++ = buff24[(pbm->w * 2) + i];
-				}
-			}
-
-//	Advance bitmap ptr to next row
-
-		p += pbm->row;
-		}
-
-//	If 24-bit, free row buffer
-
-	if (pbm->type == BMT_FLAT24)
-		Free(buff24);
-
-	return TRUE;
-}
-
 //	-------------------------------------------------
 //
 //	PcxReadRow() reads a compressed row.
 
-bool PcxReadRow(FILE *fp, uchar *p, short npixels)
+bool PcxReadRow(IStoreStream *pStream, uchar *p, short npixels)
 {
 	uchar count,value;
 	uchar *pstart;
@@ -397,7 +133,7 @@ bool PcxReadRow(FILE *fp, uchar *p, short npixels)
 		{
 		if (readBuffIndex >= READBUFF_SIZE)
 			{
-			fread(readBuff, READBUFF_SIZE, 1, fp);
+			pStream->Read(READBUFF_SIZE, (char *) readBuff);
 			readBuffIndex = 0;
 			}
 		value = readBuff[readBuffIndex++];
@@ -410,55 +146,203 @@ bool PcxReadRow(FILE *fp, uchar *p, short npixels)
 			count = value & 0x3F;
 			if (readBuffIndex >= READBUFF_SIZE)
 				{
-				fread(readBuff, READBUFF_SIZE, 1, fp);
+				pStream->Read(READBUFF_SIZE, (char *) readBuff);
 				readBuffIndex = 0;
 				}
 			value = readBuff[readBuffIndex++];
-			if ((p + count) > pend)
-				{
-				// Hack to make some stupid pcx file work.  Is DeluxePaint
-				// broken, or is this a feature of the pcx format?
-				if (((p + count) == (pend + 1)) && (npixels & 1))
-					{
-					memset(p, value, count - 1);
-					p += count - 1;
-					}
-				else
-					{
-					Warning(("PCX decompression error, xpixel: %d\n", p - pstart));
-					return FALSE;
-					}
-				}
-			else
-				{
-				memset(p, value, count);
-				p += count;
-				}
+#line 133
+			AssertMsg1((p + count) <= pend, "PCX decompression error, xpixel: %d\n", p - pstart);
+			memset(p, value, count);
+			p += count;
 			}
 		}
 
 	return TRUE;
 }
 
+//	-------------------------------------------------------
+//
+//	PcxReadBody() reads in the body.
 
-/* write and encode into a PCX line */
-int _writepcxline(uchar *p,FILE *fp,int bytes)
+bool PcxReadBody(IStoreStream *pStream, uchar *bits, uchar type, short w, short h, ushort row, ushort npix)
 {
-   int n=0,i;
-   uchar c;
+	uchar *p,*buff24,*pd;
+	int y,i,plane;
 
-   do {
-      c = p[n++];
-      i = 1;
-      while ( (c == p[n]) && (i<0x3f) && (n<bytes) ) {
-         ++i;
-         ++n;
-      }
-      if ( (i>1) || (c>0x3f) ) {
-         fputc(0xc0 + i,fp);
-      }
-      fputc(c,fp);
-   } while(n < bytes);
-   return(n);
+//	Seek to start of color data
+
+	pStream->SetPos(128);
+
+//	If 24-bit, alloc buffer
+
+	if (type == BMT_FLAT24)
+		{
+		buff24 = (uchar *) malloc(npix * 3);
+		if (buff24 == NULL)
+			{
+			Warning(("PCX reader can't alloc memory\n"));
+			return FALSE;
+			}
+		}
+
+//	Iterate across rows
+
+	p = bits;
+	for (y = 0; y < h; y++)
+		{
+
+//	If 8-bit, read row directly into bitmap
+
+		if (type == BMT_FLAT8)
+			{
+			if (!PcxReadRow(pStream, p, npix))
+				{
+				Warning(("PCX decompression error on line: %d\n", y));
+				return FALSE;
+				}
+			}
+
+//	If 24-bit, read 3 planes into row buffer, then interleave into bitmap
+
+		else
+			{
+			for (plane = 0; plane < 3; plane++)
+				{
+				if (!PcxReadRow(pStream, buff24 + (plane * w), npix))
+					{
+					Warning(("PCX decompression error on line: %d\n", y));
+					return FALSE;
+					}
+				}
+			for (i = 0, pd = p; i < w; i++)
+				{
+				*pd++ = buff24[i];
+				*pd++ = buff24[w + i];
+				*pd++ = buff24[(w * 2) + i];
+				}
+			}
+
+//	Advance bitmap ptr to next row
+
+		p += row;
+		}
+
+//	If 24-bit, free row buffer
+
+	if (type == BMT_FLAT24)
+		free(buff24);
+
+	return TRUE;
 }
 
+//	-------------------------------------------------------
+//		READ ROUTINE
+//	-------------------------------------------------------
+//
+//	ResPcxReadImage() reads in a PCX file.
+
+grs_bitmap *ResPcxReadImage(IStoreStream *pStream, IResMemOverride *pResMem)
+{
+	PcxHeader pcxHeader;
+
+//	Read header, if not valid PCX file return
+
+	if (!PcxReadHeader(pStream, &pcxHeader))
+		return NULL;
+
+//	Fill in bitmap
+
+	short w = (pcxHeader.xmax - pcxHeader.xmin) + 1;
+	short h = (pcxHeader.ymax - pcxHeader.ymin) + 1;
+	uchar type;
+	ushort rowbytes;
+	int extra;
+	if (pcxHeader.colour_planes == 1)
+		{
+		type = BMT_FLAT8;
+		rowbytes = w;
+		extra = pcxHeader.bytes_per_line - rowbytes;
+		}
+	else if (pcxHeader.colour_planes == 3)
+		{
+		type = BMT_FLAT24;
+		rowbytes = w * 3;
+		extra = pcxHeader.bytes_per_line * 3 - rowbytes;
+		}
+	else
+		{
+		Warning(("PCX file has %d planes!\n", pcxHeader.colour_planes));
+		return NULL;
+		}
+
+//	Allocate bitmap bits
+
+	grs_bitmap *bm = (grs_bitmap *) pResMem->ResMalloc(h * rowbytes + sizeof(grs_bitmap) + extra);
+	if (!bm)
+		{
+		Warning(("Can't allocate bitmap bits in pcx reader\n"));
+		return NULL;
+		}
+	uchar *bits = (uchar *) (bm + 1);
+
+//	Allocate read buffer
+
+	readBuff = (uchar *) malloc(READBUFF_SIZE);
+	if (readBuff == NULL)
+		{
+		Warning(("Can't allocate buffer in pcx reader\n"));
+		goto BADRET;
+		}
+	readBuffIndex = READBUFF_SIZE;
+
+//	Read body and return
+
+	if (!PcxReadBody(pStream, bits, type, w, h, rowbytes, pcxHeader.bytes_per_line))
+		{
+		Warning(("Unable to read PCX file!\n"));
+		free(readBuff);
+		pResMem->ResFree(bm);
+		return NULL;
+		}
+	else
+		{
+		free(readBuff);
+		gr_init_bitmap(bm, bits, type, 0, w, h);
+		return bm;
+		}
+
+//	If error, free up properly
+
+BADRET:
+
+	pResMem->ResFree(bm);
+	return NULL;
+}
+
+//	-------------------------------------------------------
+//
+//	ResPcxReadPalette() reads in the pallette.
+
+void *ResPcxReadPalette(IStoreStream *pStream, IResMemOverride *pResMem)
+{
+	PcxHeader pcxHeader;
+
+	if (PcxReadHeader(pStream, &pcxHeader) && (pcxHeader.colour_planes == 1))
+		{
+		uchar *pall = (uchar *) pResMem->ResMalloc(256 * 3);
+		if (pall)
+			{
+			uchar pallPresent;
+
+			pStream->SetPos(pStream->GetSize() - 769);
+			pStream->Read(1, (char *) &pallPresent);
+			if (pallPresent == 12)
+				{
+				pStream->Read(256 * 3, (char *) pall);
+				return pall;
+				}
+			Warning(("Bad PCX trailer: pallette not found\n"));
+			}
+		}
+	return NULL;
+}

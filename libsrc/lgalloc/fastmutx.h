@@ -12,6 +12,7 @@
 #ifdef _WIN32
 EXTERN unsigned long __declspec(dllimport) __stdcall GetCurrentThreadId(void);
 EXTERN void __declspec(dllimport) __stdcall DebugBreak(void);
+EXTERN void __declspec(dllimport) __stdcall Sleep(unsigned long dwMilliseconds);
 #else
 #define GetCurrentThreadId() (0)
 #endif
@@ -40,7 +41,7 @@ public:
       if (m_OwnerID != curID)
       {
          while (m_OwnerID)
-            ;
+            Sleep(1);
          m_OwnerID = curID;
       }
       m_Depth++;

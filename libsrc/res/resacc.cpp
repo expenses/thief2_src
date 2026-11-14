@@ -96,9 +96,9 @@ static void *DoResLock(Id id)
 //  If resource not loaded, load it
 
     prd = RESDESC(id);
+    if (prd->lock >= RES_MAXLOCK)
+        return NULL;
     prd2 = RESDESC2(id);
-
-    AssertMsg(prd->lock < RES_MAXLOCK, "Bad resource lock count");
 
     if (prd->ptr == NULL)
     {
@@ -136,6 +136,9 @@ static void *DoResLock(Id id)
 
     Spew(DSRC_RES_LockAll, ("ResLock: lock: $%x lock count: %d\n", id, prd->lock));
 
+
+
+
     ValidateRes(id);
 
 //  Return ptr
@@ -169,10 +172,7 @@ void ResUnlock(Id id)
     prd = RESDESC(id);
 
     if (prd->lock == 0)
-    {
-        CriticalMsg1("ResUnlock: id $%x already unlocked", id);
         return;
-    }
 
 //  Else decrement lock, if 0 move to tail and tally stats
 
@@ -187,6 +187,9 @@ void ResUnlock(Id id)
             resStat.numLocked--;
         });
     }
+
+
+
 
     ValidateRes(id);
 }

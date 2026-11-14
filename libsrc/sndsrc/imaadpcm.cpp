@@ -53,16 +53,21 @@ static int steptab[89]={
 			   };
 
 
-IMAADPCM::IMAADPCM( void )
+IMA_ADPCM::IMA_ADPCM( void )
+   : mFlags(0),
+     mNybbleToggle(0),
+     mStereoChunkIndex(0),
+     mCh1PredictedSample(0),
+     mCh1Index(0),
+     mCh1SpareNybble(0),
+     mCh2PredictedSample(0),
+     mCh2Index(0),
+     mCh2SpareNybble(0)
 {
-   mPredictedSample = 0;
-   mNybbleToggle = 0;
-   mSpareNybble = 0;
-   mIndex = 0;
 }
 
 
-IMAADPCM::~IMAADPCM( void )
+IMA_ADPCM::~IMA_ADPCM( void )
 {
 }
 
@@ -71,23 +76,34 @@ IMAADPCM::~IMAADPCM( void )
  * initialize compressor state
  */
 void
-IMAADPCM::Init(
-               int   predSample,
-               int   index
+IMA_ADPCM::Init(
+               BOOL  stereo,
+               int   predSample1,
+               int   index1,
+               int   predSample2,
+               int   index2
                )
 {
-   mPredictedSample = predSample;
-   mIndex = index;
+   if ( stereo ) {
+      mFlags |= kIMAADPCM_FlagStereo;
+   }
    mNybbleToggle = 0;
-   mSpareNybble = 0;
+   mCh1PredictedSample = predSample1;
+   mCh1Index = index1;
+   mCh2PredictedSample = predSample2;
+   mStereoChunkIndex = 0;
+   mCh1SpareNybble = 0;
+   mCh2Index = index2;
+   mCh2SpareNybble = 0;
 }
 
 
 /*
  * get compressor state packed into a longword
  */
+#if 0
 unsigned long 
-IMAADPCM::GetState( void )
+IMA_ADPCM::GetState( void )
 {
    unsigned short hiWord;
    unsigned long val;
@@ -103,7 +119,7 @@ IMAADPCM::GetState( void )
  * set compressor state from packed longword
  */
 void
-IMAADPCM::SetState( unsigned long state )
+IMA_ADPCM::SetState( unsigned long state )
 {
    short val = (short) (state & 0xFFFF);
 
@@ -113,6 +129,7 @@ IMAADPCM::SetState( unsigned long state )
    mSpareNybble = (state >> 4) & 0xF0;
    mNybbleToggle = (state >> 12) & 1;
 }
+#endif
 
 
 /*
@@ -120,7 +137,7 @@ IMAADPCM::SetState( unsigned long state )
  *  returns # of bytes written to outBlock
  */
 long
-IMAADPCM::Compress(
+IMA_ADPCM::Compress(
                    short      *inBlock,
                    char       *outBlock,
                    long       numSamples
@@ -139,9 +156,9 @@ IMAADPCM::Compress(
    /* process buffer */
    for (inSampleIndex = 0; inSampleIndex < numSamples; inSampleIndex++)    {
 
-      step = steptab[mIndex];
+      step = steptab[mCh1Index];
       /* difference between actual sample & predicted value */
-      diff = (long)inBlock[ inSampleIndex] - mPredictedSample;
+      diff = (long)inBlock[ inSampleIndex] - mCh1PredictedSample;
 
       if( diff >= 0 ) {
          code=0; 			/* set sign bit */
@@ -178,26 +195,26 @@ IMAADPCM::Compress(
       /* lower 4-bit of code can be sent out or stored at this point */
 
       if ( mNybbleToggle ) {
-         outBlock[ outSampleIndex ] = (char) (mSpareNybble + (code & 0xF));
+         outBlock[ outSampleIndex ] = (char) (mCh1SpareNybble + (code & 0xF));
          outSampleIndex++;
       } else {
          /* hiNybble is even sample */
-         mSpareNybble = code << 4;
+         mCh1SpareNybble = code << 4;
       }
       mNybbleToggle ^= 1;
 
-      /* compute new sample estimate mPredictedSample */
-      mPredictedSample += pdiff;
+      /* compute new sample estimate mCh1PredictedSample */
+      mCh1PredictedSample += pdiff;
 
-      if (mPredictedSample > 32767)				/* check for overflow */
-         mPredictedSample = 32767;
-      else if (mPredictedSample < -32768)
-         mPredictedSample = -32768;
+      if (mCh1PredictedSample > 32767)				/* check for overflow */
+         mCh1PredictedSample = 32767;
+      else if (mCh1PredictedSample < -32768)
+         mCh1PredictedSample = -32768;
 
       /* compute new stepsize step */
-      mIndex += indextab[code];
-      if(mIndex < 0)mIndex = 0;
-      else if(mIndex > 88)mIndex = 88;
+      mCh1Index += indextab[code];
+      if(mCh1Index < 0)mCh1Index = 0;
+      else if(mCh1Index > 88)mCh1Index = 88;
    }
 
    return outSampleIndex;
@@ -208,12 +225,12 @@ IMAADPCM::Compress(
  * return # of bytes written to buffer (0 or 1)
  */
 long
-IMAADPCM::EndCompress(
+IMA_ADPCM::EndCompress(
                       char *outBlock
                       )
 {
    if ( mNybbleToggle ) {
-      *outBlock = (char) mSpareNybble;
+      *outBlock = (char) mCh1SpareNybble;
       return 1;
    } else {
       return 0;
@@ -226,18 +243,22 @@ IMAADPCM::EndCompress(
  *  returns # of bytes consumed from inBlock
  */
 long
-IMAADPCM::Decompress(
+IMA_ADPCM::Decompress(
                      char        *inBlock,
                      short       *outBlock,
                      long        numSamples
                      )
 {
    int inByteIndex, outSampleIndex;
+   short *pOut;
+   BOOL isStereo;
    int code;                /* 4-bit quantized difference */ 
    long diff;               /* difference between 2 consecutive samples */
    int step;                /* step sizes at encoding and decoding portion */
 
    inByteIndex = 0;
+   isStereo = mFlags & kIMAADPCM_FlagStereo;
+   pOut = outBlock;
 
    /* process buffer */
    for (outSampleIndex = 0; outSampleIndex < numSamples; outSampleIndex++)    {
@@ -246,38 +267,74 @@ IMAADPCM::Decompress(
       // Unix has high nybble first, PCs have low nybble first
       /* fetch a nybble code to decompress */
       if ( mNybbleToggle ) {
-         //      code = mSpareNybble & 0xF;
-         code = (mSpareNybble & 0xF0) >> 4;
-         inByteIndex++;
+         code = (mCh1SpareNybble & 0xF0) >> 4;
       } else {
-         mSpareNybble = inBlock[ inByteIndex ];
-         code = mSpareNybble & 0xF;
-         //      code = (mSpareNybble & 0xF0) >> 4;
+         mCh1SpareNybble = inBlock[ inByteIndex ];
+         code = mCh1SpareNybble & 0xF;
       }
-      mNybbleToggle ^= 1;
 
-      /* compute new sample estimate mPredictedSample */
+      /* compute new sample estimate mCh1PredictedSample */
       diff = 0;
-      step = steptab[mIndex];
+      step = steptab[mCh1Index];
       if (code & 4)       diff += step;
       if (code & 2)       diff += (step >> 1);
       if (code & 1)       diff += (step >> 2);
       diff += step >> 3;
       if (code & 8)       diff = -diff;
-      mPredictedSample += diff;
+      mCh1PredictedSample += diff;
 
-      if (mPredictedSample > 32767)				/* check for overflow */
-         mPredictedSample = 32767;
-      else if (mPredictedSample < -32768)
-         mPredictedSample = -32768;
+      if (mCh1PredictedSample > 32767)				/* check for overflow */
+         mCh1PredictedSample = 32767;
+      else if (mCh1PredictedSample < -32768)
+         mCh1PredictedSample = -32768;
 
       /* compute new stepsize step */
-      mIndex += indextab[code];
-      if (mIndex < 0) mIndex = 0;
-      else if (mIndex > 88) mIndex = 88;
+      mCh1Index += indextab[code];
+      if (mCh1Index < 0) mCh1Index = 0;
+      else if (mCh1Index > 88) mCh1Index = 88;
 
       /* output predicted sample */
-      outBlock[outSampleIndex] = (short) mPredictedSample;
+      *pOut++ = (short) mCh1PredictedSample;
+
+      if ( isStereo ) {
+         if ( mNybbleToggle ) {
+            code = (mCh2SpareNybble & 0xF0) >> 4;
+         } else {
+            mCh2SpareNybble = inBlock[ inByteIndex + 4 ];
+            code = mCh2SpareNybble & 0xF;
+         }
+
+         diff = 0;
+         step = steptab[mCh2Index];
+         if (code & 4)       diff += step;
+         if (code & 2)       diff += (step >> 1);
+         if (code & 1)       diff += (step >> 2);
+         diff += step >> 3;
+         if (code & 8)       diff = -diff;
+         mCh2PredictedSample += diff;
+
+         if (mCh2PredictedSample > 32767)
+            mCh2PredictedSample = 32767;
+         else if (mCh2PredictedSample < -32768)
+            mCh2PredictedSample = -32768;
+
+         mCh2Index += indextab[code];
+         if (mCh2Index < 0) mCh2Index = 0;
+         else if (mCh2Index > 88) mCh2Index = 88;
+
+         *pOut++ = (short) mCh2PredictedSample;
+
+         // stereo - channels are interleaved every 8 samples
+         if ( ++mStereoChunkIndex >= 8 ) {
+            mStereoChunkIndex = 0;
+            inByteIndex += 4;
+         }
+      }
+
+      if ( mNybbleToggle ) {
+         inByteIndex++;
+      }
+      mNybbleToggle ^= 1;
    }
 
    // return # of bytes consumed (not including partially consumed)
@@ -288,6 +345,7 @@ IMAADPCM::Decompress(
 //
 // decompress a block of IMA ADPCM data (RIFF WAVE block format)
 //
+#if 0
 long
 DecompressIMABlock(
                    char          *pInBuff,
@@ -296,7 +354,7 @@ DecompressIMABlock(
                    int           nChannels
                    )
 {
-   IMAADPCM       leftDecomp, rightDecomp;
+   IMA_ADPCM       leftDecomp, rightDecomp;
    IMAHeaderWord  *pIMAHdr;
 
    // Each block starts with a IMAHeaderWord, which contains
@@ -324,6 +382,7 @@ DecompressIMABlock(
    }
    return nSamples;
 }
+#endif
 
 
 //
@@ -331,38 +390,45 @@ DecompressIMABlock(
 //  returns ptr to next byte in input buffer
 //
 char *
-DecompressIMABlockPartial( char           *pInBuff,
-                           short          *pOutBuff,
-                           long           nSamples,
-                           BOOL           getHeader,
-                           unsigned long  *pState )
+DecompressIMABlkPartial( IMA_ADPCM     *pDecoder,
+                           BOOL          isStereo,
+                           char          *pInBuff,
+                           short         *pOutBuff,
+                           long          nSamples,
+                           BOOL          getHeader )
 {
-   IMAADPCM       decomp;
-   IMAHeaderWord  *pIMAHdr;
+   IMAHeaderWord  *pIMAHdr1, *pIMAHdr2;
    long bytesEaten;
+   int nOut;
 
    // decompress a block
    if ( getHeader ) {
       // This is first fetch in this block, so we must set
-      // the decompressor state from the header word at the
+      // the decompressor state from the header word(s) at the
       // start of the block
-      pIMAHdr = (IMAHeaderWord *) pInBuff;
-      pOutBuff[0] = pIMAHdr->curValue;
+      pIMAHdr1 = (IMAHeaderWord *) pInBuff;
+      nOut = 1;
+      pOutBuff[0] = pIMAHdr1->curValue;
       pInBuff += sizeof(IMAHeaderWord);
+      if ( isStereo ) {
+         pIMAHdr2 = (IMAHeaderWord *) pInBuff;
+         pOutBuff[1] = pIMAHdr2->curValue;
+         nOut = 2;
+         pInBuff += sizeof(IMAHeaderWord);
+      }
       if ( nSamples > 1 ) {
-         decomp.Init( pIMAHdr->curValue, pIMAHdr->stepIndex );
-         bytesEaten = decomp.Decompress( pInBuff, pOutBuff + 1, nSamples - 1 );
+         if ( isStereo ) {
+            pDecoder->Init( isStereo, pIMAHdr1->curValue, pIMAHdr1->stepIndex,
+                            pIMAHdr2->curValue, pIMAHdr2->stepIndex );
+         } else {
+            pDecoder->Init( FALSE, pIMAHdr1->curValue, pIMAHdr1->stepIndex, 0, 0 );
+         }
+         bytesEaten = pDecoder->Decompress( pInBuff, pOutBuff + nOut, nSamples - 1 );
          pInBuff += bytesEaten;
       }
-      // save the decompressor state for future calls
-      *pState = decomp.GetState();
    } else {
-      // this is not the first fetch in the block, so we must
-      // set the state from our saved packed state
-      decomp.SetState( *pState );
-      bytesEaten = decomp.Decompress( pInBuff, pOutBuff, nSamples );
-      // save the decompressor state for future calls
-      *pState = decomp.GetState();
+      // this is not the first fetch in the block
+      bytesEaten = pDecoder->Decompress( pInBuff, pOutBuff, nSamples );
       pInBuff += bytesEaten;
    }
 

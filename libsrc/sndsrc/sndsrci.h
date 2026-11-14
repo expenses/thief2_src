@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include <lgassert.h>
+#include <mprintf.h>
 #include <thrdtool.h>
 
 #include <timelog.h>
@@ -44,7 +45,7 @@ class cSndSource : public ISndSource
 	DECLARE_UNAGGREGATABLE();
 
 public:
-   cSndSource();
+   cSndSource( uint32 maxLabels = SNDSRC_DEFAULT_MAX_LABELS, uint32 maxGates = SNDSRC_DEFAULT_MAX_GATES );
 	virtual ~cSndSource();
 
    STDMETHOD_( uint32, GetSerialNumber ) ( void );
@@ -67,7 +68,13 @@ public:
 
 	STDMETHOD_( uint32, SamplesToTime ) ( uint32 samples );
 
-	STDMETHOD_( uint32, TimeToSamples ) ( uint32 milliSecs );
+   STDMETHOD_( uint32, TimeToSamples ) ( uint32 milliSecs );
+
+   STDMETHOD_( uint32, GetGate ) ( uint32 gateNum );
+
+   STDMETHOD_( void, BranchToLabel ) ( uint32 label );
+
+   STDMETHOD_( uint32, GetMostRecentLabel ) ( void );
 
    // non-COM methods
    void           FillStream( uint32 nBytes );
@@ -114,7 +121,10 @@ private:
    char                 *mpTmpBuffer;
    uint32               mTmpBufferBytes;
 
-   SndPlaylistElement   *mpLabels[SNDSRC_MAX_LABELS];
-   uint32               mGates[SNDSRC_MAX_GATES];
+   uint32               mMaxLabels;
+   uint32               mMaxGates;
+   SndPlaylistElement   **mpLabels;
+   uint32               *mpGates;
+   uint32               mMostRecentLabel;
 };
 

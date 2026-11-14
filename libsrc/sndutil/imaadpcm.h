@@ -15,20 +15,16 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef IMAADPCM_H
-#define IMAADPCM_H
 
 #ifdef __cplusplus
 
-#define kIMAADPCM_FlagStereo 1
-
-class IMA_ADPCM {
+class IMAADPCM {
 public:
-   IMA_ADPCM();
-   virtual        ~IMA_ADPCM();
+   IMAADPCM();
+   virtual        ~IMAADPCM();
 
    // set compressor/decompressor state
-   void           Init( BOOL stereo, int predSample1, int index1, int predSample2, int index2 );
+   void           Init( int predSample, int index );
 
    // return # of samples generated
    long           Compress( short *pIn, char *pOut, long nSamps );
@@ -39,13 +35,11 @@ public:
    // return # of bytes consumed
    long           Decompress( char *pIn, short *pOut, long nSamps );
 
-   /*
    // return packed compressor state
    unsigned long  GetState( void );
 
    // set compressor state
    void           SetState( unsigned long );
-   */
 
 private:
    /* compressor state maintained between blocks */
@@ -54,15 +48,10 @@ private:
     *  nybbleToggle & spareNybble are just used when conversion
     *  stops on an odd sample boundary
     */
-   long   mFlags;
-   long   mNybbleToggle;
-   long   mStereoChunkIndex;
-   long   mCh1PredictedSample;
-   short  mCh1Index;
-   short  mCh1SpareNybble;
-   long   mCh2PredictedSample;
-   short  mCh2Index;
-   short  mCh2SpareNybble;
+   int    mPredictedSample;
+   int    mIndex;
+   int    mNybbleToggle;
+   int    mSpareNybble;   
 };
 
 #endif
@@ -75,15 +64,15 @@ private:
 extern "C" {
 #endif
 
-   //long DecompressIMABlock( char *pIn, short *pOut, long nSamps, int nChans );
+long DecompressIMABlock( char *pIn, short *pOut, long nSamps, int nChans );
 
 //
 // decompress nSamps from pIn to pOut, getHeader must be true on first
 //  fetch of a new block, pState points to a longword which holds the
 //  decompressor state between calls in the same block
 //
-char *DecompressIMABlkPartial( IMA_ADPCM* pDecoder, BOOL isStereo, char *pIn,
-                               short *pOut, long nSamps, BOOL getHeader); //, unsigned long *pState );
+char *DecompressIMABlockPartial( char *pIn, short *pOut, long nSamps,
+                                 BOOL getHeader, unsigned long *pState );
 
 // this is the header that starts each ADPCM block
 //  it needs to be public because app needs to know its size to
@@ -97,7 +86,4 @@ typedef struct {
 #ifdef __cplusplus
 };
 #endif
-
-
-#endif // IMAADPCM_H
 

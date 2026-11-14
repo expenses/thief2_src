@@ -94,7 +94,7 @@ void mp_evaluate_stack(multiped * mp, quat * rot, mxs_vector * xlat)
 void mp_evaluate_motion(multiped * mp, mps_motion_node * m, quat * rot, 
                         mxs_vector * xlat)
 {
-   int frame;
+   float frame;
    float angle, t;
    quat q1, q2;
    mxs_matrix root_mat, mat;
@@ -113,7 +113,7 @@ void mp_evaluate_motion(multiped * mp, mps_motion_node * m, quat * rot,
       }
       else
       {
-         frame = (int) floor(m->frame + 0.5);
+         frame = m->frame;
       }
 	
       // Go get the rotation and translational data of the specified motion.
@@ -179,6 +179,9 @@ void mp_evaluate_motion(multiped * mp, mps_motion_node * m, quat * rot,
 
          xlat->z += m->params.vinc*frac;
       }
+
+      if (mp->frame_of_reference == MFRT_GLOBAL)
+         return;
 
       // Now that we have the translational offset, rotate it by the motion's
       // base orientation.

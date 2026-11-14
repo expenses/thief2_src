@@ -183,28 +183,6 @@ int UtilDrawBitmapRef(Ref bmap_id, short x, short y)
    return(0);
 }
 
-int UtilRefAnchor(Ref r, Point *anchor)
-{
-   FrameDesc *f;
-   if (r == 0)
-      return(-1);
-   f = (FrameDesc *)RefLock(r);
-   if (f == NULL)
-   {
-      Warning(("UtilRefAnchor: Could not lock bitmap ref %x!",r));
-      return(-1);
-   }
-   if (anchor != NULL)
-      *anchor = f->anchorArea.ul;
-   else
-   {
-      anchor->x = f->bm.w / 2;
-      anchor->y = f->bm.h / 2;
-   }
-   RefUnlock(r);
-   return(0);
-}
-
 
 grs_canvas *UtilScreen(short action)
 {
@@ -273,7 +251,9 @@ ushort *UtilGetPalConv(Ref palref)
                (ModeInfo.blueMask == 0x001f))    // we've got 555!
          use565 = FALSE;
       else
+#line 249
          CriticalMsg("UtilGetPalConv(): Failed to set valid 640x480x16 graphics mode.\n");
+#line 277
       SafeRelease(pDisplayDevice);
    }
 

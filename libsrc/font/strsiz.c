@@ -43,7 +43,7 @@ int gr_font_string_width (grs_font *f, char *s)
    terminated strings.
 */
 
-int gr_font_string_height (grs_font *f, char *s)
+short gr_font_string_height (grs_font *f, char *s)
 {
    short h;                   /* height */
    char c;                    /* current character */

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include <hashpp.h>
 
 ////////////////////////////////////////////////////////////
@@ -46,16 +47,17 @@ bool cHashHelperFunctions::is_fermat_prime(uint n, uint numtests)
 
 bool cHashHelperFunctions::is_prime(uint n)
 {
-   // if N is sufficiently large, do fermat test.
-   if (n > NUM_FERMAT_TESTS*NUM_FERMAT_TESTS)
-      return is_fermat_prime(n,NUM_FERMAT_TESTS);
-   else // do brute-force test
-   {
-      int i;
-      for (i = 2; i*i <= n; i++)
-         if ((n/i)*i == n)
-            return FALSE;
-   }
+   if (n < 3)
+      return FALSE;
+   if (n % 2 == 0)
+      return FALSE;
+
+   uint sqrt_n = (uint)sqrt((double)n);
+
+   for (uint i = 3; i <= sqrt_n; i += 2)
+      if (n % i == 0)
+         return FALSE;
+
    return TRUE;
 }
 

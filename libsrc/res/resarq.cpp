@@ -26,6 +26,7 @@
 
 #include <res.h>
 #include <res_.h>
+#include "resarq.h"
 #include <resarq.h>
 #include <resthred.h>
 

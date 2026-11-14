@@ -46,6 +46,8 @@ typedef struct mps_stack_node
 
 #define MP_MOTNUM_FROM_NODE_HANDLE(handle) ((handle)&~(MP_KILL_FLAG|MP_END_FLAG))
 
+#define MP_NODE_HANDLE_IS_POSE(handle) (MP_MOTNUM_FROM_NODE_HANDLE(handle)==MP_MOTNUM_FROM_NODE_HANDLE(-1))
+
 //
 
 typedef struct mps_motion_node

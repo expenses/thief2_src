@@ -348,10 +348,10 @@ ulong LGAPI AllocPickAllocCap()
    memoryStatus.dwLength = sizeof(memoryStatus);
    GlobalMemoryStatus(&memoryStatus);
 
-   const ulong kTargetCapNum   = 1;
-   const ulong kTargetCapDenom = 2;
+   const ulong kTargetCapNum   = 3;
+   const ulong kTargetCapDenom = 4;
    const ulong kMinCap         = 0x0800000;      //  8 mb
-   const ulong kMaxCap         = 0x2000000;      // 32 mb
+   const ulong kMaxCap         = 0x4000000;      // 64 mb
 
          ulong targetCap       = (memoryStatus.dwTotalPhys * kTargetCapNum) / kTargetCapDenom;
          ulong iniCap;

@@ -40,12 +40,16 @@ cSndSegment::cSndSegment( void )
    mInited = FALSE;
    mpInBuffer = NULL;
    mpOutBuffer = NULL;
+   mpDecoder = NULL;
    mSegsMade++;
 }
 
 
 cSndSegment::~cSndSegment( void )
 {
+   if ( mpDecoder ) {
+      delete mpDecoder;
+   }
    if ( mpInBuffer != NULL ) {
       delete mpInBuffer;
    }
@@ -72,7 +76,7 @@ cSndSegment::InitBase( uint32       offset,
  
    switch( mAttribs.dataType ) {
       case kSndDataPCM:
-         mBytesPerSample = (mAttribs.bitsPerSample * mAttribs.nChannels)/ 8;
+         mBytesPerSample = (mAttribs.bitsPerSample * mAttribs.nChannels) >> 3;
          break;
       case kSndDataIMAADPCM:
          mBytesPerSample = 2 * mAttribs.nChannels;
@@ -86,6 +90,7 @@ cSndSegment::InitBase( uint32       offset,
    //
    if ( mAttribs.dataType == kSndDataIMAADPCM ) {
       mpInBuffer = new char[mAttribs.bytesPerBlock];
+      mpDecoder = new IMA_ADPCM;
    }
 
    //
@@ -293,6 +298,8 @@ cSndSegment::GetData( void    *pDst,
       }
 
       nSamplesOutNeeded = nBytes >> 1;
+      if ( mAttribs.nChannels == 2 )
+         nSamplesOutNeeded >>= 1;
       while ( nSamplesOutNeeded > 0 ) {
 
          if ( mInSamplesLeft == 0 ) {
@@ -302,8 +309,8 @@ cSndSegment::GetData( void    *pDst,
             mInSamplesLeft = mAttribs.samplesPerBlock - skipNSamples;
             mpIn = (char *) GetRawData( mpInBuffer, mAttribs.bytesPerBlock );
             if ( skipNSamples != 0 ) {
-               mpIn = DecompressIMABlockPartial( mpIn, pOut, skipNSamples, TRUE,
-                                                 &mDecompState );
+               mpIn = DecompressIMABlkPartial( mpDecoder, (mAttribs.nChannels == 2),
+                                                 mpIn, pOut, skipNSamples, TRUE );
                skipNSamples = 0;
                getHeader = FALSE;
             } else {
@@ -323,8 +330,8 @@ cSndSegment::GetData( void    *pDst,
          } else {
             nSamps = (nSamplesOutNeeded < mInSamplesLeft) ? nSamplesOutNeeded : mInSamplesLeft;
          }
-         mpIn = DecompressIMABlockPartial( mpIn, pOut, nSamps, getHeader,
-                                          &mDecompState );
+         mpIn = DecompressIMABlkPartial( mpDecoder, (mAttribs.nChannels == 2),
+                                          mpIn, pOut, nSamps, getHeader );
          mInSamplesLeft -= nSamps;
 
          if ( mDoDoubling ) {
@@ -337,7 +344,7 @@ cSndSegment::GetData( void    *pDst,
             pDst = (void *) ( ((char *) pDst) + (nSamps << 2) );
             nSamplesOutNeeded -= (nSamps << 1);
          } else {
-            pOut += nSamps;
+            pOut += nSamps * mAttribs.nChannels;
             nSamplesOutNeeded -= nSamps;
          }
 

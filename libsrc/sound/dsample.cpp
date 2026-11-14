@@ -21,6 +21,7 @@
 #include <mixerlck.h>
 
 #include <matrix.h>
+#include <math.h>
 
 // this is used as a sample ID in logging
 #define SAMPLE_ID    ((mGroup << 16) + mSerialNum)
@@ -70,6 +71,7 @@ cDSndSample::cDSndSample( cDSndMixer              *pMixer,
    mp3DBuffer = NULL;
    // End DirectSound stuff
    m3DMethod = kSnd3DMethodNone;
+   mReverbMix = 0.5;
 }
 
 
@@ -88,7 +90,7 @@ cDSndSample::~cDSndSample()
       mpSampleImp->Release();
       mpSampleImp = NULL;
       // tell the mixer we're gone & a channel is free
-      mpMixer->FreeChannel();
+      mpMixer->FreeChannel( this );
    }
    if ( mp3DBuffer != NULL ) {
       mp3DBuffer->Release();
@@ -108,6 +110,7 @@ cDSndSample::MakeAudible()
    WAVEFORMATEX         fmt;
    IDirectSoundBuffer   *pDSB;
    HRESULT               res;
+   DSCAPS               caps;
    MIXER_MUTEX;
    cDSndMixer           *pMixer = (cDSndMixer *) mpMixer;
 
@@ -118,8 +121,18 @@ cDSndSample::MakeAudible()
       return TRUE;
    }
 
+   if ( m3DMethod == kSnd3DMethodHardware ) {
+      // make sure the card still has a free hardware 3D buffer
+      memset( &caps, 0, sizeof(caps) );
+      caps.dwSize = sizeof(caps);
+      pMixer->GetDevice()->GetCaps( &caps );
+      if ( (caps.dwFreeHw3DAllBuffers == 0) || (caps.dwFreeHw3DStreamingBuffers == 0) ) {
+         return FALSE;
+      }
+   }
+
    // allocate a DirectSoundBuffer to this sample
-   if ( mpMixer->AllocChannel( this ) == FALSE ) {
+   if ( mpMixer->AllocChannel( this, mFlags, m3DMethod ) == FALSE ) {
       // couldn't allocate a channel!
       return FALSE;
    }
@@ -137,6 +150,9 @@ cDSndSample::MakeAudible()
    } else {
       // a non-3D sample with volume, frequency & pan control
       db.dwFlags = DSBCAPS_CTRLDEFAULT;
+   }
+   if ( mFlags & kSndSampleHardware ) {
+      db.dwFlags |= DSBCAPS_LOCHARDWARE;
    }
    db.lpwfxFormat = &fmt;
 
@@ -185,6 +201,7 @@ cDSndSample::MakeAudible()
             Set3DDistanceRange( m3DMinDistance, m3DMaxDistance );
             Set3DMode( m3DMode );
             SetAmbientVolume( mAmbientVolume );
+            _Update3DReverbMix();
             // fall thru to set regular pan & volume below
 
          case kSnd3DMethodNone:
@@ -1055,4 +1072,60 @@ cDSndSample::UpdatePanVol3D( void )
    }
 
    return usingPanVol;
+}
+
+static float gOcclusionLFRatio = 0.5;
+
+STDMETHODIMP_(void)
+cDSndSample::Set3DReverbMix( float mix )
+{
+   if ( mpMixer->Have3DReverb() ) {
+      mReverbMix = mix;
+      _Update3DReverbMix();
+   }
+}
+
+void
+cDSndSample::_Update3DReverbMix( void )
+{
+   IKsPropertySet *pProps;
+   long room, direct;
+
+   if ( mp3DBuffer == NULL ) {
+      return;
+   }
+   if ( mp3DBuffer->QueryInterface( IID_IKsPropertySet, (void **) &pProps ) != DS_OK ) {
+      return;
+   }
+   switch ( mpMixer->EAXLevelSupported() ) {
+      case 1:
+         pProps->Set( DSPROPSETID_EAXBUFFER_ReverbProperties, 1, NULL, 0, &mReverbMix, sizeof(float) );
+         break;
+      case 2:
+         if ( (mReverbMix >= 0.0) && (mReverbMix <= 1.0) ) {
+            room = (long) (log10( mReverbMix ) * 2000.0);
+            direct = (long) (log10( 1.0f - mReverbMix ) * 2000.0);
+            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 2, NULL, 0, &direct, sizeof(long) );
+            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 3, NULL, 0, NULL, sizeof(long) );
+            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 4, NULL, 0, &room, sizeof(long) );
+            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 5, NULL, 0, NULL, sizeof(long) );
+            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 14, NULL, 0, NULL, sizeof(long) );
+         }
+         break;
+   }
+   pProps->Release();
+}
+
+STDMETHODIMP_(void)
+cDSndSample::Set3DOcclusion( int32 occlusionMillibels )
+{
+   IKsPropertySet *pProps;
+
+   if ( (mp3DBuffer != NULL) && (mpMixer->EAXLevelSupported() > 1) ) {
+      if ( mp3DBuffer->QueryInterface( IID_IKsPropertySet, (void **) &pProps ) == DS_OK ) {
+         pProps->Set( DSPROPSETID_EAX20_BufferProperties, 9, NULL, 0, &occlusionMillibels, sizeof(int32) );
+         pProps->Set( DSPROPSETID_EAX20_BufferProperties, 10, NULL, 0, &gOcclusionLFRatio, sizeof(float) );
+         pProps->Release();
+      }
+   }
 }

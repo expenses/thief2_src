@@ -6,5 +6,6 @@
 //
 
 #include <objbase.h>
+#include <ddraw.h>
 #include <initguid.h>
 #include <uuids.h>
