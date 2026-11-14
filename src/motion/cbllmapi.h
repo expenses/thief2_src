@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/motion/cbllmapi.h,v 1.3 2000/01/31 09:50:03 adurant Exp $
 // This module provides the abstract interface to a cerebellum, to be used
 // by higher-level systems 

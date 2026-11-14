@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/strprop.cpp,v 1.6 1998/10/05 17:28:17 mahk Exp $
 #include <appagg.h>
 #include <string.h>

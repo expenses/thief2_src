@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/script/miscrprt.cpp,v 1.1 1998/10/21 23:41:26 dc Exp $
 // Misc report functions
 

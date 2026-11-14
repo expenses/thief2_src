@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/script/scrptprp.cpp,v 1.25 1999/05/19 16:12:30 mahk Exp $
 #include <scrptapi.h>
 #include <scrptprp.h>

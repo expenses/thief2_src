@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/traitq.cpp,v 1.6 1998/07/16 13:15:11 mahk Exp $
 #include <traitbas.h>
 #include <traitma_.h>

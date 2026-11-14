@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/script/bodscrpt.cpp,v 1.3 1998/10/05 17:21:48 mahk Exp $
 
 #include <comtools.h>

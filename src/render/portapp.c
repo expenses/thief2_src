@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/render/portapp.c,v 1.41 2000/02/19 12:35:33 toml Exp $
 
 #include <aggmemb.h>

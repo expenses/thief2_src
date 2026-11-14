@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/gridsnap.c,v 1.5 2000/02/19 13:10:53 toml Exp $
 
 // Grid snapping code

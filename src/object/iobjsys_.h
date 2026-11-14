@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/iobjsys_.h,v 1.19 2000/02/24 23:40:59 mahk Exp $
 #pragma once
 #ifndef __IOBJSYS__H

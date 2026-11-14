@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/invrndpr.cpp,v 1.1 1998/05/24 19:44:08 mahk Exp $
 #include <appagg.h>
 #include <invrndpr.h>

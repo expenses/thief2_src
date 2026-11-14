@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/actreact/stimsrc_.h,v 1.5 1998/01/27 18:55:55 mahk Exp $
 #pragma once
 #ifndef __STIMSRC__H

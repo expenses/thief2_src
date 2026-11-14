@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/actreact/propag8r.cpp,v 1.3 1998/10/05 17:27:09 mahk Exp $
 
 #include <comtools.h>

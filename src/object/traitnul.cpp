@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/traitnul.cpp,v 1.2 1997/10/14 11:20:47 TOML Exp $
 #include <traitnul.h>
 #include <objtype.h>

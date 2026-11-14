@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/physics/collide.cpp,v 1.43 2000/02/19 12:32:13 toml Exp $
 
 // basic collision stuff

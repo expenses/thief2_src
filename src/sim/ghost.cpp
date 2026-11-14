@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/sim/ghost.cpp,v 1.6 1999/08/26 12:52:47 dc Exp $
 // central ghost contoller, configuration and setup for ghosts
 

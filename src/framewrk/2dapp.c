@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/2dapp.c,v 1.10 2000/02/19 12:29:35 toml Exp $
 
 #include <2d.h>

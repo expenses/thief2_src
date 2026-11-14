@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/diffscrm.h,v 1.1 1998/08/02 23:37:03 mahk Exp $
 #pragma once  
 #ifndef __DIFFSCRM_H

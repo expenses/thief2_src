@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 /* n:\bin\lex -p songyy -l -o win32\songlex.c r:\prj\cam\src\songlang.lex */
 #define YYNEWLINE 10
 #define INITIAL 0

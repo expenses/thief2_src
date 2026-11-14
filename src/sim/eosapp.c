@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/sim/eosapp.c,v 1.34 2000/02/24 23:43:11 mahk Exp $
 
 // Interface to object system

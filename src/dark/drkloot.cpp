@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkloot.cpp,v 1.15 2000/01/04 18:25:47 BFarquha Exp $
 
 #include <appagg.h>

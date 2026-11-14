@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkgame.cpp,v 1.106 2000/03/09 16:16:14 toml Exp $
 // dark specific game features
 

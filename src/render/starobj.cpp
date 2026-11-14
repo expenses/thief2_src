@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/render/starobj.cpp,v 1.6 2000/02/21 18:49:54 bfarquha Exp $
 
 

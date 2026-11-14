@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/lnkbyobj.cpp,v 1.14 1998/10/15 00:28:21 mahk Exp $
 #include <lnkbyobj.h>
 #include <linkman.h>

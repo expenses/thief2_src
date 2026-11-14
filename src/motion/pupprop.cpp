@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/motion/pupprop.cpp,v 1.5 1998/04/12 16:49:02 mahk Exp $
 
 #include <pupprop.h>

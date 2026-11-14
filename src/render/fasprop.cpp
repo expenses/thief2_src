@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/render/fasprop.cpp,v 1.5 1999/03/23 11:39:13 Justin Exp $
 
 #include <property.h>

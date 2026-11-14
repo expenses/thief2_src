@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/sound/vocore.cpp,v 1.3 2000/02/02 15:18:05 adurant Exp $
 
 #include <vocore.h>

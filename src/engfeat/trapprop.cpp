@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/trapprop.cpp,v 1.1 1999/12/02 15:28:19 BFarquha Exp $
 #include <propert_.h>
 #include <propface.h>

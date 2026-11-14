@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkvo.cpp,v 1.2 2000/02/19 13:08:58 toml Exp $
 #include <appagg.h>
 #include <drkvo.h>

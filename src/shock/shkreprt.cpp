@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkreprt.cpp,v 1.5 1999/06/04 00:21:28 XEMU Exp $
 // Misc Shock Specific report functions
 

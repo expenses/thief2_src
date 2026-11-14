@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/linkdat_.h,v 1.3 2000/01/29 13:23:16 adurant Exp $
 #pragma once
 

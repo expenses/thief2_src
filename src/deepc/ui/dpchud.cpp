@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // Deep Cover HUD overlay elements
 
 #include <2d.h>

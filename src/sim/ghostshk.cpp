@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/sim/ghostshk.cpp,v 1.3 1999/11/19 14:49:30 adurant Exp $
 // shock specific ghost functions
 

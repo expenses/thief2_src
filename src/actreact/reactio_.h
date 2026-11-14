@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/actreact/reactio_.h,v 1.4 2000/01/29 12:44:36 adurant Exp $
 #pragma once
 

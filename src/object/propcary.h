@@ -13,6 +13,7 @@
 #include <propbase.h>
 #include <dynarray.h>
 #include <osysbase.h>
+#define OBJARRAY_H_LOWER
 #include <objarray.h>
 
 #include <dbmem.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/weapscpt.cpp,v 1.4 1998/07/25 12:52:35 CCAROLLO Exp $
 
 #include <lg.h>

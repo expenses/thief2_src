@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/arcmd.cpp,v 1.17 2000/02/19 12:27:38 toml Exp $
 
 #include <wtypes.h>

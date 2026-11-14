@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/motion/crattach.cpp,v 1.30 1999/12/09 20:15:23 BODISAFA Exp $
 
 #include <lg.h>

@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/scrpted.cpp,v 1.2 2000/02/19 13:11:24 toml Exp $
 #include <simpwrap.h>
 #include <scrptpr_.h>

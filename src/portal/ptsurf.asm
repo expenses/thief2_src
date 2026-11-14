@@ -55,6 +55,7 @@ _TEXT	segment para public USE32 'CODE'
 ; esi source
 ; edi dest
 ; ebp didx
+public pt_buildspan_8
 pt_buildspan_8:
         mov  ch,ah
         add  eax,ebp

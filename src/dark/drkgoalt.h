@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkgoalt.h,v 1.3 1998/09/08 20:09:50 mahk Exp $
 #pragma once  
 #ifndef __DRKGOALT_H

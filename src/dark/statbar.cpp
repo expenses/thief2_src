@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/dark/statbar.cpp,v 1.5 2000/02/19 13:09:04 toml Exp $
 #include <statbar.h>
 #include <2d.h>

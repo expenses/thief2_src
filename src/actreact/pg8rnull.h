@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/actreact/pg8rnull.h,v 1.4 1998/08/17 19:49:07 mahk Exp $
 #pragma once  
 #ifndef __PG8RNULL_H

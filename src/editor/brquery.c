@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/editor/brquery.c,v 1.3 2000/02/19 12:27:46 toml Exp $
 // some misc brush query/list control functions
 

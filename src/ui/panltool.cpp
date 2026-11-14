@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/ui/panltool.cpp,v 1.16 2000/03/07 19:05:32 adurant Exp $
 
 #include <appagg.h>

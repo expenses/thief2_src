@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/object/autolink.h,v 1.2 1998/09/25 23:33:57 mahk Exp $
 #pragma once  
 #ifndef __AUTOLINK_H

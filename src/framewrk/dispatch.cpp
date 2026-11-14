@@ -3,6 +3,7 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
+#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/dispatch.cpp,v 1.10 1998/04/24 14:12:40 TOML Exp $
 #include <loopapi.h>
 #include <appagg.h>
