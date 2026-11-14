@@ -93,7 +93,9 @@ cSndMixer::cSndMixer()
    mpWinDisplayDevice = NULL;
    mpInaudibleListHead = NULL;
    mpAudibleListHead = NULL;
+#ifndef NEWDARK
    mInPriorityCB = FALSE;
+#endif
 
    m3DMixMethod = kSnd3DMethodNone;
    origin.x = 0.0;
@@ -407,9 +409,13 @@ cSndMixer::AllocChannel( cSndSample    *pSample,
          TLOG1( "Mix::AllocChannel %s, no priority CB!", SAMPLE_NAME( pSample ) );
          return FALSE;
       }
+#ifndef NEWDARK
       mInPriorityCB = TRUE;
+#endif
       freed = (*fnPriorityCB)( this, pSample, mpPriorityCBData );
+#ifndef NEWDARK
       mInPriorityCB = FALSE;
+#endif
       if ( freed == FALSE ) {
          // couldn't free a channel
          TLOG1( "Mix::AllocChannel %s, priority CB failed!", SAMPLE_NAME( pSample ) );
@@ -434,8 +440,11 @@ cSndMixer::FreeChannel( cSndSample *pSample )
 {
    mNumFreeMixerChans++;
    TLOG1( "Mix::FreeChannel %d left", mNumFreeMixerChans );
+#ifndef NEWDARK
    if ( fnFreeChannelCB && !mInPriorityCB ) {
+#else
    if ( fnFreeChannelCB ) {
+#endif
       // tell app that there is a free channel
       (*fnFreeChannelCB)( this, mpFreeChannelCBData );
    }

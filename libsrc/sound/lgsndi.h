@@ -212,7 +212,9 @@ protected:
    void                    *mpPriorityCBData;
    SndFreeChannelCallback  fnFreeChannelCB;
    void                    *mpFreeChannelCBData;
+#ifndef NEWDARK
    BOOL                    mInPriorityCB;
+#endif
    SndTraceCallback        fnTraceCB;
 
    eSndTimerState          mTimerState;
@@ -229,7 +231,9 @@ protected:
    eSnd3DMethod            m3DMixMethod;
    uint32                  m3DMethodCapabilities;
    uint32                  m3DDeferFlag;
+#ifndef NEWDARK
    ReverbSettings          mReverbSettings;
+#endif
 };
 
 inline int32 cSndMixer::Init3DReverb()

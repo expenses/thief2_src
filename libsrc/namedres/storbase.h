@@ -18,6 +18,10 @@ public:
 
 private:
 	ULONG m_ulRefs;
+#ifdef NEWDARK
+protected:
+	void* m_pNDBase;
+#endif
 };
 
 class cZipSubstorage;

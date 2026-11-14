@@ -324,8 +324,20 @@ STDMETHODIMP_(unsigned long) cWinGameShell::GetTimerTick()
 
 STDMETHODIMP_(void) cWinGameShell::SetTimer(unsigned long ulTimeOffset)
 {
+#ifdef NEWDARK
+    if (m_fLegacyTimer)
+    {
+        m_ulTimeOffset = ulTimeOffset;
+        m_ulStartTime = timeGetTime();
+        return;
+    }
+    m_ulTimeOffset = (unsigned __int64)ulTimeOffset * 1000;
+    QueryPerformanceCounter(&m_PerfStart);
+    m_PerfElapsed = 0;
+#else
     m_ulTimeOffset = ulTimeOffset;
     m_ulStartTime = timeGetTime();
+#endif
 }
 
 ///////////////////////////////////////
@@ -455,7 +467,18 @@ HRESULT cWinGameShell::Init()
     if (!GetPrivateProfileInt("WinShell", "DisableInactiveBlock", FALSE, "lg.ini"))
         m_flags |= kBlockInactive;
 
+#ifdef NEWDARK
+    if (m_fLegacyTimer)
+        m_ulStartTime = timeGetTime();
+    else
+    {
+        QueryPerformanceCounter(&m_PerfStart);
+        QueryPerformanceFrequency(&m_PerfFreq);
+        m_PerfElapsed = 0;
+    }
+#else
     m_ulStartTime = timeGetTime();
+#endif
 
     return NOERROR;
 

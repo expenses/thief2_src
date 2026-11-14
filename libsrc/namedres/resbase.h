@@ -148,7 +148,9 @@ public:
    //
    // Data members
    //
+#ifndef NEWDARK
    unsigned long m_ulRefs;
+#endif
 
    // @TBD (toml 04-21-98): should these be ordered so most commonly used is first for efficiency?
    // @TBD (toml 04-21-98): again, probably better served by consolodating all flags into an unsigned "flags" field

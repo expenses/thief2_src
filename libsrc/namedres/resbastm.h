@@ -125,8 +125,10 @@ RES_BASE::cResourceBase(IStore *pStore,
    m_ManData(NO_RES_APP_DATA),
    m_pStream(NULL),
    m_pAssignedData(0),
-   m_nAssignedCount(0),
-   m_ulRefs(1)
+   m_nAssignedCount(0)
+#ifndef NEWDARK
+   ,m_ulRefs(1)
+#endif
 {
    IResMan *pResMan;
    pResMan = AppGetObj(IResMan);
