@@ -159,7 +159,7 @@ typedef ulong grs_rgb;
 
 /* hey, it's an rgb bitmask */
 typedef struct grs_rgb_bitmask {
-   ulong red, green, blue;
+   ulong red, green, blue, alpha;
 } grs_rgb_bitmask;
 
 /* structure for bitmaps to be drawn from and to.  if a bitmap is contained
@@ -285,6 +285,7 @@ enum {
    BMT_BANK16,
    BMT_BANK24,
    BMT_TLUC8,
+   BMT_FLAT32,
    BMT_TYPES
 };
 /*
@@ -293,6 +294,7 @@ enum {
 */
 #define BMT_DEVICE_VIDMEM BMT_TYPES
 #define BMT_DEVICE_VIDMEM_TO_FLAT BMT_TYPES+1
+#define BMT_OLD_DEVICE_VIDMEM_TO_FLAT (BMT_FLAT32+1)
 
 /* bitmap flags. */
 enum {
@@ -698,7 +700,6 @@ enum {
 
    GDC_CANVAS_FUNCS
 };
-
 #ifdef __cplusplus
 };
 #endif
