@@ -3,9 +3,12 @@
 
 #include <dinput.h>
 #include <dbg.h>
+#include <config.h>
 
 void DIErrorSpew(HRESULT hRes)
 {
+   if (!config_is_defined("dinput_spew"))
+      return;
    switch (hRes)
    {
       case DIERR_INPUTLOST:

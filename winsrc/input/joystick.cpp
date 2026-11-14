@@ -14,6 +14,7 @@
 #include <appagg.h>
 #include <wappapi.h>
 #include <dbg.h>
+#include <config.h>
 #include <recapi.h>
 #include <mprintf.h>
 
@@ -27,7 +28,7 @@
 // just won't work (POV hats are missing).
 
 // total number of DI "objects"/joystick
-const int kJoyBase = 8;      // # of non-button data items
+const int kJoyBase = 10;     // # of non-button data items
 const int kJoystickObjsNum = kJoyBase+kJoyButtonsMax;
 
 // hat positions
@@ -52,9 +53,11 @@ static DIOBJECTDATAFORMAT g_joystickObjDataFormat[kJoystickObjsNum] =
    { &GUID_ZAxis,  FIELD_OFFSET(sJoyState, z), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
    { &GUID_RzAxis, FIELD_OFFSET(sJoyState, rz), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
    { &GUID_Slider, FIELD_OFFSET(sJoyState, u), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
-   { &GUID_Slider, FIELD_OFFSET(sJoyState, u), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
+   { &GUID_Slider, FIELD_OFFSET(sJoyState, v), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
    { &GUID_POV,    FIELD_OFFSET(sJoyState, POV[0]), COMMON_FLAGS | DIDFT_POV,  0 },
    { &GUID_POV,    FIELD_OFFSET(sJoyState, POV[1]), COMMON_FLAGS | DIDFT_POV,  0 },
+   { &GUID_RxAxis, FIELD_OFFSET(sJoyState, rx), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
+   { &GUID_RyAxis, FIELD_OFFSET(sJoyState, ry), COMMON_FLAGS | DIDFT_AXIS, DIDOI_ASPECTPOSITION },
 };
 
 // have we set up the button object data yet?
@@ -85,6 +88,8 @@ long cJoystick::FieldOffset(eJoystickObjs axis)
       case kJoystickXAxis: return FIELD_OFFSET(sJoyState, x);
       case kJoystickYAxis: return FIELD_OFFSET(sJoyState, y);
       case kJoystickZAxis: return FIELD_OFFSET(sJoyState, z);
+      case kJoystickXRot: return FIELD_OFFSET(sJoyState, rx);
+      case kJoystickYRot: return FIELD_OFFSET(sJoyState, ry);
       case kJoystickZRot: return FIELD_OFFSET(sJoyState, rz);
       case kJoystickUSlider: return FIELD_OFFSET(sJoyState, u);
       case kJoystickVSlider: return FIELD_OFFSET(sJoyState, v);
@@ -177,6 +182,25 @@ STDMETHODIMP cJoystick::SetAxisDeadZone(eJoystickObjs axis, DWORD deadZone)
    return S_OK;
 }
 
+// set cooperative level
+STDMETHODIMP cJoystick::SetCooperativeLevel(BOOL excl, BOOL foreground)
+{
+   Assert_(m_pDev!=NULL);
+   IWinApp *pWA = AppGetObj(IWinApp);
+   HWND hMainWnd = pWA->GetMainWnd();
+   HRESULT hRes;
+
+   hRes = m_pDev->SetCooperativeLevel(hMainWnd,
+                                      (excl ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) |
+                                      (foreground ? DISCL_FOREGROUND : DISCL_BACKGROUND));
+   if (FAILED(hRes))
+   {
+      if (config_is_defined("dinput_spew"))
+         Warning(("cJoystick::SetCooperativeLevel FAILED\n"));
+   }
+   return E_FAIL;
+}
+
 cJoystick::cJoystick():
    m_pDev(NULL)
 {
@@ -233,6 +257,7 @@ STDMETHODIMP cJoystick::Init(LPDIRECTINPUTDEVICE pDev)
    // set the cooperative level
    // we need the main app's HWND
    IWinApp *pWA = AppGetObj(IWinApp);
+
    Assert_(pWA != NULL);
    HWND hMainWnd = pWA->GetMainWnd();
    SafeRelease(pWA);

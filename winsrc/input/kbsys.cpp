@@ -51,6 +51,10 @@ kbs_event kb_null_event={0xff,0x00};
 // @TBD (toml 11-22-96): changed constants -- no L/R distinguising: something in windows to investigate
 static int KBCToVK(uchar code)
     {
+    if ((code >= 'A' && code <= 'Z') || (code >= '0' && code <= '9'))
+        return code;
+    if (code >= 'a' && code <= 'z')
+        return code - 0x20;
     switch(code)
         {
         case KBC_PAUSE:     return VK_PAUSE;
