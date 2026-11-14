@@ -9,7 +9,6 @@
 
 .386
 
-assume ds:DGROUP
-DGROUP group _DATA
+assume ds:_DATA
 _DATA segment dword public use32 'DATA'
 _DATA ends
