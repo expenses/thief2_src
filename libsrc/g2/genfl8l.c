@@ -25,7 +25,7 @@ void gen_flat8_ulmap_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
    g2d_pp.raster_func = gen_raster_loop;
    g2d_pp.left_edge_func = gen_left_edge;
    g2d_pp.right_edge_func = gen_right_edge;
-   g2d_pp.grad_func = gen_triangle_gradients;
+   g2d_pp.tri_func = gen_triangle_raster;
 }
 
 void gen_flat8_lit_ulmap_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
@@ -46,6 +46,6 @@ void gen_flat8_lit_ulmap_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
    g2d_pp.raster_func = gen_raster_loop;
    g2d_pp.left_edge_func = gen_left_edge;
    g2d_pp.right_edge_func = gen_right_edge;
-   g2d_pp.grad_func = gen_triangle_gradients;
+   g2d_pp.tri_func = gen_triangle_raster;
 }
 #pragma on(unreferenced)

@@ -1683,9 +1683,9 @@ g2pt816_t8_long_2:
   _FUNCDEF_ASM g2pt_clut_8
         push   esi
         push   eax
+        push   ebx
 
         mov    esi,_g2pt_clut
-        nop
 
         xor    ecx,ecx
         xor    eax,eax
@@ -1729,6 +1729,105 @@ g2pt816_t8_long_2:
         mov    b _g2pt_buffer+6,cl
         mov    b _g2pt_buffer+7,dl
 
+        pop    ebx
+        pop    eax
+        pop    esi
+
+        jmp    [_g2pt_clut_8_chain]
+
+
+  _FUNCDEF_ASM g2pt16_clut_8
+        push   esi
+        push   eax
+        push   ebx
+
+        mov    esi,_g2pt_clut
+
+        xor    ecx,ecx
+        xor    eax,eax
+
+        xor    ebx,ebx
+        xor    edx,edx
+
+        mov    al,b _g2pt_buffer+0
+        mov    cl,b _g2pt_buffer+2
+
+        mov    bl,b _g2pt_buffer+1
+        mov    dl,b _g2pt_buffer+3
+
+        mov    ax,[esi+2*eax]
+        mov    cx,[esi+2*ecx]
+
+        add    ax,[esi+2*ebx+200h]
+        add    cx,[esi+2*edx+200h]
+
+        mov    word ptr _g2pt_buffer+0,ax
+        xor    ebx,ebx
+        xor    edx,edx
+
+        mov    word ptr _g2pt_buffer+2,cx
+
+        xor    eax,eax
+        xor    ecx,ecx
+
+        mov    al,b _g2pt_buffer+4
+        mov    cl,b _g2pt_buffer+6
+
+        mov    bl,b _g2pt_buffer+5
+        mov    dl,b _g2pt_buffer+7
+
+        mov    ax,[esi+2*eax]
+        mov    cx,[esi+2*ecx]
+
+        add    ax,[esi+2*ebx+200h]
+        add    cx,[esi+2*edx+200h]
+
+        mov    word ptr _g2pt_buffer+4,ax
+        xor    ebx,ebx
+        xor    edx,edx
+
+        mov    word ptr _g2pt_buffer+6,cx
+
+        xor    eax,eax
+        xor    ecx,ecx
+
+        mov    al,b _g2pt_buffer+8
+        mov    cl,b _g2pt_buffer+10
+
+        mov    bl,b _g2pt_buffer+9
+        mov    dl,b _g2pt_buffer+11
+
+        mov    ax,[esi+2*eax]
+        mov    cx,[esi+2*ecx]
+
+        add    ax,[esi+2*ebx+200h]
+        add    cx,[esi+2*edx+200h]
+
+        mov    word ptr _g2pt_buffer+8,ax
+        xor    ebx,ebx
+        xor    edx,edx
+
+        mov    word ptr _g2pt_buffer+10,cx
+
+        xor    eax,eax
+        xor    ecx,ecx
+
+        mov    al,b _g2pt_buffer+12
+        mov    cl,b _g2pt_buffer+14
+
+        mov    bl,b _g2pt_buffer+13
+        mov    dl,b _g2pt_buffer+15
+
+        mov    ax,[esi+2*eax]
+        mov    cx,[esi+2*ecx]
+
+        add    ax,[esi+2*ebx+200h]
+        add    cx,[esi+2*edx+200h]
+
+        mov    word ptr _g2pt_buffer+12,ax
+        mov    word ptr _g2pt_buffer+14,cx
+
+        pop    ebx
         pop    eax
         pop    esi
 

@@ -6,7 +6,7 @@
 #include <g2tm.h>
 
 extern g2il_func gen_flat8_lit_il;
-extern g2raster_func opaque_lit_8to8_raster;
+extern g2raster_func opaque_lit_8to8_raster_asm;
 extern void opaque_lit_8to8_il_init(grs_bitmap *bm);
 extern void opaque_lit_8to8_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *));
 extern void opaque_clut_8to8_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *));
@@ -68,7 +68,6 @@ void opaque_lit_8to8_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
 {
    g2d_pp.left_edge_func = gen_left_edge;
    g2d_pp.right_edge_func = gen_right_edge;
-   g2d_pp.grad_func = gen_triangle_gradients;
 
    if (POW2(bm)) {
       if (check_clut_enabled) {
@@ -76,10 +75,13 @@ void opaque_lit_8to8_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
          g2d_pp.poly_func = check_clut;
          clutting = FALSE;
       }
+      g2d_pp.tri_func = gen_uv_triangle;
+      g2d_pp.grad_func = iuv_triangle_gradients;
       g2d_pp.canvas_row = grd_bm.row;
-      g2d_pp.raster_func = opaque_lit_8to8_raster;
+      g2d_pp.raster_func = opaque_lit_8to8_raster_asm;
       opaque_lit_8to8_il_init(bm);
    } else {
+      g2d_pp.tri_func = gen_triangle_raster;
       g2d_pp.raster_func = gen_raster_loop;
       g2d_pp.dy = 1;
       g2d_pp.pix_func = gd_upix8_expose(0,0,0);

@@ -5,100 +5,85 @@
 #include <g2spoint.h>
 #include <plyparam.h>
 #include <trirast.h>
+#include <tmapd.h>
+#include <genrast.h>
 #include <mathmac.h>
 
 #include <lgassert.h>
 
-#ifdef FLOAT_RAST
+g2s_point *g2d_v0, *g2d_v1, *g2d_v2;
+fix *g2d_p_edge_x, *g2d_p_edge_dx;
 
-static bool use_inverse_table = FALSE;
-static float inverse_table[512];
+static void float_left_edge(void);
+extern void gen_right_edge_asm(void);
+extern void gen_uv_left_edge_asm(void);
+extern int triangle_raster_asm(void);
 
-bool edge_inverse_table_inuse()
+g2edge_func *gen_left_edge = float_left_edge;
+g2edge_func *gen_right_edge = gen_right_edge_asm;
+g2edge_func *gen_uv_left_edge = gen_uv_left_edge_asm;
+g2tri_func *gen_uv_triangle = triangle_raster_asm;
+
+static void fix_left_edge(void);
+static void fix_right_edge(void);
+
+void g2_set_old_poly_funcs(void)
 {
-   return use_inverse_table;
+   gen_uv_left_edge = fix_left_edge;
+   gen_left_edge = fix_left_edge;
+   gen_right_edge = fix_right_edge;
+   gen_uv_triangle = gen_triangle_raster;
 }
 
-void edge_enable_inverse_table()
+void g2_set_new_poly_funcs(void)
 {
-   use_inverse_table = TRUE;
+   gen_left_edge = float_left_edge;
+   gen_right_edge = gen_right_edge_asm;
+   gen_uv_left_edge = gen_uv_left_edge_asm;
+   gen_uv_triangle = triangle_raster_asm;
 }
 
-void edge_disable_inverse_table()
-{
-   use_inverse_table = FALSE;
-}
-
-void edge_init_inverse_table()
-{
-   int i;
-   for (i=0; i<512; i++)
-      inverse_table[i] = 16.0 / i;
-}
+extern void gen_calc_edge_(void);
 
 // call once for each left edge.
-void gen_left_edge(g2s_point *prev, g2s_point *next, g2s_poly_params *tp)
+static void float_left_edge(void)
 {
-   fix x, dy, dx_fix;
-   float dx, delta_x, delta_y;
+   g2s_poly_params *tp = g2d_ppp;
+   g2s_point *prev = g2d_v0;
+   fix x, dx;
+   float fdx, fdy;
    int i;
    ulong mask, flags;
 
-   dy = next->sy - prev->sy;
-   dx = next->sx - prev->sx;
+   g2d_p_edge_x = &x;
+   g2d_p_edge_dx = &dx;
+   gen_calc_edge_();
 
-   AssertMsg(dy > 0, "gen_left_edge(): Hey... edge not valid!\n");
-   if ((dy < fix_make(32,0)) && use_inverse_table)
-      dx_fix = dx = dx * inverse_table[dy>>12];
-   else
-      dx_fix = dx = (dx / dy) * 65536.0;
-
-   delta_y = fix_float(fix_ceil(prev->sy) - prev->sy);
-   // add 0xffff because we're actually doing ceil's...
-   x = (prev->sx + 0xffff) + dx * delta_y;
-   delta_x = fix_float(fix_floor(x) - prev->sx);
-   tp->left.dx = fix_int(dx_fix);
-   tp->left.dx_frac = dx_fix<<16;
+   fdx = fix_float(fix_floor(x) - prev->sx);
+   fdy = fix_float(fix_ceil(prev->sy) - prev->sy);
+   tp->left.dx = fix_int(dx);
+   tp->left.dx_frac = dx<<16;
    tp->left.x = fix_int(x);
    tp->left.x_frac = x<<16;
 
    flags = tp->flags&PPF_MASK;
    if (flags == 0) return;
-
    for (i=0, mask=1; ; mask+=mask, i++) {
       if (!(mask&flags))
          continue;
-      tp->left.coord_val[i] = tp->scale[i]*prev->coord[i]*65536.0 + delta_y*tp->dcy[i] + delta_x*tp->dcx[i];
+      tp->left.coord_val[i] = tp->scale[i]*prev->coord[i]*65536.0 + fdy*tp->dcy[i] + fdx*tp->dcx[i];
       tp->left.coord_delta[i] = tp->dcy[i] + tp->left.dx * tp->dcx[i];
       if ((flags -= mask)==0)
          break;
    }
 }
 
-// call once for each right edge.
-void gen_right_edge(g2s_point *prev, g2s_point *next, g2s_poly_params *tp)
+static void fix_left_edge(void)
 {
-   float dx, delta_y;
-   fix dy;
-
-   dx = next->sx - prev->sx;
-   dy = next->sy - prev->sy;
-   AssertMsg(dy > 0, "gen_right_edge(): Hey... edge not valid!\n");
-   if ((dy < fix_make(32,0)) && use_inverse_table) {
-      tp->right.dx = dx = dx * inverse_table[dy>>12];
-   } else
-      tp->right.dx = dx = (dx / dy) * 65536.0;
-
-   delta_y = fix_float(fix_ceil(prev->sy) - prev->sy);
-   // add 0xffff because we're actually doing ceil's...
-   tp->right.x = prev->sx + 0xffff + dx * delta_y;
-}
-#else
-// call once for each left edge.
-void gen_left_edge(g2s_point *prev, g2s_point *next, g2s_poly_params *tp)
-{
-   fix x, dy, dx;
-   fix delta_y;
+   g2s_point *prev = g2d_v0;
+   g2s_point *next = g2d_v1;
+   g2s_poly_params *tp = g2d_ppp;
+   fix dx, dy, x, delta_y;
    float fdx, fdy;
    int i;
    ulong mask, flags;
@@ -106,12 +91,14 @@ void gen_left_edge(g2s_point *prev, g2s_point *next, g2s_poly_params *tp)
    dy = next->sy - prev->sy;
    dx = next->sx - prev->sx;
 
+
+
    AssertMsg(dy > 0, "gen_left_edge(): Hey... edge not valid!\n");
    dx = fix_div(dx, dy);
-
    delta_y = fix_ceil(prev->sy) - prev->sy;
    // add 0xffff because we're actually doing ceil's...
-   x = (prev->sx + 0xffff) + fix_mul(dx, delta_y);
+#line 99
+   x = prev->sx + 0xffff + fix_mul(dx, delta_y);
 
    tp->left.dx = fix_int(dx);
    tp->left.dx_frac = dx<<16;
@@ -126,33 +113,38 @@ void gen_left_edge(g2s_point *prev, g2s_point *next, g2s_poly_params *tp)
    for (i=0, mask=1; ; mask+=mask, i++) {
       if (!(mask&flags))
          continue;
-      tp->left.coord_val[i] = tp->scale[i]*prev->coord[i]*65536.0 + fdy*tp->dcy[i] + fdx*tp->dcx[i];
+      tp->left.coord_val[i] = tp->scale[i]*prev->coord[i]*65536.0 + tp->dcy[i]*fdy + tp->dcx[i]*fdx;
       tp->left.coord_delta[i] = tp->dcy[i] + tp->left.dx * tp->dcx[i];
       if ((flags -= mask)==0)
          break;
    }
 }
 
-// call once for each right edge.
-void gen_right_edge(g2s_point *prev, g2s_point *next, g2s_poly_params *tp)
+static void fix_right_edge(void)
 {
+   g2s_point *prev = g2d_v0;
+   g2s_point *next = g2d_v1;
+   g2s_poly_params *tp = g2d_ppp;
    fix dx, dy, delta_y;
-
    dx = next->sx - prev->sx;
    dy = next->sy - prev->sy;
+
+
+
    AssertMsg(dy > 0, "gen_right_edge(): Hey... edge not valid!\n");
    tp->right.dx = dx = fix_div(dx, dy);
-
    delta_y = fix_ceil(prev->sy) - prev->sy;
    // add 0xffff because we're actually doing ceil's...
+#line 135
    tp->right.x = prev->sx + 0xffff + fix_mul(dx, delta_y);
 }
-#endif
 
 
 // n is the number of scanlines for the shorter edge.
-void gen_raster_loop(g2s_poly_params *tp, int n)
+void gen_raster_loop(void)
 {
+   g2s_poly_params *tp = g2d_ppp;
+   int n = tp->num_scanlines;
    g2s_raster r;
    do {
       ulong mask, flags = tp->flags&PPF_MASK;
@@ -180,3 +172,71 @@ void gen_raster_loop(g2s_poly_params *tp, int n)
    } while (--n > 0);
 }
 
+
+int gen_triangle_raster(void)
+{
+   g2s_poly_params *tp = g2d_ppp;
+   g2s_point *vtop, *vright, *vleft;
+   int ytop, yright, yleft, n;
+
+   gen_triangle_gradients();
+
+   if (g2d_v0->sy < g2d_v1->sy) {
+      if (g2d_v0->sy < g2d_v2->sy) {
+         vtop = g2d_v0; vright = g2d_v1; vleft = g2d_v2;
+      } else {
+         vtop = g2d_v2; vright = g2d_v0; vleft = g2d_v1;
+      }
+   } else if (g2d_v1->sy < g2d_v2->sy) {
+      vtop = g2d_v1; vright = g2d_v2; vleft = g2d_v0;
+   } else {
+      vtop = g2d_v2; vright = g2d_v0; vleft = g2d_v1;
+   }
+
+   ytop = fix_cint(vtop->sy);
+   yleft = fix_cint(vleft->sy);
+   yright = fix_cint(vright->sy);
+
+   if (tp->dy == 1)
+      tp->y = ytop;
+   else
+      tp->p = grd_bm.bits + ytop*tp->canvas_row;
+
+   if (yright>yleft) {     // left elbow
+      n = yright-ytop;
+
+      g2d_v0 = vtop; g2d_v1 = vright;
+      tp->right_edge_func();
+      if (yleft>ytop) {    // do we have a flat top?
+         g2d_v1 = vleft;
+         tp->left_edge_func();
+         tp->num_scanlines = yleft-ytop;
+         tp->raster_func();
+      }
+                           // can't have flat bottom since yright>yleft
+      g2d_v0 = vleft; g2d_v1 = vright;
+      tp->left_edge_func();
+      tp->num_scanlines = yright-yleft;
+      tp->raster_func();
+   } else {                // right elbow
+      n = yleft-ytop;
+      if (n==0)
+         return 0;
+
+      g2d_v0 = vtop; g2d_v1 = vleft;
+      tp->left_edge_func();
+      if (yright>ytop) {   // do we have a flat top?
+         g2d_v1 = vright;
+         tp->right_edge_func();
+         tp->num_scanlines = yright-ytop;
+         tp->raster_func();
+      }
+      if (yleft>yright) {  // do we have a flat bottom?
+         g2d_v0 = vright; g2d_v1 = vleft;
+         tp->right_edge_func();
+         tp->num_scanlines = yleft-yright;
+         tp->raster_func();
+      }
+   }
+   return n;
+}

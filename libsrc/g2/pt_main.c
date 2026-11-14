@@ -260,6 +260,7 @@ static void g2ptmap_unlit16(grs_bitmap *bm)
 
    if (bm->type == BMT_FLAT8) {
       pixpal = (void *)grd_pal16_list[bm->align];
+      AssertMsg(pixpal, "g2ptmap_unlit16: Trying to use NULL palette!\n");
 
       g2pt_func_8 = g2pt_unlit_8_asm;
       g2pt_unlit_8_setup(bm);
@@ -286,12 +287,19 @@ static void g2ptmap_unlit16(grs_bitmap *bm)
 
 static void g2ptmap_lit16(grs_bitmap *bm)
 {
-   g2pt_func_n = g2pt16_lit_n_asm;
    g2pt_func_8 = g2pt16_lit_8_asm;
    g2pt_func_perspective_core = g2pt_lit_perspective_core_asm;
    g2pt_lit_8_chain = g2pt16_generic_8_asm;
 
-   g2pt16_lit_n_setup(bm);
+   if (g2pt_clut) {
+      g2pt_clut_8_chain = g2pt16_generic_8_asm;
+      g2pt_lit_8_chain = g2pt16_clut_8_asm;
+      g2pt_func_n = g2pt16_lit_clut_n_asm;
+      g2pt16_lit_clut_n_setup(bm);
+   } else {
+      g2pt_func_n = g2pt16_lit_n_asm;
+      g2pt16_lit_n_setup(bm);
+   }
    g2pt16_lit_8_setup(bm);
 
    g2pt_func_perspective_run  = g2pt_lit_perspective_run_asm;
@@ -400,7 +408,10 @@ void g2ptmap_setup_lit16(grs_bitmap *bm)
    g2d_pp.v_scale = bm->h * 65536.0;
    g2d_pp.poly_func = g2pt_lit_perspective_poly;
 
-   g2pt_clut = NULL;
+   if (gr_get_fill_type()==FILL_CLUT)
+      g2pt_clut = (uchar *)gr_get_fill_parm();
+   else
+      g2pt_clut = NULL;
 
    g2ptmap_lit16(bm);
 }

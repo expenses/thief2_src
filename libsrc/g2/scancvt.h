@@ -4,7 +4,7 @@
 
 #include <g2spoint.h>
 
-#define G2C_MAX_HEIGHT 768
+#define G2C_MAX_HEIGHT 1024
 
 extern void g2_reset_scan_buffer(void);
 extern void g2_scan_convert(g2s_point *p1, g2s_point *p2);

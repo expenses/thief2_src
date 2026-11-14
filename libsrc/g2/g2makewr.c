@@ -11,20 +11,26 @@
 #include <codewrit.h>
 
 extern void opaque_8to8_buffer_il();
-extern void opaque_8to8_raster();
-extern void opaque_clut_8to8_raster();
-extern void gri_check_edge_y_update();
+extern void opaque_8to8_raster_asm();
+extern void opaque_clut_8to8_raster_asm();
+extern void opaque_lit_8to8_raster_asm();
+extern void opaque_lit_8to16_raster_asm();
+extern void g2pt_unlit_n_asm();
+extern void g2pt_unlit_8_asm();
 extern void opaque_clut_nowrap_8to8_il();
 extern void trans_clut_nowrap_8to8_il();
 
 void g2_make_writable(void)
 {
     MakeFunctionWritable(opaque_8to8_buffer_il,       128);
-    MakeFunctionWritable(opaque_8to8_raster,          384);
-    MakeFunctionWritable(opaque_clut_8to8_raster,     384);
+    MakeFunctionWritable(opaque_8to8_raster_asm,         384);
+    MakeFunctionWritable(opaque_clut_8to8_raster_asm,    384);
+    MakeFunctionWritable(opaque_lit_8to8_raster_asm,     384);
+    MakeFunctionWritable(opaque_lit_8to16_raster_asm,    384);
     MakeFunctionWritable(opaque_clut_nowrap_8to8_il,  128);
     MakeFunctionWritable(trans_clut_nowrap_8to8_il,   128);
-    MakeFunctionWritable(gri_check_edge_y_update,     384);
+    MakeFunctionWritable(g2pt_unlit_n_asm,            4096);
+    MakeFunctionWritable(g2pt_unlit_8_asm,            4096);
 }
 
 #endif

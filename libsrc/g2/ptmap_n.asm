@@ -42,6 +42,7 @@ dv_frac  dd 0
 dv       dd 0
 dux      dd 0
 dvx      dd 0
+temp_v   dd 0
 un_last_mask_u        dd 0deadbeefh
 un_last_mask_v        dd 0deadbeefh
 un_last_p_src         dd 0deadbeefh
@@ -60,11 +61,17 @@ ln16_last_mask_u      dd 0deadbeefh
 ln16_last_mask_v      dd 0deadbeefh
 ln16_last_p_src       dd 0deadbeefh
 ln16_last_light_table dd 0deadbeefh
+lc16_last_mask_u      dd 0deadbeefh
+lc16_last_mask_v      dd 0deadbeefh
+lc16_last_p_src       dd 0deadbeefh
+lc16_last_light_table dd 0deadbeefh
+lc16_last_pal         dd 0deadbeefh
 un_last_shift_v       db 0ach
 ln_last_shift_v       db 0ach
 un16_last_shift_v     db 0ach
 un816_last_shift_v    db 0ach
 ln16_last_shift_v     db 0ach
+lc16_last_shift_v     db 0ach
 
 _DATA	ends
 
@@ -619,17 +626,17 @@ g2pt16_ln_mask_u:
 
         mov     dl, 0deadbeefh[edx+ebx] ; read pixel
 g2pt16_ln_p_src:
-        mov     ebx, ebp                ; u->u_temp
-
         mov     dh, [esi+ecx]
-        inc     ecx                     ; done?
 
         mov     bx, 0deadbeefh[2*edx]
 g2pt16_ln_light_table:
 
+        mov     [edi+2*ecx], bx         ; write pixel
         mov     edx, eax                ; v->v_temp
 
-        mov     [edi+2*ecx-2], bx       ; write pixel
+        mov     ebx, ebp                ; u->u_temp
+        inc     ecx                     ; done?
+
         jnz     g2pt16_lit_n_top
 
         mov     esi, ebp                ; restore u
@@ -701,6 +708,150 @@ g2pt16_ln_skip_shift_v:
         mov     d ds:[g2pt16_ln_light_table-4], edx
         mov     ln16_last_light_table, edx
 g2pt16_ln_skip_light_table:
+
+        pop     ecx
+        pop     edx
+        pop     ebx
+        pop     edi
+        pop     esi
+
+        ret
+
+  _FUNCDEF_ASM g2pt16_lit_clut_n
+        mov     dux, edx
+        mov     dvx, ebp
+
+        mov     ebp, esi
+        lea     edi, [edi+2*ecx]
+
+        lea     esi, _g2pt_lit_buffer[ecx]
+        neg     ecx
+
+        mov     ebx, ebp
+        mov     edx, eax
+
+g2pt16_lit_clut_n_top:
+        shr     ebx, 16
+        and     edx, 0deadbeefh
+g2pt16_lc_mask_v:
+
+        shr     edx, 0ach
+g2pt16_lc_shift_v:
+        and     ebx, 0deadbeefh
+g2pt16_lc_mask_u:
+
+        add     ebp, dux
+        add     eax, dvx
+
+        mov     bl, 0deadbeefh[edx+ebx]
+g2pt16_lc_p_src:
+        mov     temp_v, eax
+
+        mov     bh, [esi+ecx]
+        xor     edx, edx
+
+        xor     eax, eax
+        mov     dl, 0deadbeefh[2*ebx]
+g2pt16_lc_light_lo:
+        mov     al, 0deadbef0h[2*ebx]
+g2pt16_lc_light_hi:
+
+        mov     ebx, ebp
+        mov     dx, 0deadbeefh[2*edx]
+g2pt16_lc_pal_lo:
+        add     dx, 0deadc0efh[2*eax]
+g2pt16_lc_pal_hi:
+
+        mov     [edi+2*ecx], dx
+        mov     eax, temp_v
+
+        inc     ecx
+        mov     edx, eax
+
+        jnz     g2pt16_lit_clut_n_top
+
+        mov     esi, ebp
+        ret
+
+
+; setup
+  _FUNCDEF g2pt16_lit_clut_n_setup,1
+        push    esi
+        push    edi
+
+        push    ebx
+        push    edx
+
+        push    ecx
+        mov     ebx, GRS_BITMAP_BITS[eax]
+
+        mov     edx, GRS_BITMAP_W[eax]
+        mov     al, GRS_BITMAP_WLOG[eax]
+
+        mov     cl, 16
+        sub     edx, 010001h
+
+        sub     cl, al
+        mov     eax, edx
+
+        and     edx, 0ffff0000h
+        and     eax, 0ffffh
+
+        mov     esi, lc16_last_mask_u
+        mov     edi, lc16_last_mask_v
+
+        cmp     esi, eax
+        jz      g2pt16_lc_skip_mask_u
+
+        mov     d ds:[g2pt16_lc_mask_u-4], eax
+        mov     lc16_last_mask_u, eax
+g2pt16_lc_skip_mask_u:
+        cmp     edi, edx
+        jz      g2pt16_lc_skip_mask_v
+
+        mov     d ds:[g2pt16_lc_mask_v-4], edx
+        mov     lc16_last_mask_v, edx
+g2pt16_lc_skip_mask_v:
+
+        mov     eax, lc16_last_p_src
+        mov     dl, lc16_last_shift_v
+
+        cmp     eax, ebx
+        jz      g2pt16_lc_skip_p_src
+
+        mov     d ds:[g2pt16_lc_p_src-4], ebx
+        mov     lc16_last_p_src, ebx
+g2pt16_lc_skip_p_src:
+        db      38h, 0cah
+        jz      g2pt16_lc_skip_shift_v
+
+        mov     b ds:[g2pt16_lc_shift_v-1], cl
+        mov     lc16_last_shift_v, cl
+g2pt16_lc_skip_shift_v:
+
+        mov     ebx, lc16_last_light_table
+        mov     edx, _grd_ltab816
+
+        cmp     ebx, edx
+        jz      g2pt16_lc_skip_light_table
+
+        lea     ecx, [edx+1]
+        mov     d ds:[g2pt16_lc_light_lo-4], edx
+        mov     d ds:[g2pt16_lc_light_hi-4], ecx
+        mov     lc16_last_light_table, edx
+g2pt16_lc_skip_light_table:
+
+        mov     ebx, lc16_last_pal
+        mov     edx, _g2pt_clut
+
+        cmp     ebx, edx
+        jz      g2pt16_lc_skip_pal
+
+        lea     ecx, [edx+200h]
+        mov     d ds:[g2pt16_lc_pal_lo-4], edx
+        mov     d ds:[g2pt16_lc_pal_hi-4], ecx
+        mov     lc16_last_pal, edx
+g2pt16_lc_skip_pal:
 
         pop     ecx
         pop     edx

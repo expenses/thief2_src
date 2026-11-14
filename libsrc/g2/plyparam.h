@@ -12,10 +12,11 @@
 typedef struct g2s_poly_params g2s_poly_params;
 
 typedef void (g2il_func)(g2s_raster *r, g2s_poly_params *p);
-typedef void (g2raster_func)(g2s_poly_params *p, int num_scanlines);
-typedef void (g2edge_func)(g2s_point *prev, g2s_point *next, g2s_poly_params *p);
+typedef void (g2raster_func)(void);
+typedef void (g2edge_func)(void);
 typedef int (g2poly_func)(int n, g2s_point **ppl);
-typedef void (g2grad_func)(g2s_point *p0, g2s_point *p1, g2s_point *p2, g2s_poly_params *p);
+typedef void (g2grad_func)(void);
+typedef int (g2tri_func)(void);
 
 typedef struct g2s_raster_list {
    union {
@@ -36,8 +37,14 @@ typedef struct right_edge {
 } right_edge;
 
 struct g2s_poly_params {
-   g2s_raster_list raster_list;
-   int raster_row;
+   union {
+      g2s_raster_list raster_list;
+      int num_scanlines;
+   };
+   union {
+      int raster_row;
+      g2tri_func *tri_func;
+   };
    union {
       uchar *p;
       int y;
@@ -81,7 +88,6 @@ struct g2s_poly_params {
    g2poly_func *poly_func;
    g2grad_func *grad_func;
    int clip_type;
-   int ytop, yright, yleft;
 };  
 
 #endif

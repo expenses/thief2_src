@@ -41,6 +41,7 @@ void translucent_8to8_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
    g2d_pp.raster_func = gen_raster_loop;
 
    if (POW2(bm)) {
+      g2d_pp.tri_func = gen_uv_triangle;
       g2d_pp.grad_func = uv_triangle_gradients;
       g2d_pp.canvas_row = grd_bm.row;
       g2d_pp.inner_loop = translucent_8to8_inner_loop;
@@ -50,7 +51,7 @@ void translucent_8to8_setup(grs_bitmap *bm, void (*caller)(grs_bitmap *))
       v_mask = (bm->h-1)<<16;
       v_shift = 16 - bm->wlog;
    } else {
-      g2d_pp.grad_func = gen_triangle_gradients;
+      g2d_pp.tri_func = gen_triangle_raster;
       g2d_pp.inner_loop = gen_flat8_il;
       g2d_pp.pix_func = gd_upix8_expose(0,0,0);
       g2d_pp.dy = 1;

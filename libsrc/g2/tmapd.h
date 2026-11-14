@@ -8,6 +8,8 @@
 extern g2s_tmap_info g2d_tmap_info;
 extern g2s_poly_params g2d_pp;
 extern g2s_poly_params *g2d_ppp; // usually = &g2d_pp
+extern g2s_point *g2d_v0, *g2d_v1, *g2d_v2;
+extern fix *g2d_p_edge_x, *g2d_p_edge_dx;
 
 #define G2C_TMAP_BUFFER_SIZE 1024
 extern uchar g2d_tmap_buffer[G2C_TMAP_BUFFER_SIZE];

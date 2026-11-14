@@ -5,16 +5,17 @@
 
 int g2_umap(int n, g2s_point **vpl)
 {
-   g2s_point *v0 = vpl[0];
-   g2s_point *v1 = vpl[1];
-   g2s_point *v2 = vpl[2];
    int i;
 
-   g2_triangle_raster_sort(v0, v1, v2, g2d_ppp);
+   g2d_v0 = vpl[0];
+   g2d_v1 = vpl[1];
+   g2d_v2 = vpl[2];
+   g2d_ppp->tri_func();
    for (i=3; i<n; i++) {
-      v1 = vpl[i-1];
-      v2 = vpl[i];
-      g2_triangle_raster_sort(v0, v1, v2, g2d_ppp);
+      g2d_v0 = vpl[0];
+      g2d_v1 = vpl[i-1];
+      g2d_v2 = vpl[i];
+      g2d_ppp->tri_func();
    }
    return CLIP_NONE;
 }

@@ -6,6 +6,7 @@
 extern void translucent_8to16_setup();
 extern void opaque_8to16_setup();
 extern void opaque_lit_8to16_setup();
+extern void opaque_clut_lit_8to16_setup();
 extern void opaque_clut_8to16_setup();
 extern void trans_8to16_setup();
 extern void trans_lit_8to16_setup();

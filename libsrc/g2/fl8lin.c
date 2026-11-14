@@ -24,7 +24,7 @@ do { \
 
 void flat8_uline (uchar c, grs_vertex *v0, grs_vertex *v1)
 {
-   #include <fl8lin.h>
+   #include "fl8lin.h"
 }
 
 /* norm */
@@ -59,7 +59,7 @@ do { \
 void flat8_uline_xor (grs_vertex *v0, grs_vertex *v1)
 {
    uchar c=grd_gc.fcolor;
-   #include <fl8lin.h>
+   #include "fl8lin.h"
 }
 
 /* blend */
@@ -77,7 +77,7 @@ void flat8_uline_blend (grs_vertex *v0, grs_vertex *v1)
    if (clut == NULL) {
       flat8_uline (c, v0, v1);
    } else {
-      #include <fl8lin.h>
+      #include "fl8lin.h"
    }
 }
 

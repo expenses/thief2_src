@@ -25,9 +25,12 @@ extern void g2pt816_unlit_n_setup(grs_bitmap *bm);
 extern void g2pt_pal816_8_asm(void);
 extern void g2pt16_lit_n_asm(void);
 extern void g2pt16_lit_n_setup(grs_bitmap *bm);
+extern void g2pt16_lit_clut_n_asm(void);
+extern void g2pt16_lit_clut_n_setup(grs_bitmap *bm);
 extern void g2pt16_lit_8_asm(void);
 extern void g2pt16_lit_8_setup(grs_bitmap *bm);
 extern void g2pt16_generic_8_asm(void);
+extern void g2pt16_clut_8_asm(void);
 
   // n-pixel mappers
 extern void g2pt_unlit_n_asm(void);

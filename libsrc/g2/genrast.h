@@ -5,8 +5,11 @@
 
 #include <plyparam.h>
 extern g2raster_func gen_raster_loop;
-extern g2edge_func gen_left_edge;
-extern g2edge_func gen_right_edge;
+extern g2edge_func *gen_left_edge;
+extern g2edge_func *gen_right_edge;
+extern g2edge_func *gen_uv_left_edge;
+extern g2tri_func gen_triangle_raster;
+extern g2tri_func *gen_uv_triangle;
 extern g2grad_func gen_triangle_gradients;
 extern g2grad_func uv_triangle_gradients;
 extern g2grad_func iuv_triangle_gradients;

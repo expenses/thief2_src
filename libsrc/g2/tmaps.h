@@ -4,6 +4,9 @@
 #define __TMAPS_H
 
 #include <dev2d.h>
+#include <plyparam.h>
+
+typedef void (*g2_il_func)(int x, int xf, fix u, fix v);
 
 typedef struct {
    fix du_frac,dv_frac;

@@ -64,6 +64,9 @@ RunClipData *g2pt_clip_alloc;
 static fix tmap_data_fix[9];
 static int scanline;
 
+extern g2s_point *g2d_v0, *g2d_v1;
+extern fix *g2d_p_edge_x, *g2d_p_edge_dx;
+extern void gen_calc_edge_(void);
 
 // fast conversion from float to fix
 //   hack value for float to int is 2^52
@@ -135,11 +138,12 @@ static void scan_convert(grs_point *p1, grs_point *p2)
    if (y2 > y_max)
       y_max = y2;
 
-   // compute slope w.r.t. y axis
-   dx = fix_div(p2->sx - p1->sx, p2->sy - p1->sy);
-
-   // compute scan location, fixed up to the next crossing
-   x = p1->sx + fix_mul(dx, fix_ceil(p1->sy) - p1->sy);
+   g2d_v0 = (g2s_point *)p1;
+   g2d_v1 = (g2s_point *)p2;
+   g2d_p_edge_x = &x;
+   g2d_p_edge_dx = &dx;
+   gen_calc_edge_();
+   x -= 0xFFFF;
 
    if (g2pt_poly_lit) {
       di = (p2->i - p1->i)*SHADES * 65536 / (p2->sy - p1->sy);
@@ -241,10 +245,12 @@ static void scan_convert_uv(r3s_point *p1, r3s_point *p2)
    delta_y  = p2->grp.sy - p1->grp.sy;
    dy_fixup = fix_ceil(p1->grp.sy) - p1->grp.sy;
 
-   dx = fix_div(p2->grp.sx - p1->grp.sx, delta_y);
-
-   // compute scan location, fixed up to the next crossing
-   x = p1->grp.sx + fix_mul(dx, dy_fixup);
+   g2d_v0 = (g2s_point *)&p1->grp;
+   g2d_v1 = (g2s_point *)&p2->grp;
+   g2d_p_edge_x = &x;
+   g2d_p_edge_dx = &dx;
+   gen_calc_edge_();
+   x -= 0xFFFF;
 
 #if 0
    // naive implementation for u,v,du,dv as floats
@@ -1229,7 +1235,7 @@ static void add_unclipped_run(int x0, int x1, int y)
 
 #endif
 
-#define CLIP_DATA_HEIGHT   768
+#define CLIP_DATA_HEIGHT   1024
 #define CLIP_DATA_TOTAL    (CLIP_DATA_HEIGHT * 8)
 
 static RunClipData clip_data[CLIP_DATA_TOTAL];  // allocation pool

@@ -47,13 +47,19 @@ dx_frac         equ     G2S_POLY_PARAMS_LEFT_DX_FRAC
 x_right         equ     G2S_POLY_PARAMS_RIGHT_X
 dx_right        equ     G2S_POLY_PARAMS_RIGHT_DX
 
+extrn _g2d_ppp:dword
+
 _TEXT segment
 
 ;takes eax = poly params
 ;      edx = num scanlines
-_FUNCDEF opaque_lit_8to8_raster, 2
+_FUNCDEF_ASM opaque_lit_8to8_raster
         push    ebp
-        mov     ebp, eax
+        mov     ebp, _g2d_ppp
+        push    edx
+        push    eax
+        mov     edx, [ebp]
+        nop
 
         push    edi
         push    esi
@@ -217,6 +223,8 @@ skip_pixel_loop:
         pop     esi
         pop     edi
 
+        pop     eax
+        pop     edx
         pop     ebp
         ret
 

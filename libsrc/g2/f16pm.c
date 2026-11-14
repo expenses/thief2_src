@@ -11,9 +11,9 @@ void flat16_upmap_setup(grs_bitmap *bm)
    uint ft = gr_get_fill_type();
 
    AssertMsg(bm->type<BMT_TYPES,"flat8_ulmap_setup(): invalid bitmap type!");
-   if ((bm->type == BMT_FLAT16)&&
-       ((bm->flags&BMF_TRANS)==0)&&
-       (ft == FILL_NORM)) {
+   if ((ft == FILL_NORM)&&
+       ((bm->type == BMT_FLAT8)||
+        ((bm->type == BMT_FLAT16)&&((bm->flags&BMF_TRANS)==0)))) {
 
       extern void g2ptmap_setup_unlit16(grs_bitmap *bm);
 
@@ -30,7 +30,7 @@ void flat16_lit_upmap_setup(grs_bitmap *bm)
    AssertMsg(bm->type<BMT_TYPES,"flat8_ulmap_setup(): invalid bitmap type!");
    if ((bm->type == BMT_FLAT8)&&
        ((bm->flags&BMF_TRANS)==0)&&
-       (ft == FILL_NORM)&&
+       ((ft == FILL_NORM)||(ft == FILL_CLUT))&&
        (grd_ltab816_list!=NULL))
    {
       extern void g2ptmap_setup_lit16(grs_bitmap *bm);

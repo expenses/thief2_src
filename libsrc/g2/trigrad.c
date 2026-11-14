@@ -20,30 +20,31 @@
 
 #define OVERFLOW 0x80000000
 
-void gen_triangle_gradients(g2s_point *v0, g2s_point *v1, g2s_point *v2, g2s_poly_params *tp)
+void gen_triangle_gradients(void)
 {
+   g2s_poly_params *tp = g2d_ppp;
    float r, x10, y10, x20, y20;
    int i;
    ulong mask,flags;
 
    flags = tp->flags&PPF_MASK;
    if (flags>0) {
-      x10=v1->sx-v0->sx;
-      y10=v1->sy-v0->sy;
-      x20=v2->sx-v0->sx;
-      y20=v2->sy-v0->sy;
+      x10=g2d_v1->sx-g2d_v0->sx;
+      y10=g2d_v1->sy-g2d_v0->sy;
+      x20=g2d_v2->sx-g2d_v0->sx;
+      y20=g2d_v2->sy-g2d_v0->sy;
 
       r = f2to32/(y10*x20 - y20*x10);
    }
-// divide overlap!
-   tp->ytop = fix_cint(v0->sy);
-   tp->yright = fix_cint(v1->sy);
-   tp->yleft = fix_cint(v2->sy);
+   // divide overlap!
+   // tp->ytop = fix_cint(v0->sy);
+   // tp->yright = fix_cint(v1->sy);
+   // tp->yleft = fix_cint(v2->sy);
 
-   if (tp->dy == 1)
-      tp->y = tp->ytop;
-   else
-      tp->p = grd_bm.bits + tp->ytop*tp->canvas_row;
+   // if (tp->dy == 1)
+   //    tp->y = tp->ytop;
+   // else
+   //    tp->p = grd_bm.bits + tp->ytop*tp->canvas_row;
 
    for (mask = 1, i = 0; mask <= flags; mask += mask, i++)
    {
@@ -53,8 +54,8 @@ void gen_triangle_gradients(g2s_point *v0, g2s_point *v1, g2s_point *v2, g2s_pol
          continue;
 
       scale = r * tp->scale[i];
-      c10=v1->coord[i]-v0->coord[i];
-      c20=v2->coord[i]-v0->coord[i];
+      c10=g2d_v1->coord[i]-g2d_v0->coord[i];
+      c20=g2d_v2->coord[i]-g2d_v0->coord[i];
       dc = (y10*c20-y20*c10)*scale;
       if ((dc > ((float )FIX_MAX))||(dc < ((float)FIX_MIN))) {
          tp->dcx[i] =
