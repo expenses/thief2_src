@@ -287,6 +287,7 @@ void com_get_rgb_bitmask(grs_rgb_bitmask *bitmask)
    }
 
    mode = g_pDev2dDisplayDevice->GetMode(&mode_info);
+   bitmask->alpha = 0;
    if (mode >= 0) {
       bitmask->red = mode_info.redMask;
       bitmask->green = mode_info.greenMask;

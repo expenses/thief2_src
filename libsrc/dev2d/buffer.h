@@ -22,6 +22,9 @@ extern "C" {
 #define gd_alloc_temp temp_malloc
 #define gd_free_temp temp_free
 
+#define gr_alloc_temp temp_malloc
+#define gr_free_temp temp_free
+
 #ifdef __cplusplus
 };
 #endif

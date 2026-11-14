@@ -44,7 +44,8 @@ void gr_set_pal (int start, int n, uchar *pal_data)
          src = dst;
       }
    }
-   gr_set_screen_pal(start, n, src+3*start);
+   if (grd_mode >= 0)
+      gr_set_screen_pal(start, n, src+3*start);
 }
 
 /* copy the shadow palette to a destination buffer. */

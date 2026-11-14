@@ -234,6 +234,8 @@ grs_canvas *gr_alloc_canvas (uint type, int w, int h)
             *p = (uchar *)gr_malloc (2*w*h); break;
          case BMT_FLAT24:
             *p = (uchar *)gr_malloc (3*w*h); break;
+         case BMT_FLAT32:
+            *p = (uchar *)gr_malloc (4*w*h); break;
          default:
             Warning(("gr_alloc_canvas(): unsupported bitmap type requested.\n"));
       }

@@ -24,6 +24,7 @@ enum {
    BMT_BANK16,
    BMT_BANK24,
    BMT_TLUC8,
+   BMT_FLAT32,
    BMT_TYPES
 };
 /*
@@ -32,6 +33,7 @@ enum {
 */
 #define BMT_DEVICE_VIDMEM BMT_TYPES
 #define BMT_DEVICE_VIDMEM_TO_FLAT BMT_TYPES+1
+#define BMT_OLD_DEVICE_VIDMEM_TO_FLAT (BMT_FLAT32+1)
 
 /* bitmap flags. */
 enum {

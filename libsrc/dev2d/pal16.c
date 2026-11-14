@@ -119,7 +119,10 @@ void gr_make_pal16(int start, int n, ushort *pal16, uchar *pal_data, grs_rgb_bit
 
    if (bitmask->green == 0x3e0)
    {  // 15 bit
-      set_pal555_from_pal888(start, n, pal16, pal);
+      if (bitmask->alpha == 0)
+         set_pal555_from_pal888(start, n, pal16, pal);
+      else
+         set_pal1555_from_pal888(start, n, pal16, pal);
    }
    else
    {  // 16 bit
