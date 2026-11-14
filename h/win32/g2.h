@@ -87,14 +87,18 @@ typedef struct g2s_point {
    union {
       float coord[32];
       struct {
-         float i,u,v,h,d;
+          union { float i; float r; };
+          float u,v;
+          union { float h; float g; };
+          union { float d; float b; };
+          float a;
       };
    };
 } g2s_point; // 140 bytes.  ick.
 
 // $Header: x:/prj/tech/libsrc/g2/RCS/scancvt.h 1.1 1998/03/03 12:13:30 KEVIN Exp $
 
-#define G2C_MAX_HEIGHT 768
+#define G2C_MAX_HEIGHT 1024
 
 extern void g2_reset_scan_buffer(void);
 extern void g2_scan_convert(g2s_point *p1, g2s_point *p2);

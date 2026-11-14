@@ -71,6 +71,7 @@ typedef enum {
 EXTERN void r3_set_clipmode(r3e_clipmode e);
 EXTERN r3e_clipmode r3_get_clipmode();
 EXTERN void r3_set_clip_flags(int flags);
+EXTERN int r3_get_clip_flags(void);
 EXTERN void r3_set_near_plane(mxs_real dist);
 EXTERN mxs_real r3_get_near_plane();
 
@@ -97,6 +98,10 @@ typedef struct {
 #define R3_CLIP_UV     6
 #define R3_CLIP_ALL    7
 #define R3_CLIP_RGB    (1+8+16)   // store RGB as I,*,*,H,D
+#define R3_CLIP_A      32
+#define R3_CLIP_RGBA   (R3_CLIP_RGB | R3_CLIP_A)
+#define R3_CLIP_FOG    64
+#define R3_CLIP_SPEC   (128+256+512+1024)
 
 // $Header: x:/prj/tech/libsrc/r3d/RCS/clipplan.h 1.3 1998/06/18 11:25:49 JAEMZ Exp $
 
@@ -173,13 +178,13 @@ typedef struct
    r3s_texture bm;    // default texture if poly
 
       // flags which indicate what function we use
-   uchar clip_2d;
+   ulong clip_2d;
 
-   uchar point_flags;
-   uchar line_flags;
-   uchar poly_flags;
+   ulong point_flags;
+   ulong line_flags;
+   ulong poly_flags;
 
-   uchar bm_type;  // plus transparency flag
+   ulong bm_type;  // plus transparency flag
 } r3s_prim_context;
 
 // $Header: x:/prj/tech/libsrc/r3d/RCS/prim.h 1.12 1998/06/30 18:45:54 buzzard Exp $
@@ -223,25 +228,26 @@ EXTERN BOOL r3d_do_setup;
 
    // lighting mode
 #define R3_PL_UNLIT            0
-#define R3_PL_GOURAUD          4
-#define R3_PL_RGB_GOURAUD      8
-#define R3_PL_PALETTE_GOURAUD  12
+#define R3_PL_GOURAUD          0x100
+#define R3_PL_RGB_GOURAUD      0x200
+#define R3_PL_RGBA_GOURAUD     0x300
+#define R3_PL_PALETTE_GOURAUD  0x300
 
    // fill modes
 #define R3_PL_SOLID             0
-#define R3_PL_TRANSLUCENT      16
-#define R3_PL_TEXTURE          32
-#define R3_PL_TEXTURE_LINEAR   48
+#define R3_PL_TRANSLUCENT      0x10000
+#define R3_PL_TEXTURE          0x20000
+#define R3_PL_TEXTURE_LINEAR   0x30000
 
    // outline in wireframe as well as draw normally
-#define R3_PL_WIRE             64
+#define R3_PL_WIRE             0x2000000
 
    // check facing using vertices
-#define R3_PL_CHECK_FACING     128
+#define R3_PL_CHECK_FACING     0x1000000
 
 #define R3_PL_MODE_MASK         3
-#define R3_PL_LIGHT_MASK       12
-#define R3_PL_TEXTURE_MASK     48
+#define R3_PL_LIGHT_MASK       0xff00
+#define R3_PL_TEXTURE_MASK     0xff0000
 
 // $Header: x:/prj/tech/libsrc/r3d/RCS/primtab.h 1.7 1997/10/03 13:03:29 KEVIN Exp $
 
@@ -252,8 +258,11 @@ typedef struct grs_vertex grs_vertex;
 typedef struct {
    int (*draw_3d_poly) (int n, r3s_phandle *vp);
    int (*draw_3d_tmap) (int n, r3s_phandle *vp, r3s_texture bm);
-   int (*draw_2d_poly) (int n, r3s_phandle *vp);
-   void (*draw_2d_tmap) (r3s_texture bm); // actually, just setup
+   int (*draw_indexed_3d_poly)(int n, short *trilist);
+   int (*draw_indexed_3d_tmap)(int n, short *trilist, r3s_texture bm);
+   int (*convert_poly) (int n, r3s_phandle *vp);
+   int (*convert_poly_indexed)(int n, r3s_phandle *vp, r3ixs_info *info);
+   void (*poly_setup) (r3s_texture bm);
    int (*draw_2d_line) (r3s_phandle p0, r3s_phandle p1);
    int (*draw_2d_point)(r3s_phandle p0);
 } r3s_prim_tab;
@@ -701,5 +710,22 @@ EXTERN r3e_space r3_get_default_space();
 #define R3C_BEHIND     16
 
 #define R3C_NONE        0
+
+EXTERN void r3_reset_index(void);
+EXTERN void r3_index_free_lists(void);
+EXTERN void r3_index_init(void);
+EXTERN void r3_index_term(void);
+EXTERN void r3_start_indexed_block(void);
+EXTERN void r3_end_indexed_block(void);
+EXTERN int r3_alloc_indexed(int start, int n);
+EXTERN void r3_free_indexed_range(int start, int n);
+EXTERN int r3_transform_block_indexed(int start, int n, mxs_vector *verts);
+EXTERN void r3_set_strided_uvs_indexed(int start, int n, float *uvs, int uv_stride);
+EXTERN void r3_set_strided_is_indexed(int start, int n, float *is, int i_stride);
+EXTERN void r3_set_strided_rgbs_indexed(int start, int n, float *rgbs, int rgb_stride);
+EXTERN r3s_point *r3_get_indexed_phandle(int id);
+EXTERN r3s_point **r3_get_vpl_from_index(int n, short *index_list);
+EXTERN r3ixs_info *r3_get_info_from_index(int n, short *index_list);
+EXTERN r3ixs_info *r3_get_clipped_info_from_index(int n, r3s_phandle *vpl, int m, r3s_phandle *cvpl, short *index_list);
 
 #endif /* __R3D_H */ 
