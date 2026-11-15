@@ -1,0 +1,4484 @@
+Sections:
+	.text       type:code align:4096
+	lgalloc     type:code align:4096
+
+olddark:
+	.text       start:0x4032d8 end:0x4032e0 align:1
+	.text       start:0x4053f5 end:0x405400 align:1
+	.text       start:0x4078c8 end:0x4078d0 align:1
+	.text       start:0x409122 end:0x409130 align:1
+	.text       start:0x40a73a end:0x40a740 align:1
+	.text       start:0x40bfb8 end:0x40bfc0 align:1
+	.text       start:0x40d158 end:0x40d160 align:1
+	.text       start:0x40e8a8 end:0x40e8b0 align:1
+	.text       start:0x40f998 end:0x40f9a0 align:1
+	.text       start:0x4113e8 end:0x4113f0 align:1
+	.text       start:0x412f68 end:0x412f70 align:1
+	.text       start:0x41391f end:0x413920 align:1
+	.text       start:0x413c24 end:0x413c30 align:1
+	.text       start:0x415348 end:0x415350 align:1
+	.text       start:0x415758 end:0x415760 align:1
+	.text       start:0x416dd4 end:0x416de0 align:1
+	.text       start:0x418008 end:0x418010 align:1
+	.text       start:0x4180e2 end:0x4180f0 align:1
+	.text       start:0x4193d7 end:0x4193e0 align:1
+	.text       start:0x419cd7 end:0x419ce0 align:1
+	.text       start:0x41a5f5 end:0x41a600 align:1
+	.text       start:0x41d1c8 end:0x41d1d0 align:1
+	.text       start:0x41d4ea end:0x41d4f0 align:1
+	.text       start:0x41fbb8 end:0x41fbc0 align:1
+	.text       start:0x4242b8 end:0x4242c0 align:1
+	.text       start:0x429268 end:0x429270 align:1
+	.text       start:0x42a5c8 end:0x42a5d0 align:1
+	.text       start:0x42a70b end:0x42a710 align:1
+	.text       start:0x42b9dd end:0x42b9e0 align:1
+	.text       start:0x43114a end:0x431150 align:1
+	.text       start:0x433025 end:0x433030 align:1
+	.text       start:0x434a51 end:0x434a60 align:1
+	.text       start:0x4350ce end:0x4350d0 align:1
+	.text       start:0x4360b8 end:0x4360c0 align:1
+	.text       start:0x438378 end:0x438380 align:1
+	.text       start:0x43846f end:0x438470 align:1
+	.text       start:0x43b6b8 end:0x43b6c0 align:1
+	.text       start:0x4439d8 end:0x4439e0 align:1
+	.text       start:0x443df1 end:0x443e00 align:1
+	.text       start:0x445178 end:0x445180 align:1
+	.text       start:0x44ae08 end:0x44ae10 align:1
+	.text       start:0x44baf5 end:0x44bb00 align:1
+	.text       start:0x44c5d8 end:0x44c5e0 align:1
+	.text       start:0x44e80e end:0x44e810 align:1
+	.text       start:0x453238 end:0x453240 align:1
+	.text       start:0x4545f8 end:0x454600 align:1
+	.text       start:0x4564b8 end:0x4564c0 align:1
+	.text       start:0x4572d8 end:0x4572e0 align:1
+	.text       start:0x458cd4 end:0x458ce0 align:1
+	.text       start:0x4609e8 end:0x4609f0 align:1
+	.text       start:0x4680c8 end:0x4680d0 align:1
+	.text       start:0x46a248 end:0x46a250 align:1
+	.text       start:0x46c4cc end:0x46c4d0 align:1
+	.text       start:0x46f418 end:0x46f420 align:1
+	.text       start:0x471508 end:0x471510 align:1
+	.text       start:0x4719a4 end:0x4719b0 align:1
+	.text       start:0x4783c8 end:0x4783d0 align:1
+	.text       start:0x47a558 end:0x47a560 align:1
+	.text       start:0x47bc78 end:0x47bc80 align:1
+	.text       start:0x47e794 end:0x47e7a0 align:1
+	.text       start:0x48043c end:0x480440 align:1
+	.text       start:0x480b6c end:0x480b70 align:1
+	.text       start:0x4866d8 end:0x4866e0 align:1
+	.text       start:0x4873ca end:0x4873d0 align:1
+	.text       start:0x487968 end:0x487970 align:1
+	.text       start:0x48a478 end:0x48a480 align:1
+	.text       start:0x48c788 end:0x48c790 align:1
+	.text       start:0x48d7a8 end:0x48d7b0 align:1
+	.text       start:0x48f188 end:0x48f190 align:1
+	.text       start:0x48f7c8 end:0x48f7d0 align:1
+	.text       start:0x490a88 end:0x490a90 align:1
+	.text       start:0x494c28 end:0x494c30 align:1
+	.text       start:0x4967a8 end:0x4967b0 align:1
+	.text       start:0x497798 end:0x4977a0 align:1
+	.text       start:0x49cdd8 end:0x49cde0 align:1
+	.text       start:0x4a5598 end:0x4a55a0 align:1
+	.text       start:0x4a81ab end:0x4a81b0 align:1
+	.text       start:0x4a8608 end:0x4a8610 align:1
+	.text       start:0x4aa268 end:0x4aa270 align:1
+	.text       start:0x4aa458 end:0x4aa460 align:1
+	.text       start:0x4ade88 end:0x4ade90 align:1
+	.text       start:0x4af278 end:0x4af280 align:1
+	.text       start:0x4b21c8 end:0x4b21d0 align:1
+	.text       start:0x4b356b end:0x4b3570 align:1
+	.text       start:0x4b39f2 end:0x4b3a00 align:1
+	.text       start:0x4b43f8 end:0x4b4400 align:1
+	.text       start:0x4b5024 end:0x4b5030 align:1
+	.text       start:0x4bb818 end:0x4bb820 align:1
+	.text       start:0x4bbc48 end:0x4bbc50 align:1
+	.text       start:0x4bdf85 end:0x4bdf90 align:1
+	.text       start:0x4bfd58 end:0x4bfd60 align:1
+	.text       start:0x4c3d08 end:0x4c3d10 align:1
+	.text       start:0x4c867e end:0x4c8680 align:1
+	.text       start:0x4c885a end:0x4c8860 align:1
+	.text       start:0x4c8c7a end:0x4c8c80 align:1
+	.text       start:0x4d2031 end:0x4d2040 align:1
+	.text       start:0x4d2113 end:0x4d2120 align:1
+	.text       start:0x4da9e8 end:0x4da9f0 align:1
+	.text       start:0x4dae58 end:0x4dae60 align:1
+	.text       start:0x4e3008 end:0x4e3010 align:1
+	.text       start:0x4ed048 end:0x4ed050 align:1
+	.text       start:0x50ef9c end:0x50efa0 align:1
+	.text       start:0x510bf8 end:0x510c00 align:1
+	.text       start:0x5143e8 end:0x5143f0 align:1
+	.text       start:0x5144a9 end:0x5144b0 align:1
+	.text       start:0x514ec8 end:0x514ed0 align:1
+	.text       start:0x51789a end:0x5178a0 align:1
+	.text       start:0x51c32a end:0x51c330 align:1
+	.text       start:0x51d3ed end:0x51d3f0 align:1
+	.text       start:0x5270a8 end:0x5270b0 align:1
+	.text       start:0x527dba end:0x527dc0 align:1
+	.text       start:0x53cd18 end:0x53cd20 align:1
+	.text       start:0x53eb54 end:0x53eb60 align:1
+	.text       start:0x54581b end:0x545820 align:1
+	.text       start:0x55047d end:0x550480 align:1
+	.text       start:0x554e48 end:0x554e50 align:1
+	.text       start:0x556308 end:0x556310 align:1
+	.text       start:0x55a222 end:0x55a230 align:1
+	.text       start:0x55e98a end:0x55e990 align:1
+	.text       start:0x55ec14 end:0x55ec20 align:1
+	.text       start:0x561b77 end:0x561b80 align:1
+	.text       start:0x56a691 end:0x56a6a0 align:1
+	.text       start:0x56c5c2 end:0x56c5d0 align:1
+	.text       start:0x56c7fb end:0x56c800 align:1
+	.text       start:0x56ff3c end:0x56ff40 align:1
+	.text       start:0x570458 end:0x570460 align:1
+	.text       start:0x573412 end:0x573420 align:1
+	.text       start:0x5779cc end:0x5779d0 align:1
+	.text       start:0x577a6b end:0x577a70 align:1
+	.text       start:0x577c0c end:0x577c10 align:1
+	.text       start:0x5794be end:0x5794c0 align:1
+	.text       start:0x582489 end:0x582490 align:1
+	.text       start:0x58250d end:0x582510 align:1
+	.text       start:0x585541 end:0x585550 align:1
+	.text       start:0x586514 end:0x586520 align:1
+	.text       start:0x58688c end:0x586890 align:1
+	.text       start:0x5875db end:0x5875e0 align:1
+	.text       start:0x587c34 end:0x587c40 align:1
+	.text       start:0x588145 end:0x588150 align:1
+	.text       start:0x5883ad end:0x5883b0 align:1
+	.text       start:0x588418 end:0x588420 align:1
+	.text       start:0x588eac end:0x588eb0 align:1
+	.text       start:0x58966a end:0x589670 align:1
+	.text       start:0x58a114 end:0x58a120 align:1
+	.text       start:0x58a19e end:0x58a1a0 align:1
+	.text       start:0x58a67f end:0x58a680 align:1
+	.text       start:0x58b88e end:0x58b890 align:1
+	.text       start:0x58c4c2 end:0x58c4d0 align:1
+	.text       start:0x58c906 end:0x58c910 align:1
+	.text       start:0x58d031 end:0x58d040 align:1
+	.text       start:0x58d31a end:0x58d320 align:1
+	.text       start:0x593803 end:0x593810 align:1
+	.text       start:0x594cda end:0x594ce0 align:1
+	.text       start:0x59781f end:0x597820 align:1
+	.text       start:0x598069 end:0x598070 align:1
+	.text       start:0x5982bd end:0x5982c0 align:1
+	.text       start:0x5982d4 end:0x5982e0 align:1
+	.text       start:0x59d1d9 end:0x59d1e0 align:1
+	.text       start:0x59e794 end:0x59e7a0 align:1
+	.text       start:0x5a26bc end:0x5a26c0 align:1
+	.text       start:0x5ad23b end:0x5ad240 align:1
+	.text       start:0x5ad325 end:0x5ad330 align:1
+	.text       start:0x5aec7c end:0x5aec80 align:1
+	.text       start:0x5b4ecc end:0x5b4ed0 align:1
+	.text       start:0x5b92c2 end:0x5b92d0 align:1
+	.text       start:0x5b9b93 end:0x5b9ba0 align:1
+	.text       start:0x5befe7 end:0x5beff0 align:1
+	.text       start:0x5c96c8 end:0x5c96d0 align:1
+	.text       start:0x5dbe2f end:0x5dbe30 align:1
+	.text       start:0x5e151a end:0x5e1520 align:1
+	.text       start:0x5e77d4 end:0x5e77e0 align:1
+	.text       start:0x5e877e end:0x5e8780 align:1
+	.text       start:0x5e87ac end:0x5e87b0 align:1
+	.text       start:0x5eb568 end:0x5eb570 align:1
+	.text       start:0x5eb5fb end:0x5eb600 align:1
+	.text       start:0x5ec3aa end:0x5ec3ac align:1
+	.text       start:0x5ec3d3 end:0x5ec3e0 align:1
+	.text       start:0x5ec715 end:0x5ec720 align:1
+	.text       start:0x5ec747 end:0x5ec750 align:1
+	.text       start:0x5ed179 end:0x5ed180 align:1
+	.text       start:0x5ed21a end:0x5ed220 align:1
+	.text       start:0x5ed637 end:0x5ed640 align:1
+	.text       start:0x5ee0ac end:0x5ee0b0 align:1
+	.text       start:0x5ee17b end:0x5ee180 align:1
+	.text       start:0x5ee2e2 end:0x5ee2f0 align:1
+	.text       start:0x5ee40a end:0x5ee410 align:1
+	.text       start:0x5ee4db end:0x5ee4e0 align:1
+	.text       start:0x5ee7cc end:0x5ee7d0 align:1
+	.text       start:0x5eebce end:0x5eebd0 align:1
+	.text       start:0x5f0944 end:0x5f0950 align:1
+	.text       start:0x5f2406 end:0x5f2410 align:1
+	.text       start:0x5f268b end:0x5f2690 align:1
+	.text       start:0x5f315f end:0x5f3160 align:1
+	.text       start:0x5f324e end:0x5f3250 align:1
+	.text       start:0x5f369f end:0x5f36a0 align:1
+	.text       start:0x5f386a end:0x5f3870 align:1
+	.text       start:0x5f38c3 end:0x5f38d0 align:1
+	.text       start:0x5f3a5c end:0x5f3a60 align:1
+	.text       start:0x5f3cca end:0x5f3cd0 align:1
+	.text       start:0x5f4b6d end:0x5f4b70 align:1
+	.text       start:0x5f55d5 end:0x5f55e0 align:1
+	.text       start:0x5f6721 end:0x5f6730 align:1
+	.text       start:0x5f6928 end:0x5f6930 align:1
+	.text       start:0x5f6e44 end:0x5f6e50 align:1
+	.text       start:0x5f73b1 end:0x5f73c0 align:1
+	.text       start:0x5f81bb end:0x5f81c0 align:1
+	.text       start:0x5f88a5 end:0x5f88b0 align:1
+	.text       start:0x5f8ad4 end:0x5f8ae0 align:1
+	.text       start:0x5f93c1 end:0x5f93d0 align:1
+	.text       start:0x5f9e1f end:0x5f9e20 align:1
+	.text       start:0x5fa16f end:0x5fa170 align:1
+	.text       start:0x5fa1d6 end:0x5fa1e0 align:1
+	.text       start:0x5fa37e end:0x5fa380 align:1
+	.text       start:0x5fc60e end:0x5fc610 align:1
+	.text       start:0x5fc6fd end:0x5fc700 align:1
+	.text       start:0x5fc891 end:0x5fc8a0 align:1
+	.text       start:0x5fc9f6 end:0x5fca00 align:1
+	.text       start:0x5fcae1 end:0x5fcaf0 align:1
+	.text       start:0x5fce8c end:0x5fce90 align:1
+	.text       start:0x5fcebe end:0x5fcec0 align:1
+	.text       start:0x5fda7b end:0x5fda80 align:1
+	.text       start:0x5fdac6 end:0x5fdade align:1
+	lgalloc     start:0x5ff620 end:0x5ff650 align:1
+	lgalloc     start:0x5ff7b0 end:0x5ff8c0 align:1
+
+rand:
+	.text       start:0x401000 end:0x401230 align:1
+
+2dapp:
+	.text       start:0x401230 end:0x401320 align:1
+
+animlgt:
+	.text       start:0x401320 end:0x4016c0 align:1
+
+anim_txt:
+	.text       start:0x4016c0 end:0x401e40 align:1
+
+ambient:
+	.text       start:0x401e40 end:0x4024d0 align:1
+
+ambprop_1:
+	.text       start:0x4024d0 end:0x4027d0 align:1
+
+aiflee_1:
+	.text       start:0x4027d0 end:0x402810 align:1
+
+ambprop_2:
+	.text       start:0x402810 end:0x4029a0 align:1
+
+propstor_1:
+	.text       start:0x4029a0 end:0x4029d0 align:1
+
+ambprop_3:
+	.text       start:0x4029d0 end:0x403290 align:1
+
+aibasbhv_1:
+	.text       start:0x403290 end:0x4032d0 align:1
+
+ambprop_4:
+	.text       start:0x4032d0 end:0x4032d8 align:1
+
+appname:
+	.text       start:0x4032e0 end:0x403310 align:1
+
+appsfx:
+	.text       start:0x403310 end:0x404c90 align:1
+
+auxsnd:
+	.text       start:0x404c90 end:0x4053b0 align:1
+
+backup:
+	.text       start:0x4053b0 end:0x4053f5 align:1
+
+basemode:
+	.text       start:0x405400 end:0x405470 align:1
+
+biploop:
+	.text       start:0x405470 end:0x4057a0 align:1
+
+buftagf:
+	.text       start:0x4057a0 end:0x4066c0 align:1
+
+buttpanl:
+	.text       start:0x4066c0 end:0x406b40 align:1
+
+aiman_1:
+	.text       start:0x406b40 end:0x406ba0 align:1
+
+camera:
+	.text       start:0x406ba0 end:0x407410 align:1
+
+campaign_1:
+	.text       start:0x407410 end:0x4076e0 align:1
+
+inputbnd_1:
+	.text       start:0x4076e0 end:0x4076f0 align:1
+
+dmgmodel_1:
+	.text       start:0x4076f0 end:0x407750 align:1
+
+campaign_2:
+	.text       start:0x407750 end:0x4078c8 align:1
+
+chainevt:
+	.text       start:0x4078d0 end:0x4078f0 align:1
+
+cmdterm:
+	.text       start:0x4078f0 end:0x408150 align:1
+
+cfgtool:
+	.text       start:0x408150 end:0x408760 align:1
+
+command:
+	.text       start:0x408760 end:0x409122 align:1
+
+corona_1:
+	.text       start:0x409130 end:0x409800 align:1
+
+aiprabil_1:
+	.text       start:0x409800 end:0x409810 align:1
+
+corona_2:
+	.text       start:0x409810 end:0x409b68 align:1
+
+ctag:
+	.text       start:0x409b68 end:0x40a3e0 align:1
+
+ctagset:
+	.text       start:0x40a3e0 end:0x40a620 align:1
+
+dappsink:
+	.text       start:0x40a620 end:0x40a73a align:1
+
+dbfile:
+	.text       start:0x40a740 end:0x40b180 align:1
+
+diskfree:
+	.text       start:0x40b180 end:0x40b300 align:1
+
+dispatch:
+	.text       start:0x40b300 end:0x40b530 align:1
+
+dmgmodel_2:
+	.text       start:0x40b530 end:0x40bfb8 align:1
+
+dmgprop:
+	.text       start:0x40bfc0 end:0x40c110 align:1
+
+dmgreact:
+	.text       start:0x40c110 end:0x40c370 align:1
+
+dxload:
+	.text       start:0x40c370 end:0x40c6e0 align:1
+
+dxwrndlg:
+	.text       start:0x40c6e0 end:0x40c9e0 align:1
+
+eosapp:
+	.text       start:0x40c9e0 end:0x40cc00 align:1
+
+elitprop:
+	.text       start:0x40cc00 end:0x40d158 align:1
+
+esnd:
+	.text       start:0x40d160 end:0x40de30 align:1
+
+esndprop_1:
+	.text       start:0x40de30 end:0x40e8a8 align:1
+
+face:
+	.text       start:0x40e8b0 end:0x40f998 align:1
+
+family:
+	.text       start:0x40f9a0 end:0x4105f0 align:1
+
+fas:
+	.text       start:0x4105f0 end:0x410770 align:1
+
+fasprop:
+	.text       start:0x410770 end:0x4113e8 align:1
+
+fcytagdb:
+	.text       start:0x4113f0 end:0x411970 align:1
+
+filetool:
+	.text       start:0x411970 end:0x411a90 align:1
+
+filevar:
+	.text       start:0x411a90 end:0x411f90 align:1
+
+flinder:
+	.text       start:0x411f90 end:0x412350 align:1
+
+flowarch:
+	.text       start:0x412350 end:0x412f68 align:1
+
+fltang:
+	.text       start:0x412f70 end:0x412fd0 align:1
+
+fxdisk:
+	.text       start:0x412fd0 end:0x413520 align:1
+
+fxspan:
+	.text       start:0x413520 end:0x4136f0 align:1
+
+gameapp:
+	.text       start:0x4136f0 end:0x41391f align:1
+
+gamemode:
+	.text       start:0x413920 end:0x413c24 align:1
+
+gamescrn:
+	.text       start:0x413c30 end:0x413c90 align:1
+
+gamestr:
+	.text       start:0x413c90 end:0x415348 align:1
+
+gametool:
+	.text       start:0x415350 end:0x415758 align:1
+
+gen_bind:
+	.text       start:0x415760 end:0x416dd4 align:1
+
+gfxprop:
+	.text       start:0x416de0 end:0x416e6f align:1
+
+h2ocolor_1:
+	.text       start:0x416e6f end:0x4179d0 align:1
+
+drkinvpr_1:
+	.text       start:0x4179d0 end:0x4179e0 align:1
+
+h2ocolor_2:
+	.text       start:0x4179e0 end:0x417ad0 align:1
+
+invrndpr_1:
+	.text       start:0x417ad0 end:0x417b60 align:1
+
+h2ocolor_3:
+	.text       start:0x417b60 end:0x417c90 align:1
+
+nameprop_1:
+	.text       start:0x417c90 end:0x417cc0 align:1
+
+drkinvpr_2:
+	.text       start:0x417cc0 end:0x417ce0 align:1
+
+h2ocolor_4:
+	.text       start:0x417ce0 end:0x418008 align:1
+
+hchkthrd:
+	.text       start:0x418010 end:0x4180e2 align:1
+
+hdskprop:
+	.text       start:0x4180f0 end:0x418900 align:1
+
+headmove:
+	.text       start:0x418900 end:0x4193d7 align:1
+
+hpprop:
+	.text       start:0x4193e0 end:0x419570 align:1
+
+trapprop:
+	.text       start:0x419570 end:0x4195b0 align:1
+
+init:
+	.text       start:0x4195b0 end:0x419cd7 align:1
+
+imgsrc:
+	.text       start:0x419ce0 end:0x419f10 align:1
+
+isdesced:
+	.text       start:0x419f10 end:0x419ff0 align:1
+
+joypoll:
+	.text       start:0x419ff0 end:0x41a5f5 align:1
+
+litprop:
+	.text       start:0x41a600 end:0x41bcc8 align:1
+
+lresdisk:
+	.text       start:0x41bcc8 end:0x41c220 align:1
+
+loopapp:
+	.text       start:0x41c220 end:0x41c390 align:1
+
+medmotn:
+	.text       start:0x41c390 end:0x41c4e0 align:1
+
+meshtex:
+	.text       start:0x41c4e0 end:0x41d1c8 align:1
+
+metasnd:
+	.text       start:0x41d1d0 end:0x41d4ea align:1
+
+mipmap:
+	.text       start:0x41d4f0 end:0x41d9e0 align:1
+
+missrend:
+	.text       start:0x41d9e0 end:0x41dcd0 align:1
+
+mlight:
+	.text       start:0x41dcd0 end:0x41e850 align:1
+
+mnamprop:
+	.text       start:0x41e850 end:0x41ebc0 align:1
+
+mnumprop:
+	.text       start:0x41ebc0 end:0x41ef30 align:1
+
+menus_1:
+	.text       start:0x41ef30 end:0x41f140 align:1
+
+meshatt:
+	.text       start:0x41f140 end:0x41fbb8 align:1
+
+movie:
+	.text       start:0x41fbc0 end:0x41fd20 align:1
+
+namemap:
+	.text       start:0x41fd20 end:0x420270 align:1
+
+objcast:
+	.text       start:0x420270 end:0x420730 align:1
+
+objlight:
+	.text       start:0x420730 end:0x421170 align:1
+
+objloop:
+	.text       start:0x421170 end:0x421320 align:1
+
+objmodel:
+	.text       start:0x421320 end:0x422440 align:1
+
+objpos_1:
+	.text       start:0x422440 end:0x4242b8 align:1
+
+objremap:
+	.text       start:0x4242c0 end:0x424c70 align:1
+
+objlpars:
+	.text       start:0x424c70 end:0x425a70 align:1
+
+objshape:
+	.text       start:0x425a70 end:0x426c00 align:1
+
+objsys:
+	.text       start:0x426c00 end:0x429268 align:1
+
+objtool:
+	.text       start:0x429270 end:0x429460 align:1
+
+objtxtrp_1:
+	.text       start:0x429460 end:0x42a080 align:1
+
+strprop_1:
+	.text       start:0x42a080 end:0x42a170 align:1
+
+objtxtrp_2:
+	.text       start:0x42a170 end:0x42a5c8 align:1
+
+palette:
+	.text       start:0x42a5d0 end:0x42a70b align:1
+
+palmgr:
+	.text       start:0x42a710 end:0x42ae90 align:1
+
+panlmode:
+	.text       start:0x42ae90 end:0x42b840 align:1
+
+particle:
+	.text       start:0x42b840 end:0x42b9dd align:1
+
+partprop:
+	.text       start:0x42b9e0 end:0x42ba20 align:1
+
+pgroup_1:
+	.text       start:0x42ba20 end:0x42edd0 align:1
+
+pgrpprop:
+	.text       start:0x42edd0 end:0x430df0 align:1
+
+pgrpscpt:
+	.text       start:0x430df0 end:0x430f60 align:1
+
+pickgame:
+	.text       start:0x430f60 end:0x43114a align:1
+
+plyablty:
+	.text       start:0x431150 end:0x431a50 align:1
+
+plycbllm:
+	.text       start:0x431a50 end:0x432240 align:1
+
+plyrhdlr:
+	.text       start:0x432240 end:0x4326e0 align:1
+
+plyrloop:
+	.text       start:0x4326e0 end:0x433025 align:1
+
+plyrmode:
+	.text       start:0x433030 end:0x434600 align:1
+
+plyrmov:
+	.text       start:0x434600 end:0x434a51 align:1
+
+plyrvmot:
+	.text       start:0x434a60 end:0x4350ce align:1
+
+portapp:
+	.text       start:0x4350d0 end:0x4351f0 align:1
+
+prompts:
+	.text       start:0x4351f0 end:0x4353c0 align:1
+
+puppet:
+	.text       start:0x4353c0 end:0x435970 align:1
+
+pupprop_1:
+	.text       start:0x435970 end:0x435e40 align:1
+
+propstor_2:
+	.text       start:0x435e40 end:0x435ec0 align:1
+
+pupprop_2:
+	.text       start:0x435ec0 end:0x4360b8 align:1
+
+quest_1:
+	.text       start:0x4360c0 end:0x437590 align:1
+
+contain_1:
+	.text       start:0x437590 end:0x437600 align:1
+
+quest_2:
+	.text       start:0x437600 end:0x437908 align:1
+
+quesloop:
+	.text       start:0x437908 end:0x437be0 align:1
+
+questprp:
+	.text       start:0x437be0 end:0x438378 align:1
+
+r3app:
+	.text       start:0x438380 end:0x43846f align:1
+
+render:
+	.text       start:0x438470 end:0x438d30 align:1
+
+rendloop:
+	.text       start:0x438d30 end:0x439630 align:1
+
+skyrend:
+	.text       start:0x439630 end:0x439930 align:1
+
+skyobj:
+	.text       start:0x439930 end:0x43aea0 align:1
+
+starobj:
+	.text       start:0x43aea0 end:0x43b6b8 align:1
+
+celstobj:
+	.text       start:0x43b6c0 end:0x43c140 align:1
+
+distobj:
+	.text       start:0x43c140 end:0x43cb60 align:1
+
+cloudobj:
+	.text       start:0x43cb60 end:0x440210 align:1
+
+rendobj_1:
+	.text       start:0x440210 end:0x4410f0 align:1
+
+pgroup_2:
+	.text       start:0x4410f0 end:0x441100 align:1
+
+rendobj_2:
+	.text       start:0x441100 end:0x442920 align:1
+
+rendprop_1:
+	.text       start:0x442920 end:0x4439d8 align:1
+
+resapp:
+	.text       start:0x4439e0 end:0x443df1 align:1
+
+resdata:
+	.text       start:0x443e00 end:0x443f80 align:1
+
+resloop:
+	.text       start:0x443f80 end:0x444050 align:1
+
+rndflash_1:
+	.text       start:0x444050 end:0x444680 align:1
+
+aiprrngd_1:
+	.text       start:0x444680 end:0x4447b0 align:1
+
+rndflash_2:
+	.text       start:0x4447b0 end:0x444840 align:1
+
+aiprrngd_2:
+	.text       start:0x444840 end:0x444850 align:1
+
+rndflash_3:
+	.text       start:0x444850 end:0x444b00 align:1
+
+scalprop_1:
+	.text       start:0x444b00 end:0x444e70 align:1
+
+propface_1:
+	.text       start:0x444e70 end:0x444f50 align:1
+
+scalprop_2:
+	.text       start:0x444f50 end:0x445040 align:1
+
+propface_2:
+	.text       start:0x445040 end:0x4450f0 align:1
+
+scalprop_3:
+	.text       start:0x4450f0 end:0x445150 align:1
+
+propface_3:
+	.text       start:0x445150 end:0x445178 align:1
+
+schdb:
+	.text       start:0x445180 end:0x445280 align:1
+
+schema:
+	.text       start:0x445280 end:0x4460a0 align:1
+
+schloop:
+	.text       start:0x4460a0 end:0x446160 align:1
+
+schprop_1:
+	.text       start:0x446160 end:0x446e40 align:1
+
+schsamps:
+	.text       start:0x446e40 end:0x447a40 align:1
+
+scrnloop:
+	.text       start:0x447a40 end:0x447cf0 align:1
+
+scrndump:
+	.text       start:0x447cf0 end:0x447e10 align:1
+
+scrnman:
+	.text       start:0x447e10 end:0x4487d0 align:1
+
+scrnmode:
+	.text       start:0x4487d0 end:0x448ec0 align:1
+
+scrnovls:
+	.text       start:0x448ec0 end:0x449360 align:1
+
+scrptcmd:
+	.text       start:0x449360 end:0x4499b0 align:1
+
+scrptprp_1:
+	.text       start:0x4499b0 end:0x44ae08 align:1
+
+scrptst:
+	.text       start:0x44ae10 end:0x44af00 align:1
+
+simloop:
+	.text       start:0x44af00 end:0x44af70 align:1
+
+simman:
+	.text       start:0x44af70 end:0x44b770 align:1
+
+simtime:
+	.text       start:0x44b770 end:0x44baf5 align:1
+
+simpdmg:
+	.text       start:0x44bb00 end:0x44c5d8 align:1
+
+simstate:
+	.text       start:0x44c5e0 end:0x44c6c0 align:1
+
+slitprop:
+	.text       start:0x44c6c0 end:0x44c9b0 align:1
+
+sndgen:
+	.text       start:0x44c9b0 end:0x44ce80 align:1
+
+sndloop:
+	.text       start:0x44ce80 end:0x44d270 align:1
+
+sndprop:
+	.text       start:0x44d270 end:0x44d330 align:1
+
+songi:
+	.text       start:0x44d330 end:0x44dd40 align:1
+
+songplri:
+	.text       start:0x44dd40 end:0x44e80e align:1
+
+songutil:
+	.text       start:0x44e810 end:0x44ec30 align:1
+
+songfile:
+	.text       start:0x44ec30 end:0x44ef60 align:1
+
+songmiss:
+	.text       start:0x44ef60 end:0x44f010 align:1
+
+spchdom:
+	.text       start:0x44f010 end:0x44f220 align:1
+
+spchprop:
+	.text       start:0x44f220 end:0x44f940 align:1
+
+spchvoc:
+	.text       start:0x44f940 end:0x44fb10 align:1
+
+speech:
+	.text       start:0x44fb10 end:0x450cf0 align:1
+
+sphrcst:
+	.text       start:0x450cf0 end:0x452990 align:1
+
+sprkprop:
+	.text       start:0x452990 end:0x453238 align:1
+
+starhack:
+	.text       start:0x453240 end:0x453690 align:1
+
+status:
+	.text       start:0x453690 end:0x4538e0 align:1
+
+subscrip:
+	.text       start:0x4538e0 end:0x453d80 align:1
+
+susprop:
+	.text       start:0x453d80 end:0x4545f8 align:1
+
+tagdbdat:
+	.text       start:0x454600 end:0x4552f0 align:1
+
+tagdbin:
+	.text       start:0x4552f0 end:0x4553d0 align:1
+
+tagdbkey:
+	.text       start:0x4553d0 end:0x4554d0 align:1
+
+tagdbkst:
+	.text       start:0x4554d0 end:0x455830 align:1
+
+tagdbout:
+	.text       start:0x455830 end:0x455930 align:1
+
+tagpatch:
+	.text       start:0x455930 end:0x455c60 align:1
+
+tagremap:
+	.text       start:0x455c60 end:0x455e00 align:1
+
+tanimprp_1:
+	.text       start:0x455e00 end:0x456140 align:1
+
+rendprop_2:
+	.text       start:0x456140 end:0x456180 align:1
+
+tanimprp_2:
+	.text       start:0x456180 end:0x4564b8 align:1
+
+testloop:
+	.text       start:0x4564c0 end:0x456560 align:1
+
+texmem:
+	.text       start:0x456560 end:0x457260 align:1
+
+texprop:
+	.text       start:0x457260 end:0x4572d8 align:1
+
+texsave:
+	.text       start:0x4572e0 end:0x457600 align:1
+
+textarch:
+	.text       start:0x457600 end:0x457cf0 align:1
+
+uianim:
+	.text       start:0x457cf0 end:0x458190 align:1
+
+uiapp:
+	.text       start:0x458190 end:0x458330 align:1
+
+uigame:
+	.text       start:0x458330 end:0x458840 align:1
+
+uiloop:
+	.text       start:0x458840 end:0x458cd4 align:1
+
+version:
+	.text       start:0x458ce0 end:0x458d30 align:1
+
+weather_1:
+	.text       start:0x458d30 end:0x45a740 align:1
+
+rndflash_4:
+	.text       start:0x45a740 end:0x45a7c0 align:1
+
+weather_2:
+	.text       start:0x45a7c0 end:0x45aaa0 align:1
+
+wrbsp:
+	.text       start:0x45aaa0 end:0x45b680 align:1
+
+wrloop:
+	.text       start:0x45b680 end:0x45c310 align:1
+
+aitest:
+	.text       start:0x45c310 end:0x45c330 align:1
+
+ai:
+	.text       start:0x45c330 end:0x460260 align:1
+
+aiavoid_1:
+	.text       start:0x460260 end:0x4609e8 align:1
+
+aibasabl:
+	.text       start:0x4609f0 end:0x460dd0 align:1
+
+aibasact_1:
+	.text       start:0x460dd0 end:0x461330 align:1
+
+aibasatm_1:
+	.text       start:0x461330 end:0x4614e0 align:1
+
+aibasctm_1:
+	.text       start:0x4614e0 end:0x461520 align:1
+
+aibasatm_2:
+	.text       start:0x461520 end:0x461780 align:1
+
+aibasbhv_2:
+	.text       start:0x461780 end:0x463a60 align:1
+
+aibasctm_2:
+	.text       start:0x463a60 end:0x463c60 align:1
+
+aibasbhv_3:
+	.text       start:0x463c60 end:0x463c80 align:1
+
+aibassns_1:
+	.text       start:0x463c80 end:0x463ce0 align:1
+
+aibasctm_3:
+	.text       start:0x463ce0 end:0x4640d0 align:1
+
+aibasmrg:
+	.text       start:0x4640d0 end:0x464140 align:1
+
+aicnvman:
+	.text       start:0x464140 end:0x464a00 align:1
+
+aicnvrse:
+	.text       start:0x464a00 end:0x465170 align:1
+
+aicpinit:
+	.text       start:0x465170 end:0x465310 align:1
+
+aicretsz:
+	.text       start:0x465310 end:0x465490 align:1
+
+aidetect:
+	.text       start:0x465490 end:0x465b30 align:1
+
+aidoormr:
+	.text       start:0x465b30 end:0x466240 align:1
+
+aigoal:
+	.text       start:0x466240 end:0x4668b0 align:1
+
+aiground:
+	.text       start:0x4668b0 end:0x466900 align:1
+
+aiinform:
+	.text       start:0x466900 end:0x4680c8 align:1
+
+aiman_2:
+	.text       start:0x4680d0 end:0x46a248 align:1
+
+aimove:
+	.text       start:0x46a250 end:0x46b770 align:1
+
+aimovmot:
+	.text       start:0x46b770 end:0x46c360 align:1
+
+aimovsug:
+	.text       start:0x46c360 end:0x46c3a0 align:1
+
+ainet:
+	.text       start:0x46c3a0 end:0x46c4cc align:1
+
+ainetman:
+	.text       start:0x46c4d0 end:0x46ceb0 align:1
+
+aiphycst:
+	.text       start:0x46ceb0 end:0x46d160 align:1
+
+aiproxy:
+	.text       start:0x46d160 end:0x46d350 align:1
+
+aisound:
+	.text       start:0x46d350 end:0x46f418 align:1
+
+aisubabl:
+	.text       start:0x46f420 end:0x46f450 align:1
+
+aisuslnk:
+	.text       start:0x46f450 end:0x46f630 align:1
+
+aistdmrg_1:
+	.text       start:0x46f630 end:0x46fb60 align:1
+
+propstor_3:
+	.text       start:0x46fb60 end:0x46fb70 align:1
+
+rooms_1:
+	.text       start:0x46fb70 end:0x46fb80 align:1
+
+aistdmrg_2:
+	.text       start:0x46fb80 end:0x470170 align:1
+
+propstor_4:
+	.text       start:0x470170 end:0x470180 align:1
+
+linkboth_1:
+	.text       start:0x470180 end:0x470190 align:1
+
+aistdmrg_3:
+	.text       start:0x470190 end:0x4705a0 align:1
+
+aistun:
+	.text       start:0x4705a0 end:0x471508 align:1
+
+aitagtyp:
+	.text       start:0x471510 end:0x4719a4 align:1
+
+aiteams:
+	.text       start:0x4719b0 end:0x4719f0 align:1
+
+aitrig:
+	.text       start:0x4719f0 end:0x471fd0 align:1
+
+aiutils_1:
+	.text       start:0x471fd0 end:0x4720c0 align:1
+
+phctrl_1:
+	.text       start:0x4720c0 end:0x4720d0 align:1
+
+aiutils_2:
+	.text       start:0x4720d0 end:0x473000 align:1
+
+aiwr:
+	.text       start:0x473000 end:0x4730c0 align:1
+
+aicbhtoh:
+	.text       start:0x4730c0 end:0x475f90 align:1
+
+aicbrbkp:
+	.text       start:0x475f90 end:0x476160 align:1
+
+aicbrclo:
+	.text       start:0x476160 end:0x476680 align:1
+
+aicbrfle:
+	.text       start:0x476680 end:0x476c10 align:1
+
+aicbridl:
+	.text       start:0x476c10 end:0x476d30 align:1
+
+aicbrloc:
+	.text       start:0x476d30 end:0x476fb0 align:1
+
+aicbrmod:
+	.text       start:0x476fb0 end:0x477100 align:1
+
+aicbrmpr_1:
+	.text       start:0x477100 end:0x4783c8 align:1
+
+aicbrnew:
+	.text       start:0x4783d0 end:0x479c00 align:1
+
+aicbrngd:
+	.text       start:0x479c00 end:0x479de0 align:1
+
+aicbrsht:
+	.text       start:0x479de0 end:0x47a1f0 align:1
+
+aicbrstl:
+	.text       start:0x47a1f0 end:0x47a320 align:1
+
+aicbrstr:
+	.text       start:0x47a320 end:0x47a470 align:1
+
+aicbrwnd:
+	.text       start:0x47a470 end:0x47a558 align:1
+
+aicombat_1:
+	.text       start:0x47a560 end:0x47baf0 align:1
+
+phprop_1:
+	.text       start:0x47baf0 end:0x47bb50 align:1
+
+aicombat_2:
+	.text       start:0x47bb50 end:0x47bc78 align:1
+
+aidev:
+	.text       start:0x47bc80 end:0x47cd70 align:1
+
+aimultcb:
+	.text       start:0x47cd70 end:0x47d7f0 align:1
+
+aiturret:
+	.text       start:0x47d7f0 end:0x47dfc0 align:1
+
+aicamera:
+	.text       start:0x47dfc0 end:0x47e750 align:1
+
+aiturbs_1:
+	.text       start:0x47e750 end:0x47e794 align:1
+
+daicam_1:
+	.text       start:0x47e7a0 end:0x47e8d0 align:1
+
+aiturbs_2:
+	.text       start:0x47e8d0 end:0x47eaa0 align:1
+
+aiqdeath:
+	.text       start:0x47eaa0 end:0x47eb20 align:1
+
+aiactfol:
+	.text       start:0x47eb20 end:0x47eff0 align:1
+
+aiactinv:
+	.text       start:0x47eff0 end:0x47fb20 align:1
+
+aiactjr:
+	.text       start:0x47fb20 end:0x48043c align:1
+
+aiactjs:
+	.text       start:0x480440 end:0x480580 align:1
+
+aiactjsc:
+	.text       start:0x480580 end:0x480b6c align:1
+
+aiactlch:
+	.text       start:0x480b70 end:0x481420 align:1
+
+aiactloc:
+	.text       start:0x481420 end:0x481d70 align:1
+
+aiactmot:
+	.text       start:0x481d70 end:0x481f30 align:1
+
+aiactmov:
+	.text       start:0x481f30 end:0x482210 align:1
+
+aiactmrk:
+	.text       start:0x482210 end:0x482360 align:1
+
+aiactprx:
+	.text       start:0x482360 end:0x482500 align:1
+
+aiactps:
+	.text       start:0x482500 end:0x483b30 align:1
+
+aiactori:
+	.text       start:0x483b30 end:0x483ed0 align:1
+
+aiactrng:
+	.text       start:0x483ed0 end:0x484540 align:1
+
+aiactseq:
+	.text       start:0x484540 end:0x4846a0 align:1
+
+aibasact_2:
+	.text       start:0x4846a0 end:0x4846b0 align:1
+
+aiactwnd:
+	.text       start:0x4846b0 end:0x484dd0 align:1
+
+aiactwt:
+	.text       start:0x484dd0 end:0x485040 align:1
+
+aiactnet:
+	.text       start:0x485040 end:0x485ab0 align:1
+
+aigunact:
+	.text       start:0x485ab0 end:0x486080 align:1
+
+aialtrsp_1:
+	.text       start:0x486080 end:0x4865e0 align:1
+
+aithreat_1:
+	.text       start:0x4865e0 end:0x486690 align:1
+
+aialtrsp_2:
+	.text       start:0x486690 end:0x4866d8 align:1
+
+aibdyrsp_1:
+	.text       start:0x4866e0 end:0x486940 align:1
+
+aiprabil_2:
+	.text       start:0x486940 end:0x486970 align:1
+
+aibdyrsp_2:
+	.text       start:0x486970 end:0x486a70 align:1
+
+engfeat_1:
+	.text       start:0x486a70 end:0x486ac0 align:1
+
+aibdyrsp_3:
+	.text       start:0x486ac0 end:0x486d50 align:1
+
+aicnvabl:
+	.text       start:0x486d50 end:0x4873ca align:1
+
+aicbtrsp:
+	.text       start:0x4873d0 end:0x487968 align:1
+
+aideath:
+	.text       start:0x487970 end:0x487d10 align:1
+
+aidefend:
+	.text       start:0x487d10 end:0x488190 align:1
+
+aiflee_2:
+	.text       start:0x488190 end:0x48a478 align:1
+
+aifollow:
+	.text       start:0x48a480 end:0x48a910 align:1
+
+aifreeze_1:
+	.text       start:0x48a910 end:0x48b200 align:1
+
+cretprop_1:
+	.text       start:0x48b200 end:0x48b220 align:1
+
+aifreeze_2:
+	.text       start:0x48b220 end:0x48b240 align:1
+
+aiidle:
+	.text       start:0x48b240 end:0x48c788 align:1
+
+aiinvest:
+	.text       start:0x48c790 end:0x48d0c0 align:1
+
+ailisten:
+	.text       start:0x48d0c0 end:0x48d7a8 align:1
+
+aincbdmg:
+	.text       start:0x48d7b0 end:0x48dc50 align:1
+
+ainoncbt:
+	.text       start:0x48dc50 end:0x48de30 align:1
+
+aipatrol_1:
+	.text       start:0x48de30 end:0x48ea20 align:1
+
+aisusrsp_1:
+	.text       start:0x48ea20 end:0x48f0a0 align:1
+
+aithreat_2:
+	.text       start:0x48f0a0 end:0x48f0c0 align:1
+
+aisusrsp_2:
+	.text       start:0x48f0c0 end:0x48f0e0 align:1
+
+aibdyrsp_4:
+	.text       start:0x48f0e0 end:0x48f170 align:1
+
+aisusrsp_3:
+	.text       start:0x48f170 end:0x48f188 align:1
+
+aithreat_3:
+	.text       start:0x48f190 end:0x48f7c8 align:1
+
+aiwatch:
+	.text       start:0x48f7d0 end:0x490a88 align:1
+
+aipath:
+	.text       start:0x490a90 end:0x4914b0 align:1
+
+aipathdb:
+	.text       start:0x4914b0 end:0x492e60 align:1
+
+aipthcst:
+	.text       start:0x492e60 end:0x493400 align:1
+
+aipthedg:
+	.text       start:0x493400 end:0x493450 align:1
+
+aipthfnd:
+	.text       start:0x493450 end:0x494c28 align:1
+
+aipthloc:
+	.text       start:0x494c30 end:0x495bf0 align:1
+
+aipthobb:
+	.text       start:0x495bf0 end:0x4961f0 align:1
+
+aipthzon:
+	.text       start:0x4961f0 end:0x4962c0 align:1
+
+rpaths_1:
+	.text       start:0x4962c0 end:0x4967a8 align:1
+
+room_1:
+	.text       start:0x4967b0 end:0x4967e0 align:1
+
+aiprabil_3:
+	.text       start:0x4967e0 end:0x497798 align:1
+
+aiprconv:
+	.text       start:0x4977a0 end:0x497f30 align:1
+
+aiprcore_1:
+	.text       start:0x497f30 end:0x49cdd8 align:1
+
+aiprdev_1:
+	.text       start:0x49cde0 end:0x49db40 align:1
+
+aiprcore_2:
+	.text       start:0x49db40 end:0x49dc30 align:1
+
+aiprutil_1:
+	.text       start:0x49dc30 end:0x49dcc0 align:1
+
+aiprdev_2:
+	.text       start:0x49dcc0 end:0x49dce0 align:1
+
+aiprcore_3:
+	.text       start:0x49dce0 end:0x49ddd0 align:1
+
+aiprdev_3:
+	.text       start:0x49ddd0 end:0x49de80 align:1
+
+aiprutil_2:
+	.text       start:0x49de80 end:0x49de88 align:1
+
+aiprdev_4:
+	.text       start:0x49de88 end:0x49df08 align:1
+
+aiprattr:
+	.text       start:0x49df08 end:0x49ea10 align:1
+
+aiprrngd_3:
+	.text       start:0x49ea10 end:0x4a1460 align:1
+
+aiprutil_3:
+	.text       start:0x4a1460 end:0x4a1d48 align:1
+
+aiaware:
+	.text       start:0x4a1d48 end:0x4a1e80 align:1
+
+aibassns_2:
+	.text       start:0x4a1e80 end:0x4a5020 align:1
+
+aisgtcst:
+	.text       start:0x4a5020 end:0x4a5598 align:1
+
+aisnsdev:
+	.text       start:0x4a55a0 end:0x4a56b0 align:1
+
+aidbgcmp:
+	.text       start:0x4a56b0 end:0x4a5710 align:1
+
+aidebug:
+	.text       start:0x4a5710 end:0x4a5770 align:1
+
+aiscrabl_1:
+	.text       start:0x4a5770 end:0x4a6e10 align:1
+
+aiscrpt_1:
+	.text       start:0x4a6e10 end:0x4a7020 align:1
+
+mtscrpt_1:
+	.text       start:0x4a7020 end:0x4a7090 align:1
+
+aiscrpt_2:
+	.text       start:0x4a7090 end:0x4a7950 align:1
+
+antxloop:
+	.text       start:0x4a7950 end:0x4a81ab align:1
+
+atkscrpt:
+	.text       start:0x4a81b0 end:0x4a8250 align:1
+
+cdplayer:
+	.text       start:0x4a8250 end:0x4a8608 align:1
+
+contain_2:
+	.text       start:0x4a8610 end:0x4aa268 align:1
+
+contprop:
+	.text       start:0x4aa270 end:0x4aa458 align:1
+
+contscrs:
+	.text       start:0x4aa460 end:0x4aa650 align:1
+
+ctrast:
+	.text       start:0x4aa650 end:0x4aac90 align:1
+
+doorphys:
+	.text       start:0x4aac90 end:0x4ac9a0 align:1
+
+doorprop:
+	.text       start:0x4ac9a0 end:0x4ade88 align:1
+
+dumbprox:
+	.text       start:0x4ade90 end:0x4ae090 align:1
+
+dyntex_1:
+	.text       start:0x4ae090 end:0x4ae550 align:1
+
+drkgame_1:
+	.text       start:0x4ae550 end:0x4ae560 align:1
+
+engfeat_2:
+	.text       start:0x4ae560 end:0x4af278 align:1
+
+frobprop_1:
+	.text       start:0x4af280 end:0x4af540 align:1
+
+lockprop_1:
+	.text       start:0x4af540 end:0x4af5e0 align:1
+
+frobprop_2:
+	.text       start:0x4af5e0 end:0x4af8d8 align:1
+
+frobctrl:
+	.text       start:0x4af8d8 end:0x4b0c70 align:1
+
+invlimb:
+	.text       start:0x4b0c70 end:0x4b0ce0 align:1
+
+inv_rend:
+	.text       start:0x4b0ce0 end:0x4b1730 align:1
+
+invrndpr_2:
+	.text       start:0x4b1730 end:0x4b1950 align:1
+
+cretprop_2:
+	.text       start:0x4b1950 end:0x4b1ae0 align:1
+
+scrptprp_2:
+	.text       start:0x4b1ae0 end:0x4b1b10 align:1
+
+invrndpr_3:
+	.text       start:0x4b1b10 end:0x4b1d80 align:1
+
+projprop_1:
+	.text       start:0x4b1d80 end:0x4b1da0 align:1
+
+invrndpr_4:
+	.text       start:0x4b1da0 end:0x4b1dd0 align:1
+
+aiprcore_4:
+	.text       start:0x4b1dd0 end:0x4b1e10 align:1
+
+schprop_2:
+	.text       start:0x4b1e10 end:0x4b1e50 align:1
+
+invrndpr_5:
+	.text       start:0x4b1e50 end:0x4b1e90 align:1
+
+keyscpt:
+	.text       start:0x4b1e90 end:0x4b2010 align:1
+
+keysys:
+	.text       start:0x4b2010 end:0x4b21a0 align:1
+
+dyntex_2:
+	.text       start:0x4b21a0 end:0x4b21c8 align:1
+
+litnet:
+	.text       start:0x4b21d0 end:0x4b2280 align:1
+
+lockprop_2:
+	.text       start:0x4b2280 end:0x4b2590 align:1
+
+frobprop_3:
+	.text       start:0x4b2590 end:0x4b2630 align:1
+
+lockprop_3:
+	.text       start:0x4b2630 end:0x4b3500 align:1
+
+lockscpt_1:
+	.text       start:0x4b3500 end:0x4b356b align:1
+
+panltool_1:
+	.text       start:0x4b3570 end:0x4b3590 align:1
+
+lockscpt_2:
+	.text       start:0x4b3590 end:0x4b3660 align:1
+
+antxscpt_1:
+	.text       start:0x4b3660 end:0x4b3680 align:1
+
+panltool_2:
+	.text       start:0x4b3680 end:0x4b39f2 align:1
+
+pick:
+	.text       start:0x4b3a00 end:0x4b4040 align:1
+
+preldprp:
+	.text       start:0x4b4040 end:0x4b43b0 align:1
+
+periog8r_1:
+	.text       start:0x4b43b0 end:0x4b43f0 align:1
+
+aiprutil_4:
+	.text       start:0x4b43f0 end:0x4b43f8 align:1
+
+prjctile:
+	.text       start:0x4b4400 end:0x4b4f20 align:1
+
+quesreac:
+	.text       start:0x4b4f20 end:0x4b5024 align:1
+
+scrptnet:
+	.text       start:0x4b5030 end:0x4b54b0 align:1
+
+sndnet:
+	.text       start:0x4b54b0 end:0x4b6880 align:1
+
+tweqctrl:
+	.text       start:0x4b6880 end:0x4b84f0 align:1
+
+tweqprop:
+	.text       start:0x4b84f0 end:0x4bb300 align:1
+
+twqscrpt:
+	.text       start:0x4bb300 end:0x4bb810 align:1
+
+dmgmodel_3:
+	.text       start:0x4bb810 end:0x4bb818 align:1
+
+vocore:
+	.text       start:0x4bb820 end:0x4bbc48 align:1
+
+weapcb:
+	.text       start:0x4bbc50 end:0x4bc2d0 align:1
+
+weaphalo:
+	.text       start:0x4bc2d0 end:0x4bcc90 align:1
+
+weaphit:
+	.text       start:0x4bcc90 end:0x4bd190 align:1
+
+weapon:
+	.text       start:0x4bd190 end:0x4bdaa0 align:1
+
+weapprop:
+	.text       start:0x4bdaa0 end:0x4bddc0 align:1
+
+weapreac:
+	.text       start:0x4bddc0 end:0x4bdf85 align:1
+
+gunflash:
+	.text       start:0x4bdf90 end:0x4be280 align:1
+
+gunprop_1:
+	.text       start:0x4be280 end:0x4bec60 align:1
+
+aiavoid_2:
+	.text       start:0x4bec60 end:0x4becb0 align:1
+
+gunprop_2:
+	.text       start:0x4becb0 end:0x4bef20 align:1
+
+aiavoid_3:
+	.text       start:0x4bef20 end:0x4bef40 align:1
+
+gunprop_3:
+	.text       start:0x4bef40 end:0x4bf6b8 align:1
+
+aiavoid_4:
+	.text       start:0x4bf6b8 end:0x4bf6d0 align:1
+
+gunprop_4:
+	.text       start:0x4bf6d0 end:0x4bf6e0 align:1
+
+projprop_2:
+	.text       start:0x4bf6e0 end:0x4bfd58 align:1
+
+projlink:
+	.text       start:0x4bfd60 end:0x4c00e0 align:1
+
+antxscpt_2:
+	.text       start:0x4c00e0 end:0x4c03d0 align:1
+
+arscript:
+	.text       start:0x4c03d0 end:0x4c1040 align:1
+
+bodscrpt:
+	.text       start:0x4c1040 end:0x4c1160 align:1
+
+camscrpt:
+	.text       start:0x4c1160 end:0x4c13a0 align:1
+
+datascrs:
+	.text       start:0x4c13a0 end:0x4c1680 align:1
+
+dmgscrpt:
+	.text       start:0x4c1680 end:0x4c1b90 align:1
+
+drscrpt:
+	.text       start:0x4c1b90 end:0x4c1ee0 align:1
+
+engscrpt:
+	.text       start:0x4c1ee0 end:0x4c20b0 align:1
+
+linkscpt:
+	.text       start:0x4c20b0 end:0x4c3000 align:1
+
+litscrpt:
+	.text       start:0x4c3000 end:0x4c3520 align:1
+
+netscrpt:
+	.text       start:0x4c3520 end:0x4c3d00 align:1
+
+aiscrabl_2:
+	.text       start:0x4c3d00 end:0x4c3d08 align:1
+
+objscrpt:
+	.text       start:0x4c3d10 end:0x4c45d0 align:1
+
+propscpt:
+	.text       start:0x4c45d0 end:0x4c5680 align:1
+
+pupscrpt:
+	.text       start:0x4c5680 end:0x4c5820 align:1
+
+quesscpt:
+	.text       start:0x4c5820 end:0x4c5b90 align:1
+
+sdesparm:
+	.text       start:0x4c5b90 end:0x4c6050 align:1
+
+sndscrpt:
+	.text       start:0x4c6050 end:0x4c7988 align:1
+
+mtscrpt_2:
+	.text       start:0x4c7988 end:0x4c7a40 align:1
+
+room_2:
+	.text       start:0x4c7a40 end:0x4c8240 align:1
+
+roomcore:
+	.text       start:0x4c8240 end:0x4c867e align:1
+
+roomeax:
+	.text       start:0x4c8680 end:0x4c885a align:1
+
+roomloop:
+	.text       start:0x4c8860 end:0x4c8c7a align:1
+
+roompa:
+	.text       start:0x4c8c80 end:0x4c90b0 align:1
+
+roomprop:
+	.text       start:0x4c90b0 end:0x4c9b38 align:1
+
+contain_3:
+	.text       start:0x4c9b38 end:0x4c9b50 align:1
+
+rooms_2:
+	.text       start:0x4c9b50 end:0x4cb620 align:1
+
+contain_4:
+	.text       start:0x4cb620 end:0x4cb670 align:1
+
+quest_3:
+	.text       start:0x4cb670 end:0x4cb6a0 align:1
+
+rooms_3:
+	.text       start:0x4cb6a0 end:0x4cb9d0 align:1
+
+quest_4:
+	.text       start:0x4cb9d0 end:0x4cba80 align:1
+
+rooms_4:
+	.text       start:0x4cba80 end:0x4cbab0 align:1
+
+netman_1:
+	.text       start:0x4cbab0 end:0x4cbb40 align:1
+
+rooms_5:
+	.text       start:0x4cbb40 end:0x4cbc00 align:1
+
+roomutil:
+	.text       start:0x4cbc00 end:0x4cbe00 align:1
+
+rooscrpt:
+	.text       start:0x4cbe00 end:0x4cbf60 align:1
+
+rportal:
+	.text       start:0x4cbf60 end:0x4cc260 align:1
+
+psndapi:
+	.text       start:0x4cc260 end:0x4cc470 align:1
+
+psnd:
+	.text       start:0x4cc470 end:0x4ce260 align:1
+
+psndinst:
+	.text       start:0x4ce260 end:0x4d0ef0 align:1
+
+sndframe:
+	.text       start:0x4d0ef0 end:0x4d1110 align:1
+
+arloop:
+	.text       start:0x4d1110 end:0x4d1370 align:1
+
+contag8r:
+	.text       start:0x4d1370 end:0x4d1f60 align:1
+
+esndreac:
+	.text       start:0x4d1f60 end:0x4d2031 align:1
+
+frezreac:
+	.text       start:0x4d2040 end:0x4d2113 align:1
+
+mediag8r:
+	.text       start:0x4d2120 end:0x4d2560 align:1
+
+periog8r_2:
+	.text       start:0x4d2560 end:0x4d37d0 align:1
+
+aicbrmpr_2:
+	.text       start:0x4d37d0 end:0x4d3800 align:1
+
+scrptprp_3:
+	.text       start:0x4d3800 end:0x4d3830 align:1
+
+periog8r_3:
+	.text       start:0x4d3830 end:0x4d3ac0 align:1
+
+objnet_1:
+	.text       start:0x4d3ac0 end:0x4d3b00 align:1
+
+pg8rnull_1:
+	.text       start:0x4d3b00 end:0x4d3bd0 align:1
+
+propag8n:
+	.text       start:0x4d3bd0 end:0x4d4e20 align:1
+
+propag8r:
+	.text       start:0x4d4e20 end:0x4d4fb0 align:1
+
+propreac:
+	.text       start:0x4d4fb0 end:0x4d55f0 align:1
+
+radiag8r:
+	.text       start:0x4d55f0 end:0x4d5fd0 align:1
+
+reaction_1:
+	.text       start:0x4d5fd0 end:0x4d6f30 align:1
+
+ssrclife:
+	.text       start:0x4d6f30 end:0x4d7100 align:1
+
+stimbase:
+	.text       start:0x4d7100 end:0x4d7140 align:1
+
+stimsens:
+	.text       start:0x4d7140 end:0x4d8910 align:1
+
+stimsrc:
+	.text       start:0x4d8910 end:0x4d9d60 align:1
+
+stimul8r:
+	.text       start:0x4d9d60 end:0x4da9e8 align:1
+
+stimuli:
+	.text       start:0x4da9f0 end:0x4dae58 align:1
+
+bintrait:
+	.text       start:0x4dae60 end:0x4db190 align:1
+
+dataops:
+	.text       start:0x4db190 end:0x4db620 align:1
+
+net_1:
+	.text       start:0x4db620 end:0x4db650 align:1
+
+link:
+	.text       start:0x4db650 end:0x4db710 align:1
+
+linkarry:
+	.text       start:0x4db710 end:0x4dc110 align:1
+
+linkboth_2:
+	.text       start:0x4dc110 end:0x4dd0f0 align:1
+
+lnkbyobj_1:
+	.text       start:0x4dd0f0 end:0x4de130 align:1
+
+linkdb:
+	.text       start:0x4de130 end:0x4de460 align:1
+
+linkdata:
+	.text       start:0x4de460 end:0x4de6c0 align:1
+
+linkman:
+	.text       start:0x4de6c0 end:0x4e06e0 align:1
+
+linkset:
+	.text       start:0x4e06e0 end:0x4e0b00 align:1
+
+linkstor:
+	.text       start:0x4e0b00 end:0x4e1be0 align:1
+
+linkqdb:
+	.text       start:0x4e1be0 end:0x4e1c60 align:1
+
+linkprop:
+	.text       start:0x4e1c60 end:0x4e23c0 align:1
+
+osetlnkq:
+	.text       start:0x4e23c0 end:0x4e2830 align:1
+
+proplink_1:
+	.text       start:0x4e2830 end:0x4e2f60 align:1
+
+drkinvpr_3:
+	.text       start:0x4e2f60 end:0x4e3000 align:1
+
+proplink_2:
+	.text       start:0x4e3000 end:0x4e3008 align:1
+
+lnkquery:
+	.text       start:0x4e3010 end:0x4e3110 align:1
+
+querynul_1:
+	.text       start:0x4e3110 end:0x4e3150 align:1
+
+relation:
+	.text       start:0x4e3150 end:0x4e4210 align:1
+
+relinver:
+	.text       start:0x4e4210 end:0x4e4910 align:1
+
+relnull:
+	.text       start:0x4e4910 end:0x4e4a00 align:1
+
+prcniter:
+	.text       start:0x4e4a00 end:0x4e4ab0 align:1
+
+property_1:
+	.text       start:0x4e4ab0 end:0x4e5f50 align:1
+
+propface_4:
+	.text       start:0x4e5f50 end:0x4e6a50 align:1
+
+property_2:
+	.text       start:0x4e6a50 end:0x4e6a70 align:1
+
+propface_5:
+	.text       start:0x4e6a70 end:0x4e6ad0 align:1
+
+propstor_5:
+	.text       start:0x4e6ad0 end:0x4e8ac0 align:1
+
+esndprop_2:
+	.text       start:0x4e8ac0 end:0x4e8b70 align:1
+
+propstor_6:
+	.text       start:0x4e8b70 end:0x4ea7f0 align:1
+
+propman:
+	.text       start:0x4ea7f0 end:0x4eb2d0 align:1
+
+propmix:
+	.text       start:0x4eb2d0 end:0x4eb6e0 align:1
+
+propnull:
+	.text       start:0x4eb6e0 end:0x4eb770 align:1
+
+propobsv:
+	.text       start:0x4eb770 end:0x4eb7b0 align:1
+
+propsave:
+	.text       start:0x4eb7b0 end:0x4ebbc0 align:1
+
+strprop_2:
+	.text       start:0x4ebbc0 end:0x4ebed0 align:1
+
+donorq:
+	.text       start:0x4ebed0 end:0x4ec190 align:1
+
+nameprop_2:
+	.text       start:0x4ec190 end:0x4eca30 align:1
+
+objtxtrp_3:
+	.text       start:0x4eca30 end:0x4ecb10 align:1
+
+nameprop_3:
+	.text       start:0x4ecb10 end:0x4ecc00 align:1
+
+objtxtrp_4:
+	.text       start:0x4ecc00 end:0x4ecc90 align:1
+
+nameprop_4:
+	.text       start:0x4ecc90 end:0x4ed048 align:1
+
+objquery_1:
+	.text       start:0x4ed050 end:0x4ed0f0 align:1
+
+querynul_2:
+	.text       start:0x4ed0f0 end:0x4ed100 align:1
+
+objquery_2:
+	.text       start:0x4ed100 end:0x4ed150 align:1
+
+traisrch:
+	.text       start:0x4ed150 end:0x4ed350 align:1
+
+trait:
+	.text       start:0x4ed350 end:0x4ee900 align:1
+
+traitq:
+	.text       start:0x4ee900 end:0x4eebf0 align:1
+
+traitlnk:
+	.text       start:0x4eebf0 end:0x4eece0 align:1
+
+traitman:
+	.text       start:0x4eece0 end:0x4efbe0 align:1
+
+traitnul:
+	.text       start:0x4efbe0 end:0x4efc70 align:1
+
+traitprp:
+	.text       start:0x4efc70 end:0x4f00d0 align:1
+
+traitqdb:
+	.text       start:0x4f00d0 end:0x4f0b60 align:1
+
+trcache_1:
+	.text       start:0x4f0b60 end:0x4f1a30 align:1
+
+periog8r_4:
+	.text       start:0x4f1a30 end:0x4f1ae0 align:1
+
+trcache_2:
+	.text       start:0x4f1ae0 end:0x4f1cd0 align:1
+
+collide:
+	.text       start:0x4f1cd0 end:0x4f1f80 align:1
+
+collprop:
+	.text       start:0x4f1f80 end:0x4f2020 align:1
+
+objmedia:
+	.text       start:0x4f2020 end:0x4f27f0 align:1
+
+phclimb:
+	.text       start:0x4f27f0 end:0x4f4290 align:1
+
+phclsn:
+	.text       start:0x4f4290 end:0x4f4ce0 align:1
+
+phcontct_1:
+	.text       start:0x4f4ce0 end:0x4f5f50 align:1
+
+phcore_1:
+	.text       start:0x4f5f50 end:0x4f5f70 align:1
+
+phcontct_2:
+	.text       start:0x4f5f70 end:0x4f8580 align:1
+
+phcore_2:
+	.text       start:0x4f8580 end:0x5039e0 align:1
+
+phctrl_2:
+	.text       start:0x5039e0 end:0x5040a0 align:1
+
+phdyn:
+	.text       start:0x5040a0 end:0x5042c0 align:1
+
+phflist:
+	.text       start:0x5042c0 end:0x504370 align:1
+
+phlisten:
+	.text       start:0x504370 end:0x504730 align:1
+
+phmedtr:
+	.text       start:0x504730 end:0x504810 align:1
+
+phmod_1:
+	.text       start:0x504810 end:0x509500 align:1
+
+rpaths_2:
+	.text       start:0x509500 end:0x509530 align:1
+
+phmod_2:
+	.text       start:0x509530 end:0x509690 align:1
+
+phmodbsp:
+	.text       start:0x509690 end:0x5097d0 align:1
+
+phmodobb:
+	.text       start:0x5097d0 end:0x50a060 align:1
+
+phmods:
+	.text       start:0x50a060 end:0x50b0e0 align:1
+
+phmodsph:
+	.text       start:0x50b0e0 end:0x50c1d0 align:1
+
+phmodutl:
+	.text       start:0x50c1d0 end:0x50c8e0 align:1
+
+phmsg:
+	.text       start:0x50c8e0 end:0x50de10 align:1
+
+phnet:
+	.text       start:0x50de10 end:0x50ef9c align:1
+
+phoprop:
+	.text       start:0x50efa0 end:0x510bf8 align:1
+
+phprop_2:
+	.text       start:0x510c00 end:0x5143e8 align:1
+
+phprops:
+	.text       start:0x5143f0 end:0x5144a9 align:1
+
+phmtprop_1:
+	.text       start:0x5144b0 end:0x514e80 align:1
+
+phmterr_1:
+	.text       start:0x514e80 end:0x514ea0 align:1
+
+phmtprop_2:
+	.text       start:0x514ea0 end:0x514ec8 align:1
+
+phmterr_2:
+	.text       start:0x514ed0 end:0x516180 align:1
+
+phmtscpt:
+	.text       start:0x516180 end:0x5162c0 align:1
+
+phppscpt:
+	.text       start:0x5162c0 end:0x5164f0 align:1
+
+phref:
+	.text       start:0x5164f0 end:0x516b00 align:1
+
+phsubmod:
+	.text       start:0x516b00 end:0x516bc0 align:1
+
+phscrpt:
+	.text       start:0x516bc0 end:0x517380 align:1
+
+phterr:
+	.text       start:0x517380 end:0x5176e0 align:1
+
+phtxtprp:
+	.text       start:0x5176e0 end:0x51789a align:1
+
+phutils:
+	.text       start:0x5178a0 end:0x517d90 align:1
+
+physapi:
+	.text       start:0x517d90 end:0x51c32a align:1
+
+aipatrol_2:
+	.text       start:0x51c330 end:0x51c360 align:1
+
+physcast:
+	.text       start:0x51c360 end:0x51d1b0 align:1
+
+physloop:
+	.text       start:0x51d1b0 end:0x51d3ed align:1
+
+phmotion:
+	.text       start:0x51d3f0 end:0x51d890 align:1
+
+phmoapi:
+	.text       start:0x51d890 end:0x51dc10 align:1
+
+gunproj:
+	.text       start:0x51dc10 end:0x51e3d0 align:1
+
+gunvhot:
+	.text       start:0x51e3d0 end:0x51e4f0 align:1
+
+spherchk:
+	.text       start:0x51e4f0 end:0x51e620 align:1
+
+cerebllm:
+	.text       start:0x51e620 end:0x51e630 align:1
+
+mcoord:
+	.text       start:0x51e630 end:0x51ecf0 align:1
+
+mvrcmbat:
+	.text       start:0x51ecf0 end:0x51f6d0 align:1
+
+mvrflags:
+	.text       start:0x51f6d0 end:0x51fc50 align:1
+
+mvrflbow:
+	.text       start:0x51fc50 end:0x520050 align:1
+
+mvrgact:
+	.text       start:0x520050 end:0x5208c0 align:1
+
+mvrgloco:
+	.text       start:0x5208c0 end:0x5215b0 align:1
+
+mvrplyr:
+	.text       start:0x5215b0 end:0x521990 align:1
+
+mvrsngle:
+	.text       start:0x521990 end:0x522030 align:1
+
+mvrutils:
+	.text       start:0x522030 end:0x522d70 align:1
+
+motdb:
+	.text       start:0x522d70 end:0x523640 align:1
+
+motdesc:
+	.text       start:0x523640 end:0x5236c0 align:1
+
+motdmnge:
+	.text       start:0x5236c0 end:0x5238f0 align:1
+
+motmngr:
+	.text       start:0x5238f0 end:0x523af0 align:1
+
+motschem:
+	.text       start:0x523af0 end:0x523e00 align:1
+
+motset:
+	.text       start:0x523e00 end:0x5253d0 align:1
+
+motprop:
+	.text       start:0x5253d0 end:0x5270a8 align:1
+
+mschutil:
+	.text       start:0x5270b0 end:0x527160 align:1
+
+mskilset:
+	.text       start:0x527160 end:0x527490 align:1
+
+crattach:
+	.text       start:0x527490 end:0x527b30 align:1
+
+crwpnlst_1:
+	.text       start:0x527b30 end:0x527dba align:1
+
+crwpnapi:
+	.text       start:0x527dc0 end:0x5282a0 align:1
+
+crwpnlup:
+	.text       start:0x5282a0 end:0x528330 align:1
+
+creature_1:
+	.text       start:0x528330 end:0x529230 align:1
+
+ccrappa_1:
+	.text       start:0x529230 end:0x529240 align:1
+
+creature_2:
+	.text       start:0x529240 end:0x52cf60 align:1
+
+cretprop_3:
+	.text       start:0x52cf60 end:0x52df60 align:1
+
+gunprop_5:
+	.text       start:0x52df60 end:0x52dfa0 align:1
+
+cretprop_4:
+	.text       start:0x52dfa0 end:0x52e0e0 align:1
+
+rendprop_3:
+	.text       start:0x52e0e0 end:0x52e120 align:1
+
+cretprop_5:
+	.text       start:0x52e120 end:0x52e960 align:1
+
+crexp:
+	.text       start:0x52e960 end:0x52ed70 align:1
+
+crjoint:
+	.text       start:0x52ed70 end:0x52ee50 align:1
+
+ccrappa_2:
+	.text       start:0x52ee50 end:0x52f0d0 align:1
+
+ccrbug:
+	.text       start:0x52f0d0 end:0x52f290 align:1
+
+ccrhuman_1:
+	.text       start:0x52f290 end:0x52f2ab align:1
+
+ccrcray:
+	.text       start:0x52f2ab end:0x52f39b align:1
+
+ccrhuman_2:
+	.text       start:0x52f39b end:0x52f430 align:1
+
+drkdiff:
+	.text       start:0x52f430 end:0x52fd30 align:1
+
+drkpanl:
+	.text       start:0x52fd30 end:0x530680 align:1
+
+drkuires:
+	.text       start:0x530680 end:0x530870 align:1
+
+filepanl:
+	.text       start:0x530870 end:0x530f80 align:1
+
+gadslide:
+	.text       start:0x530f80 end:0x5317a0 align:1
+
+initgame:
+	.text       start:0x5317a0 end:0x531880 align:1
+
+avatar_1:
+	.text       start:0x531880 end:0x531980 align:1
+
+ghost:
+	.text       start:0x531980 end:0x531ab0 align:1
+
+ghostlst:
+	.text       start:0x531ab0 end:0x5324d0 align:1
+
+crwpnlst_2:
+	.text       start:0x5324d0 end:0x5324e0 align:1
+
+ghostlup:
+	.text       start:0x5324e0 end:0x5328b0 align:1
+
+ghostmsg:
+	.text       start:0x5328b0 end:0x532cb0 align:1
+
+ghostphy:
+	.text       start:0x532cb0 end:0x533d70 align:1
+
+ghostrcv:
+	.text       start:0x533d70 end:0x534e80 align:1
+
+ghostsnd:
+	.text       start:0x534e80 end:0x535dd0 align:1
+
+netman_2:
+	.text       start:0x535dd0 end:0x53bc90 align:1
+
+objpos_2:
+	.text       start:0x53bc90 end:0x53bcb0 align:1
+
+netman_3:
+	.text       start:0x53bcb0 end:0x53c500 align:1
+
+lnkbyobj_2:
+	.text       start:0x53c500 end:0x53c5a0 align:1
+
+objpos_3:
+	.text       start:0x53c5a0 end:0x53c5d0 align:1
+
+netman_4:
+	.text       start:0x53c5d0 end:0x53c8d0 align:1
+
+reaction_2:
+	.text       start:0x53c8d0 end:0x53c900 align:1
+
+netman_5:
+	.text       start:0x53c900 end:0x53cd18 align:1
+
+netmsg:
+	.text       start:0x53cd20 end:0x53eb54 align:1
+
+netprops:
+	.text       start:0x53eb60 end:0x53ed10 align:1
+
+netsim:
+	.text       start:0x53ed10 end:0x53f0b0 align:1
+
+netsynch:
+	.text       start:0x53f0b0 end:0x53f340 align:1
+
+netvoice:
+	.text       start:0x53f340 end:0x53f4b0 align:1
+
+objnet_2:
+	.text       start:0x53f4b0 end:0x5429c0 align:1
+
+wrfunc:
+	.text       start:0x5429c0 end:0x543120 align:1
+
+wrcast:
+	.text       start:0x543120 end:0x544140 align:1
+
+bspsphr:
+	.text       start:0x544140 end:0x5442e0 align:1
+
+portsurf:
+	.text       start:0x5442e0 end:0x5450f0 align:1
+
+ptsurf:
+	.text       start:0x5450f0 end:0x54581b align:1
+
+ptsurf16:
+	.text       start:0x545820 end:0x545ec0 align:1
+
+pt_mem:
+	.text       start:0x545ec0 end:0x546530 align:1
+
+pt_clut:
+	.text       start:0x546530 end:0x546730 align:1
+
+portal_1:
+	.text       start:0x546730 end:0x549140 align:1
+
+portdraw:
+	.text       start:0x549140 end:0x54a8f0 align:1
+
+ptdrawhw:
+	.text       start:0x54a8f0 end:0x54d250 align:1
+
+portlit:
+	.text       start:0x54d250 end:0x54dd10 align:1
+
+portclip:
+	.text       start:0x54dd10 end:0x54ee60 align:1
+
+portbg:
+	.text       start:0x54ee60 end:0x54f5b0 align:1
+
+portwatr:
+	.text       start:0x54f5b0 end:0x54f8a0 align:1
+
+porthw:
+	.text       start:0x54f8a0 end:0x5501e0 align:1
+
+portsky:
+	.text       start:0x5501e0 end:0x55047d align:1
+
+bowscrpt:
+	.text       start:0x550480 end:0x550630 align:1
+
+camovl:
+	.text       start:0x550630 end:0x552b00 align:1
+
+drk_bind:
+	.text       start:0x552b00 end:0x553060 align:1
+
+drkamap:
+	.text       start:0x553060 end:0x554e48 align:1
+
+drkbook:
+	.text       start:0x554e50 end:0x5559b0 align:1
+
+drkbreth:
+	.text       start:0x5559b0 end:0x556308 align:1
+
+drkchkcd:
+	.text       start:0x556310 end:0x5568e0 align:1
+
+drkcmbat:
+	.text       start:0x5568e0 end:0x5575d0 align:1
+
+drkcolor:
+	.text       start:0x5575d0 end:0x5575f0 align:1
+
+drkcret:
+	.text       start:0x5575f0 end:0x5577c0 align:1
+
+drkdebrf:
+	.text       start:0x5577c0 end:0x55a222 align:1
+
+drkfixpr:
+	.text       start:0x55a230 end:0x55a270 align:1
+
+drkgame_2:
+	.text       start:0x55a270 end:0x55ac90 align:1
+
+drkgoalr:
+	.text       start:0x55ac90 end:0x55ae20 align:1
+
+drkldout:
+	.text       start:0x55ae20 end:0x55c670 align:1
+
+drklinks:
+	.text       start:0x55c670 end:0x55c770 align:1
+
+drkloot:
+	.text       start:0x55c770 end:0x55ce20 align:1
+
+drkmenu:
+	.text       start:0x55ce20 end:0x55d750 align:1
+
+drkmislp:
+	.text       start:0x55d750 end:0x55e2b0 align:1
+
+drkmiss:
+	.text       start:0x55e2b0 end:0x55e4b0 align:1
+
+drkmsg:
+	.text       start:0x55e4b0 end:0x55e800 align:1
+
+drkinit:
+	.text       start:0x55e800 end:0x55e98a align:1
+
+drkinv:
+	.text       start:0x55e990 end:0x55ec14 align:1
+
+drkinvsc:
+	.text       start:0x55ec20 end:0x55edb0 align:1
+
+drkinvpr_4:
+	.text       start:0x55edb0 end:0x55ef10 align:1
+
+drkinvui:
+	.text       start:0x55ef10 end:0x561b77 align:1
+
+drknetap_1:
+	.text       start:0x561b80 end:0x561d20 align:1
+
+drkpwscr_1:
+	.text       start:0x561d20 end:0x561d40 align:1
+
+drknetap_2:
+	.text       start:0x561d40 end:0x561d50 align:1
+
+drkoptmn:
+	.text       start:0x561d50 end:0x568e30 align:1
+
+drkplinv:
+	.text       start:0x568e30 end:0x569940 align:1
+
+drkpwscr_2:
+	.text       start:0x569940 end:0x569ad0 align:1
+
+drkpwups:
+	.text       start:0x569ad0 end:0x56a210 align:1
+
+drkreact:
+	.text       start:0x56a210 end:0x56a691 align:1
+
+drkrend:
+	.text       start:0x56a6a0 end:0x56aa90 align:1
+
+drkrloop:
+	.text       start:0x56aa90 end:0x56ab40 align:1
+
+drkrutil:
+	.text       start:0x56ab40 end:0x56ad10 align:1
+
+drksave:
+	.text       start:0x56ad10 end:0x56b760 align:1
+
+drksavui:
+	.text       start:0x56b760 end:0x56c5c2 align:1
+
+drksloop:
+	.text       start:0x56c5d0 end:0x56c7fb align:1
+
+drkscrs:
+	.text       start:0x56c800 end:0x56cac0 align:1
+
+drksound:
+	.text       start:0x56cac0 end:0x56d230 align:1
+
+drkstats:
+	.text       start:0x56d230 end:0x56d6b0 align:1
+
+drkuiscr:
+	.text       start:0x56d6b0 end:0x56daf0 align:1
+
+drkvo:
+	.text       start:0x56daf0 end:0x56dc40 align:1
+
+drkwbdy:
+	.text       start:0x56dc40 end:0x56dda0 align:1
+
+drkwbow:
+	.text       start:0x56dda0 end:0x56ef70 align:1
+
+drkwswd:
+	.text       start:0x56ef70 end:0x56ff3c align:1
+
+lootprop:
+	.text       start:0x56ff40 end:0x570458 align:1
+
+picklock:
+	.text       start:0x570460 end:0x572a50 align:1
+
+pickscrs:
+	.text       start:0x572a50 end:0x572c10 align:1
+
+plyscrpt:
+	.text       start:0x572c10 end:0x572de0 align:1
+
+metagame:
+	.text       start:0x572de0 end:0x573412 align:1
+
+statbar:
+	.text       start:0x573420 end:0x573730 align:1
+
+vismeter:
+	.text       start:0x573730 end:0x573ae0 align:1
+
+weapscpt:
+	.text       start:0x573ae0 end:0x573cc0 align:1
+
+meshprop_1:
+	.text       start:0x573cc0 end:0x574610 align:1
+
+darkai_1:
+	.text       start:0x574610 end:0x574630 align:1
+
+meshprop_2:
+	.text       start:0x574630 end:0x574650 align:1
+
+aibdyrsp_5:
+	.text       start:0x574650 end:0x574660 align:1
+
+meshprop_3:
+	.text       start:0x574660 end:0x574688 align:1
+
+darkai_2:
+	.text       start:0x574688 end:0x5754d0 align:1
+
+loopfact_1:
+	.text       start:0x5754d0 end:0x5754e0 align:1
+
+daielem_1:
+	.text       start:0x5754e0 end:0x575500 align:1
+
+darkai_3:
+	.text       start:0x575500 end:0x575508 align:1
+
+daielem_2:
+	.text       start:0x575508 end:0x575770 align:1
+
+daifrog:
+	.text       start:0x575770 end:0x575930 align:1
+
+daicam_2:
+	.text       start:0x575930 end:0x5759a0 align:1
+
+mprintf:
+	.text       start:0x5759a0 end:0x576680 align:1
+
+hashfns:
+	.text       start:0x576680 end:0x576930 align:1
+
+appagg:
+	.text       start:0x576930 end:0x576970 align:1
+
+lgsprntf:
+	.text       start:0x576970 end:0x5772d0 align:1
+
+datapath:
+	.text       start:0x5772d0 end:0x577820 align:1
+
+dbg:
+	.text       start:0x577820 end:0x577940 align:1
+
+lgassert:
+	.text       start:0x577940 end:0x577960 align:1
+
+exit:
+	.text       start:0x577960 end:0x5779cc align:1
+
+breakkey:
+	.text       start:0x5779d0 end:0x577a6b align:1
+
+tmpalloc:
+	.text       start:0x577a70 end:0x577b70 align:1
+
+coremutx:
+	.text       start:0x577b70 end:0x577c0c align:1
+
+stack:
+	.text       start:0x577c10 end:0x577c70 align:1
+
+pool:
+	.text       start:0x577c70 end:0x577ce0 align:1
+
+nullallc:
+	.text       start:0x577ce0 end:0x577d10 align:1
+
+vecvec:
+	.text       start:0x577d10 end:0x5781a0 align:1
+
+matang:
+	.text       start:0x5781a0 end:0x5787c0 align:1
+
+matvec:
+	.text       start:0x5787c0 end:0x578910 align:1
+
+matmat:
+	.text       start:0x578910 end:0x578e30 align:1
+
+vecang:
+	.text       start:0x578e30 end:0x578f20 align:1
+
+vecvecd:
+	.text       start:0x578f20 end:0x579080 align:1
+
+vec2:
+	.text       start:0x579080 end:0x5790e0 align:1
+
+trans:
+	.text       start:0x5790e0 end:0x5791f0 align:1
+
+fixdiv:
+	.text       start:0x5791f0 end:0x579283 align:1
+
+fix:
+	.text       start:0x579283 end:0x5792c0 align:1
+
+fix_asm:
+	.text       start:0x5792c0 end:0x5794be align:1
+
+dynarray:
+	.text       start:0x5794c0 end:0x579520 align:1
+
+hashset_1:
+	.text       start:0x579520 end:0x579a70 align:1
+
+str:
+	.text       start:0x579a70 end:0x57a360 align:1
+
+filespec:
+	.text       start:0x57a360 end:0x57b550 align:1
+
+hashpp:
+	.text       start:0x57b550 end:0x57b5d0 align:1
+
+dynfunc:
+	.text       start:0x57b5d0 end:0x57b640 align:1
+
+delmlist:
+	.text       start:0x57b640 end:0x57b830 align:1
+
+filepath:
+	.text       start:0x57b830 end:0x57c5f0 align:1
+
+fnamutil:
+	.text       start:0x57c5f0 end:0x57cf00 align:1
+
+splitpat:
+	.text       start:0x57cf00 end:0x57d410 align:1
+
+genagg:
+	.text       start:0x57d410 end:0x57dd00 align:1
+
+interset:
+	.text       start:0x57dd00 end:0x57df00 align:1
+
+pguidset:
+	.text       start:0x57df00 end:0x57e040 align:1
+
+wappcore:
+	.text       start:0x57e040 end:0x57e720 align:1
+
+appcore:
+	.text       start:0x57e720 end:0x57e830 align:1
+
+bitmap:
+	.text       start:0x57e830 end:0x57ec20 align:1
+
+canvas:
+	.text       start:0x57ec20 end:0x57f230 align:1
+
+mode:
+	.text       start:0x57f230 end:0x57f270 align:1
+
+ipal:
+	.text       start:0x57f270 end:0x57fc70 align:1
+
+pal:
+	.text       start:0x57fc70 end:0x57fd50 align:1
+
+pal16:
+	.text       start:0x57fd50 end:0x580070 align:1
+
+ltab:
+	.text       start:0x580070 end:0x5802d0 align:1
+
+gdbm:
+	.text       start:0x5802d0 end:0x580430 align:1
+
+gdrect:
+	.text       start:0x580430 end:0x580600 align:1
+
+clut16:
+	.text       start:0x580600 end:0x580830 align:1
+
+tluctab:
+	.text       start:0x580830 end:0x580910 align:1
+
+smode:
+	.text       start:0x580910 end:0x580a70 align:1
+
+screen:
+	.text       start:0x580a70 end:0x580c10 align:1
+
+cpal:
+	.text       start:0x580c10 end:0x580e60 align:1
+
+gdpix:
+	.text       start:0x580e60 end:0x580f20 align:1
+
+gpal:
+	.text       start:0x580f20 end:0x581050 align:1
+
+gdgbm:
+	.text       start:0x581050 end:0x5810e0 align:1
+
+fcolor:
+	.text       start:0x5810e0 end:0x5811a0 align:1
+
+valloc:
+	.text       start:0x5811a0 end:0x581230 align:1
+
+gdlin:
+	.text       start:0x581230 end:0x581370 align:1
+
+comdfcn:
+	.text       start:0x581370 end:0x581600 align:1
+
+genrsd8:
+	.text       start:0x581600 end:0x581b50 align:1
+
+genf16:
+	.text       start:0x581b50 end:0x581c40 align:1
+
+genfl8:
+	.text       start:0x581c40 end:0x581d20 align:1
+
+genmono:
+	.text       start:0x581d20 end:0x581e20 align:1
+
+rsdcvt:
+	.text       start:0x581e20 end:0x5821e0 align:1
+
+rsdunpck:
+	.text       start:0x5821e0 end:0x5823d0 align:1
+
+init_2:
+	.text       start:0x5823d0 end:0x582489 align:1
+
+g2ov:
+	.text       start:0x582490 end:0x58250d align:1
+
+pt_main:
+	.text       start:0x582510 end:0x582bf0 align:1
+
+pt_map:
+	.text       start:0x582bf0 end:0x5845c0 align:1
+
+clplin:
+	.text       start:0x5845c0 end:0x584900 align:1
+
+pt_duv:
+	.text       start:0x584900 end:0x584c20 align:1
+
+tmsetup:
+	.text       start:0x584c20 end:0x584fa0 align:1
+
+setdrv:
+	.text       start:0x584fa0 end:0x584fd0 align:1
+
+g2makewr:
+	.text       start:0x584fd0 end:0x585060 align:1
+
+rastel:
+	.text       start:0x585060 end:0x585420 align:1
+
+ptfloat:
+	.text       start:0x585420 end:0x585541 align:1
+
+ptmap_8:
+	.text       start:0x585550 end:0x586514 align:1
+
+ptpersp:
+	.text       start:0x586520 end:0x58688c align:1
+
+ptmap_n:
+	.text       start:0x586890 end:0x586f9c align:1
+
+ptmapper:
+	.text       start:0x586f9c end:0x5875db align:1
+
+uvedge:
+	.text       start:0x5875e0 end:0x587851 align:1
+
+genrast:
+	.text       start:0x587851 end:0x587c34 align:1
+
+pt_grad:
+	.text       start:0x587c40 end:0x587fa0 align:1
+
+ptlinear:
+	.text       start:0x587fa0 end:0x588145 align:1
+
+permap:
+	.text       start:0x588150 end:0x5883ad align:1
+
+tf:
+	.text       start:0x5883b0 end:0x588418 align:1
+
+n88il:
+	.text       start:0x588420 end:0x5885fe align:1
+
+lo816il:
+	.text       start:0x5885fe end:0x588817 align:1
+
+lo88il:
+	.text       start:0x588817 end:0x588a33 align:1
+
+co88il:
+	.text       start:0x588a33 end:0x588c25 align:1
+
+o88il:
+	.text       start:0x588c25 end:0x588db2 align:1
+
+o88bil:
+	.text       start:0x588db2 end:0x588eac align:1
+
+ptmap_2:
+	.text       start:0x588eb0 end:0x588f64 align:1
+
+uvgrad:
+	.text       start:0x588f64 end:0x58948a align:1
+
+trigrad:
+	.text       start:0x58948a end:0x58966a align:1
+
+clip:
+	.text       start:0x589670 end:0x589f10 align:1
+
+f16pm:
+	.text       start:0x589f10 end:0x589fa0 align:1
+
+f16lm:
+	.text       start:0x589fa0 end:0x58a020 align:1
+
+gensply:
+	.text       start:0x58a020 end:0x58a114 align:1
+
+genply:
+	.text       start:0x58a120 end:0x58a19e align:1
+
+gens:
+	.text       start:0x58a1a0 end:0x58a240 align:1
+
+genline:
+	.text       start:0x58a240 end:0x58a4c0 align:1
+
+fl8pm:
+	.text       start:0x58a4c0 end:0x58a540 align:1
+
+fl8lm:
+	.text       start:0x58a540 end:0x58a5c0 align:1
+
+fl8sply:
+	.text       start:0x58a5c0 end:0x58a67f align:1
+
+fl8s:
+	.text       start:0x58a680 end:0x58a740 align:1
+
+fl8l:
+	.text       start:0x58a740 end:0x58a770 align:1
+
+genlm:
+	.text       start:0x58a770 end:0x58a7b0 align:1
+
+genrsdtm:
+	.text       start:0x58a7b0 end:0x58a7f0 align:1
+
+genf16l:
+	.text       start:0x58a7f0 end:0x58a960 align:1
+
+genfl8l:
+	.text       start:0x58a960 end:0x58aaf0 align:1
+
+o816:
+	.text       start:0x58aaf0 end:0x58abd0 align:1
+
+lo816:
+	.text       start:0x58abd0 end:0x58adf0 align:1
+
+genrsds:
+	.text       start:0x58adf0 end:0x58ae90 align:1
+
+genf16s:
+	.text       start:0x58ae90 end:0x58af00 align:1
+
+genfl8s:
+	.text       start:0x58af00 end:0x58b020 align:1
+
+scshell:
+	.text       start:0x58b020 end:0x58b380 align:1
+
+r88:
+	.text       start:0x58b380 end:0x58b510 align:1
+
+co88:
+	.text       start:0x58b510 end:0x58b570 align:1
+
+o88:
+	.text       start:0x58b570 end:0x58b640 align:1
+
+lo88:
+	.text       start:0x58b640 end:0x58b88e align:1
+
+fl8fl8s:
+	.text       start:0x58b890 end:0x58bc00 align:1
+
+fl8lin:
+	.text       start:0x58bc00 end:0x58c050 align:1
+
+gen16il:
+	.text       start:0x58c050 end:0x58c4c2 align:1
+
+gen8il:
+	.text       start:0x58c4d0 end:0x58c906 align:1
+
+o816il:
+	.text       start:0x58c910 end:0x58cad3 align:1
+
+clo816il:
+	.text       start:0x58cad3 end:0x58cd47 align:1
+
+str_2:
+	.text       start:0x58cd47 end:0x58ced0 align:1
+
+strsiz:
+	.text       start:0x58ced0 end:0x58d000 align:1
+
+chrsiz:
+	.text       start:0x58d000 end:0x58d031 align:1
+
+strwrap:
+	.text       start:0x58d040 end:0x58d150 align:1
+
+setup:
+	.text       start:0x58d150 end:0x58d200 align:1
+
+f16fl8t:
+	.text       start:0x58d200 end:0x58d31a align:1
+
+dddynf:
+	.text       start:0x58d320 end:0x58d4d0 align:1
+
+wdcreate:
+	.text       start:0x58d4d0 end:0x58d578 align:1
+
+wdisp_1:
+	.text       start:0x58d578 end:0x58d830 align:1
+
+dispbase_1:
+	.text       start:0x58d830 end:0x58d850 align:1
+
+wdisp_2:
+	.text       start:0x58d850 end:0x58e830 align:1
+
+wdispgdi:
+	.text       start:0x58e830 end:0x58f7a0 align:1
+
+wdispdd:
+	.text       start:0x58f7a0 end:0x590780 align:1
+
+dispbase_2:
+	.text       start:0x590780 end:0x590960 align:1
+
+wdspprov:
+	.text       start:0x590960 end:0x590a00 align:1
+
+wdspmode:
+	.text       start:0x590a00 end:0x590a50 align:1
+
+wdspgshl:
+	.text       start:0x590a50 end:0x590aa0 align:1
+
+wdisptls:
+	.text       start:0x590aa0 end:0x590bf0 align:1
+
+wddmode:
+	.text       start:0x590bf0 end:0x5923b0 align:1
+
+config:
+	.text       start:0x5923b0 end:0x593803 align:1
+
+cfg:
+	.text       start:0x593810 end:0x593840 align:1
+
+rescache_1:
+	.text       start:0x593840 end:0x594760 align:1
+
+resarq_1:
+	.text       start:0x594760 end:0x594780 align:1
+
+rescache_2:
+	.text       start:0x594780 end:0x594c30 align:1
+
+resagg:
+	.text       start:0x594c30 end:0x594cda align:1
+
+refacc:
+	.text       start:0x594ce0 end:0x595010 align:1
+
+resacc:
+	.text       start:0x595010 end:0x595340 align:1
+
+resfile:
+	.text       start:0x595340 end:0x595ba0 align:1
+
+resthred:
+	.text       start:0x595ba0 end:0x595c00 align:1
+
+res:
+	.text       start:0x595c00 end:0x595d90 align:1
+
+resload:
+	.text       start:0x595d90 end:0x596040 align:1
+
+pkzip:
+	.text       start:0x596040 end:0x596300 align:1
+
+lzw:
+	.text       start:0x596300 end:0x596b90 align:1
+
+resbuild:
+	.text       start:0x596b90 end:0x596be0 align:1
+
+rescback:
+	.text       start:0x596be0 end:0x596c60 align:1
+
+kbcntry:
+	.text       start:0x596c60 end:0x596de0 align:1
+
+mousesys:
+	.text       start:0x596de0 end:0x597740 align:1
+
+inpinit:
+	.text       start:0x597740 end:0x59781f align:1
+
+inpman:
+	.text       start:0x597820 end:0x597c80 align:1
+
+kbcook:
+	.text       start:0x597c80 end:0x597fa0 align:1
+
+inpcompo:
+	.text       start:0x597fa0 end:0x598069 align:1
+
+defehand:
+	.text       start:0x598070 end:0x5982a0 align:1
+
+kbstart:
+	.text       start:0x5982a0 end:0x5982bd align:1
+
+kbshut:
+	.text       start:0x5982c0 end:0x5982d4 align:1
+
+inpdynf:
+	.text       start:0x5982e0 end:0x598380 align:1
+
+joystick:
+	.text       start:0x598380 end:0x5989d0 align:1
+
+kbsys_1:
+	.text       start:0x5989d0 end:0x598ba0 align:1
+
+portal_2:
+	.text       start:0x598ba0 end:0x598bb0 align:1
+
+kbsys_2:
+	.text       start:0x598bb0 end:0x598dd0 align:1
+
+inperr:
+	.text       start:0x598dd0 end:0x598df0 align:1
+
+wgscreat:
+	.text       start:0x598df0 end:0x598eb0 align:1
+
+wgshell:
+	.text       start:0x598eb0 end:0x599ed0 align:1
+
+wgshelmt:
+	.text       start:0x599ed0 end:0x59a460 align:1
+
+winput:
+	.text       start:0x59a460 end:0x59ab30 align:1
+
+tmwin32:
+	.text       start:0x59ab30 end:0x59ae60 align:1
+
+rnd:
+	.text       start:0x59ae60 end:0x59aee0 align:1
+
+recorder:
+	.text       start:0x59aee0 end:0x59b940 align:1
+
+recprmpt:
+	.text       start:0x59b940 end:0x59b970 align:1
+
+cursors:
+	.text       start:0x59b970 end:0x59c490 align:1
+
+region:
+	.text       start:0x59c490 end:0x59d060 align:1
+
+hotkey:
+	.text       start:0x59d060 end:0x59d1d9 align:1
+
+event:
+	.text       start:0x59d1e0 end:0x59e370 align:1
+
+slab:
+	.text       start:0x59e370 end:0x59e410 align:1
+
+curdrw:
+	.text       start:0x59e410 end:0x59e794 align:1
+
+vmouse:
+	.text       start:0x59e7a0 end:0x59e7d0 align:1
+
+gadget:
+	.text       start:0x59e7d0 end:0x59f380 align:1
+
+gadblist:
+	.text       start:0x59f380 end:0x59f470 align:1
+
+uitexted:
+	.text       start:0x59f470 end:0x5a0460 align:1
+
+gadtext:
+	.text       start:0x5a0460 end:0x5a0570 align:1
+
+gcompose:
+	.text       start:0x5a0570 end:0x5a0860 align:1
+
+guistyle:
+	.text       start:0x5a0860 end:0x5a0b30 align:1
+
+drawelem:
+	.text       start:0x5a0b30 end:0x5a1660 align:1
+
+uibutton:
+	.text       start:0x5a1660 end:0x5a24a0 align:1
+
+util2d:
+	.text       start:0x5a24a0 end:0x5a26bc align:1
+
+dmixer:
+	.text       start:0x5a26c0 end:0x5a3870 align:1
+
+sndfmt:
+	.text       start:0x5a3870 end:0x5a3de0 align:1
+
+dsnddynf:
+	.text       start:0x5a3de0 end:0x5a3f20 align:1
+
+volconv:
+	.text       start:0x5a3f20 end:0x5a4100 align:1
+
+mixer:
+	.text       start:0x5a4100 end:0x5a54f0 align:1
+
+sample:
+	.text       start:0x5a54f0 end:0x5a6620 align:1
+
+dsample:
+	.text       start:0x5a6620 end:0x5a7980 align:1
+
+fade:
+	.text       start:0x5a7980 end:0x5a7cf0 align:1
+
+actmovie_1:
+	.text       start:0x5a7cf0 end:0x5a9460 align:1
+
+getlgvid:
+	.text       start:0x5a9460 end:0x5a9700 align:1
+
+imutil:
+	.text       start:0x5a9700 end:0x5a9f70 align:1
+
+amalloc:
+	.text       start:0x5a9f70 end:0x5aa8b0 align:1
+
+block:
+	.text       start:0x5aa8b0 end:0x5aa9c0 align:1
+
+prim:
+	.text       start:0x5aa9c0 end:0x5aaa90 align:1
+
+xfrmglob:
+	.text       start:0x5aaa90 end:0x5aaae0 align:1
+
+clip_2:
+	.text       start:0x5aaae0 end:0x5aab80 align:1
+
+init_3:
+	.text       start:0x5aab80 end:0x5aac50 align:1
+
+frame:
+	.text       start:0x5aac50 end:0x5aaca0 align:1
+
+object:
+	.text       start:0x5aaca0 end:0x5aafa0 align:1
+
+ctxtmang:
+	.text       start:0x5aafa0 end:0x5ab1f0 align:1
+
+space:
+	.text       start:0x5ab1f0 end:0x5ab980 align:1
+
+view:
+	.text       start:0x5ab980 end:0x5abe70 align:1
+
+primmisc:
+	.text       start:0x5abe70 end:0x5abf10 align:1
+
+clipglob:
+	.text       start:0x5abf10 end:0x5ad0b0 align:1
+
+primg2:
+	.text       start:0x5ad0b0 end:0x5ad23b align:1
+
+primd3d:
+	.text       start:0x5ad240 end:0x5ad325 align:1
+
+clipplan:
+	.text       start:0x5ad330 end:0x5ad420 align:1
+
+primfunc:
+	.text       start:0x5ad420 end:0x5ad5b0 align:1
+
+xfrmlin:
+	.text       start:0x5ad5b0 end:0x5ad6b0 align:1
+
+xfrmunsc:
+	.text       start:0x5ad6b0 end:0x5ad740 align:1
+
+xfrmproj:
+	.text       start:0x5ad740 end:0x5ad880 align:1
+
+xfrmclip:
+	.text       start:0x5ad880 end:0x5ad960 align:1
+
+ixmgr:
+	.text       start:0x5ad960 end:0x5ae070 align:1
+
+ctxtguts:
+	.text       start:0x5ae070 end:0x5ae1c0 align:1
+
+primconv:
+	.text       start:0x5ae1c0 end:0x5ae1f0 align:1
+
+primix:
+	.text       start:0x5ae1f0 end:0x5ae600 align:1
+
+primpoly:
+	.text       start:0x5ae600 end:0x5ae7e0 align:1
+
+clipunsc:
+	.text       start:0x5ae7e0 end:0x5ae8b0 align:1
+
+clipproj:
+	.text       start:0x5ae8b0 end:0x5aea00 align:1
+
+projfast:
+	.text       start:0x5aea00 end:0x5aec7c align:1
+
+clipclip:
+	.text       start:0x5aec80 end:0x5aed30 align:1
+
+primface:
+	.text       start:0x5aed30 end:0x5aedd0 align:1
+
+star:
+	.text       start:0x5aedd0 end:0x5af490 align:1
+
+mplist:
+	.text       start:0x5af490 end:0x5af640 align:1
+
+mpinit:
+	.text       start:0x5af640 end:0x5afdf0 align:1
+
+qt:
+	.text       start:0x5afdf0 end:0x5b04b0 align:1
+
+mpmot:
+	.text       start:0x5b04b0 end:0x5b0a40 align:1
+
+mpupdate:
+	.text       start:0x5b0a40 end:0x5b1810 align:1
+
+mpstack:
+	.text       start:0x5b1810 end:0x5b1fb0 align:1
+
+mpvm:
+	.text       start:0x5b1fb0 end:0x5b2700 align:1
+
+mploco:
+	.text       start:0x5b2700 end:0x5b27a0 align:1
+
+md_lgd3d:
+	.text       start:0x5b27a0 end:0x5b2820 align:1
+
+render_2:
+	.text       start:0x5b2820 end:0x5b4200 align:1
+
+light:
+	.text       start:0x5b4200 end:0x5b45c0 align:1
+
+hitdet:
+	.text       start:0x5b45c0 end:0x5b4b60 align:1
+
+scale:
+	.text       start:0x5b4b60 end:0x5b4ecc align:1
+
+fancy:
+	.text       start:0x5b4ed0 end:0x5b5060 align:1
+
+utils:
+	.text       start:0x5b5060 end:0x5b50b0 align:1
+
+cbacks:
+	.text       start:0x5b50b0 end:0x5b53a0 align:1
+
+filefind:
+	.text       start:0x5b53a0 end:0x5b5530 align:1
+
+pcxdump:
+	.text       start:0x5b5530 end:0x5b5930 align:1
+
+vec2_2:
+	.text       start:0x5b5930 end:0x5b5a00 align:1
+
+gloopcli_1:
+	.text       start:0x5b5a00 end:0x5b5a30 align:1
+
+loopman_1:
+	.text       start:0x5b5a30 end:0x5b5a90 align:1
+
+gloopcli_2:
+	.text       start:0x5b5a90 end:0x5b5ac0 align:1
+
+avatar_2:
+	.text       start:0x5b5ac0 end:0x5b5ad0 align:1
+
+gloopcli_3:
+	.text       start:0x5b5ad0 end:0x5b5af0 align:1
+
+loopfact_2:
+	.text       start:0x5b5af0 end:0x5b6120 align:1
+
+loopman_2:
+	.text       start:0x5b6120 end:0x5b6190 align:1
+
+actmovie_2:
+	.text       start:0x5b6190 end:0x5b61c0 align:1
+
+loopman_3:
+	.text       start:0x5b61c0 end:0x5b73f0 align:1
+
+loopmode:
+	.text       start:0x5b73f0 end:0x5b7590 align:1
+
+loopdisp:
+	.text       start:0x5b7590 end:0x5b7ef0 align:1
+
+loopque:
+	.text       start:0x5b7ef0 end:0x5b7f70 align:1
+
+d6intfc:
+	.text       start:0x5b7f70 end:0x5b8dd0 align:1
+
+d6enum:
+	.text       start:0x5b8dd0 end:0x5b92c2 align:1
+
+texmgr:
+	.text       start:0x5b92d0 end:0x5b9b93 align:1
+
+d6sts_s_1:
+	.text       start:0x5b9ba0 end:0x5be890 align:1
+
+d6frame:
+	.text       start:0x5be890 end:0x5befe7 align:1
+
+d6render:
+	.text       start:0x5beff0 end:0x5bf480 align:1
+
+d6prim_s:
+	.text       start:0x5bf480 end:0x5c4550 align:1
+
+d6base:
+	.text       start:0x5c4550 end:0x5c4570 align:1
+
+d6over_1:
+	.text       start:0x5c4570 end:0x5c4660 align:1
+
+render_3:
+	.text       start:0x5c4660 end:0x5c4bf0 align:1
+
+d6over_2:
+	.text       start:0x5c4bf0 end:0x5c4c00 align:1
+
+render_4:
+	.text       start:0x5c4c00 end:0x5c5770 align:1
+
+sortpoly:
+	.text       start:0x5c5770 end:0x5c58e0 align:1
+
+xformseg:
+	.text       start:0x5c58e0 end:0x5c6460 align:1
+
+debug:
+	.text       start:0x5c6460 end:0x5c6600 align:1
+
+scrptman:
+	.text       start:0x5c6600 end:0x5c96c8 align:1
+
+scrptmsg:
+	.text       start:0x5c96d0 end:0x5c9940 align:1
+
+persist:
+	.text       start:0x5c9940 end:0x5c9dc0 align:1
+
+multparm:
+	.text       start:0x5c9dc0 end:0x5c9df0 align:1
+
+scrobj:
+	.text       start:0x5c9df0 end:0x5ca570 align:1
+
+smodinfo:
+	.text       start:0x5ca570 end:0x5ca680 align:1
+
+scrptmod:
+	.text       start:0x5ca680 end:0x5ca730 align:1
+
+nullsrv_1:
+	.text       start:0x5ca730 end:0x5ca826 align:1
+
+darkai_4:
+	.text       start:0x5ca826 end:0x5ca840 align:1
+
+nullsrv_2:
+	.text       start:0x5ca840 end:0x5ca8c0 align:1
+
+sndsrc:
+	.text       start:0x5ca8c0 end:0x5cad20 align:1
+
+playlist:
+	.text       start:0x5cad20 end:0x5cbbc0 align:1
+
+refill:
+	.text       start:0x5cbbc0 end:0x5cbef0 align:1
+
+nrezseg_1:
+	.text       start:0x5cbef0 end:0x5cbf40 align:1
+
+memseg_1:
+	.text       start:0x5cbf40 end:0x5cbf60 align:1
+
+nrezseg_2:
+	.text       start:0x5cbf60 end:0x5cbf90 align:1
+
+memseg_2:
+	.text       start:0x5cbf90 end:0x5cbff0 align:1
+
+fileseg:
+	.text       start:0x5cbff0 end:0x5cc0e0 align:1
+
+rezseg:
+	.text       start:0x5cc0e0 end:0x5cc180 align:1
+
+sndseg:
+	.text       start:0x5cc180 end:0x5cc610 align:1
+
+imaadpcm:
+	.text       start:0x5cc610 end:0x5cc950 align:1
+
+refsys:
+	.text       start:0x5cc950 end:0x5ccfb0 align:1
+
+sdestool:
+	.text       start:0x5ccfb0 end:0x5cda20 align:1
+
+menus_2:
+	.text       start:0x5cda20 end:0x5cdc90 align:1
+
+sdesc:
+	.text       start:0x5cdc90 end:0x5ceea0 align:1
+
+arq_1:
+	.text       start:0x5ceea0 end:0x5cef50 align:1
+
+hashset_2:
+	.text       start:0x5cef50 end:0x5cef60 align:1
+
+arq_2:
+	.text       start:0x5cef60 end:0x5cf5e0 align:1
+
+arqthred:
+	.text       start:0x5cf5e0 end:0x5cf710 align:1
+
+arqqueue:
+	.text       start:0x5cf710 end:0x5cf9c0 align:1
+
+arqreq:
+	.text       start:0x5cf9c0 end:0x5cfd40 align:1
+
+arqstrrd:
+	.text       start:0x5cfd40 end:0x5cfe40 align:1
+
+ibvarman:
+	.text       start:0x5cfe40 end:0x5d3f00 align:1
+
+inputbnd_2:
+	.text       start:0x5d3f00 end:0x5d4908 align:1
+
+ibmapper:
+	.text       start:0x5d4908 end:0x5d9c50 align:1
+
+resman:
+	.text       start:0x5d9c50 end:0x5db8c8 align:1
+
+mdlrstyp:
+	.text       start:0x5db8c8 end:0x5db940 align:1
+
+fonrstyp:
+	.text       start:0x5db940 end:0x5db9e0 align:1
+
+sndrstyp:
+	.text       start:0x5db9e0 end:0x5dbac0 align:1
+
+strrstyp:
+	.text       start:0x5dbac0 end:0x5dbb70 align:1
+
+imgrstyp:
+	.text       start:0x5dbb70 end:0x5dbca0 align:1
+
+geniset:
+	.text       start:0x5dbca0 end:0x5dbd00 align:1
+
+palrstyp:
+	.text       start:0x5dbd00 end:0x5dbe2f align:1
+
+imghack:
+	.text       start:0x5dbe30 end:0x5dc050 align:1
+
+defresm:
+	.text       start:0x5dc050 end:0x5dc120 align:1
+
+resmanhs:
+	.text       start:0x5dc120 end:0x5dc8e0 align:1
+
+resmanx:
+	.text       start:0x5dc8e0 end:0x5dd000 align:1
+
+resarq_2:
+	.text       start:0x5dd000 end:0x5dd1b0 align:1
+
+resarq_3:
+	.text       start:0x5dd1b0 end:0x5dd1e0 align:1
+
+resarq_4:
+	.text       start:0x5dd1e0 end:0x5ddf10 align:1
+
+pg8rnull_2:
+	.text       start:0x5ddf10 end:0x5ddf30 align:1
+
+zipstfct:
+	.text       start:0x5ddf30 end:0x5de0a0 align:1
+
+storeman_1:
+	.text       start:0x5de0a0 end:0x5de190 align:1
+
+resarq_5:
+	.text       start:0x5de190 end:0x5de1f0 align:1
+
+storeman_2:
+	.text       start:0x5de1f0 end:0x5de850 align:1
+
+binrstyp:
+	.text       start:0x5de850 end:0x5de8d0 align:1
+
+pathutil:
+	.text       start:0x5de8d0 end:0x5dea40 align:1
+
+search:
+	.text       start:0x5dea40 end:0x5df730 align:1
+
+stdres_1:
+	.text       start:0x5df730 end:0x5dfd20 align:1
+
+resstr_1:
+	.text       start:0x5dfd20 end:0x5dfdb0 align:1
+
+stdres_2:
+	.text       start:0x5dfdb0 end:0x5e0036 align:1
+
+resstr_2:
+	.text       start:0x5e0036 end:0x5e00f0 align:1
+
+stdres_3:
+	.text       start:0x5e00f0 end:0x5e0130 align:1
+
+resstr_3:
+	.text       start:0x5e0130 end:0x5e0220 align:1
+
+stdres_4:
+	.text       start:0x5e0220 end:0x5e023a align:1
+
+resstr_4:
+	.text       start:0x5e023a end:0x5e024a align:1
+
+stdres_5:
+	.text       start:0x5e024a end:0x5e026a align:1
+
+resstr_5:
+	.text       start:0x5e026a end:0x5e11e0 align:1
+
+stdres_6:
+	.text       start:0x5e11e0 end:0x5e1270 align:1
+
+resstr_6:
+	.text       start:0x5e1270 end:0x5e12d0 align:1
+
+stdres_7:
+	.text       start:0x5e12d0 end:0x5e1310 align:1
+
+resstr_7:
+	.text       start:0x5e1310 end:0x5e1410 align:1
+
+stdres_8:
+	.text       start:0x5e1410 end:0x5e1440 align:1
+
+resstr_8:
+	.text       start:0x5e1440 end:0x5e1490 align:1
+
+stdres_9:
+	.text       start:0x5e1490 end:0x5e14c0 align:1
+
+resstr_9:
+	.text       start:0x5e14c0 end:0x5e14fa align:1
+
+stdres_10:
+	.text       start:0x5e14fa end:0x5e151a align:1
+
+restmpl:
+	.text       start:0x5e1520 end:0x5e15a0 align:1
+
+resimage_1:
+	.text       start:0x5e15a0 end:0x5e1740 align:1
+
+respall_1:
+	.text       start:0x5e1740 end:0x5e1820 align:1
+
+resimage_2:
+	.text       start:0x5e1820 end:0x5e1920 align:1
+
+respall_2:
+	.text       start:0x5e1920 end:0x5e1a40 align:1
+
+storezip_1:
+	.text       start:0x5e1a40 end:0x5e2310 align:1
+
+d6sts_s_2:
+	.text       start:0x5e2310 end:0x5e2320 align:1
+
+storezip_2:
+	.text       start:0x5e2320 end:0x5e2d80 align:1
+
+storbase_1:
+	.text       start:0x5e2d80 end:0x5e2daa align:1
+
+defstfct:
+	.text       start:0x5e2daa end:0x5e2f40 align:1
+
+storedir_1:
+	.text       start:0x5e2f40 end:0x5e3da0 align:1
+
+storezip_3:
+	.text       start:0x5e3da0 end:0x5e3e40 align:1
+
+storedir_2:
+	.text       start:0x5e3e40 end:0x5e4260 align:1
+
+storbase_2:
+	.text       start:0x5e4260 end:0x5e4680 align:1
+
+resutil:
+	.text       start:0x5e4680 end:0x5e46b0 align:1
+
+tga:
+	.text       start:0x5e46b0 end:0x5e4bf0 align:1
+
+pcx:
+	.text       start:0x5e4bf0 end:0x5e5030 align:1
+
+gif:
+	.text       start:0x5e5030 end:0x5e5840 align:1
+
+cel:
+	.text       start:0x5e5840 end:0x5e6010 align:1
+
+bmp:
+	.text       start:0x5e6010 end:0x5e6280 align:1
+
+zipstrm:
+	.text       start:0x5e6280 end:0x5e6ce0 align:1
+
+filestrm:
+	.text       start:0x5e6ce0 end:0x5e71d0 align:1
+
+inflate:
+	.text       start:0x5e71d0 end:0x5e77d4 align:1
+
+infblock:
+	.text       start:0x5e77e0 end:0x5e8650 align:1
+
+adler32:
+	.text       start:0x5e8650 end:0x5e877e align:1
+
+zutil:
+	.text       start:0x5e8780 end:0x5e87ac align:1
+
+infcodes:
+	.text       start:0x5e87b0 end:0x5e8fb0 align:1
+
+inftrees:
+	.text       start:0x5e8fb0 end:0x5e96f0 align:1
+
+infutil:
+	.text       start:0x5e96f0 end:0x5e9830 align:1
+
+inffast:
+	.text       start:0x5e9830 end:0x5e9bc0 align:1
+
+net_2:
+	.text       start:0x5e9bc0 end:0x5eb568 align:1
+
+xrandom:
+	.text       start:0x5eb570 end:0x5eb5a0 align:1
+
+rng:
+	.text       start:0x5eb5a0 end:0x5eb5fb align:1
+
+rngcong:
+	.text       start:0x5eb600 end:0x5eb6d0 align:1
+
+rngfib:
+	.text       start:0x5eb6d0 end:0x5eb850 align:1
+
+tagfile:
+	.text       start:0x5eb850 end:0x5ec260 align:1
+
+vernum:
+	.text       start:0x5ec260 end:0x5ec2b0 align:1
+
+entrywin:
+	.text       start:0x5ec2b0 end:0x5ec320 align:1
+
+delete:
+	.text       start:0x5ec320 end:0x5ec32b align:1
+
+rand_2:
+	.text       start:0x5ec32b end:0x5ec35a align:1
+
+fpinit:
+	.text       start:0x5ec35a end:0x5ec3aa align:1
+
+ftol:
+	.text       start:0x5ec3ac end:0x5ec3d3 align:1
+
+memmove:
+	.text       start:0x5ec3e0 end:0x5ec715 align:1
+
+strrchr:
+	.text       start:0x5ec720 end:0x5ec747 align:1
+
+strchr:
+	.text       start:0x5ec750 end:0x5ec81c align:1
+
+sprintf:
+	.text       start:0x5ec81c end:0x5ec86e align:1
+
+onexit:
+	.text       start:0x5ec86e end:0x5ec92d align:1
+
+new:
+	.text       start:0x5ec92d end:0x5ec93b align:1
+
+unlink:
+	.text       start:0x5ec93b end:0x5ec965 align:1
+
+fread:
+	.text       start:0x5ec965 end:0x5eca7c align:1
+
+fstat:
+	.text       start:0x5eca7c end:0x5ecd0f align:1
+
+fopen:
+	.text       start:0x5ecd0f end:0x5ecd53 align:1
+
+fwrite:
+	.text       start:0x5ecd53 end:0x5ece8c align:1
+
+fseek:
+	.text       start:0x5ece8c end:0x5ecf45 align:1
+
+ftell:
+	.text       start:0x5ecf45 end:0x5ed0c8 align:1
+
+fclose:
+	.text       start:0x5ed0c8 end:0x5ed145 align:1
+
+sscanf:
+	.text       start:0x5ed145 end:0x5ed179 align:1
+
+strncmp:
+	.text       start:0x5ed180 end:0x5ed1b8 align:1
+
+fgets:
+	.text       start:0x5ed1b8 end:0x5ed21a align:1
+
+strncpy:
+	.text       start:0x5ed220 end:0x5ed31e align:1
+
+isctype:
+	.text       start:0x5ed31e end:0x5ed393 align:1
+
+atox:
+	.text       start:0x5ed393 end:0x5ed429 align:1
+
+atof:
+	.text       start:0x5ed429 end:0x5ed480 align:1
+
+fwprintf:
+	.text       start:0x5ed480 end:0x5ed4bc align:1
+
+_ctype:
+	.text       start:0x5ed4bc end:0x5ed568 align:1
+
+floor:
+	.text       start:0x5ed568 end:0x5ed637 align:1
+
+strpbrk:
+	.text       start:0x5ed640 end:0x5ed67a align:1
+
+threadex:
+	.text       start:0x5ed67a end:0x5ed7b3 align:1
+
+_file:
+	.text       start:0x5ed7b3 end:0x5ed913 align:1
+
+wspawnvp:
+	.text       start:0x5ed913 end:0x5ed92a align:1
+
+strtol:
+	.text       start:0x5ed92a end:0x5edb2f align:1
+
+fgetc:
+	.text       start:0x5edb2f end:0x5edb60 align:1
+
+crt0dat:
+	.text       start:0x5edb60 end:0x5edc80 align:1
+
+strncat:
+	.text       start:0x5edc80 end:0x5edda3 align:1
+
+qsort:
+	.text       start:0x5edda3 end:0x5edf71 align:1
+
+toupper:
+	.text       start:0x5edf71 end:0x5ee0ac align:1
+
+acos:
+	.text       start:0x5ee0b0 end:0x5ee17b align:1
+
+87fmod:
+	.text       start:0x5ee180 end:0x5ee1b2 align:1
+
+strtok:
+	.text       start:0x5ee1b2 end:0x5ee256 align:1
+
+bsearch:
+	.text       start:0x5ee256 end:0x5ee2e2 align:1
+
+chkstk:
+	.text       start:0x5ee2f0 end:0x5ee31f align:1
+
+snprintf:
+	.text       start:0x5ee31f end:0x5ee370 align:1
+
+gcvt:
+	.text       start:0x5ee370 end:0x5ee40a align:1
+
+asin:
+	.text       start:0x5ee410 end:0x5ee4db align:1
+
+pow:
+	.text       start:0x5ee4e0 end:0x5ee6fd align:1
+
+ceil:
+	.text       start:0x5ee6fd end:0x5ee7cc align:1
+
+strstr:
+	.text       start:0x5ee7d0 end:0x5ee850 align:1
+
+wincrt0:
+	.text       start:0x5ee850 end:0x5ee9a1 align:1
+
+getenv:
+	.text       start:0x5ee9a1 end:0x5eea3f align:1
+
+findfile:
+	.text       start:0x5eea3f end:0x5eeb90 align:1
+
+strspn:
+	.text       start:0x5eeb90 end:0x5eebce align:1
+
+strcspn:
+	.text       start:0x5eebd0 end:0x5eec0e align:1
+
+vsnprint:
+	.text       start:0x5eec0e end:0x5eec5e align:1
+
+stat:
+	.text       start:0x5eec5e end:0x5eefd1 align:1
+
+stati64:
+	.text       start:0x5eefd1 end:0x5ef041 align:1
+
+dosmap:
+	.text       start:0x5ef041 end:0x5ef0c6 align:1
+
+tolower:
+	.text       start:0x5ef0c6 end:0x5ef200 align:1
+
+drive:
+	.text       start:0x5ef200 end:0x5ef243 align:1
+
+getcwd:
+	.text       start:0x5ef243 end:0x5ef39f align:1
+
+rename:
+	.text       start:0x5ef39f end:0x5ef3cd align:1
+
+localtim:
+	.text       start:0x5ef3cd end:0x5ef52d align:1
+
+time:
+	.text       start:0x5ef52d end:0x5ef609 align:1
+
+asctime:
+	.text       start:0x5ef609 end:0x5ef6fb align:1
+
+tidtable:
+	.text       start:0x5ef6fb end:0x5ef869 align:1
+
+fp8:
+	.text       start:0x5ef869 end:0x5ef87b align:1
+
+testfdiv:
+	.text       start:0x5ef87b end:0x5ef8e2 align:1
+
+cvt:
+	.text       start:0x5ef8e2 end:0x5efd08 align:1
+
+_flsbuf:
+	.text       start:0x5efd08 end:0x5efe20 align:1
+
+output:
+	.text       start:0x5efe20 end:0x5f062a align:1
+
+_filbuf:
+	.text       start:0x5f062a end:0x5f0706 align:1
+
+read:
+	.text       start:0x5f0706 end:0x5f0944 align:1
+
+memcpy:
+	.text       start:0x5f0950 end:0x5f0c85 align:1
+
+dtoxtime:
+	.text       start:0x5f0c85 end:0x5f0d47 align:1
+
+osfinfo:
+	.text       start:0x5f0d47 end:0x5f1028 align:1
+
+ioinit:
+	.text       start:0x5f1028 end:0x5f11e4 align:1
+
+_open:
+	.text       start:0x5f11e4 end:0x5f1354 align:1
+
+stream:
+	.text       start:0x5f1354 end:0x5f141c align:1
+
+write:
+	.text       start:0x5f141c end:0x5f160c align:1
+
+fflush:
+	.text       start:0x5f160c end:0x5f1772 align:1
+
+lseek:
+	.text       start:0x5f1772 end:0x5f184a align:1
+
+close:
+	.text       start:0x5f184a end:0x5f192a align:1
+
+_freebuf:
+	.text       start:0x5f192a end:0x5f1955 align:1
+
+input:
+	.text       start:0x5f1955 end:0x5f2406 align:1
+
+strlen:
+	.text       start:0x5f2410 end:0x5f248b align:1
+
+_sftbuf:
+	.text       start:0x5f248b end:0x5f2542 align:1
+
+a_str:
+	.text       start:0x5f2542 end:0x5f268b align:1
+
+llmul:
+	.text       start:0x5f2690 end:0x5f26c4 align:1
+
+cfin:
+	.text       start:0x5f26c4 end:0x5f2743 align:1
+
+fpexcept:
+	.text       start:0x5f2743 end:0x5f2dfb align:1
+
+frnd:
+	.text       start:0x5f2dfb end:0x5f2e0d align:1
+
+util:
+	.text       start:0x5f2e0d end:0x5f2f51 align:1
+
+fpctrl:
+	.text       start:0x5f2f51 end:0x5f2fe7 align:1
+
+winxfltr:
+	.text       start:0x5f2fe7 end:0x5f315f align:1
+
+exsup:
+	.text       start:0x5f3160 end:0x5f324e align:1
+
+exsup3:
+	.text       start:0x5f3250 end:0x5f3330 align:1
+
+closeall:
+	.text       start:0x5f3330 end:0x5f33b1 align:1
+
+mlock:
+	.text       start:0x5f33b1 end:0x5f3450 align:1
+
+a_map:
+	.text       start:0x5f3450 end:0x5f369f align:1
+
+87disp:
+	.text       start:0x5f36a0 end:0x5f386a align:1
+
+genexcep:
+	.text       start:0x5f3870 end:0x5f38c3 align:1
+
+common:
+	.text       start:0x5f38d0 end:0x5f3a5c align:1
+
+87cdisp:
+	.text       start:0x5f3a60 end:0x5f3cca align:1
+
+adj_fdiv:
+	.text       start:0x5f3cd0 end:0x5f4a5b align:1
+
+cfout:
+	.text       start:0x5f4a5b end:0x5f4b6d align:1
+
+87tran:
+	.text       start:0x5f4b70 end:0x5f4d77 align:1
+
+powhlp:
+	.text       start:0x5f4d77 end:0x5f4f0c align:1
+
+wincmdln:
+	.text       start:0x5f4f0c end:0x5f4f64 align:1
+
+stdenvp:
+	.text       start:0x5f4f64 end:0x5f501d align:1
+
+stdargv:
+	.text       start:0x5f501d end:0x5f526a align:1
+
+a_env:
+	.text       start:0x5f526a end:0x5f539c align:1
+
+crt0msg:
+	.text       start:0x5f539c end:0x5f5528 align:1
+
+mbsnbico:
+	.text       start:0x5f5528 end:0x5f5567 align:1
+
+wtombenv:
+	.text       start:0x5f5567 end:0x5f55d5 align:1
+
+strcat:
+	.text       start:0x5f55e0 end:0x5f56d0 align:1
+
+mbsicmp:
+	.text       start:0x5f56d0 end:0x5f5865 align:1
+
+mbsrchr:
+	.text       start:0x5f5865 end:0x5f58d7 align:1
+
+fullpath:
+	.text       start:0x5f58d7 end:0x5f597c align:1
+
+mbtolwr:
+	.text       start:0x5f597c end:0x5f59f7 align:1
+
+mbspbrk:
+	.text       start:0x5f59f7 end:0x5f5a8c align:1
+
+tzset:
+	.text       start:0x5f5a8c end:0x5f604e align:1
+
+gmtime:
+	.text       start:0x5f604e end:0x5f6158 align:1
+
+ieee87:
+	.text       start:0x5f6158 end:0x5f62be align:1
+
+intrncvt:
+	.text       start:0x5f62be end:0x5f66aa align:1
+
+_fptostr:
+	.text       start:0x5f66aa end:0x5f6721 align:1
+
+memset:
+	.text       start:0x5f6730 end:0x5f6788 align:1
+
+crt0fp:
+	.text       start:0x5f6788 end:0x5f6791 align:1
+
+_getbuf:
+	.text       start:0x5f6791 end:0x5f67d5 align:1
+
+isatty:
+	.text       start:0x5f67d5 end:0x5f67fe align:1
+
+wctomb:
+	.text       start:0x5f67fe end:0x5f68c0 align:1
+
+ulldiv:
+	.text       start:0x5f68c0 end:0x5f6928 align:1
+
+ullrem:
+	.text       start:0x5f6930 end:0x5f69a5 align:1
+
+open_2:
+	.text       start:0x5f69a5 end:0x5f6c8b align:1
+
+commit:
+	.text       start:0x5f6c8b end:0x5f6d1e align:1
+
+mbtowc:
+	.text       start:0x5f6d1e end:0x5f6e44 align:1
+
+llshl:
+	.text       start:0x5f6e50 end:0x5f6e6f align:1
+
+ungetc:
+	.text       start:0x5f6e6f end:0x5f6edd align:1
+
+strgtold:
+	.text       start:0x5f6edd end:0x5f73ae align:1
+
+matherr:
+	.text       start:0x5f73ae end:0x5f73b1 align:1
+
+strcmp:
+	.text       start:0x5f73c0 end:0x5f7444 align:1
+
+87except:
+	.text       start:0x5f7444 end:0x5f7514 align:1
+
+x10fout:
+	.text       start:0x5f7514 end:0x5f77a7 align:1
+
+ieeemisc:
+	.text       start:0x5f77a7 end:0x5f7839 align:1
+
+ismbbyte:
+	.text       start:0x5f7839 end:0x5f787b align:1
+
+mbctype:
+	.text       start:0x5f787b end:0x5f7c6f align:1
+
+crtmbox:
+	.text       start:0x5f7c6f end:0x5f7cf8 align:1
+
+a_cmp:
+	.text       start:0x5f7cf8 end:0x5f7f75 align:1
+
+setenv:
+	.text       start:0x5f7f75 end:0x5f81bb align:1
+
+stricmp:
+	.text       start:0x5f81c0 end:0x5f8290 align:1
+
+mantold:
+	.text       start:0x5f8290 end:0x5f8431 align:1
+
+chsize:
+	.text       start:0x5f8431 end:0x5f8556 align:1
+
+tenpow:
+	.text       start:0x5f8556 end:0x5f87f2 align:1
+
+xtoa:
+	.text       start:0x5f87f2 end:0x5f88a5 align:1
+
+strnicmp:
+	.text       start:0x5f88b0 end:0x5f89b1 align:1
+
+mbschr:
+	.text       start:0x5f89b1 end:0x5f8a48 align:1
+
+strdup:
+	.text       start:0x5f8a48 end:0x5f8a73 align:1
+
+setmode:
+	.text       start:0x5f8a73 end:0x5f8ad4 align:1
+
+codewrit:
+	.text       start:0x5f8ae0 end:0x5f8ba0 align:1
+
+thrdtool:
+	.text       start:0x5f8ba0 end:0x5f8ec0 align:1
+
+lglog:
+	.text       start:0x5f8ec0 end:0x5f9330 align:1
+
+handler:
+	.text       start:0x5f9330 end:0x5f9340 align:1
+
+transasm:
+	.text       start:0x5f9340 end:0x5f93c1 align:1
+
+fix_pow:
+	.text       start:0x5f93d0 end:0x5f9480 align:1
+
+hash:
+	.text       start:0x5f9480 end:0x5f9b20 align:1
+
+rect:
+	.text       start:0x5f9b20 end:0x5f9c20 align:1
+
+array:
+	.text       start:0x5f9c20 end:0x5f9e00 align:1
+
+pdynarr:
+	.text       start:0x5f9e00 end:0x5f9e1f align:1
+
+relocptr:
+	.text       start:0x5f9e20 end:0x5f9f00 align:1
+
+comconn:
+	.text       start:0x5f9f00 end:0x5fa0d0 align:1
+
+init_4:
+	.text       start:0x5fa0d0 end:0x5fa16f align:1
+
+hflip:
+	.text       start:0x5fa170 end:0x5fa1d6 align:1
+
+astring:
+	.text       start:0x5fa1e0 end:0x5fa37e align:1
+
+stastk:
+	.text       start:0x5fa380 end:0x5fa410 align:1
+
+cominit:
+	.text       start:0x5fa410 end:0x5fa4c0 align:1
+
+ddevblt:
+	.text       start:0x5fa4c0 end:0x5fa550 align:1
+
+f16lin:
+	.text       start:0x5fa550 end:0x5fa5b0 align:1
+
+f16bm:
+	.text       start:0x5fa5b0 end:0x5fa600 align:1
+
+f16pix:
+	.text       start:0x5fa600 end:0x5fa6d0 align:1
+
+lpix:
+	.text       start:0x5fa6d0 end:0x5fa7e0 align:1
+
+fl8lin_2:
+	.text       start:0x5fa7e0 end:0x5fa840 align:1
+
+fl8bm:
+	.text       start:0x5fa840 end:0x5fa890 align:1
+
+fl8pix:
+	.text       start:0x5fa890 end:0x5fa920 align:1
+
+f16hlin:
+	.text       start:0x5fa920 end:0x5faac0 align:1
+
+f16vlin:
+	.text       start:0x5faac0 end:0x5facb0 align:1
+
+f16rsd8:
+	.text       start:0x5facb0 end:0x5fae70 align:1
+
+genf16u:
+	.text       start:0x5fae70 end:0x5faf90 align:1
+
+f16f16:
+	.text       start:0x5faf90 end:0x5fb170 align:1
+
+f16fl8:
+	.text       start:0x5fb170 end:0x5fb400 align:1
+
+genfl8u:
+	.text       start:0x5fb400 end:0x5fb550 align:1
+
+f16mono:
+	.text       start:0x5fb550 end:0x5fb800 align:1
+
+genbm:
+	.text       start:0x5fb800 end:0x5fb840 align:1
+
+genmonou:
+	.text       start:0x5fb840 end:0x5fba00 align:1
+
+f16pix8:
+	.text       start:0x5fba00 end:0x5fbb40 align:1
+
+f16pix16:
+	.text       start:0x5fbb40 end:0x5fbc40 align:1
+
+fl8hlin:
+	.text       start:0x5fbc40 end:0x5fbde0 align:1
+
+fl8vlin:
+	.text       start:0x5fbde0 end:0x5fbf70 align:1
+
+fl8rsd8:
+	.text       start:0x5fbf70 end:0x5fbfb0 align:1
+
+fl8fl8:
+	.text       start:0x5fbfb0 end:0x5fc220 align:1
+
+fl8mono:
+	.text       start:0x5fc220 end:0x5fc4d0 align:1
+
+fl8pix8:
+	.text       start:0x5fc4d0 end:0x5fc5b0 align:1
+
+f16set:
+	.text       start:0x5fc5b0 end:0x5fc60e align:1
+
+f16f16c:
+	.text       start:0x5fc610 end:0x5fc6fd align:1
+
+rsdblt16:
+	.text       start:0x5fc700 end:0x5fc891 align:1
+
+f16fl8il:
+	.text       start:0x5fc8a0 end:0x5fc930 align:1
+
+cstring:
+	.text       start:0x5fc930 end:0x5fc9f6 align:1
+
+f16il:
+	.text       start:0x5fca00 end:0x5fcae1 align:1
+
+rsdblt8:
+	.text       start:0x5fcaf0 end:0x5fce8c align:1
+
+point:
+	.text       start:0x5fce90 end:0x5fcebe align:1
+
+cbchain:
+	.text       start:0x5fcec0 end:0x5fcf60 align:1
+
+recinput:
+	.text       start:0x5fcf60 end:0x5fd0e0 align:1
+
+joyold:
+	.text       start:0x5fd0e0 end:0x5fd3e0 align:1
+
+cliptest:
+	.text       start:0x5fd3e0 end:0x5fd4d0 align:1
+
+mipmap_2:
+	.text       start:0x5fd4d0 end:0x5fd510 align:1
+
+import_thunks:
+	.text       start:0x5fd510 end:0x5fd516 align:1
+
+strlwr:
+	.text       start:0x5fd516 end:0x5fd64a align:1
+
+mkdir:
+	.text       start:0x5fd64a end:0x5fd676 align:1
+
+getch:
+	.text       start:0x5fd676 end:0x5fd823 align:1
+
+eof:
+	.text       start:0x5fd823 end:0x5fd8b8 align:1
+
+tell:
+	.text       start:0x5fd8b8 end:0x5fd8c9 align:1
+
+flength:
+	.text       start:0x5fd8c9 end:0x5fd953 align:1
+
+fileno:
+	.text       start:0x5fd953 end:0x5fd95b align:1
+
+setbuf:
+	.text       start:0x5fd95b end:0x5fd980 align:1
+
+initcon:
+	.text       start:0x5fd980 end:0x5fd9cc align:1
+
+setvbuf:
+	.text       start:0x5fd9cc end:0x5fda7b align:1
+
+access:
+	.text       start:0x5fda80 end:0x5fdac6 align:1
+
+main:
+	lgalloc     start:0x5fe000 end:0x5fe110 align:1
+
+memall:
+	lgalloc     start:0x5fe110 end:0x5fe150 align:1
+
+memcore:
+	lgalloc     start:0x5fe150 end:0x5fe560 align:1
+
+multpool:
+	lgalloc     start:0x5fe560 end:0x5fea10 align:1
+
+stdalloc:
+	lgalloc     start:0x5fea10 end:0x5feaf0 align:1
+
+primallc:
+	lgalloc     start:0x5feaf0 end:0x5fefa0 align:1
+
+heap:
+	lgalloc     start:0x5fefa0 end:0x5ff410 align:1
+
+poolimp:
+	lgalloc     start:0x5ff410 end:0x5ff5a0 align:1
+
+membase:
+	lgalloc     start:0x5ff5a0 end:0x5ff620 align:1
+
+resmem:
+	lgalloc     start:0x5ff650 end:0x5ff7b0 align:1
+

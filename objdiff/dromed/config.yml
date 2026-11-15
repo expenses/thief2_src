@@ -1,0 +1,353 @@
+name: dromed
+object: ../../reference/dromed.exe
+splits: splits.txt
+symbols: symbols.txt
+fill_gaps: true
+function_sections: false
+block_relocations:
+  - source: .text:0x0041931F
+    end: .text:0x00419323
+  - source: .text:0x004362A8
+    end: .text:0x004362AC
+  - source: .text:0x0043925E
+    end: .text:0x00439262
+  - source: .text:0x0044680E
+    end: .text:0x00446812
+  - source: .text:0x0044682A
+    end: .text:0x0044682E
+  - source: .text:0x00447ABD
+    end: .text:0x00447AC1
+  - source: .text:0x00448FE6
+    end: .text:0x00448FEA
+  - source: .text:0x0044A76D
+    end: .text:0x0044A771
+  - source: .text:0x0044AE8E
+    end: .text:0x0044AE92
+  - source: .text:0x0044DE0E
+    end: .text:0x0044DE12
+  - source: .text:0x0044EC24
+    end: .text:0x0044EC28
+  - source: .text:0x00453FE8
+    end: .text:0x00453FEC
+  - source: .text:0x00453FF0
+    end: .text:0x00453FF4
+  - source: .text:0x004540C9
+    end: .text:0x004540CD
+  - source: .text:0x004540D3
+    end: .text:0x004540D7
+  - source: .text:0x00459E4B
+    end: .text:0x00459E4F
+  - source: .text:0x004668A9
+    end: .text:0x004668AD
+  - source: .text:0x004668D0
+    end: .text:0x004668D4
+  - source: .text:0x0046E0BF
+    end: .text:0x0046E0C3
+  - source: .text:0x00470952
+    end: .text:0x00470956
+  - source: .text:0x004709DA
+    end: .text:0x004709DE
+  - source: .text:0x00470B16
+    end: .text:0x00470B1A
+  - source: .text:0x00470B38
+    end: .text:0x00470B3C
+  - source: .text:0x00470B8D
+    end: .text:0x00470B91
+  - source: .text:0x00470BB9
+    end: .text:0x00470BBD
+  - source: .text:0x00470C26
+    end: .text:0x00470C2A
+  - source: .text:0x00470C41
+    end: .text:0x00470C45
+  - source: .text:0x00470CE7
+    end: .text:0x00470CEB
+  - source: .text:0x00470DB8
+    end: .text:0x00470DBC
+  - source: .text:0x00470E58
+    end: .text:0x00470E5C
+  - source: .text:0x00470E87
+    end: .text:0x00470E8B
+  - source: .text:0x00470F6B
+    end: .text:0x00470F6F
+  - source: .text:0x00477B53
+    end: .text:0x00477B57
+  - source: .text:0x00477DA3
+    end: .text:0x00477DA7
+  - source: .text:0x0047987B
+    end: .text:0x0047987F
+  - source: .text:0x0047CE83
+    end: .text:0x0047CE87
+  - source: .text:0x0047D005
+    end: .text:0x0047D009
+  - source: .text:0x00483403
+    end: .text:0x00483407
+  - source: .text:0x00483496
+    end: .text:0x0048349A
+  - source: .text:0x00485E82
+    end: .text:0x00485E86
+  - source: .text:0x004885D2
+    end: .text:0x004885D6
+  - source: .text:0x0048860C
+    end: .text:0x00488610
+  - source: .text:0x0048AD02
+    end: .text:0x0048AD06
+  - source: .text:0x004C2A28
+    end: .text:0x004C2A2C
+  - source: .text:0x004C2A3B
+    end: .text:0x004C2A3F
+  - source: .text:0x004C2A57
+    end: .text:0x004C2A5B
+  - source: .text:0x004C2A65
+    end: .text:0x004C2A69
+  - source: .text:0x004D6F48
+    end: .text:0x004D6F4C
+  - source: .text:0x004DABBB
+    end: .text:0x004DABBF
+  - source: .text:0x004DAF65
+    end: .text:0x004DAF69
+  - source: .text:0x004DB345
+    end: .text:0x004DB349
+  - source: .text:0x004EC720
+    end: .text:0x004EC724
+  - source: .text:0x005034E7
+    end: .text:0x005034EB
+  - source: .text:0x005035C3
+    end: .text:0x005035C7
+  - source: .text:0x00503758
+    end: .text:0x0050375C
+  - source: .text:0x005042E4
+    end: .text:0x005042E8
+  - source: .text:0x00535CE6
+    end: .text:0x00535CEA
+  - source: .text:0x00536249
+    end: .text:0x0053624D
+  - source: .text:0x0053D9FB
+    end: .text:0x0053D9FF
+  - source: .text:0x0053E90F
+    end: .text:0x0053E913
+  - source: .text:0x0053F46E
+    end: .text:0x0053F472
+  - source: .text:0x0053F49A
+    end: .text:0x0053F49E
+  - source: .text:0x0053F4FC
+    end: .text:0x0053F500
+  - source: .text:0x0053F591
+    end: .text:0x0053F595
+  - source: .text:0x0053F98F
+    end: .text:0x0053F993
+  - source: .text:0x00540044
+    end: .text:0x00540048
+  - source: .text:0x005400C9
+    end: .text:0x005400CD
+  - source: .text:0x00540F16
+    end: .text:0x00540F1A
+  - source: .text:0x0054126D
+    end: .text:0x00541271
+  - source: .text:0x00541E72
+    end: .text:0x00541E76
+  - source: .text:0x00541E90
+    end: .text:0x00541E94
+  - source: .text:0x0054512D
+    end: .text:0x00545131
+  - source: .text:0x00548605
+    end: .text:0x00548609
+  - source: .text:0x00548B7A
+    end: .text:0x00548B7E
+  - source: .text:0x0054922C
+    end: .text:0x00549230
+  - source: .text:0x00549270
+    end: .text:0x00549274
+  - source: .text:0x00549390
+    end: .text:0x00549394
+  - source: .text:0x00549ABB
+    end: .text:0x00549ABF
+  - source: .text:0x00549CDB
+    end: .text:0x00549CDF
+  - source: .text:0x0056C5A3
+    end: .text:0x0056C5A7
+  - source: .text:0x00589901
+    end: .text:0x00589905
+  - source: .text:0x005A165B
+    end: .text:0x005A165F
+  - source: .text:0x005A1668
+    end: .text:0x005A166C
+  - source: .text:0x005A360C
+    end: .text:0x005A3610
+  - source: .text:0x005A3635
+    end: .text:0x005A3639
+  - source: .text:0x005A4DA5
+    end: .text:0x005A4DA9
+  - source: .text:0x005A4DBF
+    end: .text:0x005A4DC3
+  - source: .text:0x005A4DC7
+    end: .text:0x005A4DCB
+  - source: .text:0x005A4DDB
+    end: .text:0x005A4DDF
+  - source: .text:0x005A4DE7
+    end: .text:0x005A4DEB
+  - source: .text:0x005A4DFF
+    end: .text:0x005A4E03
+  - source: .text:0x005A4E1A
+    end: .text:0x005A4E1E
+  - source: .text:0x005A4E22
+    end: .text:0x005A4E26
+  - source: .text:0x005A4E36
+    end: .text:0x005A4E3A
+  - source: .text:0x005A4E42
+    end: .text:0x005A4E46
+  - source: .text:0x005A4E56
+    end: .text:0x005A4E5A
+  - source: .text:0x005A4E5E
+    end: .text:0x005A4E62
+  - source: .text:0x005A4E79
+    end: .text:0x005A4E7D
+  - source: .text:0x005A4E81
+    end: .text:0x005A4E85
+  - source: .text:0x005A4E95
+    end: .text:0x005A4E99
+  - source: .text:0x005A4EA1
+    end: .text:0x005A4EA5
+  - source: .text:0x005A4EB5
+    end: .text:0x005A4EB9
+  - source: .text:0x005A4ECC
+    end: .text:0x005A4ED0
+  - source: .text:0x005A4ED4
+    end: .text:0x005A4ED8
+  - source: .text:0x005A4EE7
+    end: .text:0x005A4EEB
+  - source: .text:0x005A4EEE
+    end: .text:0x005A4EF2
+  - source: .text:0x005A4EF7
+    end: .text:0x005A4EFB
+  - source: .text:0x005A7956
+    end: .text:0x005A795A
+  - source: .text:0x005A795E
+    end: .text:0x005A7962
+  - source: .text:0x005A7982
+    end: .text:0x005A7986
+  - source: .text:0x005A7992
+    end: .text:0x005A7996
+  - source: .text:0x005A79C4
+    end: .text:0x005A79C8
+  - source: .text:0x005A79D7
+    end: .text:0x005A79DB
+  - source: .text:0x005A7AA1
+    end: .text:0x005A7AA5
+  - source: .text:0x005A7AE4
+    end: .text:0x005A7AE8
+  - source: .text:0x005A7B22
+    end: .text:0x005A7B26
+  - source: .text:0x005A8EEC
+    end: .text:0x005A8EF0
+  - source: .text:0x005A9B6F
+    end: .text:0x005A9B73
+  - source: .text:0x005A9D7F
+    end: .text:0x005A9D83
+  - source: .text:0x005A9D93
+    end: .text:0x005A9D97
+  - source: .text:0x005AA446
+    end: .text:0x005AA44A
+  - source: .text:0x005AA451
+    end: .text:0x005AA455
+  - source: .text:0x005AAD50
+    end: .text:0x005AAD54
+  - source: .text:0x005AAD5B
+    end: .text:0x005AAD5F
+  - source: .text:0x005B454F
+    end: .text:0x005B4553
+  - source: .text:0x005BDCCB
+    end: .text:0x005BDCCF
+  - source: .text:0x005BDD3F
+    end: .text:0x005BDD43
+  - source: .text:0x005C4959
+    end: .text:0x005C495D
+  - source: .text:0x005C4D0D
+    end: .text:0x005C4D11
+  - source: .text:0x005C8BD4
+    end: .text:0x005C8BD8
+  - source: .text:0x005CB3B7
+    end: .text:0x005CB3BB
+  - source: .text:0x005E7672
+    end: .text:0x005E7676
+  - source: .text:0x005E7EF8
+    end: .text:0x005E7EFC
+  - source: .text:0x00604E90
+    end: .text:0x00604E94
+  - source: .text:0x0061D92B
+    end: .text:0x0061D92F
+  - source: .text:0x0061D947
+    end: .text:0x0061D94B
+  - source: .text:0x0061FDBF
+    end: .text:0x0061FDC3
+  - source: .text:0x0062387F
+    end: .text:0x00623883
+  - source: .text:0x00624495
+    end: .text:0x00624499
+  - source: .text:0x006244DC
+    end: .text:0x006244E0
+  - source: .text:0x0062BD32
+    end: .text:0x0062BD36
+  - source: .text:0x0062BEE6
+    end: .text:0x0062BEEA
+  - source: .text:0x0062BF8C
+    end: .text:0x0062BF90
+  - source: .text:0x0062D12A
+    end: .text:0x0062D12E
+  - source: .text:0x0062D216
+    end: .text:0x0062D21A
+  - source: .text:0x0062F8C8
+    end: .text:0x0062F8CC
+  - source: .text:0x00630789
+    end: .text:0x0063078D
+  - source: .text:0x006307DE
+    end: .text:0x006307E2
+  - source: .text:0x00634842
+    end: .text:0x00634846
+  - source: .text:0x00634AA9
+    end: .text:0x00634AAD
+  - source: .text:0x0063A065
+    end: .text:0x0063A069
+  - source: .text:0x00643015
+    end: .text:0x00643019
+  - source: .text:0x0064301C
+    end: .text:0x00643020
+  - source: .text:0x0064FED4
+    end: .text:0x0064FED8
+  - source: .text:0x0064FF60
+    end: .text:0x0064FF64
+  - source: .text:0x0065065D
+    end: .text:0x00650661
+  - source: .text:0x0066254B
+    end: .text:0x0066254F
+  - source: .text:0x0066255C
+    end: .text:0x00662560
+  - source: .text:0x00663054
+    end: .text:0x00663058
+  - source: .text:0x006672AB
+    end: .text:0x006672AF
+  - source: .text:0x00669503
+    end: .text:0x00669507
+  - source: .text:0x00669679
+    end: .text:0x0066967D
+  - source: .text:0x0066A259
+    end: .text:0x0066A25D
+  - source: .text:0x0066B0D4
+    end: .text:0x0066B0D8
+  - source: .text:0x0066B281
+    end: .text:0x0066B285
+  - source: .text:0x0066CE57
+    end: .text:0x0066CE5B
+  - source: .text:0x0066CFE9
+    end: .text:0x0066CFED
+  - source: .text:0x0066DB19
+    end: .text:0x0066DB1D
+  - source: .text:0x0066FCB5
+    end: .text:0x0066FCB9
+  - source: .text:0x006984D7
+    end: .text:0x006984DB
+  - source: lgalloc:0x006AC75B
+    end: lgalloc:0x006AC75F
+  - source: lgalloc:0x006AC762
+    end: lgalloc:0x006AC766
+  - source: lgalloc:0x006AF4AB
+    end: lgalloc:0x006AF4AF
