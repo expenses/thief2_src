@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgbuild.c,v 1.8 2000/02/19 12:26:41 toml Exp $
 //
 // build the BSP tree by inserting brushes and filtering them down the tree
@@ -18,6 +17,7 @@
 #include <csgutil.h>
 #include <csgbrush.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 extern PortalPolyhedron *SplitPortalPolyhedronByPlane(PortalPolyhedron *s, BspPlane *clip, bool merge, bool set_plane);
@@ -245,7 +245,7 @@ static void compute_plane(PortalPolygon *p, BspPlane *plane)
       // a->b..d->c
       // do nothing
    } else {
-      Error(1, "csg@compute_plane: input brush polygon incorrectly wound.\n");
+      CsgError("csg@compute_plane: input brush polygon incorrectly wound.\n");
    }
    cross_prod((BspVertex *) plane, c, b, a);
    normalize((BspVertex *) plane);
@@ -314,7 +314,7 @@ static void PutVolumeInTree(void *tree, void *z)
    active = 0;
    InsertPortalPolyhedronInNode((BspNode *) tree, z);
    if (active)
-      Error(1, "Active list non-empty after inserting polyhedron.\n");
+      CsgError("Active list non-empty after inserting polyhedron.\n");
 }
 
 extern int brush_count, csg_clip_count;
@@ -336,6 +336,7 @@ void cid_insert_brush(int brushid, void *geom)
    ++brush_count;
    PutVolumeInTree(tree, geom);
    quiet_portalize_mem_reset();
+   cur_brush = 0;
 }
 
 void cid_register_brush_planes(PortalPolyhedron *geom)

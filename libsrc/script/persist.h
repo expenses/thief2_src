@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/persist.h,v 1.2 1999/06/29 19:10:57 mahk Exp $
 //
@@ -25,6 +24,9 @@
 
 
 typedef int (*tPersistIOFunc)(void * pContext, void * p, size_t size);
+typedef int (*tPersistObjRemapFunc)(int obj);
+
+extern tPersistObjRemapFunc g_pfnPersistObjRemap;
 
 
 struct sPersistent

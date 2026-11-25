@@ -25,6 +25,7 @@ enum {
    BMT_BANK24,
    BMT_TLUC8,
    BMT_FLAT32,
+   BMT_DXT,
    BMT_TYPES
 };
 /*
@@ -48,7 +49,15 @@ enum {
 #define BMF_DEVICE         (BMF_DEVICE_VIDMEM | BMF_DEVICE_SYSMEM)
 #define BMF_DEV_MUST_BLIT 0x10
 #define BMF_POW2          0x20
+#define BMF_NO_MIPMAP     0x40
 #define BMF_RELOCATABLE 0x8000
+#define BMF_DYNAMIC     0x1000
+#define BMF_MIPMAP      0x4000
+
+#define BMEF_NATIVE     0x02
+#define BMEF_HW2DCACHED 0x04
+#define BMEF_CUBEMAP    0x10
+#define BMEF_MIPMAPPED  0x20
 
 /* additional rgb format "flags" for upper 8 bits of flags field */
 #define BMF_RGB_INDEX    0x000
@@ -61,7 +70,15 @@ enum {
 #define BMF_RGB_4444     0x700
 #define BMF_RGB_1232     0x800
 
-#define gr_test_bitmap_format(bm, format) (((bm)->flags&0x7f00) == (format))
+#define BMF_RGB_MASK     0xf00
+#define BMF_DXT1         0x100
+#define BMF_DXT2         0x200
+#define BMF_DXT3         0x300
+#define BMF_DXT4         0x400
+#define BMF_DXT5         0x500
+#define BMF_RGB_A8       0xe00
+#define BMF_RGB_A4       0xf00
+#define gr_test_bitmap_format(bm, format) (((bm)->flags&BMF_RGB_MASK) == (format))
 #define gr_set_bitmap_format(bm, format) (bm)->flags = (ushort )(((bm)->flags&0x80ff)|(format))
 
 /* function prototypes for bitmap routines. */

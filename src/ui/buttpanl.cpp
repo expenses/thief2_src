@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/ui/buttpanl.cpp,v 1.12 1999/05/27 12:55:54 mahk Exp $
 #include <buttpanl.h>
 #include <string.h>
@@ -105,7 +104,7 @@ void cModalButtonPanel::cClient::SetupUI()
       ScrnModeGet(&mode); 
 
       mPaletteIdx = -1; 
-      if (mode.bitdepth == 16) // cursor is in its own palette
+      if (mode.bitdepth >= 16) // cursor is in its own palette
       {
          ConfigSpew("panel_spew",("We love to palettize \n")); 
 

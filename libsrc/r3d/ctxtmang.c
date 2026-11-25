@@ -8,6 +8,7 @@
 
 #include <_ctxt.h>
 #include <ctxtguts.h>
+#include <_xfrm.h>
 
 // this is responsible for maintaining the global current context pointer
 // as well as the correct updating of the flags and controls for the
@@ -22,6 +23,7 @@
 // static variables
 static r3s_context   _r3d_1st_ctxt;       // context to use for 1st alloc
 static bool          _r3d_1st_ctxt_inuse; // is my secret context in use
+static void         *_r3d_ctxt_pool;      // freed contexts for reuse
 
 // % modifies: static local variables _r3d_ctxt stack and depth
 // % effects : allocates the context stack, if size 0 doesnt
@@ -44,10 +46,22 @@ bool r3_init_context(int stack_depth)
 
 // % modifies: frees the context stack, if there is one
 // % effects : allows resource freeing by the context system
+static void _r3_ctxt_term(void)
+{
+   while (_r3d_ctxt_pool) {
+      void **p = (void **)_r3d_ctxt_pool;
+      _r3d_ctxt_pool = *p;
+      Free(p);
+   }
+}
+
 void r3_close_context(void)
 {
    if (r3d_state.stack_depth)
       Free(r3d_state.ctxt_stack);
+   _r3_guts_term();
+   _r3_ctxt_term();
+   _r3_trans_term();
 }
 
 // % modifies: the context stack
@@ -156,7 +170,12 @@ r3s_context *r3_alloc_context(r3s_context *ctxt,ulong flags)
    {
       if (_r3d_1st_ctxt_inuse)
       {
-	      ctxt=(r3s_context *)Malloc(sizeof(r3s_context));
+         void **p = (void **)_r3d_ctxt_pool;
+         if (p) {
+            _r3d_ctxt_pool = *p;
+            ctxt=(r3s_context *)(p+1);
+         } else
+            ctxt=(r3s_context *)(((void **)Malloc(sizeof(void *) + sizeof(r3s_context)))+1);
 	      if (ctxt==NULL)
 	      {
 	         Warning(("r3_alloc_context: no memory available to alloc context\n"));
@@ -223,8 +242,11 @@ bool r3_free_context(r3s_context *ctxt)
    _r3_guts_ctxt_free(ctxt);
    if (ctxt->flags&R3F_CTXT_IAM1ST)
       _r3d_1st_ctxt_inuse=FALSE;
-   if (ctxt->flags&R3F_CTXT_ALLOCED)
-      Free(ctxt);
+   if (ctxt->flags&R3F_CTXT_ALLOCED) {
+      void **p = ((void **)ctxt)-1;
+      *p = _r3d_ctxt_pool;
+      _r3d_ctxt_pool = p;
+   }
    return TRUE;
 }
 

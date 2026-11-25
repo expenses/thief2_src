@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/pnptools.c,v 1.26 2000/02/19 13:11:12 toml Exp $
 // tools for PnP maintenance
 

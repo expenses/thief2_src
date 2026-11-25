@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aipatrol.cpp,v 1.25 1999/12/22 13:13:45 BFarquha Exp $
 //
@@ -176,7 +175,7 @@ STDMETHODIMP_(BOOL) cAIPatrol::Save(ITagFile * pTagFile)
 
 STDMETHODIMP_(BOOL) cAIPatrol::Load(ITagFile * pTagFile)
 {
-   if (AIOpenTagBlock(GetID(), kAISL_Patrol, 0, 0, pTagFile))
+   if (AIOpenTagBlock(GetID(), kAISL_Patrol, 0, 1, pTagFile))
    {
       BaseAbilityLoad(pTagFile);
       m_CheckPropTimer.Load(pTagFile);

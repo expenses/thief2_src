@@ -27,6 +27,9 @@
 #define R3FUNC_ALL_POLY   (R3FUNC_3D_POLY | R3FUNC_3D_TMAP | R3FUNC_2D_POLY)
 
 typedef void (*poly_setup_func)(r3s_texture tm);
+EXTERN BOOL r3d_using_lgd3d;
+EXTERN BOOL r3d_using_g2;
+
 EXTERN void r3_setup_prim_funcs(
    poly_setup_func *setup_func_list,
    int (*convert)(int n, r3s_phandle *vl),

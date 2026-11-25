@@ -135,6 +135,8 @@ DECLARE_INTERFACE_(IRelation,IUnknown)
    // Check for any links at all
    //
    STDMETHOD_(BOOL, AnyLinks)(THIS_ ObjID source, ObjID dest) PURE;
+
+   STDMETHOD(AddFullAtID)(THIS_ LinkID id, ObjID source, ObjID dest, void* data) PURE;
 };
 
 //------------------------------------------------------------

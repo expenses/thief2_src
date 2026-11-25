@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/ui/uigame.cpp,v 1.16 1999/05/27 12:56:05 mahk Exp $
 #include <uigame.h>
 #include <appagg.h>
@@ -37,7 +36,7 @@ guiStyle* uiGameStyle()
 static char* strip_trailing(char* arg)
 {
    char* s = arg + strlen(arg) - 1; 
-   for (; s >= arg && isspace(*s); s--)
+   for (; s >= arg && isspace((uchar)*s); s--)
       *s = '\0'; 
 
    return arg; 

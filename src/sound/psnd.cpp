@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sound/psnd.cpp,v 1.49 2000/03/22 19:02:42 patmac Exp $
 //
@@ -34,6 +33,7 @@
 #include <rooms.h>
 #include <psnd.h>
 #include <psndapi.h>
+#include <schbase.h>
 
 #include <rendprop.h>
 
@@ -68,6 +68,69 @@ int        g_SndWatchHandle = -1;
 // TBD : Maybe make function to initialize with (possibly dynamic) values.
 int gSoundTypeCaps[] = { 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
 
+extern int sfx_use_channels;
+
+void SoundInitTypeCaps()
+{
+   int nChannels = sfx_use_channels;
+   int caps[kNumSchemaTypes] = {0};
+   int cnt = kNumSchemaTypes;
+
+   if (config_get_value("snd_group_limits", CONFIG_INT_TYPE, caps, &cnt) && (cnt >= kNumSchemaTypes))
+   {
+      if (nChannels >= g_nMaxActiveSounds)
+         nChannels = g_nMaxActiveSounds;
+
+      for (int i = 0; i < kNumSchemaTypes; i++)
+      {
+         if (caps[i] < 4)
+            caps[i] = 4;
+         else if (caps[i] > nChannels)
+            caps[i] = nChannels;
+         gSoundTypeCaps[i] = caps[i];
+      }
+      return;
+   }
+
+   int def = 4, ambient = 4, monsters = 4, collisions = 4;
+
+   if (nChannels > 8)
+   {
+      ambient = 8;
+      if (nChannels > 12)
+      {
+         def = 6;
+         ambient = 10;
+         if (nChannels >= 24)
+         {
+            def = 8;
+            ambient = 12;
+            monsters = 10;
+            if (nChannels >= 32)
+            {
+               def = 10;
+               ambient = 16;
+               monsters = 14;
+               collisions = 14;
+               if (nChannels >= 48)
+               {
+                  def = 16;
+                  ambient = 24;
+                  monsters = 20;
+                  collisions = 20;
+               }
+            }
+         }
+      }
+   }
+
+   for (int i = 0; i < kNumSchemaTypes; i++)
+      gSoundTypeCaps[i] = def;
+   gSoundTypeCaps[kSchemaTypeAmbient] = ambient;
+   gSoundTypeCaps[kSchemaTypeCollisions] = collisions;
+   gSoundTypeCaps[kSchemaTypeMonsters] = monsters;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef SHIP
@@ -75,14 +138,28 @@ int num_sounds = 0;
 int num_too_far = 0;
 #endif
 
+int g_nMaxActiveSounds = kMinActiveSounds;
+
+////////////////////////////////////////
+
 cPropSnd::cPropSnd()
 {
+   if (config_get_int("snd_prop_maxsounds", &g_nMaxActiveSounds))
+   {
+      if (g_nMaxActiveSounds < kMinActiveSounds)
+         g_nMaxActiveSounds = kMinActiveSounds;
+      else if (g_nMaxActiveSounds > kMaxActiveSounds)
+         g_nMaxActiveSounds = kMaxActiveSounds;
+   }
+
    m_SoundInstance = &m_SoundInstHigh;
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
       m_SoundList[i] = NULL;
 
-   m_SoundBlockingTable.Clear();
+   int blockHashSize = 1024;
+   config_get_int("snd_prop_blockhashsize", &blockHashSize);
+   m_SoundBlockingTable.Clear(blockHashSize);
 
    m_NoSound = config_is_defined("no_sound");
 
@@ -648,7 +725,7 @@ void cPropSnd::SoundHaltObj(ObjID objID)
    sSoundInfo *pSoundInfo;
    int i;
 
-   for (i=0; i<kMaxActiveSounds; i++)
+   for (i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_SoundList[i])
       {
@@ -667,7 +744,7 @@ void cPropSnd::SoundHaltObj(ObjID objID)
 
 void cPropSnd::SoundHaltAll()
 {
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_SoundList[i] != NULL)
          SoundHalt(i);
@@ -678,7 +755,7 @@ void cPropSnd::SoundHaltAll()
 
 BOOL cPropSnd::AreSounds()
 {
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_SoundList[i] != NULL)
          return TRUE;
@@ -691,7 +768,7 @@ BOOL cPropSnd::AreSounds()
 
 int cPropSnd::GetSoundHandle()
 {
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_SoundList[i] == NULL)
          return i;
@@ -704,7 +781,7 @@ int cPropSnd::GetSoundHandle()
 
 int cPropSnd::FindSound(cPlayerSoundList *pSoundList)
 {
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_SoundList[i] == pSoundList)
          return i;
@@ -1003,7 +1080,7 @@ BOOL cPropSnd::TypeCapReached(uchar type)
    int soundTypeCount = 0;
 
    // Count sounds that have the same category.
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       pSoundList = GetSound(i);
 
@@ -1035,7 +1112,7 @@ cPlayerSoundList* cPropSnd::LowestPrioritySoundOfType (uchar type, int* itsEffec
    int iterEffectivePriority;
 
    // Loop through all sounds.
-   for ( int i=0; i<kMaxActiveSounds; i++ )
+   for ( int i=0; i<g_nMaxActiveSounds; i++ )
    {
       // Only look for sounds which match this one's type.
       if ( m_SoundList[i] != NULL )
@@ -1074,7 +1151,7 @@ cPlayerSoundList* cPropSnd::LowestPrioritySound (int* itsEffectivePriority)
    int iterEffectivePriority;
 
    // Loop through all sounds.
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if ( m_SoundList[i] != NULL )
       {
@@ -1211,7 +1288,7 @@ void cPropSnd::SpewActiveSounds()
 
    mprintf("Sound List:\n");
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       cPlayerSoundList *pPlayerList;
 

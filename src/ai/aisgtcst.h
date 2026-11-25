@@ -28,5 +28,6 @@ BOOL AISightCast(Location *pStartLoc, Location *pEndLoc);
 // preperatory func, on entering sim: gather ObjIDs of all objects
 // doors want to avoid seeing through
 void AISightCastCollectRefs();
+ObjID * AIGetInterestingObjects(int * pCount);
 
 #endif /* !__AISGTCST_H */

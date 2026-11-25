@@ -156,6 +156,7 @@ enum eGrModeFlags
     kGrModeIsNative      = 0x10,
     kGrModeCanFullscreen = 0x20,
     kGrModeCanWindow     = 0x40,
+    kGrModeExtended      = 0x80,
 
     // DynamicProperties
     kGrModeIsWindowed   = 0x0100,
@@ -371,7 +372,7 @@ DECLARE_INTERFACE_(IDisplayDevice, IUnknown)
     // Return FALSE if the set monitor fails for some reason (like we pass
     // in an invalid pointer, for instance)
     //
-    STDMETHOD_(BOOL, SetMonitor)(THIS_ tGrDispBits **, eDisplayDeviceMonitorFlag) PURE;
+    STDMETHOD_(BOOL, SetMonitor)(THIS_ tGrDispBits **, ushort * pRowBytes, eDisplayDeviceMonitorFlag) PURE;
 
     //
     // Temporarily break any lock on surfaces, returning lock count.
@@ -440,7 +441,7 @@ DECLARE_INTERFACE_(IDisplayDevice, IUnknown)
 #define IDisplayDevice_Flush(p)                     COMCall0(p, Flush)
 #define IDisplayDevice_PauseFlush(p, a)             COMCall1(p, PauseFlush, a)
 #define IDisplayDevice_IsFlushingPaused(p)          COMCall0(p, IsFlushingPaused)
-#define IDisplayDevice_SetMonitor(p, a, b)          COMCall2(p, SetMonitor, a, b)
+#define IDisplayDevice_SetMonitor(p, a, b, c)       COMCall3(p, SetMonitor, a, b, c)
 #define IDisplayDevice_BreakLock(p)                 COMCall0(p, BreakLock)
 #define IDisplayDevice_RestoreLock(p, a)            COMCall1(p, RestoreLock, a)
 #define IDisplayDevice_IsLocked(p)                  COMCall0(p, IsLocked)

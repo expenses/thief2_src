@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/fltang.h,v 1.14 2000/01/29 13:20:52 adurant Exp $
 ///////////////////////
 //
@@ -24,7 +23,7 @@
 #include <fastflts.h>
 
 #define PI     3.141592653589793238
-#define TWO_PI 6.283185307178
+#define TWO_PI 6.283185307178f
 
 // To convert from degrees to radians
 #define DEGREES(x) ((((float)(x))*TWO_PI)/360.0)

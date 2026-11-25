@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/buftagf.h,v 2.1 2000/02/26 15:40:06 toml Exp $
 
 //

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkmislp.cpp,v 1.25 2000/01/27 14:34:41 adurant Exp $
 #include <loopapi.h>
 #include <appagg.h>
@@ -659,6 +658,11 @@ void SetNextMission(int m)
 #ifdef THIEFTWODEMO
    gMissLoop.mission = 11;
 #endif
+}
+
+void SetFollowingMission(int m)
+{
+   gMissLoop.next_mission = m; 
 }
 
 static sLoopModeInitParm parm_list[] = 

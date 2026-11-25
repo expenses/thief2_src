@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/dxload.cpp,v 1.9 2000/02/27 15:31:22 adurant Exp $
 
 extern BOOL LoadDirectSound();
@@ -45,6 +44,7 @@ static BOOL GetErrorMessage(char *msgbuffer,const char *basename, int buflen)
    BOOL successful = TRUE;
 
    strncpy(shortbase,basename,32);
+   shortbase[31] = '\0';
    if (!config_get_raw("language",lang,28))
       strcpy(lang,"english");
    sprintf(cfgvar,"%snum_%s",shortbase,lang);

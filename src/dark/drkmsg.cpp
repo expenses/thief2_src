@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkmsg.cpp,v 1.6 2000/02/19 12:27:23 toml Exp $
 #include <drkmsg.h>
 #include <str.h>
@@ -76,7 +75,7 @@ void DarkMessageParams(const char* msg, ulong timeout, int color)
 {
    if (color == kDefaultMsgColor)
       color = uiRGB(gTextRGB[0],gTextRGB[1],gTextRGB[2]);
-   ulong time = gpGameShell->GetTimerTick();  
+   ulong time = gpGameShell->GetTimerTick() / 1000;  
    gMsg.text = msg; 
    gMsg.timeout = time + timeout; 
    gMsg.color = color; 
@@ -89,7 +88,7 @@ void DarkMessage(const char* msg)
 
 void DarkMessageUpdateFrame(void)
 {
-   ulong time = gpGameShell->GetTimerTick();  
+   ulong time = gpGameShell->GetTimerTick() / 1000;  
    if (time < gMsg.timeout)
    {
       Rect r = { 0, 0, grd_canvas->bm.w, grd_canvas->bm.h }; 

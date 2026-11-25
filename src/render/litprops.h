@@ -53,6 +53,7 @@ struct sAnimLightProp : public sLightPropCore
    ObjID notify_script;
    BOOL quad;                   // oversample?
    float inner_radius;
+   BOOL dynamic;
 };
 
 

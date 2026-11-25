@@ -112,6 +112,8 @@ public:
 
 		sprintf(pBuf, "bind %s", pControl);
 		const char* pRes = ProcessCmd(pBuf);
+		if (!pRes)
+			pRes = "";
 		strncpy(pCmdBuf, pRes, iBufLen);
 	}
 
@@ -125,6 +127,8 @@ public:
 
 		sprintf(pBuf, "echo $%s", pVarStr);
 		const char* pRes = ProcessCmd(pBuf);
+		if (!pRes)
+			pRes = "";
 		strncpy(pValBuf, pRes, iBufLen);
 	}
 
@@ -388,9 +392,10 @@ public:
 	//
 	STDMETHOD_(void, Reset)(THIS)
 	{
-		if (m_IB_input_mappers[m_cur_context_idx])
+		cIBInputMapper* pMapper = m_IB_input_mappers[m_cur_context_idx];
+		if (pMapper)
 		{
-			delete m_IB_input_mappers[m_cur_context_idx];
+			delete pMapper;
 			m_IB_input_mappers[m_cur_context_idx] = new cIBInputMapper();
 			m_IB_input_mappers[m_cur_context_idx]->m_context = 1 << m_cur_context_idx;
 			SetGlobObjs();

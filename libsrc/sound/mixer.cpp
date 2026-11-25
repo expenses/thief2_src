@@ -34,6 +34,7 @@
 #include <math.h>
 
 #include <mixerlck.h>
+#include <config.h>
 // @Note (toml 05-17-96):  Sometime relatively soon the mixer should be converted into a true
 // member of the application aggregate object
 
@@ -93,7 +94,6 @@ cSndMixer::cSndMixer()
    mpWinDisplayDevice = NULL;
    mpInaudibleListHead = NULL;
    mpAudibleListHead = NULL;
-   mInPriorityCB = FALSE;
 
    m3DMixMethod = kSnd3DMethodNone;
    origin.x = 0.0;
@@ -407,9 +407,7 @@ cSndMixer::AllocChannel( cSndSample    *pSample,
          TLOG1( "Mix::AllocChannel %s, no priority CB!", SAMPLE_NAME( pSample ) );
          return FALSE;
       }
-      mInPriorityCB = TRUE;
       freed = (*fnPriorityCB)( this, pSample, mpPriorityCBData );
-      mInPriorityCB = FALSE;
       if ( freed == FALSE ) {
          // couldn't free a channel
          TLOG1( "Mix::AllocChannel %s, priority CB failed!", SAMPLE_NAME( pSample ) );
@@ -434,7 +432,6 @@ cSndMixer::FreeChannel( cSndSample *pSample )
 {
    mNumFreeMixerChans++;
    TLOG1( "Mix::FreeChannel %d left", mNumFreeMixerChans );
-   if ( fnFreeChannelCB && !mInPriorityCB ) {
    if ( fnFreeChannelCB ) {
       // tell app that there is a free channel
       (*fnFreeChannelCB)( this, mpFreeChannelCBData );
@@ -968,7 +965,7 @@ cSndMixer::Get3DDistanceVolume( float range )
 
    // return volume offset for range
    // note: returned values do not take into account group & sample volume
-   vol = DistanceToMilliBels( dist ) * m3DEnvironment.rolloffFactor;
+   vol = DistanceToMilliBels( dist );
    TLOG2( "Mix::Get3DDistanceVolume distance %d volume %d", dist, vol );
 
    return vol;
@@ -1021,7 +1018,7 @@ cSndMixer::Get3DPositionVolume( sSndVector  *pSrcPos )
 
    // return volume offset for range
    // note: returned values do not take into account group & sample volume
-   vol = DistanceToMilliBels( range ) * m3DEnvironment.rolloffFactor;
+   vol = DistanceToMilliBels( range );
    TLOG1( "Mix::Get3DPositionVolume volume %d", vol );
 
    return vol;
@@ -1259,14 +1256,6 @@ cSndMixer::CheckTimer( void )
             mprintf( "!!! timeKillEvent returns %d\n", result );
          }
 #endif
-
-         // stop the timer
-         result = timeEndPeriod(kFadeGranularity);
-#ifndef SHIP
-         if ( result ) {
-            mprintf( "!!! timeEndPeriod returns %d\n", result );
-         }
-#endif
          mTimerId = 0;
          mTimerState = eSndTimerUnknown;
       }
@@ -1296,15 +1285,6 @@ cSndMixer::CheckTimer( void )
 
          // break the DirectX display lock to avoid hang in timer calls
          int blockCookie = BlockDisplay();
-
-         // start the timer
-         result = timeBeginPeriod(kFadeGranularity);
-         if ( result ) {
-#ifndef SHIP
-            mprintf( "!!! timeBeginPeriod returns %d\n", result );
-#endif
-            failed = TRUE;
-         }
 
          //
          // first argument is how often timer callbacks occur (roughly) in
@@ -1363,6 +1343,8 @@ cSndMixer::StartTimer( void )
 }
 
 
+static int gMixerRaisePriority = -1;
+
 //
 // SetTimeout - set stream-refill timeout
 //  setting timeout to 0xFFFFFFFF will turn off threading
@@ -1395,6 +1377,9 @@ cSndMixer::SetTimeout( uint32       milliSecs )
       //
       if ( milliSecs != ~0 ) {
          // start threading & set timeout value
+         if ( gMixerRaisePriority == -1 ) {
+            gMixerRaisePriority = !config_is_nonzero( "sfx_mixer_normalprio" );
+         }
          mpThread = new cMixerThread( this );
          if ( !mpThread->Create() ) {
             // can't create mixer thread!
@@ -1403,7 +1388,7 @@ cSndMixer::SetTimeout( uint32       milliSecs )
          } else {
             // set thread priority to one above main thread priority
             masterPriority = GetThreadPriority(GetCurrentThread());
-            if ( masterPriority < THREAD_PRIORITY_HIGHEST ) {
+            if ( gMixerRaisePriority && (masterPriority < THREAD_PRIORITY_HIGHEST) ) {
                masterPriority++;
             }
             mpThread->SetPriority( masterPriority );

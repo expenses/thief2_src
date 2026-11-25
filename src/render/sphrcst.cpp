@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/render/sphrcst.cpp,v 1.37 2000/02/19 12:35:38 toml Exp $
 //
@@ -105,7 +104,7 @@ static mxs_vector cast_min, cast_max;
 // This is overkill, but we burn only a few bytes and we have a real
 // mean attitude.
 #define MAX_POINTS_PER_PLANE 128
-#define MAX_PLANES_PER_CELL 64
+#define MAX_PLANES_PER_CELL 256
 
 // How does each vertex relate to the cast's plane and bounding box?
 #define VERTEX_TESTED           (1 << 0)
@@ -1266,7 +1265,7 @@ static int FindPolygonWithEdgeContact(sSphrContactData *contact_data,
                                        mxs_vector *point)
 {
    int plane_index, polygon_index;
-   BOOL plane_near_point[MAX_PLANES_PER_CELL];
+   bool plane_near_point[MAX_PLANES_PER_CELL];
    int cell_index = contact_data->cell_index;
    PortalCell *cell = WR_CELL(cell_index);
    PortalPlane *plane = cell->plane_list;

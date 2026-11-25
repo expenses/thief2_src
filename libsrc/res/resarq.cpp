@@ -153,7 +153,7 @@ cResARQFulfiller::~cResARQFulfiller()
 void cResARQFulfiller::Init()
 {
     #ifdef _WIN32
-    if (GetPrivateProfileInt("Res", "ARQ", TRUE, "lg.ini"))
+    if (GetPrivateProfileInt("Res", "ARQ", TRUE, ".\\lg.ini"))
     #endif
         m_pAsyncReadQueue = AppGetObj(IAsyncReadQueue);
 }

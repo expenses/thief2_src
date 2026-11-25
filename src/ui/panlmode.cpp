@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/ui/panlmode.cpp,v 1.23 1998/11/10 23:53:36 mahk Exp $
 
 #include <loopapi.h>
@@ -404,7 +403,7 @@ cPanelMode::~cPanelMode()
    CleanupLoopMode(); 
    for (int i = 0; i < kNumPanelImages; i++)
       SafeRelease(mImages[i]); 
-   delete mInst.init; 
+   delete [] mInst.init; 
 }
 
 STDMETHODIMP cPanelMode::SetImage(ePanelModeImage which, IImageSource* image)
@@ -465,7 +464,7 @@ STDMETHODIMP cPanelMode::SetParams(sLoopModeInitParmList parms)
          }
    }
 
-   delete mInst.init; 
+   delete [] mInst.init; 
 
    // Now build the actual parameter list 
    sLoopModeInitParm* init = new sLoopModeInitParm[nparms+ndefaults+1]; 

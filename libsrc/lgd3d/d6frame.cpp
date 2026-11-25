@@ -15,6 +15,7 @@
 #include <lgsurf_i.h>
 #include <lglog.h>
 #include <dbg.h>
+#include <config.h>
 #include <lglog.h>
 #include <lgassert.h>
 
@@ -24,8 +25,8 @@ DDSURFACEDESC2 g_sDescOfRenderBuffer;
 D3DDEVICEDESC g_sD3DDevDesc;
 DDPIXELFORMAT g_sDDPFDepth;
 IDirect3DDevice3* g_lpD3Ddevice;
-DDPIXELFORMAT* g_FormatList[5];
-sTextureData g_saTextures[1024];
+DDPIXELFORMAT* g_FormatList[LGD3D_NUM_TEX_FORMATS];
+sTextureData g_saTextures[LGD3D_MAX_TEXTURES];
 DDPIXELFORMAT g_TransRGBTextureFormat;
 DDPIXELFORMAT g_PalTextureFormat;
 DDPIXELFORMAT g_AlphaTextureFormat;
@@ -50,6 +51,11 @@ IDirect3DMaterial3* g_lpBackgroundMaterial = NULL;
 int g_b8888supported = FALSE;
 grs_bitmap* default_bm = NULL;
 int g_bWFog = FALSE;
+float g_fXOffsetBase;
+float g_fYOffsetBase;
+float g_fTexelCenterX = 0.5f;
+float g_fTexelCenterY = 0.5f;
+float g_fMipmapBias;
 
 
 
@@ -58,19 +64,11 @@ static HRESULT WINAPI c_EnumZBufferFormats(LPDDPIXELFORMAT pDDPF, LPVOID pBuf);
 cD6Frame::cD6Frame(unsigned long dwWidth, unsigned long dwHeight, lgd3ds_device_info* psDeviceInfo)
 {
     InitializeGlobals(dwWidth, dwHeight, psDeviceInfo->flags);
-    if (GetDDstuffFromDisplay() < 0) {
-        SetLGD3DErrorCode(LGD3D_EC_DD_KAPUT, 0);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 121
-            CriticalLGD3DError(LGD3D_EC_DD_KAPUT, 0);
-        } else {
-            WarnLGD3DError(LGD3D_EC_DD_KAPUT, 0);
-        }
-#endif
-        lgd3d_g_bInitialized = 0;
-    } else {
+    if (GetDDstuffFromDisplay() >= 0) {
         InitializeEnvironment(psDeviceInfo);
+    } else {
+        SetLGD3DErrorCode(LGD3D_EC_DD_KAPUT, 0);
+        lgd3d_g_bInitialized = 0;
     }
 }
 
@@ -89,24 +87,18 @@ cD6Frame::cD6Frame(ILGSurface* pILGSurface)
     psDeviceInfo = lgd3d_get_device_info(nDeviceIndex);
     InitializeGlobals(dwWidth, dwHeight, psDeviceInfo->flags);
     pIlgdd4surface->GetDirectDraw(&g_lpDD_ext);
-    if (g_lpDD_ext == NULL) {
-
-
-
-        CriticalMsg("cD6Frame: GetDirectDraw failed");
-    }
     pIlgdd4surface->GetRenderSurface(&g_lpRenderBuffer);
-    if (g_lpRenderBuffer == NULL) {
-
-        CriticalMsg("cD6Frame: GetRenderSurface failed");
-    }
     SafeRelease(pIlgdd4surface);
     InitializeEnvironment(psDeviceInfo);
 }
 
-cD6Frame::~cD6Frame()
+void cD6Frame::ReleaseRenderer()
 {
     pcRenderer = cD6Renderer::DeInstance();
+}
+
+cD6Frame::~cD6Frame()
+{
     if (g_lpBackgroundMaterial)
         g_lpBackgroundMaterial->Release();
     g_lpBackgroundMaterial = NULL;
@@ -116,6 +108,7 @@ cD6Frame::~cD6Frame()
     if (g_lpD3Ddevice)
         g_lpD3Ddevice->Release();
     g_lpD3Ddevice = NULL;
+    if (g_lpDepthBuffer && g_lpRenderBuffer)
     g_lpRenderBuffer->DeleteAttachedSurface(0, g_lpDepthBuffer);
     if (g_lpRenderBuffer)
         g_lpRenderBuffer->Release();
@@ -141,8 +134,10 @@ void cD6Frame::InitializeGlobals(unsigned long dwWidth, unsigned long dwHeight, 
     g_dwScreenWidth = dwWidth;
     g_dwScreenHeight = dwHeight;
     m_pWinDisplayDevice = NULL;
-    g_XOffset = 0.0f;
-    g_YOffset = 0.0f;
+    g_fXOffsetBase = 0.0f;
+    g_fYOffsetBase = 0.0f;
+    g_XOffset = g_fXOffsetBase - g_fTexelCenterX;
+    g_YOffset = g_fYOffsetBase - g_fTexelCenterY;
     g_lpDD_ext = NULL;
     g_lpRenderBuffer = NULL;
     g_lpDepthBuffer = NULL;
@@ -164,6 +159,25 @@ void cD6Frame::InitializeGlobals(unsigned long dwWidth, unsigned long dwHeight, 
     if ((dwRequestedFlags & LGD3DF_VERTEX_FOG) != 0) {
         g_bUseVertexFog = (dwRequestedFlags & LGD3DF_CAN_DO_VERTEX_FOG) != 0;
     }
+    memset(&g_sDescOfRenderBuffer, 0, sizeof(g_sDescOfRenderBuffer));
+    memset(&g_sDDPFDepth, 0, sizeof(g_sDDPFDepth));
+    memset(&g_sD3DDevDesc, 0, sizeof(g_sD3DDevDesc));
+
+    static BOOL bConfigRead = FALSE;
+    if (!bConfigRead) {
+        bConfigRead = TRUE;
+        g_nAlphaTestMode = !config_is_defined("disable_alpha_test");
+        if (g_nAlphaTestMode && config_is_defined("alpha_test_blend"))
+            g_nAlphaTestMode = 2;
+        g_nAlphaTestRef = 127;
+        int cnt = 1;
+        if (config_get_value("default_alphatest_ref", CONFIG_INT_TYPE, (config_valptr)&g_nAlphaTestRef, &cnt) && cnt > 0) {
+            if (g_nAlphaTestRef < 1)
+                g_nAlphaTestRef = 1;
+            else if (g_nAlphaTestRef > 255)
+                g_nAlphaTestRef = 255;
+        }
+    }
 }
 
 
@@ -178,14 +192,6 @@ void cD6Frame::InitializeEnvironment(lgd3ds_device_info* psDeviceInfo)
         && (hResult = g_lpDD_ext->RestoreAllSurfaces(), hResult != 0))
     {
         SetLGD3DErrorCode(LGD3D_EC_RESTORE_ALL_SURFS, hResult);
-#ifndef SHIP
-        if (bSpewOn == 0) {
-            WarnLGD3DError(LGD3D_EC_RESTORE_ALL_SURFS, hResult);
-        } else {
-#line 247
-            CriticalLGD3DError(LGD3D_EC_RESTORE_ALL_SURFS, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return;
     }
@@ -194,14 +200,6 @@ void cD6Frame::InitializeEnvironment(lgd3ds_device_info* psDeviceInfo)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_QUERY_D3D, hResult);
-#ifndef SHIP
-        if (bSpewOn == 0) {
-            WarnLGD3DError(LGD3D_EC_QUERY_D3D, hResult);
-        } else {
-#line 253
-            CriticalLGD3DError(LGD3D_EC_QUERY_D3D, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return;
     }
@@ -214,20 +212,10 @@ void cD6Frame::InitializeEnvironment(lgd3ds_device_info* psDeviceInfo)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_GET_DD_CAPS, hResult);
-#ifndef SHIP
-        if (bSpewOn == 0) {
-            WarnLGD3DError(LGD3D_EC_GET_DD_CAPS, hResult);
-        } else {
-#line 266
-            CriticalLGD3DError(LGD3D_EC_GET_DD_CAPS, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return;
     }
 
-#line 268
-    AssertMsg(sDDChdw.dwCaps & DDCAPS_3D, "Not an accelerator.");
     memset(&g_sDescOfRenderBuffer, 0, sizeof(g_sDescOfRenderBuffer));
     g_sDescOfRenderBuffer.dwSize = sizeof(g_sDescOfRenderBuffer);
     hResult = g_lpRenderBuffer->GetSurfaceDesc(&g_sDescOfRenderBuffer);
@@ -235,24 +223,10 @@ void cD6Frame::InitializeEnvironment(lgd3ds_device_info* psDeviceInfo)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_GET_SURF_DESC, hResult);
-#ifndef SHIP
-        if (bSpewOn == 0) {
-            WarnLGD3DError(LGD3D_EC_GET_SURF_DESC, hResult);
-        } else {
-#line 276
-            CriticalLGD3DError(LGD3D_EC_GET_SURF_DESC, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return;
     }
 
-#ifndef SHIP
-    if ((g_sDescOfRenderBuffer.dwFlags & DDSD_CAPS) == 0)
-        Warning(("cD6Frame: flags indicate caps field is empty"));
-    if ((g_sDescOfRenderBuffer.ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE) != 0)
-        Warning(("cD6Frame: Rendering to primary surface"));
-#endif
     m_bDepthBuffer = (sDDChdw.ddsCaps.dwCaps & DDSCAPS_ZBUFFER) != 0;
     if (g_bUseDepthBuffer != 0) {
         if (m_bDepthBuffer == 0) {
@@ -269,16 +243,6 @@ void cD6Frame::InitializeEnvironment(lgd3ds_device_info* psDeviceInfo)
             hResult = g_lpD3D->EnumZBufferFormats(psDeviceInfo->device_guid, c_EnumZBufferFormats, &g_sDDPFDepth);
             if (hResult != 0) {
                 SetLGD3DErrorCode(LGD3D_EC_ZBUFF_ENUMERATION, hResult);
-#ifndef SHIP
-                if (bSpewOn != 0) {
-
-
-
-                    CriticalLGD3DError(LGD3D_EC_ZBUFF_ENUMERATION, hResult);
-                } else {
-                    WarnLGD3DError(LGD3D_EC_ZBUFF_ENUMERATION, hResult);
-                }
-#endif
                 lgd3d_g_bInitialized = 0;
                 return;
             }
@@ -299,6 +263,8 @@ void cD6Frame::InitializeEnvironment(lgd3ds_device_info* psDeviceInfo)
         m_dwRequestedFlags = psDeviceInfo->flags;
         ExamineRenderingCapabilities();
         psDeviceInfo->flags = m_dwRequestedFlags;
+        cD6Renderer::CleanRenderSurface(1.0);
+        ApplyDisplayConfig(psDeviceInfo);
     }
 }
 
@@ -310,20 +276,13 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
 
 
 
+#line 346
     AssertMsg(g_lpDD_ext != NULL, "cD6Frame::CreateD3D: DirectDraw Not Initialized.");
     AssertMsg(g_lpD3D != NULL, "cD6Frame::CreateD3D: D3D Not Initialized.");
     hResult = g_lpD3D->CreateDevice(sDeviceGUID, g_lpRenderBuffer, &g_lpD3Ddevice, NULL);
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_CREATE_3D_DEVICE, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 353
-            CriticalLGD3DError(LGD3D_EC_CREATE_3D_DEVICE, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_CREATE_3D_DEVICE, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -332,14 +291,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_CREATE_VIEWPORT, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 358
-            CriticalLGD3DError(LGD3D_EC_CREATE_VIEWPORT, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_CREATE_VIEWPORT, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -348,14 +299,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_ADD_VIEWPORT, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 362
-            CriticalLGD3DError(LGD3D_EC_ADD_VIEWPORT, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_ADD_VIEWPORT, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -374,14 +317,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_SET_VIEWPORT, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 380
-            CriticalLGD3DError(LGD3D_EC_SET_VIEWPORT, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_SET_VIEWPORT, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -390,14 +325,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_SET_CURR_VP, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 384
-            CriticalLGD3DError(LGD3D_EC_SET_CURR_VP, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_SET_CURR_VP, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -406,14 +333,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_CREATE_BK_MATERIAL, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 389
-            CriticalLGD3DError(LGD3D_EC_CREATE_BK_MATERIAL, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_CREATE_BK_MATERIAL, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -425,14 +344,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_SET_BK_MATERIAL, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 399
-            CriticalLGD3DError(LGD3D_EC_SET_BK_MATERIAL, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_SET_BK_MATERIAL, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -441,14 +352,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_GET_BK_MAT_HANDLE, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-#line 403
-            CriticalLGD3DError(LGD3D_EC_GET_BK_MAT_HANDLE, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_GET_BK_MAT_HANDLE, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return 0;
     }
@@ -459,11 +362,6 @@ int cD6Frame::CreateD3D(const GUID& sDeviceGUID)
 void cD6Frame::ExamineRenderingCapabilities()
 {
     D3DDEVICEDESC sD3DHELDevDesc;
-#line 416
-    AssertMsg(g_lpDD_ext != NULL, "cD6Frame::CreateD3D: DirectDraw Not Initialized.");
-    AssertMsg(g_lpRenderBuffer != NULL, "cD6Frame::CreateD3D: Render surface Not Initialized.");
-    AssertMsg(g_lpD3D != NULL, "cD6Frame::CreateD3D: D3D Not Initialized.");
-    AssertMsg(g_lpD3Ddevice != NULL, "cD6Frame::CreateD3D: D3D device Not Initialized.");
     memset(&g_sD3DDevDesc, 0, sizeof(D3DDEVICEDESC));
     g_sD3DDevDesc.dwSize = sizeof(D3DDEVICEDESC);
     memset(&sD3DHELDevDesc, 0, sizeof(D3DDEVICEDESC));
@@ -472,25 +370,10 @@ void cD6Frame::ExamineRenderingCapabilities()
     if (hResult != 0)
     {
         SetLGD3DErrorCode(LGD3D_EC_GET_3D_CAPS, hResult);
-#ifndef SHIP
-        if (bSpewOn != 0) {
-
-
-
-
-
-            CriticalLGD3DError(LGD3D_EC_GET_3D_CAPS, hResult);
-        } else {
-            WarnLGD3DError(LGD3D_EC_GET_3D_CAPS, hResult);
-        }
-#endif
         lgd3d_g_bInitialized = 0;
         return;
     }
 
-#line 441
-    AssertMsg((g_sD3DDevDesc.dwFlags & D3DDD_DEVCAPS) != 0, "Device Description: invalid caps");
-    AssertMsg((g_sD3DDevDesc.dwFlags & D3DDD_TRICAPS) != 0, "Device Description: invalid caps");
 
     g_bWFog = (g_sD3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_WFOG) != 0 ? 1 : 0;
     if ((g_sD3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_WBUFFER) == 0)
@@ -514,17 +397,83 @@ long cD6Frame::GetDDstuffFromDisplay()
 {
     m_pWinDisplayDevice = AppGetObj(IWinDisplayDevice);
     m_pWinDisplayDevice->GetDirectDraw(&g_lpDD_ext);
-    if (g_lpDD_ext == NULL)
-#line 503
-        CriticalMsg("cD6Frame: GetDirectDraw failed");
     long hResult = m_pWinDisplayDevice->GetBitmapSurface(NULL, &g_lpRenderBuffer);
 
 
 
-
-    AssertMsg(hResult >= 0, "GetBitmapSurface failed.");
-    AssertMsg(g_lpRenderBuffer != NULL, "No render surface available.");
     return hResult;
+}
+
+void cD6Frame::ApplyDisplayConfig(lgd3ds_device_info* psDeviceInfo)
+{
+    float fAdjust[2];
+    int cnt;
+
+    g_fTexelCenterX = 0.5f;
+    g_fTexelCenterY = 0.5f;
+    fAdjust[0] = 0.5f;
+    fAdjust[1] = 0.5f;
+    cnt = 2;
+    if (config_get_value("texel_center_adjust", CONFIG_FLOAT_TYPE, (config_valptr)fAdjust, &cnt) && cnt > 0) {
+        if (cnt == 1)
+            fAdjust[1] = fAdjust[0];
+        g_fTexelCenterX = fAdjust[0];
+        g_fTexelCenterY = fAdjust[1];
+        if (fAdjust[0] < -1.0f)
+            g_fTexelCenterX = -1.0f;
+        else if (fAdjust[0] > 1.0f)
+            g_fTexelCenterX = 1.0f;
+        if (fAdjust[1] < -1.0f)
+            g_fTexelCenterY = -1.0f;
+        else if (fAdjust[1] > 1.0f)
+            g_fTexelCenterY = 1.0f;
+        g_XOffset = g_fXOffsetBase - g_fTexelCenterX;
+        g_YOffset = g_fYOffsetBase - g_fTexelCenterY;
+    }
+
+    static BOOL bConfigRead = FALSE;
+    if (bConfigRead) {
+        if (pcStates)
+            pcStates->SetTextureFilterMode(g_nTexFilterMode);
+        if (pcStates)
+            pcStates->SetLightmapFilterMode(g_nLightMapFilterMode);
+        if (g_fMipmapBias == 0.0f)
+            return;
+    } else {
+        bConfigRead = TRUE;
+        BOOL bNoLightmapAniso = config_is_defined("disable_lightmap_aniso");
+        BOOL bTrilinear = config_is_defined("tex_filter_trilinear");
+        if (pcStates)
+            pcStates->SetTrilinearFiltering(bTrilinear);
+        if (config_is_defined("tex_filter_mode")) {
+            int nMode;
+            cnt = 1;
+            config_get_value("tex_filter_mode", CONFIG_INT_TYPE, (config_valptr)&nMode, &cnt);
+            int nLightMapMode = nMode;
+            if (config_is_defined("lm_filter_mode"))
+                config_get_int("lm_filter_mode", &nLightMapMode);
+            else if (bNoLightmapAniso && nMode > 1)
+                nLightMapMode = 1;
+            if (pcStates) {
+                pcStates->SetTextureFilterMode(nMode);
+                if (pcStates)
+                    pcStates->SetLightmapFilterMode(nLightMapMode);
+            }
+        } else if (config_is_defined("lm_filter_mode")) {
+            int nLightMapMode;
+            config_get_int("lm_filter_mode", &nLightMapMode);
+            if (pcStates)
+                pcStates->SetLightmapFilterMode(nLightMapMode);
+        }
+        if (!config_is_defined("mipmap_bias"))
+            return;
+        float fBias;
+        cnt = 1;
+        config_get_value("mipmap_bias", CONFIG_FLOAT_TYPE, (config_valptr)&fBias, &cnt);
+        g_fMipmapBias = fBias;
+    }
+    if (pcStates)
+        pcStates->SetMipmapBias(g_fMipmapBias);
 }
 
 long cD6Frame::CreateDepthBuffer()

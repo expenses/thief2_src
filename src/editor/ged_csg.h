@@ -54,7 +54,8 @@ do { gedit_editted = !(b); gedcsg_level_valid = (b); gedcsg_lighting_ok = (b); }
 
 
 // level lighting flags
-EXTERN BOOL gedcsg_light_objcast, gedcsg_light_raycast, gedcsg_light_quad;
+EXTERN BOOL gedcsg_light_objcast, gedcsg_light_raycast;
+EXTERN int gedcsg_light_quad;
 
 // mostly internal incremental do one light operation
 EXTERN BOOL gedcsg_parse_light_brush(editBrush *us, uchar dynamic);

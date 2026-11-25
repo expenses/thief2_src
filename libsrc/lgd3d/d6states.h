@@ -64,7 +64,7 @@ extern DDPIXELFORMAT g_AlphaTextureFormat;
 extern DDPIXELFORMAT g_PalTextureFormat;
 extern DDPIXELFORMAT g_TransRGBTextureFormat;
 extern DDPIXELFORMAT g_8888TexFormat;
-extern DDPIXELFORMAT* g_FormatList[5];
+extern DDPIXELFORMAT* g_FormatList[LGD3D_NUM_TEX_FORMATS];
 extern IDirect3D3* g_lpD3D;
 extern IDirect3DDevice3* g_lpD3Ddevice;
 extern IDirect3DViewport3* g_lpViewport;
@@ -73,7 +73,7 @@ extern unsigned long g_hBackgroundMaterial;
 extern IDirectDraw4* g_lpDD_ext;
 extern IDirectDrawSurface4* g_lpRenderBuffer;
 extern IDirectDrawSurface4* g_lpDepthBuffer;
-extern sTextureData g_saTextures[1024];
+extern sTextureData g_saTextures[LGD3D_MAX_TEXTURES];
 extern grs_bitmap* default_bm;
 extern unsigned char* texture_clut;
 extern unsigned long g_dwRSChangeFlags;
@@ -84,6 +84,7 @@ extern unsigned long g_dwScreenHeight;
 extern double z1;
 extern double z2;
 extern double z2d;
+extern float g_fMaxZ;
 extern double w2d;
 extern double inv_z_far;
 extern double z_near;
@@ -111,35 +112,53 @@ struct lgd3ds_device_info;
 struct _GUID;
 class cD6Frame {
 public:
+    virtual ~cD6Frame();
+    virtual void ReleaseRenderer();
+protected:
+    cD6Frame() {}
+    virtual void InitializeGlobals(unsigned long dwWidth, unsigned long dwHeight, unsigned long dwFlags);
+    virtual void InitializeEnvironment(struct lgd3ds_device_info* pDevInfo);
+    virtual long GetDDstuffFromDisplay();
+    virtual void ApplyDisplayConfig(struct lgd3ds_device_info* pDevInfo);
+public:
     unsigned long m_dwRequestedFlags;
     BOOL m_bDepthBuffer;
     unsigned long m_dwTextureOpCaps;
     IWinDisplayDevice* m_pWinDisplayDevice;
     cD6Frame(unsigned long dwWidth, unsigned long dwHeight, struct lgd3ds_device_info* psDeviceInfo);
     cD6Frame(struct ILGSurface* pILGSurface);
-    ~cD6Frame();
     long CreateDepthBuffer();
     long Init(struct ILGSurface* pSurface);
 
-private:
-    void InitializeGlobals(unsigned long dwWidth, unsigned long dwHeight, unsigned long dwFlags);
-    long GetDDstuffFromDisplay();
-    void InitializeEnvironment(struct lgd3ds_device_info* pDevInfo);
+protected:
     int CreateD3D(const struct _GUID& guid);
     void ExamineRenderingCapabilities();
 };
 
+extern float g_fXOffsetBase;
+extern float g_fYOffsetBase;
+extern float g_fTexelCenterX;
+extern float g_fTexelCenterY;
+extern float g_fMipmapBias;
+
 class cD6Renderer {
 protected:
+    cD6Renderer() {}
     cD6Renderer(unsigned long mode, unsigned long* pInitFlags);
-    ~cD6Renderer();
+    void Init(unsigned long mode, unsigned long* pInitFlags);
 public:
+    virtual void StartFrame(int frame);
+    virtual void EndFrame();
+    virtual HRESULT SetTransform(int nWhich, D3DMATRIX* pMatrix);
+    virtual ~cD6Renderer() {}
+    virtual void ReleaseStates();
+    virtual void CreateStates(unsigned long mode, unsigned long* pInitFlags);
+    virtual HRESULT Clear(DWORD dwCount, D3DRECT* pRects, DWORD dwFlags, D3DCOLOR dwColor, float dvZ, DWORD dwStencil);
+
     static cD6Renderer* Instance(unsigned long mode, unsigned long* pInitFlags);
     static cD6Renderer* DeInstance();
-    void EndFrame();
     void CleanDepthBuffer(int x0, int y0, int x1, int y1);
-    void CleanRenderSurface(BOOL bDepthBuffToo);
-    void StartFrame(int frame);
+    static void CleanRenderSurface(double dvZ);
     BOOL SwitchOverlaysOnOff(BOOL bOverlaysOn);
 
     long InitViewport(void);
@@ -165,7 +184,6 @@ class cD6Primitives {
 protected:
     cD6Primitives();
     cD6Primitives(int nAlpha);
-    ~cD6Primitives();
 public:
     virtual cD6Primitives* DeInstance() = 0;
     virtual void FlushPrimitives();
@@ -176,9 +194,8 @@ public:
     virtual void EndNonTexMode();
     virtual _D3DTLVERTEX* ReservePointSlots(int = 0);
     virtual void FlushPoints();
-    void SetPointBufferSize(ulong dwSize);
-    ulong GetPointBufferSize();
     virtual int DrawPoint(_r3s_point*);
+    virtual _D3DTLVERTEX* ReservePolySlots(int = 0);
     virtual void DrawPoly(int);
     virtual int Poly(int, _r3s_point**);
     virtual int SPoly(int, _r3s_point**);
@@ -194,6 +211,15 @@ public:
     virtual int g2Poly(int, g2s_point**);
     virtual int g2UTrifan(int, g2s_point**);
     virtual int g2Trifan(int, g2s_point**);
+    virtual int TexTrifan(int n, _r3s_point** ppl, float* uv, DWORD color);
+    virtual int TexTrifanColors(int n, _r3s_point** ppl, float* uv, DWORD* colors);
+    virtual int CubeTexTrifan(int n, _r3s_point** ppl, float* uvw, DWORD color);
+    virtual int TexTrifanMT(int n, _r3s_point** ppl, float* uv, LGD3D_tex_coord** lm, DWORD color);
+    virtual int g2TexPoly(int n, g2s_point** ppl, int nAlpha);
+    virtual int g2TexClipPoly(int n, g2s_point** ppl, int nAlpha);
+    virtual void DrawTLVertices(int n, _D3DTLVERTEX* pVerts);
+    virtual ~cD6Primitives();
+    virtual void DrawStandardEdges(void* param, unsigned long len);
     virtual void InitializeVIBCounters();
     virtual int CreateVertIndBuffer(unsigned long size = 0);
     virtual void DeleteVertIndBuffer();
@@ -211,6 +237,8 @@ public:
     virtual int LitTrifanInd(int, _r3s_point**, r3ixs_info*);
     virtual int RGBlitTrifanInd(int, _r3s_point**, r3ixs_info*);
     virtual int RGBAlitTrifanInd(int, _r3s_point**, r3ixs_info*);
+    virtual int RGBAFogLitTrifanInd(int, _r3s_point**, r3ixs_info*);
+    virtual int DiffuseSpecularLitTrifanInd(int, _r3s_point**, r3ixs_info*);
     virtual int TrifanMTD(int, _r3s_point**, LGD3D_tex_coord**);
     virtual int LitTrifanMTD(int, _r3s_point**, LGD3D_tex_coord**);
     virtual int RGBlitTrifanMTD(int, _r3s_point**, LGD3D_tex_coord**);
@@ -219,22 +247,17 @@ public:
     virtual int DiffuseSpecularLitTrifanMTD(int, _r3s_point**, LGD3D_tex_coord**);
     virtual int g2UTrifanMTD(int, g2s_point**, LGD3D_tex_coord**);
     virtual int g2TrifanMTD(int, g2s_point**, LGD3D_tex_coord**);
-
-    // Non-virtual:
     int GetPolyMode();
     int SetPolyMode(int mode);
     void DrawLine(_r3s_point* p0, _r3s_point* p1);
-    _D3DTLVERTEX* ReservePolySlots(int = 0);
     void HackLight(_r3s_point* p, float r);
     void HackLightExtra(_r3s_point* p, float r, grs_bitmap* bm);
     void PassFogSpecularColor(DWORD);
     void PassAlphaColor(int val);
     void init_hack_light_bm();
     void do_quad_light(_r3s_point* p, float r, grs_bitmap* bm);
-    int RGBAFogLitTrifanInd(int n, _r3s_point** ppl, r3ixs_info* info);
-    int DiffuseSpecularLitTrifanInd(int n, _r3s_point** ppl, r3ixs_info* info);
-    void DrawStandardEdges(void* param, unsigned long len);
-
+    void SetPointBufferSize(ulong dwSize);
+    ulong GetPointBufferSize();
     int m_bPrimitivesPending;
     int m_bFlushing;
     int m_nAlpha;
@@ -244,21 +267,21 @@ public:
     int m_ePolyMode;
     DWORD m_dwNoCashedPoints;
     DWORD m_dwPointBufferSize;
-    _D3DTLVERTEX m_saPointBuffer[50];
-    _D3DTLVERTEX m_saVertexBuffer[50];
     DWORD m_dwNoCashedVertices;
     DWORD m_dwVertexBufferSize;
     _D3DTLVERTEX* m_pVIB;
     DWORD m_dwNoVIBEntries;
     DWORD m_dwVIBSizeInEntries;
-    WORD m_saIndexBuffer[256];
     DWORD m_dwVIBmax;
     DWORD m_dwNoIndices;
-    WORD m_waTempIndices[50];
     DWORD m_dwMinVIndex;
     DWORD m_dwMaxVIndex;
     DWORD m_dwTempIndCounter;
     grs_bitmap* m_hack_light_bm;
+    _D3DTLVERTEX m_saPointBuffer[50];
+    _D3DTLVERTEX m_saVertexBuffer[50];
+    WORD m_saIndexBuffer[3072];
+    WORD m_waTempIndices[50];
 };
 
 struct sTexBlendArgs {
@@ -303,14 +326,34 @@ struct sRenderStates {
     ulong chroma_key;
     D3DTEXTUREMINFILTER eMagTexFilter;
     D3DTEXTUREMINFILTER eMinTexFilter;
+    D3DTEXTUREMINFILTER eLightMapMagFilter;
+    D3DTEXTUREMINFILTER eLightMapMinFilter;
+    BOOL bAlphaTestOn;
+    DWORD dwCullMode;
 };
+
+#define D3DRENDERSTATE_COLORWRITEENABLE ((D3DRENDERSTATETYPE)168)
+
+extern int g_nAlphaTestMode;
+extern int g_nAlphaTestRef;
+extern DWORD g_dwTexMagFilter;
+extern DWORD g_dwTexMinFilter;
+extern DWORD g_dwLightMapMagFilter;
+extern DWORD g_dwLightMapMinFilter;
+extern int g_nTexFilterMode;
+extern int g_nLightMapFilterMode;
+extern BOOL g_bTrilinearFiltering;
+extern sTexBlendArgs sTexBlendArgsProtos[3][2];
+extern sTexBlendArgs sMultiTexBlendArgsProtos[3][2];
+void calc_size(tdrv_texture_info* info, d3d_cookie cookie);
 
 class cD6States {
 public:
+    virtual ~cD6States() {}
     virtual int  Initialize(DWORD dwRequestedFlags);
-protected:
-    virtual int  SetDefaultsStates(DWORD dwRequestedFlags);
-public:
+    virtual void ReleaseAllTextures() {}
+    virtual int  load_texture(tdrv_texture_info *info);
+    virtual void release_texture(int n);
     virtual void set_texture_id(int n);
     virtual int  reload_texture(tdrv_texture_info *info);
     virtual void cook_info(tdrv_texture_info *info);
@@ -318,16 +361,40 @@ public:
     virtual void SetTextureLevel(int n);
     virtual int  EnableMTMode(DWORD dwMTOn);
     virtual void TurnOffTexuring(int bTexOff);
+    virtual void SetTextureNow(void);
     virtual cD6States* DeInstance() = 0;
     virtual void EnableDepthBuffer(int val);
     virtual void SetZWrite(BOOL val);
     virtual void SetZCompare(BOOL val);
     virtual void SetFogDensity(float density);
+    virtual int  UseLinearTableFog(BOOL bUseIt);
+    virtual void SetFogStartAndEnd(float fStart, float fEnd);
+    virtual void SetAlphaColor(float alpha);
+    virtual void EnableAlphaBlending(BOOL enable);
+    virtual void SetAlphaModulateHack(uint mode);
+    virtual void ResetDefaultAlphaModulate();
+    virtual void EnableFog(BOOL enable);
+    virtual void SetFogColor(int r, int g, int b);
+    virtual void SetTexturePalette(uint start, uint n, uchar* pal, int slot);
     virtual void SetChromaKey(int r, int g, int b);
+    virtual BOOL SetTexWrapping(DWORD dwLevel, BOOL bSetSmooth);
+    virtual void ApplyTextureFilter();
+    virtual void ApplyLightmapFilter();
+    virtual DWORD GetTextureLevel();
+    virtual void SetCullMode(DWORD dwCull);
+    virtual void ResetAlphaTest();
+    virtual void SetAlphaTestRef(int nRef);
+    virtual void SetTrilinearFiltering(BOOL bOn);
+    virtual void SetMipmapBias(float fBias);
+    virtual void SetTextureMipmapBias(float fBias);
+    virtual void SetTextureFilterMode(int nMode);
+    virtual void SetLightmapFilterMode(int nMode);
+    virtual void SetColorWriteEnable(DWORD dwMask);
+protected:
+    virtual int  SetDefaultsStates(DWORD dwRequestedFlags);
+public:
 
     // Texture driver interface (non-virtual — called through g_driver on cD6States*)
-    int load_texture(tdrv_texture_info *info);
-    void release_texture(int n);
     void unload_texture(int n);
     void synchronize(void);
     void start_frame(int n);
@@ -335,28 +402,18 @@ public:
     int load_texture_a(tdrv_texture_info *info);
     int reload_texture_a(tdrv_texture_info *info);
     void release_texture_a(int n);
-    void SetTextureNow(void);
 
     void SetAntialiasing(int bOn);
-    void SetAlphaColor(float alpha);
     void SetLinearFogDistance(float fDistance);
     int SetSmoothShading(BOOL bSmooth);
     void SetAlphaPalette(ushort* pal);
     void SetPalSlotFlags(uint start, uint n, uchar* pal, int slot, int flags);
-    void SetTexturePalette(uint start, uint n, uchar* pal, int slot);
-    void SetFogColor(int r, int g, int b);
-    void EnableFog(BOOL enable);
-    void EnableAlphaBlending(BOOL enable);
     void EnablePalette(BOOL enable);
     BOOL IsPaletteOn();
     int EnableSpecular(BOOL enable);
-    void SetAlphaModulateHack(uint mode);
-    void ResetDefaultAlphaModulate();
     void SetFogSpecularLevel(float level);
     void SetDithering(BOOL bOn);
     void GetTexBlendingModes(ulong* p0, ulong* p1);
-    int UseLinearTableFog(BOOL bUseIt);
-    void SetFogStartAndEnd(float fStart, float fEnd);
     void SetTextureMapMode(ulong flag);
     int  IsZCompareOn() { return m_psCurrentRS->eZCompareFunc == 4; }
     int  IsZWriteOn() { return m_psCurrentRS->bZWriteEnable; }
@@ -369,7 +426,6 @@ public:
     int  IsAlphaBlendingOn() { return m_psCurrentRS->bAlphaOn; }
     int  IsFogOn() { return m_psCurrentRS->bFogOn; }
     int  IsSmoothShadingOn() { return m_psCurrentRS->eShadeMode == 2; }
-    BOOL SetTexWrapping(DWORD dwLevel, BOOL bSetSmooth);
 
     HRESULT CreateDDSurface(d3d_cookie dwCookie, DDSURFACEDESC2* pddsd, IDirectDrawSurface4** ppSurface);
     void LoadSurface(tdrv_texture_info* info, _DDSURFACEDESC2* ddsd);
@@ -380,15 +436,6 @@ protected:
     cD6States();
 public:
     void SetPointerToCurrentStates(char* pData);
-    ulong m_DeviceSurfaceCaps;
-    int* m_texture_size_list;
-    ulong m_texture_caps;
-#ifdef NEWDARK
-    int nd_14, nd_18, nd_1C, nd_20, nd_24, nd_28, nd_2C, nd_30, nd_34, nd_38;
-#endif
-    BOOL m_bTextureListInitialized;
-    sRenderStates* m_psCurrentRS;
-    sRenderStates* m_psSetRS;
     BOOL m_bTexture_RGB;
     BOOL m_bUsingLocalMem;
     BOOL m_bLocalMem_available;
@@ -399,10 +446,16 @@ public:
     BOOL m_bSpecular;
     BOOL m_bCanModulate;
     BOOL m_bCanModulateAlpha;
+    ulong m_DeviceSurfaceCaps;
+    int* m_texture_size_list;
+    ulong m_texture_caps;
+    BOOL m_bTextureListInitialized;
+    sRenderStates* m_psCurrentRS;
+    sRenderStates* m_psSetRS;
 
     float LinearWorldIntoFogCoef(float param);
 
-    unsigned long GetRenderStatesSize();
+    unsigned long GetRenderStatesSize() { return sizeof(sRenderStates); }
 
 protected:
     void EnumerateTextureFormats();

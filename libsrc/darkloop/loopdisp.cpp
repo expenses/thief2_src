@@ -501,7 +501,7 @@ HRESULT cLoopDispatch::PostSimpleMessage(eLoopMessage message)
 HRESULT cLoopDispatch::ProcessQueue()
 {
 	sLoopQueueMessage message;
-	HRESULT result = S_FALSE;
+	HRESULT result = S_OK;
 
 	while (m_Queue.GetMessage(&message))
 	{

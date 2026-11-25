@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/fltang.cpp,v 1.14 1998/10/05 17:23:39 mahk Exp $
 ///////////////////////
 //
@@ -40,7 +39,7 @@ void floatang::set(const float sourceX, const float sourceY, const float endX, c
       AssertMsg4(value >= -(PI + 0.01) && value <= (PI + .01), "atan2() returned Nan on (%f, %f):(%f, %f)", sourceX, sourceY, endX, endY);
 #endif
 
-      if (value <= 0)
+      if (value < 0)
          value += TWO_PI;
 
    }

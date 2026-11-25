@@ -137,6 +137,7 @@ extern "C" void __assert(int, char * cond, char * file, int line)
 //
 
 BOOL g_fQuietAssert = FALSE;
+BOOL g_fAssertAlwaysAsk = FALSE;
 
 void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
 {
@@ -167,6 +168,10 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
     }
     fInAssert = TRUE;
 
+    BOOL fNotify = !g_fQuietAssert;
+    if (fNotify && pfnNotificationHandler)
+        (*pfnNotificationHandler)(kCritMsgEnter);
+
     // Display the message
 #if 1
     char szScratch[1024];
@@ -174,9 +179,9 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
     // Always write to error log
     const char * pszLogCriticalMsg = "Assertion Failure: %s";
     snprintf(szScratch, sizeof(szScratch) - 1,  pszLogCriticalMsg, pszMessage);
-    _LogWriteMsgFileLine(szScratch, pszTrimmedFile, uLine);
+    _LogWriteMsg(szScratch);
 
-    mprintf("[%s@%d] %s\n", pszTrimmedFile, uLine, pszMessage);
+    mprintf("ASSERT: [%s@%d] %s\n", pszTrimmedFile, uLine, pszMessage);
 
 #ifdef _WIN32
     if (!g_fQuietAssert)
@@ -188,40 +193,37 @@ void LGAPI _CriticalMsg(const char * cond, const char * file, unsigned uLine)
         else
             snprintf(szScratch, sizeof(szScratch) - 1,  pszMessageBoxCriticalMsgNoFileLine, pszMessage);
 
-        if (pfnNotificationHandler)
-            (*pfnNotificationHandler)(kCritMsgEnter);
-
         int previousThreadPriority = GetThreadPriority(GetCurrentThread());
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
         int nCode = ::MessageBox(NULL, szScratch, "Assertion Failed", MB_SYSTEMMODAL | MB_ICONHAND | MB_YESNOCANCEL);
         SetThreadPriority(GetCurrentThread(), previousThreadPriority);
 
-
         if (nCode == IDYES)
         {
-            _LogWriteMsgFileLine("    Going to debugger...", pszFile, uLine);
+            _LogWriteMsg("    Going to debugger...");
             if (pfnNotificationHandler)
                 (*pfnNotificationHandler)(kCritMsgDebugging);
             DebugBreak(); // bang!
-
-        }
-        else if (nCode == IDNO)
-        {
-            _LogWriteMsgFileLine("    Exiting process...", pszFile, uLine);
-            if (pfnNotificationHandler)
-                (*pfnNotificationHandler)(kCritMsgTerminating);
-            ExitProcess(1); // swoosh
         }
         else
         {
-           _LogWriteMsgFileLine("    Continuing...", pszFile, uLine);
+            if (nCode == IDNO)
+            {
+                _LogWriteMsg("    Exiting process...");
+                if (pfnNotificationHandler)
+                    (*pfnNotificationHandler)(kCritMsgTerminating);
+                ExitProcess(1); // swoosh
+            }
+            _LogWriteMsg("    Continuing...");
             if (pfnNotificationHandler)
                 (*pfnNotificationHandler)(kCritMsgIgnoring);
-            g_fQuietAssert = TRUE; // ho-hum
+            if (!g_fAssertAlwaysAsk)
+                g_fQuietAssert = TRUE; // ho-hum
         }
-        if (pfnNotificationHandler)
-            (*pfnNotificationHandler)(kCritMsgExit);
     }
+
+    if (fNotify && pfnNotificationHandler)
+        (*pfnNotificationHandler)(kCritMsgExit);
 
 #else
     const char * pszCriticalMsg = "Assertion Failure: %s  (File: %s, Line: %d)\n";

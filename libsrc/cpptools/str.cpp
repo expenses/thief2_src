@@ -136,9 +136,6 @@ void cAnsiStr::AllocBuffer(int nReqLen)
             return;
         }
 
-    // max size (enough room for 1 extra)
-    AssertMsg(nReqLen >= 0 && nReqLen < INT_MAX - 1, "Invalid string allocation size");
-
     if (m_nAllocLength < nReqLen + 1)
         {
         const int nAllocLength = NextAllocLen(m_nAllocLength, nReqLen);
@@ -620,13 +617,13 @@ void cAnsiStr::Trim()
         char * pEnd   = m_pchData + m_nDataLength;
 
         // Skip leading whitespace
-        while (*pStart && isspace(*pStart))
+        while (*pStart && isspace((unsigned char)*pStart))
             pStart++;
 
         // If we hit something, scan from the end
         if (*pStart)
             {
-            while (isspace(*(pEnd - 1)))
+            while (isspace((unsigned char)*(pEnd - 1)))
                 {
                 pEnd--;
                 }

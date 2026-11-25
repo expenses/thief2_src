@@ -159,7 +159,7 @@ cWinDisplayDevice::cWinDisplayDevice(IUnknown * pOuterUnknown,
 
     if (m_DisplayDeviceKind == kDispDefault)
     {
-        unsigned desiredShellKind = GetPrivateProfileInt("WinShell", "ShellKind", 100, "lg.ini");
+        unsigned desiredShellKind = GetPrivateProfileInt("WinShell", "ShellKind", 100, ".\\lg.ini");
 
         enum eLegacyKinds
         {
@@ -358,10 +358,13 @@ STDMETHODIMP cWinDisplayDevice::SetMode(eGrDispMode dispMode, int flags)
         result = E_FAIL;
     }
 
-    m_flags &= ~kSettingMode;
-    // Reset any monitored pointers
-    Lock();
-    Unlock();
+    if (m_pDisplayModeOperations)
+    {
+        m_flags &= ~kSettingMode;
+        // Reset any monitored pointers
+        Lock();
+        Unlock();
+    }
 
     RestoreLock(iPreviousLock);
 
@@ -579,7 +582,7 @@ STDMETHODIMP_(void) cWinDisplayDevice::FlushRect(int x0, int y0, int x1, int y1)
 // in an invalid pointer, for instance)
 //
 
-STDMETHODIMP_(BOOL) cWinDisplayDevice::SetMonitor(tGrDispBits ** ppDispBits, eDisplayDeviceMonitorFlag action)
+STDMETHODIMP_(BOOL) cWinDisplayDevice::SetMonitor(tGrDispBits ** ppDispBits, ushort * pRowBytes, eDisplayDeviceMonitorFlag action)
 {
     cAutoDisplayMutex mutex(this);
 
@@ -604,7 +607,7 @@ STDMETHODIMP_(BOOL) cWinDisplayDevice::SetMonitor(tGrDispBits ** ppDispBits, eDi
     const tGrDispBits * const pDispBits = *ppDispBits;
     const unsigned uVideoBufferSize = (m_pModeInfo->rowBytes * m_pModeInfo->h);
 
-    if (pDispBits >= m_pModeInfo->vbase && pDispBits < (uint8*) m_pModeInfo->vbase + uVideoBufferSize)
+    if (m_pModeInfo->vbase && pDispBits >= m_pModeInfo->vbase && pDispBits < (uint8*) m_pModeInfo->vbase + uVideoBufferSize)
         pPtrMonitor = &m_PrimarySurfaceRelocationSet;
 
     else if (m_pModeInfo->vbase2 && pDispBits >= m_pModeInfo->vbase2 && pDispBits < (uint8*) m_pModeInfo->vbase2 + uVideoBufferSize)
@@ -618,7 +621,7 @@ STDMETHODIMP_(BOOL) cWinDisplayDevice::SetMonitor(tGrDispBits ** ppDispBits, eDi
         switch (action)
         {
             case kGrDispPtrMonitorOn:
-                pPtrMonitor->Insert(ppDispBits);
+                pPtrMonitor->Insert(ppDispBits, pRowBytes);
                 break;
 
             case kGrDispPtrMonitorOff:
@@ -667,8 +670,9 @@ STDMETHODIMP cWinDisplayDevice::GetRenderTargets(sGrRenderTargets *)
 void cWinDisplayDevice::Sync2DPointers()
 {
     BEGIN_DEBUG_MSG_EX(PTRMONITOR, "cWinDispDevice::Sync2DPointers()");
-    m_PrimarySurfaceRelocationSet.SetBaseAddress(m_pModeInfo->vbase);
-    m_SecondarySurfaceRelocationSet.SetBaseAddress(m_pModeInfo->vbase2);
+    m_PrimarySurfaceRelocationSet.SetBaseAddress(m_pModeInfo->vbase, m_pModeInfo->rowBytes);
+    m_SecondarySurfaceRelocationSet.SetBaseAddress(m_pModeInfo->vbase2, m_pModeInfo->rowBytes);
+    grd_screen_row = m_pModeInfo->rowBytes;
     END_DEBUG;
 }
 
@@ -739,16 +743,16 @@ STDMETHODIMP_(int) cWinDisplayDevice::IsLocked()
 
 STDMETHODIMP_(BOOL) cWinDisplayDevice::SetGamma(double gamma)
 {
-    if (m_pDisplayModeOperations)
-        return m_pDisplayModeOperations->DoSetGamma(gamma);
-    return FALSE;
+    if (!m_pDisplayModeOperations)
+        return FALSE;
+    return m_pDisplayModeOperations->DoSetGamma(gamma);
 }
 
 STDMETHODIMP_(BOOL) cWinDisplayDevice::SetFlip(BOOL bFlip)
 {
-    if (m_pDisplayModeOperations)
-        return m_pDisplayModeOperations->DoSetFlip(bFlip);
-    return FALSE;
+    if (!m_pDisplayModeOperations)
+        return FALSE;
+    return m_pDisplayModeOperations->DoSetFlip(bFlip);
 }
 
 ///////////////////////////////////////

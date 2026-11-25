@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/frobscrm.h,v 1.2 1998/04/07 13:58:10 CCAROLLO Exp $
 
 #pragma once

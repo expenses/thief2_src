@@ -169,7 +169,7 @@ void gr_free_ytab(grs_canvas *c)
 
 void gr_init_canvas (grs_canvas *c, uchar *p, uint type, int w, int h)
 {
-   gr_init_bitmap (&c->bm, p, type, 0, w, h);
+   gr_init_bitmap (&c->bm, p, type, (type == BMT_FLAT32) ? BMF_RGB_888 : 0, w, h);
    gr_init_gc (c);
    c->ytab = NULL;
 }
@@ -208,7 +208,7 @@ void gr_make_canvas (grs_bitmap *bm, grs_canvas *c)
 
    // If the bits are relocatable, need to monitor the canvas bits as well.
    if (bm->flags&BMF_RELOCATABLE)
-      vMonitor(&c->bm.bits);
+      vMonitor(&c->bm.bits, &c->bm.row);
 
    gr_init_gc(c);
    c->ytab = NULL;
@@ -224,7 +224,7 @@ grs_canvas *gr_alloc_canvas (uint type, int w, int h)
    gr_init_canvas (c, NULL, type, w, h);
    p = &(c->bm.bits);
    if (c->bm.flags&BMF_DEVICE_VIDMEM) {
-      if (vAlloc(p, w, h))
+      if (vAlloc(p, &c->bm.row, w, h))
          c->bm.flags|=BMF_RELOCATABLE;
    } else {
       switch (c->bm.type) {
@@ -249,6 +249,8 @@ void gr_close_canvas(grs_canvas *c)
    if (c->ytab != NULL)
       gr_free_ytab(c);
    gr_close_bitmap(&(c->bm));
+   if (grd_canvas == c)
+      grd_canvas = NULL;
 }
 
 gr_free_canvas (grs_canvas *c)

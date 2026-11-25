@@ -88,7 +88,11 @@ void *temp_realloc(void *p,long n)
 /* free temporary buffer pointed to by p. */
 int temp_free(void *p)
 {
-   return MemStackFree(temp_mem_stack,p)==FALSE;
+   if ((uchar *)p >= (uchar *)temp_mem_stack->baseptr
+    && (uchar *)p < (uchar *)temp_mem_stack->baseptr + temp_mem_stack->sz)
+      return MemStackFree(temp_mem_stack,p)==FALSE;
+   Free(p);
+   return TRUE;
 }
 
 #ifdef DBG_ON

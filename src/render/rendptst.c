@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/rendptst.c,v 1.3 1999/08/05 17:31:49 Justin Exp $
 // rendobj playtest stuff (some ifndef SHIP, some just PLAYTEST)
 
@@ -103,22 +102,22 @@ static void rend_name_list(void)
 Command rend_all_mode_keys[] =
 {
 #ifndef SHIP
-   { "show_phys_models",TOGGLE_BOOL,&g_bShowPhysModels},
-   { "show_phys_bbox",TOGGLE_BOOL, &g_bShowPhysBBox},
-   { "show_creature_joints",TOGGLE_BOOL, &g_bShowCreatureJoints},
-   { "mesh_segs_display", TOGGLE_BOOL, &g_bDrawMeshVerts },
-   { "mesh_joints_display", TOGGLE_BOOL, &g_bDrawMeshJoints },
-   { "mesh_segs_reset", FUNC_VOID, meshSegsReset },
-   { "mesh_seg_incr", FUNC_VOID, meshSegIncr },
-   { "mesh_seg_set", VAR_INT, &g_DbgMeshSegIndex },
+   { "show_phys_models",TOGGLE_BOOL,&g_bShowPhysModels, NULL, 0, 1},
+   { "show_phys_bbox",TOGGLE_BOOL, &g_bShowPhysBBox, NULL, 0, 1},
+   { "show_creature_joints",TOGGLE_BOOL, &g_bShowCreatureJoints, NULL, 0, 1},
+   { "mesh_segs_display", TOGGLE_BOOL, &g_bDrawMeshVerts, NULL, 0, 1},
+   { "mesh_joints_display", TOGGLE_BOOL, &g_bDrawMeshJoints, NULL, 0, 1},
+   { "mesh_segs_reset", FUNC_VOID, meshSegsReset, NULL, 0, 1},
+   { "mesh_seg_incr", FUNC_VOID, meshSegIncr, NULL, 0, 1},
+   { "mesh_seg_set", VAR_INT, &g_DbgMeshSegIndex, NULL, 0, 1},
    { "lit_obj_toggle", TOGGLE_BOOL, &obj_lighting_on },
 #endif
-   { "rend_objname_color", VAR_INT, &rendobj_name_color, "3d obj name color" },
-   { "rend_name_toggle", FUNC_INT, rend_name_toggle, "set color, toggle name color" },
-   { "rend_name_types", VAR_INT, &rendobj_name_types, "set mask on things to draw" },
+   { "rend_objname_color", VAR_INT, &rendobj_name_color, "3d obj name color", 0, 1},
+   { "rend_name_toggle", FUNC_INT, rend_name_toggle, "set color, toggle name color", 0, 1},
+   { "rend_name_types", VAR_INT, &rendobj_name_types, "set mask on things to draw", 0, 1},
 #ifdef NEW_NETWORK_ENABLED
-   { "rend_net_name_toggle", TOGGLE_BOOL, &rendobj_net_name_coloring, "toggle name net color" },
-   { "rend_net_color_set", FUNC_STRING, rend_net_name_color_set, "<local>, <hosted>, <proxy>" },
+   { "rend_net_name_toggle", TOGGLE_BOOL, &rendobj_net_name_coloring, "toggle name net color", 0, 1},
+   { "rend_net_color_set", FUNC_STRING, rend_net_name_color_set, "<local>, <hosted>, <proxy>", 0, 1},
 #endif
    { "rend_name_list", FUNC_VOID, rend_name_list, "list all rendered objs to mono" },
 };

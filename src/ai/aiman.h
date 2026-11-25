@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiman.h,v 1.28 1999/06/15 18:23:23 dc Exp $
 //
@@ -136,6 +135,7 @@ public:
    //
    STDMETHOD_(void, ListenForCollisions)(ObjID);
    STDMETHOD_(void, UnlistenForCollisions)(ObjID);
+   STDMETHOD_(BOOL, CreateAIWithMode)(ObjID objId, const char * pszBehaviorSet, eAIMode mode);
 
    ////////////////////////////////////
    //
@@ -405,6 +405,11 @@ inline const cAIArray & cAIManager::AccessAIs() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+EXTERN BOOL g_bAIUseExDoors;
+EXTERN BOOL g_bAIEnhancedDetectTrace;
+EXTERN BOOL g_bAILegacyRangedCombat;
+EXTERN BOOL g_bAIDeathKeepPhys;
 
 #pragma pack()
 

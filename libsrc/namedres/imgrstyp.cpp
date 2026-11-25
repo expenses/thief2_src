@@ -18,6 +18,8 @@ static sExtMap extMaps[] =
   { ".cel", kImgCEL },
   { ".gif", kImgGIF },
   { ".bmp", kImgBMP },
+  { ".png", kImgPNG },
+  { ".dds", kImgDDS },
   { NULL }
 };
 

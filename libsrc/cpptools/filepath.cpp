@@ -29,6 +29,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <lg_file.h>
 
 #ifndef DEBUG_REDUCE
 #define DEBUG_REDUCE 0
@@ -179,7 +180,7 @@ BOOL cFilePath::PathExists() const
     // Previously used access(), but that doesn't distinguish between
     // a file and a directory:
     // int result = access(pName, 0);
-    int result = _stat(pName, &StatBuf);
+    int result = lg_stat(pName, &StatBuf);
     if (result == 0) {
        // Okay, it exists -- is it actually a directory?
        if (S_ISDIR(StatBuf.st_mode)) {

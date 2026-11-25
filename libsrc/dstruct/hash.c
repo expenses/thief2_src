@@ -1,3 +1,4 @@
+#include <math.h>
 #include <lg.h> 
 #include <stdlib.h>
 #include <string.h>
@@ -44,6 +45,9 @@
 
 #define FULLNESS_THRESHHOLD_PERCENT 80
 
+void config_copy_elem(void* t, void* s);
+void config_free_elem(void* e);
+
 #define ELEM(tbl,i)  ((void*)((tbl)->vec + (i)*(tbl)->elemsize))
 
 int hashlog2(int x)
@@ -86,23 +90,31 @@ bool is_fermat_prime(uint n, uint numtests)
 
 static bool is_prime(uint n)
 {
-   if (n > NUM_FERMAT_TESTS*NUM_FERMAT_TESTS)
-      return is_fermat_prime(n,NUM_FERMAT_TESTS);
-   else
-   {
-      int i;
-      for (i = 2; i*i <= n; i++)
-         if ((n/i)*i == n)
-            return FALSE;
-   }
+   uint sqrt_n = (uint)sqrt((double)n);
+   uint i;
+
+   for (i = 3; i <= sqrt_n; i += 2)
+      if (n % i == 0)
+         return FALSE;
+
    return TRUE;
+}
+
+static uint next_prime(uint n)
+{
+   if (n <= 3)
+      return 3;
+   n |= 1;
+   while (!is_prime(n))
+      n += 2;
+   return n;
 }
 
 errtype hash_init(Hashtable* h, int elemsize, int vecsize, Hashfunc hfunc, Equfunc efunc)
 {
    int i;
    Spew(DSRC_DSTRUCT_Hash,("hash_init(%x,%d,%d,%x,%x)\n",h,elemsize,vecsize,hfunc,efunc));
-   while(!is_prime(vecsize)) vecsize++;
+   vecsize = next_prime(vecsize);
    h->elemsize = elemsize;
    h->size = vecsize;
    h->sizelog2 = hashlog2(vecsize);
@@ -119,13 +131,16 @@ errtype hash_init(Hashtable* h, int elemsize, int vecsize, Hashfunc hfunc, Equfu
 
 errtype hash_copy(Hashtable* t, Hashtable* s)
 {
+   int i;
    *t = *s;
    t->statvec = Malloc(t->size);
    if (t->statvec == NULL) return ERR_NOMEM;
    t->vec = Malloc(t->elemsize*t->size);
    if (t->vec == NULL) return ERR_NOMEM;
-   memcpy(t->vec,s->vec,t->size*t->elemsize);
    memcpy(t->statvec,s->statvec,t->size);
+   for (i = 0; i < s->size; i++)
+      if (s->statvec[i] == HASH_FULL)
+         config_copy_elem(ELEM(t,i),ELEM(s,i));
    return OK;
 }
 
@@ -136,15 +151,10 @@ static bool find_elem(Hashtable* h, void* elem, int* idx)
    int index,j;
    Spew(DSRC_DSTRUCT_Hash,("find_elem(%x,%x,%x) hash is %d\n",h,elem,idx,hash));
 
-//   mprintf ("hash is %d\n size is %d\n hash%size is %d\n",hash,h->size,hash%h->size);
-
-   if (h->size == 0) return FALSE;
-
    for (j = 0, index = hash%h->size;  j < h->size && h->statvec[index] != HASH_EMPTY;
          j++,index = (index + (1 << hash%h->sizelog2)) % h->size)
    {
       void* myelem = (void*) ELEM(h,index);
-//      mprintf("comparing %x to %x using %x\n",elem,myelem,h->efunc);
       if (h->statvec[index] == HASH_FULL && h->efunc(elem,myelem) == 0)
       {
          found = TRUE;
@@ -183,7 +193,7 @@ static errtype grow(Hashtable* h, int newsize)
    int oldsize = h->size;
    int i;
    Spew(DSRC_DSTRUCT_Hash,("grow(%x,%d)\n",h,newsize));
-   for (;!is_prime(newsize);newsize++);
+   newsize = next_prime(newsize);
    newvec = Malloc(newsize*h->elemsize);
    if (newvec == NULL) return ERR_NOMEM;
    newstat = Malloc(newsize);
@@ -218,6 +228,8 @@ errtype hash_set(Hashtable* h, void* elem)
       grow(h,h->size*2);
    if (!find_elem(h,elem,&i))
       i = find_index(h,elem);
+   if (h->statvec[i] == HASH_FULL)
+      config_free_elem(ELEM(h,i));
    memcpy(ELEM(h,i),elem,h->elemsize);
    h->statvec[i] = HASH_FULL;
    h->fullness++;
@@ -244,9 +256,11 @@ errtype hash_delete(Hashtable* h, void* elem)
    Spew(DSRC_DSTRUCT_Hash,("hash_delete(%x,%x)\n",h,elem));
    if (find_elem(h,elem,&i))
    {
+      config_free_elem(elem);
       h->statvec[i] = HASH_TOMBSTONE;
       return OK;
    }
+   config_free_elem(elem);
    return ERR_NOEFFECT;
 }
 
@@ -289,6 +303,10 @@ errtype hash_step(Hashtable *h, void **result, int *index)
 
 errtype hash_destroy(Hashtable* h)
 {
+   int i;
+   for (i = 0; i < h->size; i++)
+      if (h->statvec[i] == HASH_FULL)
+         config_free_elem(ELEM(h,i));
    h->size = 0;
    h->fullness = 0;
    Free(h->statvec);

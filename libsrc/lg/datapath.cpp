@@ -80,6 +80,11 @@
 
 #include <datapath.h>
 #include <memall.h>
+#include <lglog.h>
+#include <config.h>
+#include <direct.h>
+#include <ctype.h>
+#include <lg_file.h>
 
 #define min(a, b) ((a < b) ? a : b)
 
@@ -125,9 +130,9 @@ void DatapathFree(Datapath *pdp)
 //
 //	Returns: ptr to opened file, or NULL
 
-FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode)
+LGFILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode)
 {
-	FILE *fp;
+	LGFILE *fp;
 	int i;
 	char buff[128];
 
@@ -139,7 +144,7 @@ FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode)
 
 	if (!pdp->noCurrent)
 		{
-		fp = fopen(fname, mode);
+		fp = lg_fopen(fname, mode);
 		if (fp)
 			return(fp);
 		}
@@ -150,7 +155,7 @@ FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode)
 		{
 		strcpy(buff, pdp->datapath[i]);
 		strcat(buff, fname);
-		fp = fopen(buff, mode);
+		fp = lg_fopen(buff, mode);
 		if (fp)
 			{
 			pdp->last = i + 1;
@@ -166,10 +171,10 @@ FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode)
 //	-------------------------------------------------------------
 //
 //	DatapathFDOpen() tries to open a data file for reading.
-//	It returns a file descriptor, rather than a FILE* structure.
+//	It returns a file descriptor, rather than a LGFILE* structure.
 //
 //	If access&O_CREAT, a fourth argument must be passed that
-//	specifies the permissions of the created file (see open()
+//	specifies the permissions of the created file (see lg_open()
 //	docs for details)
 //
 //	It tries the current directory if the datapath specifies,
@@ -178,8 +183,8 @@ FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode)
 //
 //		pdp    = ptr to data path struct
 //		fname  = filename
-//		access = open() access flags
-//	(opt)	permis = open() create permission flags.
+//		access = lg_open() access flags
+//	(opt)	permis = lg_open() create permission flags.
 //
 //	Returns: descriptor of opened file, or -1
 
@@ -209,9 +214,9 @@ int DatapathFDOpen(Datapath *pdp, const char *fname, int access, ... )
 	if (!pdp->noCurrent)
 		{
 		if (access & O_CREAT)
-		   fd = open(fname, access, permis);
+		   fd = lg_open(fname, access, permis);
 		else
-		   fd = open(fname, access);
+		   fd = lg_open(fname, access);
 
 		if (fd != -1)
 			return(fd);
@@ -225,9 +230,9 @@ int DatapathFDOpen(Datapath *pdp, const char *fname, int access, ... )
 		strcat(buff, fname);
 
 		if (access & O_CREAT)
-			fd = open(buff, access, permis);
+			fd = lg_open(buff, access, permis);
 		else
-		   fd = open(buff, access);
+		   fd = lg_open(buff, access);
 
 		if (fd != -1)
 			{
@@ -456,3 +461,291 @@ void DatapathFindFlags(Datapath *pdp,bool files,bool dirs)
    // okay, zero means files, no dir
    pdp->find_flags = (files?0:1) | (dirs?2:0);
 }
+
+EXTERN char g_szFMPath[_MAX_PATH] = "";
+EXTERN Datapath *g_pModDatapath = NULL;
+EXTERN int g_iModDatapathFM = -1;
+
+EXTERN const char *FMPathPrepend(const char *name, char *buf)
+{
+   if (!name)
+      return NULL;
+   const char *pszFM = *g_szFMPath ? g_szFMPath : NULL;
+   if (!pszFM)
+      return name;
+   if (name[0] == '.' && (name[1] == '\\' || name[1] == '/'))
+      name += 2;
+   sprintf(buf, "%s\\%s", pszFM, name);
+   return buf;
+}
+
+EXTERN const char *FMPathPrependTemp(const char *name)
+{
+   static char bufs[4][_MAX_PATH * 2 + 64];
+   static int iBuf;
+
+   iBuf = (iBuf + 1) & 3;
+   return FMPathPrepend(name, bufs[iBuf]);
+}
+
+#define FM_DEFAULT_ROOT "FMs"
+
+EXTERN char g_szFMRoot[_MAX_PATH] = FM_DEFAULT_ROOT;
+EXTERN char g_szFMName[64] = "";
+
+EXTERN void FMUpdateDatapath(const char *pszFMPath)
+{
+   if (g_pModDatapath)
+   {
+      DatapathFree(g_pModDatapath);
+      delete g_pModDatapath;
+      g_pModDatapath = NULL;
+   }
+   if (pszFMPath && *pszFMPath)
+   {
+      g_pModDatapath = new Datapath;
+      memset(g_pModDatapath, 0, sizeof(Datapath));
+      DatapathAdd(g_pModDatapath, (char *)pszFMPath);
+   }
+}
+
+static BOOL DatapathPathEndsWith(const char *pszPath, const char *pszTail)
+{
+   char szTail[256];
+   char szPath[256];
+   const char *pTailEnd = pszTail + strlen(pszTail) - 1;
+   const char *pPathEnd = pszPath + strlen(pszPath) - 1;
+
+   for (;;)
+   {
+      while (pTailEnd >= pszTail && (*pTailEnd == '\\' || *pTailEnd == '/' || isspace((uchar)*pTailEnd)))
+         pTailEnd--;
+      if (pTailEnd < pszTail)
+         return FALSE;
+      while (pPathEnd >= pszPath && (*pPathEnd == '\\' || *pPathEnd == '/' || isspace((uchar)*pPathEnd)))
+         pPathEnd--;
+      if (pPathEnd < pszPath)
+         return FALSE;
+
+      const char *pTail = pTailEnd;
+      while (pTail >= pszTail && *pTail != '\\' && *pTail != '/')
+         pTail--;
+      pTail++;
+      const char *pPath = pPathEnd;
+      while (pPath >= pszPath && *pPath != '\\' && *pPath != '/')
+         pPath--;
+      pPath++;
+
+      int nPath = pPathEnd - pPath + 1;
+      memcpy(szPath, pPath, nPath);
+      szPath[nPath] = '\0';
+      int nTail = pTailEnd - pTail + 1;
+      memcpy(szTail, pTail, nTail);
+      szTail[nTail] = '\0';
+      if (stricmp(szPath, szTail))
+         return FALSE;
+
+      pTailEnd = pTail - 1;
+      while (pTailEnd >= pszTail && (*pTailEnd == '\\' || *pTailEnd == '/'))
+         pTailEnd--;
+      if (pTailEnd < pszTail)
+         return TRUE;
+      pPathEnd = pPath - 1;
+      while (pPathEnd >= pszPath && (*pPathEnd == '\\' || *pPathEnd == '/'))
+         pPathEnd--;
+      if (pPathEnd < pszPath)
+         return FALSE;
+   }
+}
+
+static void DatapathListRemove(char *pszList, const char *pszPath)
+{
+   char szElem[256];
+   char *pElem = pszList;
+   char *pPrevSep = NULL;
+
+   while (*pElem)
+   {
+      char *pPlus = strchr(pElem, '+');
+      char *pSep = strchr(pElem, ';');
+      if (pPlus && (!pSep || pSep >= pPlus))
+         pSep = pPlus;
+      if (!pSep)
+      {
+         if (DatapathPathEndsWith(pElem, pszPath))
+         {
+            if (pPrevSep)
+               *pPrevSep = '\0';
+            else
+               *pszList = '\0';
+         }
+         return;
+      }
+      int n = pSep - pElem;
+      strncpy(szElem, pElem, n);
+      szElem[n] = '\0';
+      if (DatapathPathEndsWith(szElem, pszPath))
+      {
+         if (pPrevSep)
+         {
+            memmove(pPrevSep, pSep, strlen(pSep) + 1);
+            pSep = pPrevSep;
+         }
+         else
+         {
+            memmove(pElem, pSep + 1, strlen(pSep));
+            continue;
+         }
+      }
+      pPrevSep = pSep;
+      pElem = pSep + 1;
+   }
+}
+
+EXTERN void ModPathRemove(const char *pszPaths)
+{
+   char szElem[256];
+   char szModPath[2048];
+   char szUberModPath[2048];
+
+   if (!pszPaths || !*pszPaths)
+      return;
+
+   szModPath[0] = '\0';
+   szUberModPath[0] = '\0';
+   config_get_raw("mod_path", szModPath, sizeof(szModPath));
+   config_get_raw("uber_mod_path", szUberModPath, sizeof(szUberModPath));
+   if (!*szModPath && !*szUberModPath)
+      return;
+
+   if (!strcmp(pszPaths, "*"))
+   {
+      config_unset("mod_path");
+      config_unset("uber_mod_path");
+      return;
+   }
+
+   int nModPath = strlen(szModPath);
+   int nUberModPath = strlen(szUberModPath);
+   const char *p = pszPaths;
+   while (*p)
+   {
+      const char *pPlus = strchr(p, '+');
+      const char *pSep = strchr(p, ';');
+      if (pPlus && (!pSep || pSep >= pPlus))
+         pSep = pPlus;
+      if (!pSep)
+      {
+         DatapathListRemove(szModPath, p);
+         DatapathListRemove(szUberModPath, p);
+         break;
+      }
+      int n = pSep - p;
+      strncpy(szElem, p, n);
+      szElem[n] = '\0';
+      DatapathListRemove(szModPath, szElem);
+      DatapathListRemove(szUberModPath, szElem);
+      p = pSep + 1;
+   }
+
+   if (nModPath != (int)strlen(szModPath))
+   {
+      if (*szModPath)
+         config_set_string("mod_path", szModPath);
+      else
+         config_unset("mod_path");
+   }
+   if (nUberModPath != (int)strlen(szUberModPath))
+   {
+      if (*szUberModPath)
+         config_set_string("uber_mod_path", szUberModPath);
+      else
+         config_unset("uber_mod_path");
+   }
+}
+
+static BOOL FMIsWritableDir(const char *pszPath)
+{
+   struct _stat64i32 st;
+   return lg_stat(pszPath, &st) == 0 && (st.st_mode & _S_IFDIR) && (st.st_mode & _S_IREAD) && (st.st_mode & _S_IWRITE);
+}
+
+EXTERN BOOL FMSelect(const char *pszName)
+{
+   if (!pszName || !*pszName)
+   {
+      g_szFMName[0] = '\0';
+      g_szFMPath[0] = '\0';
+      FMUpdateDatapath(NULL);
+      return TRUE;
+   }
+
+   strncpy(g_szFMName, pszName, sizeof(g_szFMName));
+   g_szFMName[sizeof(g_szFMName) - 1] = '\0';
+   sprintf(g_szFMPath, "%s\\%s", g_szFMRoot, g_szFMName);
+   if (!FMIsWritableDir(g_szFMPath))
+   {
+      LogMsg(_LogFmt("ERROR: FM \"%s\" not found in FM path \"%s\" or no write permission", pszName, g_szFMRoot));
+      g_szFMName[0] = '\0';
+      g_szFMPath[0] = '\0';
+      return FALSE;
+   }
+   FMUpdateDatapath(g_szFMPath);
+   return TRUE;
+}
+
+EXTERN BOOL FMSetRoot(const char *pszRoot)
+{
+   if (pszRoot && *pszRoot && pszRoot[0] == '.' && (pszRoot[1] == '\\' || pszRoot[1] == '/') && pszRoot[2])
+      pszRoot += 2;
+   else if (!pszRoot || !*pszRoot)
+      pszRoot = FM_DEFAULT_ROOT;
+
+   for (;;)
+   {
+      strncpy(g_szFMRoot, pszRoot, sizeof(g_szFMRoot));
+      g_szFMRoot[sizeof(g_szFMRoot) - 1] = '\0';
+      char *p = g_szFMRoot;
+      for (; *p; p++)
+         if (*p == '/')
+            *p = '\\';
+      for (; p >= g_szFMRoot && *p == '\\'; p--)
+         *p = '\0';
+      if (*g_szFMRoot)
+         break;
+      pszRoot = FM_DEFAULT_ROOT;
+   }
+
+   struct _stat64i32 st;
+   if (lg_stat(g_szFMRoot, &st) == 0 && (st.st_mode & _S_IFDIR) && (st.st_mode & _S_IREAD))
+      return TRUE;
+
+   LogMsg(_LogFmt("ERROR: Cannot set FM path, path \"%s\" does not exist or no write permission (using default \"%s\")", g_szFMRoot, FM_DEFAULT_ROOT));
+   strcpy(g_szFMRoot, FM_DEFAULT_ROOT);
+   return FALSE;
+}
+
+EXTERN BOOL FMMakeDir(const char *pszName, char *pszOut)
+{
+   char szPath[_MAX_PATH * 2];
+   struct _stat64i32 st;
+
+   const char *pszFM = *g_szFMPath ? g_szFMPath : NULL;
+   if (pszFM)
+      sprintf(szPath, "%s\\%s", pszFM, pszName);
+   else
+      strcpy(szPath, pszName);
+
+   if (lg_stat(szPath, &st) == 0)
+   {
+      if (!(st.st_mode & _S_IFDIR) || !(st.st_mode & _S_IREAD) || !(st.st_mode & _S_IWRITE))
+         return FALSE;
+   }
+   else if (_mkdir(szPath))
+      return FALSE;
+
+   if (pszOut)
+      strcpy(pszOut, szPath);
+   return TRUE;
+}
+

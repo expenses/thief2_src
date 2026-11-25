@@ -267,11 +267,11 @@ EXTERN ushort uiDoubleClickTime;
 EXTERN ushort uiDoubleClickDelay;
 // The maximum allowed time between the first down and up event in a double click
 
-EXTERN bool uiDoubleClicksOn[NUM_MOUSE_BTNS];
+EXTERN BOOL uiDoubleClicksOn[NUM_MOUSE_BTNS];
 // are double clicks allowed for the specified button?
 // defaults to FALSE
 
-EXTERN bool uiAltDoubleClick;
+EXTERN BOOL uiAltDoubleClick;
 // Whether alt-click should emulate double click.
 // Defaults to FALSE;
 

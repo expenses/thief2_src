@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/appsfx.cpp,v 1.127 2000/03/24 22:57:27 adurant Exp $
 // remedial sound system for DromEd/Dark/AIR/So on
 
@@ -106,7 +105,12 @@ typedef struct {
    ulong  play_time; // when did we first get sample
    char* pStreamBuffer;  // Buffer used when streaming.  NULL if not streamed.
    mxs_real blocking_factor;  // current blocking factor
+   int    asynch_state;
+   void  *pAsynch;
+   void  *asynch_data;
 } _sfx;              // maybe name should be for all, extension generates type
+
+#define SFXFLG_KILLED      (1<<24) // stopped by SFX_Kill_Hnd
 
 
 int                  sfx_use_channels           = 8; // SFX_CHANNELS;
@@ -318,6 +322,7 @@ void SFX_Store_Config()
    config_set_int       ("sfx_vol_2d",          sgVol2D);
    config_set_int       ("sfx_vol_3d",          sgVol3D);
    config_set_int       ("sfx_vol_music",       sgVolMusic);
+   config_set_int       ("reverse_stereo",      rev_stereo);
 }
 
 BOOL SFXInit(void)
@@ -384,6 +389,7 @@ BOOL SFXInit(void)
 #ifndef SHIP
    config_get_int("sfx_channels_override",&sfx_use_channels);
 #endif
+   SoundInitTypeCaps();
 
    //
    // Set up pSoundPath to point to the sound files
@@ -400,6 +406,8 @@ BOOL SFXInit(void)
    config_get_raw( "snd3d", methodName, sizeof(methodName) );
    if ( ! strcmpi(methodName, "a3d") )
       g_SFX_Device = SFXDEVICE_A3D;
+   else if ( ! strcmpi(methodName, "openal") )
+      g_SFX_Device = SFXDEVICE_OPENAL;
 
 #ifdef USE_QSOUND
    else if ( ! strcmpi(methodName, "qmixer") )
@@ -432,6 +440,15 @@ BOOL SFXInit(void)
          // AMSD 3/24/00
          //sgVol2D += sgVol2DHW;
          //sgVol3D += sgVol3DHW;
+         use2DHWmod = TRUE;
+         use3DHWmod = TRUE;
+         break;
+      }
+
+      case SFXDEVICE_OPENAL:
+      {
+         sfx3DMethod = kSnd3DMethodHardware;
+         createOk = SndCreateALMixer(&pSndMixer,NULL);
          use2DHWmod = TRUE;
          use3DHWmod = TRUE;
          break;
@@ -1675,6 +1692,7 @@ int SFX_Play_Vec(int type, sfx_parm *parm, char *sfx_name, mxs_vector *vector)
 // kill off fxlist[hnd]
 void SFX_Kill_Hnd(int hnd)
 {
+   fxlist[hnd].flags |= SFXFLG_KILLED;
    _sfx_free(&fxlist[hnd], TRUE);
 }
 
@@ -1728,9 +1746,8 @@ void SFX_Enable_EAX (void)
          // Set to generic 50%.  This makes the options panel's left/right thing
          // sound cool.
          ReverbSettings revSet;
-         revSet.flags = kREVERB_FlagType | kREVERB_FlagLevel;
-         revSet.type = kREVERB_Generic;
-         revSet.level = 0.5;
+         revSet.flags = kREVERB_FlagType;
+         revSet.type = kREVERB_StoneCorridor;
          pSndMixer->Set3DReverbSettings(&revSet);
       }
    }

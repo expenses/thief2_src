@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phscrpt.cpp,v 1.14 1999/12/10 14:45:17 PATMAC Exp $
 //
@@ -248,6 +247,25 @@ public:
    STDMETHOD_(BOOL, ValidPos)(const object obj)
    {
       return PhysObjValidPos(ObjID(obj), NULL);
+   }
+
+   STDMETHOD_(BOOL, IsRope)(const object ref obj)
+   {
+      cPhysModel *pModel;
+
+      if (ObjID(obj) && (pModel = g_PhysModels.GetActive(ObjID(obj))) != NULL && pModel->IsRope())
+         return TRUE;
+      return FALSE;
+   }
+
+   STDMETHOD_(void, GetClimbingObject)(const object ref climber, object ref climbobj)
+   {
+      cPhysModel *pModel;
+
+      if (ObjID(climber) && (pModel = g_PhysModels.GetActive(ObjID(climber))) != NULL)
+         climbobj = pModel->GetClimbingObj();
+      else
+         climbobj = OBJ_NULL;
    }
 };
 

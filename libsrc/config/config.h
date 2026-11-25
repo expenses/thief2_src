@@ -187,6 +187,11 @@ void config_set_float(const char *varname,float val);
 //
 bool config_is_nonzero (const char *pVarName);
 
+//
+// Returns TRUE if the config variable is defined as 0, FALSE otherwise.
+//
+bool config_is_zero (const char *pVarName);
+
 errtype config_unset(const char* varname);
 // undefines the specified variable.
 

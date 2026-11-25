@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/namenum.c,v 1.3 2000/02/19 13:11:07 toml Exp $
 // simple system for creating/tracking/looking up/and save/loading numname associations
 
@@ -329,7 +328,7 @@ static int PickMenu(char **list, int cnt)
    mono_clear();
    for (i=0; i<cnt; i++)
       mprintf("%d> %s\n",i,list[i]);
-   rv=prompt_int(NULL);
+   rv=prompt_int(NULL,NULL,NULL);
    mprintf("Choosing %d - %s\n",rv,rv==-1?"Cancel":list[rv]);
    return rv;
 }

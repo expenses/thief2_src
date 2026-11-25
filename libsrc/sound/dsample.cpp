@@ -236,7 +236,8 @@ cDSndSample::LLStop( void )
 void
 cDSndSample::LLRelease( void )
 {
-   mpSampleImp->Release();
+   if ( mpSampleImp != NULL )
+      mpSampleImp->Release();
    mpSampleImp = NULL;
    if ( mp3DBuffer != NULL ) {
       mp3DBuffer->Release();
@@ -291,9 +292,10 @@ cDSndSample::LLPause( void )
 {
    HRESULT res;
 
-   assert(mpSampleImp != NULL);
-   res = mpSampleImp->Stop();
-   DSOUND_ERROR_CHECK( res, "LLPause" );
+   if ( mpSampleImp != NULL ) {
+      res = mpSampleImp->Stop();
+      DSOUND_ERROR_CHECK( res, "LLPause" );
+   }
 }
 
 void
@@ -326,7 +328,7 @@ cDSndSample::LLUnMute( void )
 BOOL
 cDSndSample::IsPlaying()
 {
-   DWORD stat;
+   DWORD stat = 0;
    if ( mpSampleImp == NULL ) {
       return FALSE;
    } else {
@@ -466,7 +468,7 @@ cDSndSample::LLSetPosition( uint32   pos )
 uint32
 cDSndSample::LLGetPosition( void )
 {
-   uint32 writePos, playPos;
+   uint32 writePos = 0, playPos = 0;
    HRESULT res;
 
    // get position in DirectSoundBuffer
@@ -695,7 +697,7 @@ cDSndSample::AvailToWrite( uint32 readPos )
 //
 STDMETHODIMP_(uint32) cDSndSample::AvailToWrite( void )
 {
-   uint32 playPos, writePos;
+   uint32 playPos = 0, writePos = 0;
    HRESULT res;
 
    if ( !IS_AUDIBLE ) {
@@ -717,7 +719,7 @@ STDMETHODIMP_(void)
 cDSndSample::CheckStream()
 {
    uint32 prevReadPos = mLastRead;
-   uint32 writePos;
+   uint32 writePos = 0;
    uint32 readPos;
    BOOL doStop;
    HRESULT res;
@@ -1094,26 +1096,19 @@ cDSndSample::_Update3DReverbMix( void )
    if ( mp3DBuffer == NULL ) {
       return;
    }
-   if ( mp3DBuffer->QueryInterface( IID_IKsPropertySet, (void **) &pProps ) != DS_OK ) {
+   if ( (mReverbMix < 0.0) || (mReverbMix > 1.0) ) {
       return;
    }
-   switch ( mpMixer->EAXLevelSupported() ) {
-      case 1:
-         pProps->Set( DSPROPSETID_EAXBUFFER_ReverbProperties, 1, NULL, 0, &mReverbMix, sizeof(float) );
-         break;
-      case 2:
-         if ( (mReverbMix >= 0.0) && (mReverbMix <= 1.0) ) {
-            room = (long) (log10( mReverbMix ) * 2000.0);
-            direct = (long) (log10( 1.0f - mReverbMix ) * 2000.0);
-            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 2, NULL, 0, &direct, sizeof(long) );
-            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 3, NULL, 0, NULL, sizeof(long) );
-            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 4, NULL, 0, &room, sizeof(long) );
-            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 5, NULL, 0, NULL, sizeof(long) );
-            pProps->Set( DSPROPSETID_EAX20_BufferProperties, 14, NULL, 0, NULL, sizeof(long) );
-         }
-         break;
+   if ( SUCCEEDED( mp3DBuffer->QueryInterface( IID_IKsPropertySet, (void **) &pProps ) ) ) {
+      room = (long) (log10( mReverbMix ) * 2000.0);
+      direct = (long) (log10( 1.0 - mReverbMix ) * 2000.0);
+      pProps->Set( DSPROPSETID_EAX20_BufferProperties, 2, NULL, 0, &direct, sizeof(long) );
+      pProps->Set( DSPROPSETID_EAX20_BufferProperties, 3, NULL, 0, NULL, sizeof(long) );
+      pProps->Set( DSPROPSETID_EAX20_BufferProperties, 4, NULL, 0, &room, sizeof(long) );
+      pProps->Set( DSPROPSETID_EAX20_BufferProperties, 5, NULL, 0, NULL, sizeof(long) );
+      pProps->Set( DSPROPSETID_EAX20_BufferProperties, 14, NULL, 0, NULL, sizeof(long) );
+      pProps->Release();
    }
-   pProps->Release();
 }
 
 STDMETHODIMP_(void)
@@ -1121,8 +1116,8 @@ cDSndSample::Set3DOcclusion( int32 occlusionMillibels )
 {
    IKsPropertySet *pProps;
 
-   if ( (mp3DBuffer != NULL) && (mpMixer->EAXLevelSupported() > 1) ) {
-      if ( mp3DBuffer->QueryInterface( IID_IKsPropertySet, (void **) &pProps ) == DS_OK ) {
+   if ( mp3DBuffer != NULL ) {
+      if ( SUCCEEDED( mp3DBuffer->QueryInterface( IID_IKsPropertySet, (void **) &pProps ) ) ) {
          pProps->Set( DSPROPSETID_EAX20_BufferProperties, 9, NULL, 0, &occlusionMillibels, sizeof(int32) );
          pProps->Set( DSPROPSETID_EAX20_BufferProperties, 10, NULL, 0, &gOcclusionLFRatio, sizeof(float) );
          pProps->Release();

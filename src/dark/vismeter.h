@@ -23,7 +23,7 @@ EXTERN void VisMeterEnterMode(void);
 EXTERN void VisMeterExitMode(void); 
 
 // update/draw vis meter in a rectangle of the current canvas 
-EXTERN void VisMeterUpdate(ulong time,const Rect* screen_r); 
+EXTERN void VisMeterUpdate(ulong time,const Rect* screen_r, bool hide = FALSE); 
 
 // set cutoffs between models
 EXTERN void VisMeterSetCutoffs(const int* cutoffs, int n); 

@@ -108,7 +108,88 @@ enum {
    GRM_400x300x32,      
    GRM_512x384x32,
 
-   GRD_MODES,           // 77 modes
+   GRM_720x480x16,
+   GRM_848x480x16,
+   GRM_720x576x16,
+   GRM_1024x576x16,
+   GRM_1024x600x16,
+   GRM_1152x864x16,
+   GRM_1280x720x16,
+   GRM_1280x768x16,
+   GRM_1280x800x16,
+   GRM_1280x960x16,
+   GRM_1360x768x16,
+   GRM_1366x768x16,
+   GRM_1360x1024x16,
+   GRM_1400x1050x16,
+   GRM_1440x900x16,
+   GRM_1600x900x16,
+   GRM_1680x1050x16,
+   GRM_1440x1080x16,
+   GRM_1920x1080x16,
+   GRM_1920x1200x16,
+   GRM_2048x1152x16,
+   GRM_1792x1344x16,
+   GRM_1856x1392x16,
+   GRM_1920x1440x16,
+   GRM_2560x1440x16,
+   GRM_2048x1536x16,
+   GRM_2560x1600x16,
+   GRM_2560x1920x16,
+   GRM_2560x2048x16,
+   GRM_2560x2100x16,
+   GRM_3840x2160x16,
+   GRM_4096x2304x16,
+   GRM_3200x2400x16,
+   GRM_3840x2400x16,
+   GRM_4096x3072x16,
+   GRM_5120x3200x16,
+   GRM_720x480x32,
+   GRM_848x480x32,
+   GRM_720x576x32,
+   GRM_1024x576x32,
+   GRM_1024x600x32,
+   GRM_1152x864x32,
+   GRM_1280x720x32,
+   GRM_1280x768x32,
+   GRM_1280x800x32,
+   GRM_1280x960x32,
+   GRM_1360x768x32,
+   GRM_1366x768x32,
+   GRM_1360x1024x32,
+   GRM_1400x1050x32,
+   GRM_1440x900x32,
+   GRM_1600x900x32,
+   GRM_1680x1050x32,
+   GRM_1440x1080x32,
+   GRM_1920x1080x32,
+   GRM_1920x1200x32,
+   GRM_2048x1152x32,
+   GRM_1792x1344x32,
+   GRM_1856x1392x32,
+   GRM_1920x1440x32,
+   GRM_2560x1440x32,
+   GRM_2048x1536x32,
+   GRM_2560x1600x32,
+   GRM_2560x1920x32,
+   GRM_2560x2048x32,
+   GRM_2560x2100x32,
+   GRM_3840x2160x32,
+   GRM_4096x2304x32,
+   GRM_3200x2400x32,
+   GRM_3840x2400x32,
+   GRM_4096x3072x32,
+   GRM_5120x3200x32,
+   GRM_USER_0,
+   GRM_USER_1,
+   GRM_USER_2,
+   GRM_USER_3,
+   GRM_USER_4,
+   GRM_USER_5,
+   GRM_USER_6,
+   GRM_USER_7,
+
+   GRD_MODES,
 };
 #ifdef __cplusplus
 };
@@ -175,6 +256,17 @@ typedef struct grs_bitmap {
    ushort row;       /* bytes in row of containing bitmap */
    uchar wlog;       /* log2 of w */
    uchar hlog;       /* log2 of h */
+   uchar rowlog;
+   uchar bpp;
+   uchar wlog0;
+   uchar hlog0;
+   short w0;
+   short h0;
+   uchar exflags;
+   uchar compression;
+   uchar mips;
+   uchar pad;
+   void *extra;
 } grs_bitmap;
 
 /* stencil element for non-rectangular clipping. */
@@ -286,6 +378,7 @@ enum {
    BMT_BANK24,
    BMT_TLUC8,
    BMT_FLAT32,
+   BMT_DXT,
    BMT_TYPES
 };
 /*
@@ -309,7 +402,15 @@ enum {
 #define BMF_DEVICE         (BMF_DEVICE_VIDMEM | BMF_DEVICE_SYSMEM)
 #define BMF_DEV_MUST_BLIT 0x10
 #define BMF_POW2          0x20
+#define BMF_NO_MIPMAP     0x40
+#define BMF_MIPMAP        0x4000
 #define BMF_RELOCATABLE 0x8000
+#define BMF_DYNAMIC     0x1000
+#define BMF_MIPMAP      0x4000
+
+#define BMEF_NATIVE     0x02
+#define BMEF_CUBEMAP    0x10
+#define BMEF_MIPMAPPED  0x20
 
 /* additional rgb format "flags" for upper 8 bits of flags field */
 #define BMF_RGB_INDEX    0x000
@@ -322,7 +423,15 @@ enum {
 #define BMF_RGB_4444     0x700
 #define BMF_RGB_1232     0x800
 
-#define gr_test_bitmap_format(bm, format) (((bm)->flags&0x7f00) == (format))
+#define BMF_RGB_MASK     0xf00
+#define BMF_DXT1         0x100
+#define BMF_DXT2         0x200
+#define BMF_DXT3         0x300
+#define BMF_DXT4         0x400
+#define BMF_DXT5         0x500
+#define BMF_RGB_A8       0xe00
+#define BMF_RGB_A4       0xf00
+#define gr_test_bitmap_format(bm, format) (((bm)->flags&BMF_RGB_MASK) == (format))
 #define gr_set_bitmap_format(bm, format) (bm)->flags = (ushort )(((bm)->flags&0x80ff)|(format))
 
 /* function prototypes for bitmap routines. */

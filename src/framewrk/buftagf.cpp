@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/buftagf.cpp,v 2.2 2000/03/07 19:56:48 toml Exp $
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -28,6 +27,7 @@
 
 // Must be last header
 #include <dbmem.h>
+#include <lg_file.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -39,7 +39,7 @@
 
 struct VFILE
 {
-   FILE * file;
+   LGFILE * file;
 
    BYTE * pBuf;
    BYTE * pReadLoc;
@@ -50,9 +50,9 @@ struct VFILE
 
 VFILE * vfopen(const char * file, const char * mode)
 {
-   FILE * f;
+   LGFILE * f;
    
-   if ((f = fopen(file, mode)) == NULL)
+   if ((f = lg_fopen(file, mode)) == NULL)
       return NULL;
    
    VFILE * pVFile = new VFILE;
@@ -74,7 +74,7 @@ VFILE * vfopen(const char * file, const char * mode)
    if (fHaveMem && *mode == 'r' && config_is_defined("large_read_buffers"))
    {
       struct _stat s;
-      if (_fstat(_fileno(pVFile->file), &s) != -1)
+      if (lg_fstat(_fileno(pVFile->file->fp), &s) != -1)
       {
          if (s.st_size > kMinSize)
          {
@@ -85,8 +85,8 @@ VFILE * vfopen(const char * file, const char * mode)
 #endif
             if (pVFile->pBuf)
             {
-               fread(pVFile->pBuf, s.st_size, 1, pVFile->file);
-               if (ferror(pVFile->file) != 0)
+               lg_fread(pVFile->pBuf, s.st_size, 1, pVFile->file);
+               if (ferror(pVFile->file->fp) != 0)
                {
 #ifdef DEBUG_BUFTAGF
                   free(pVFile->pBuf);
@@ -124,7 +124,7 @@ size_t vfread(void * pTo, size_t s, size_t n, VFILE * pVFile)
       return sz / s;
    }
    
-   return fread(pTo, s, n, pVFile->file);
+   return lg_fread(pTo, s, n, pVFile->file);
 }
 
 ///////////////////////////////////////
@@ -132,7 +132,7 @@ size_t vfread(void * pTo, size_t s, size_t n, VFILE * pVFile)
 size_t vfwrite(const void * pFrom, size_t s, size_t n, VFILE * pVFile)
 {
    Assert_(!pVFile->pBuf);
-   return fwrite(pFrom, s, n, pVFile->file);
+   return lg_fwrite(pFrom, s, n, pVFile->file);
 }
 
 ///////////////////////////////////////
@@ -163,7 +163,7 @@ int vfseek(VFILE * pVFile, long offset, int type)
       return 0;
    }
 
-   return fseek(pVFile->file, offset, type);
+   return lg_fseek(pVFile->file, offset, type);
 }
 
 ///////////////////////////////////////
@@ -173,7 +173,7 @@ long vftell(VFILE * pVFile)
    if (pVFile->pBuf)
       return pVFile->pReadLoc - pVFile->pBuf;
    
-   return ftell(pVFile->file);
+   return lg_ftell(pVFile->file);
 }
 
 ///////////////////////////////////////
@@ -183,7 +183,7 @@ int vfclose(VFILE * pVFile)
    if (!pVFile)
       return -1;
    
-   int result = fclose(pVFile->file);
+   int result = lg_fclose(pVFile->file);
 
    if (pVFile->pBuf)
    {

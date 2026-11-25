@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/vismeter.cpp,v 1.11 2000/02/19 13:09:05 toml Exp $
 
 #include <vismeter.h>
@@ -179,7 +178,7 @@ static void recompute()
    invRendSetType(gState.rend,&type); 
 }
 
-void VisMeterUpdate(ulong time, const Rect* r)
+void VisMeterUpdate(ulong time, const Rect* r, bool hide)
 {
    if (!PlayerObjectExists())
       return;
@@ -189,6 +188,9 @@ void VisMeterUpdate(ulong time, const Rect* r)
       recompute(); 
       gState.last_time = time; 
    }
+
+   if (hide || config_is_nonzero("vismeter_hide"))
+      return;
 
    invRendSetRect(gState.rend, r); 
 

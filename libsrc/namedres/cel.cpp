@@ -380,7 +380,7 @@ READFRAME:
 		Warning(("CelReadFrame: missing frame chunk\n"));
 		if (buff)
 			{
-			Free(buff);
+			operator delete(buff);
 			return FALSE;
 			}
 		}
@@ -391,9 +391,9 @@ READFRAME:
 		{
 		fullLen = (long) w * (long) h;
 		if (fullLen < frameInfo.size)
-			buff = (uchar *) Malloc(fullLen);
+			buff = (uchar *) operator new(fullLen);
 		else
-			buff = (uchar *) Malloc(frameInfo.size);
+			buff = (uchar *) operator new(frameInfo.size);
 		if (buff == NULL)
 			return FALSE;
 		}
@@ -483,7 +483,7 @@ chunk.size - sizeof(chunk), fullLen));
 
 //	Make sure got some data in that chunk, bump current frame & return
 
-	Free(buff);
+	operator delete(buff);
 	if (frameDone && !palOnly)
 		return TRUE;
 	return FALSE;

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aicbtrsp.cpp,v 1.4 1999/11/22 17:51:35 henrys Exp $
 //
@@ -100,6 +99,16 @@ static sFieldDesc _g_AISenseCombatResponseFieldDesc[] =
    CBTSND_RESPONSE_FIELDS(4),
    CBTSND_RESPONSE_FIELDS(5),
    CBTSND_RESPONSE_FIELDS(6),
+   CBTSND_RESPONSE_FIELDS(7),
+   CBTSND_RESPONSE_FIELDS(8),
+   CBTSND_RESPONSE_FIELDS(9),
+   CBTSND_RESPONSE_FIELDS(10),
+   CBTSND_RESPONSE_FIELDS(11),
+   CBTSND_RESPONSE_FIELDS(12),
+   CBTSND_RESPONSE_FIELDS(13),
+   CBTSND_RESPONSE_FIELDS(14),
+   CBTSND_RESPONSE_FIELDS(15),
+   CBTSND_RESPONSE_FIELDS(16),
 };
 
 static sStructDesc _g_AISenseCombatResponseStructDesc = StructDescBuild(sAISenseCombatResponse, kStructFlagNone, _g_AISenseCombatResponseFieldDesc);

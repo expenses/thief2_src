@@ -16,6 +16,7 @@
 // Control over whether to show dialog box on critical error
 //
 EXTERN BOOL g_fQuietAssert;
+EXTERN BOOL g_fAssertAlwaysAsk;
 
 //
 // Critical messages.  Unconditionally blow-up, always enabled.  Often used for

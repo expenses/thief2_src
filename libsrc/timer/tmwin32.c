@@ -34,7 +34,7 @@ EXTERN long LGAPI tm_get_millisec_unrecorded(void)
     AssertMsg(g_pTmGameShell, "Must call tm_init to use tm_get_millisec");
 
     if (g_pTmGameShell)
-        return IGameShell_GetTimerTick(g_pTmGameShell);
+        return (long)(IGameShell_GetTimerTick(g_pTmGameShell) / 1000);
     return 0;
 }
 

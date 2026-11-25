@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/gedit.c,v 2.10 2000/02/18 17:20:57 MAT Exp $
 
 // gedit.c
@@ -73,6 +72,12 @@
 #include <gamecam.h>
 #include <appsfx.h>
 #include <scrnman.h>
+#include <litprop.h>
+#include <traitpr_.h>
+#include <port.h>
+#include <texmem.h>
+#include <filemenu.h>
+#include <ctype.h>
 #include <skyrend.h>
 #include <texmem.h>
 #include <txtpnp.h>
@@ -537,6 +542,20 @@ void grid_abs_scale(float scale)
    gedit_full_redraw();
 }
 
+int grid_get_pow2_scale(Grid *g)
+{
+   float val;
+   int i;
+
+   for (i=8; i<25; i++)
+   {
+      val=scale_pow2int_to_float(i);
+      if (val>=g->line_spacing)
+         return i;
+   }
+   return 16;
+}
+
 void grid_pow2_scale(int pow2)
 {
    float real_scale=scale_pow2int_to_float(pow2);
@@ -768,6 +787,10 @@ static void cycle_tex(int dir)
 void gedit_texture_brush(editBrush *br, int new_tx)
 {
    short *tx;
+   if (br==NULL)
+      return;
+   if (brushGetType(br)!=brType_TERRAIN)
+      return;
    editUndoStoreStart(br);
    tx=_geditGetTxPtr(br);
    *tx=new_tx;
@@ -923,6 +946,83 @@ void gedit_make_skybox(char *pszArg)
    mprintf("gedit: skybox done.\n");
 }
 
+#define ENVBOX_VIEWS 6
+#define ENVBOX_MIN_SIZE 128
+#define ENVBOX_DEF_SIZE 256
+
+static mxs_angvec g_aEnvAngle[ENVBOX_VIEWS]
+= { {0, 0, 32768},
+    {0, 0, 16384},
+    {0, 0, 0},
+    {0, 0, 49152},
+    {0, 49152, 16384},
+    {0, 16384, 16384},
+};
+
+static char g_achEnvSuffix[ENVBOX_VIEWS+1] = "neswtb";
+
+void gedit_make_envbox(char *pszArg)
+{
+   int i, nSize = ENVBOX_DEF_SIZE, iOldW = grd_bm.w, iOldH = grd_bm.h;
+
+   if (!g_lgd3d)
+      return;
+
+   if (!pszArg || !pszArg[0])
+   {
+      mprintf("Please give me a base for the filenames.\n");
+      mprintf("You could, for example, type: envbox myname.\n");
+      mprintf("            Sincerely and devotedly yours,\n");
+      mprintf("                                   Envbox.\n");
+      return;
+   }
+
+   mprintf("gedit: Starting environment box...\n");
+
+   if (isdigit(*pszArg))
+   {
+      char *pSpace = strchr(pszArg + 1, ' ');
+      if (pSpace && pSpace[1])
+      {
+         nSize = atoi(pszArg);
+         pszArg = pSpace + 1;
+         if (nSize < ENVBOX_MIN_SIZE)
+            nSize = ENVBOX_MIN_SIZE;
+         if (nSize > iOldW)
+            nSize = iOldW;
+         if (nSize > iOldH)
+            nSize = iOldH;
+      }
+   }
+
+   grd_bm.w = grd_bm.h = nSize;
+
+   for (i = 0; i < ENVBOX_VIEWS; ++i)
+   {
+      char aszFilename[256];
+      mxs_vector DummyPos;
+      mx_mk_vec(&DummyPos, 0, 0, 0);
+
+      r3_start_frame();
+      r3_set_view_angles(&DummyPos, g_aEnvAngle + i, R3_DEFANG);
+      r3_set_space(R3_PROJECT_SPACE);
+      lgd3d_set_z(1);
+      SkyRendererRender();
+      r3_end_frame();
+
+      ScrnLockDrawCanvas();
+      ScrnUnlockDrawCanvas();
+
+      sprintf(aszFilename, "%s%c.bmp", pszArg, g_achEnvSuffix[i]);
+      dmp_bmp_dump_screen(aszFilename);
+   }
+
+   grd_bm.w = iOldW;
+   grd_bm.h = iOldH;
+
+   mprintf("gedit: envbox done.\n");
+}
+
 // if im a terrain brush, change me to a room
 void gedit_brush_to_room(float grow_pct)
 {
@@ -1034,8 +1134,12 @@ void gedit_set_primal_type(int t)
 // are we face or vertex aligned
 void gedit_set_primal_facevertex(bool use_face)
 {
+   char buf[64];
    prim_cur_face=use_face?PRIMAL_ALIGN_FACE:0;
    prim_finish();
+   UpdateMenuCheckmarks();
+   sprintf(buf,"Set primitive align by %s",prim_cur_face?"Sides":"Vertices");
+   Status(buf);
 }
 
 // hmmmm....
@@ -1789,7 +1893,7 @@ Command gedit_edit_only_keys[] =
    { "blist_dump", FUNC_VOID, blistDump },
 
    { "get_grid", FUNC_VOID, grid_get_from_current, "get grid from brush" },
-   { "set_grid", FUNC_VOID, grid_set_from_current, "force brush to grid" },
+   { "set_grid", FUNC_VOID, grid_set_from_current, "force brush to grid", 0, 1},
    { "grid_toggle", FUNC_VOID, grid_toggle, "turn grid on off" },
    { "grid_scale", FUNC_FLOAT, grid_scale, "rescale the master grid" },
    { "grid_abs_scale", FUNC_FLOAT, grid_abs_scale, "set absolute scale of master grid" },
@@ -1806,20 +1910,20 @@ Command gedit_edit_only_keys[] =
    { "primal_mprint", FUNC_INT, primalBr_mprint },
 #endif
 
-   { "brush_color", VAR_INT, &editbr_color_mode },
-   { "brush_filter", VAR_INT, &editbr_filter },
-   { "hots_filter", TOGGLE_BOOL, &renderHotsOnly },
+   { "brush_color", VAR_INT, &editbr_color_mode, NULL, 0, 1},
+   { "brush_filter", VAR_INT, &editbr_filter, NULL, 0, 1},
+   { "hots_filter", TOGGLE_BOOL, &renderHotsOnly, NULL, 0, 1},
    { "hots_state", FUNC_INT, gedit_hots_state },
-   { "time_filter_lo", VAR_INT, &editbr_filter_time_lo },
-   { "time_filter_hi", VAR_INT, &editbr_filter_time_hi },
-   { "size_filter", VAR_FLOAT, &editbr_filter_size },
+   { "time_filter_lo", VAR_INT, &editbr_filter_time_lo, NULL, 0, 1},
+   { "time_filter_hi", VAR_INT, &editbr_filter_time_hi, NULL, 0, 1},
+   { "size_filter", VAR_FLOAT, &editbr_filter_size, NULL, 0, 1},
 
    { "set_brush_tx", FUNC_INT, gedit_set_brush_tx },
    { "set_brush_type", FUNC_INT, gedit_set_default_brush_type },
-   { "reset_brush_tx", FUNC_INT, gedit_reset_br_textures },
+   { "reset_brush_tx", FUNC_INT, gedit_reset_br_textures, NULL, 0, 1},
    { "cam_to_brush", FUNC_VOID, gedit_cam_to_brush, "move camera to look at cur brush" },
-   { "obj_ambient", VAR_FLOAT, &mdd_lt_amb },
-   { "obj_diffuse", VAR_FLOAT, &mdd_lt_diff },
+   { "obj_ambient", VAR_FLOAT, &mdd_lt_amb, NULL, 0, 1},
+   { "obj_diffuse", VAR_FLOAT, &mdd_lt_diff, NULL, 0, 1},
 
    { "zap_brush_flags", FUNC_VOID, gedit_saveload_flag_hack, "secret clear flags stuff" },
    { "loud_zap_flags", VAR_INT, &loud_flag_clear, "talk about flags you clear" },
@@ -1962,3 +2066,353 @@ void UpdateMenuCheckmarks (void)
         SetRadioCheckmark (menu, firstPos, lastPos, 9);
 }
 
+
+void gedit_desaturate_lights(void)
+{
+   editBrush *br;
+   int hIter;
+   int nChanged = 0;
+
+   editUndoStoreBlock(TRUE);
+   br = blistIterStart(&hIter);
+   while (br != NULL)
+   {
+      if (brushGetType(br) == brType_LIGHT
+          && (brLight_Hue(br) != 0.0 || brLight_Saturation(br) != 0.0))
+      {
+         editUndoStoreStart(br);
+         brLight_Hue(br) = 0.0;
+         brLight_Saturation(br) = 0.0;
+         brush_field_update(br, NULL, brField_Old);
+         gedit_raw_change_brush(br, FALSE, FALSE, FALSE);
+         editUndoStoreBrush(br);
+         nChanged++;
+      }
+      br = blistIterNext(hIter);
+   }
+   editUndoStoreBlock(FALSE);
+   if (nChanged)
+      mprintf("%d lights needed desaturation\n", nChanged);
+}
+
+void gedit_brush_to_cam(int snap)
+{
+   editBrush *br = cur();
+   mxs_vector *pos;
+   mxs_angvec *ang;
+
+   if (br->br_id == -1)
+   {
+      Status("Can't brush_to_cam multibrushes");
+      return;
+   }
+   if (!vm_get_view_camera_loc(&pos, &ang))
+      return;
+   editUndoStoreStart(br);
+   if (snap < 2)
+      br->pos = *pos;
+   else
+      gedit_vertex_snap(&br->grid, &br->pos, pos);
+   i_changed_the_brush(br, FALSE, FALSE, FALSE);
+   editUndoStoreBrush(br);
+   gedit_editted = TRUE;
+}
+
+void gedit_create_cam_marker(void)
+{
+   IObjectSystem *pObjSys = AppGetObj(IObjectSystem);
+   ObjID arch = IObjectSystem_GetObjectNamed(pObjSys, "Marker");
+   mxs_vector *pos;
+   mxs_angvec *ang;
+   char buf[128];
+
+   if (!arch)
+   {
+      Status("Failed to create cam marker");
+      mprintf("WARNING: failed to create cam marker, no \"Marker\" archetype found\n");
+      SafeRelease(pObjSys);
+      return;
+   }
+   if (vm_get_view_camera_loc(&pos, &ang))
+   {
+      ObjID obj = BeginObjectCreate(arch, kObjectConcrete);
+      if (obj)
+         ObjPosUpdate(obj, pos, ang);
+      EndObjectCreate(obj);
+      if (obj)
+      {
+         editobjCreateBrushfromObj(obj);
+         gedit_editted = TRUE;
+         sprintf(buf, "Created cam marker \"%s\"", ObjEditName(obj));
+         Status(buf);
+         mprintf("INFO: %s\n", buf);
+         SafeRelease(pObjSys);
+         return;
+      }
+   }
+   SafeRelease(pObjSys);
+   Status("Failed to create cam marker");
+   mprintf("WARNING: failed to create cam marker\n");
+}
+
+BOOL gedit_light_brush_color_edit(editBrush *br)
+{
+   int r, g, b, r0, g0, b0;
+   float hue, sat, bright;
+
+   if (!br || brushGetType(br) != brType_LIGHT)
+      return FALSE;
+   portal_convert_hsb_to_rgb(&r, &g, &b, brLight_Hue(br), brLight_Saturation(br));
+   r0 = r;
+   g0 = g;
+   b0 = b;
+   if (!PickColor(&r, &g, &b) || (r == r0 && g == g0 && b == b0))
+      return FALSE;
+   ConvertRGBToHSB(&hue, &sat, &bright, r / 255.0, g / 255.0, b / 255.0);
+   brLight_Hue(br) = hue;
+   brLight_Saturation(br) = sat;
+   return TRUE;
+}
+
+void gedit_lcolor_edit(int mode)
+{
+   editBrush *br = cur();
+   ObjID obj;
+   float hue, sat, bright;
+   int r, g, b, r0, g0, b0;
+
+   if (br && brushGetType(br) == brType_LIGHT)
+   {
+      gedit_light_brush_color_edit(br);
+      return;
+   }
+   if (!br || brushGetType(br) != brType_OBJECT)
+   {
+      mprintf("lcolor_edit: selected brush is not an object or light\n");
+      return;
+   }
+
+   obj = brObj_ID(br);
+   if (!ObjColorIsSimplyRelevant(obj))
+   {
+      if (ObjColorIsRelevant(obj))
+      {
+         int rv = mode ? (mode > 1) : winui_GetYesNoCancel("Object inherits the LightColor property. Press YES to edit property on archetype, NO to add a local property.");
+         if (rv < 0)
+            return;
+         if (rv == 1)
+            obj = ObjArchetype(obj);
+      }
+      else if (!ObjIsLightRelevant(obj) && !mode
+               && !winui_GetYorN("Object is not a light, do want to proceed and add the LightColor property anyway?"))
+         return;
+   }
+
+   ObjColorGet(obj, &hue, &sat);
+   portal_convert_hsb_to_rgb(&r, &g, &b, hue, sat);
+   r0 = r;
+   g0 = g;
+   b0 = b;
+   if (!PickColor(&r, &g, &b) || (r == r0 && g == g0 && b == b0))
+      return;
+   ConvertRGBToHSB(&hue, &sat, &bright, r / 255.0, g / 255.0, b / 255.0);
+   ObjColorSet(obj, hue, sat);
+}
+
+void gedit_uvmap_cylinder(char *args)
+{
+   editBrush *br = cur();
+   int nSides, tx;
+   static float uScale = 1.0, vScale = 1.0;
+   static int uOff, vOff, nFaces, bRotate;
+
+   if (!br || brushGetType(br) != brType_TERRAIN
+       || (primalID_GetType(br->primal_id) != PRIMAL_TYPE_CYLINDER && primalID_GetType(br->primal_id) != PRIMAL_TYPE_PYRAMID))
+   {
+      mprintf("uvmap_cylinder: no cylinder or pyramid terrain brush selected\n");
+      Status("uvmap_cylinder: no cylinder or pyramid terrain brush selected");
+      return;
+   }
+   nSides = primalID_GetSides(br->primal_id);
+   if (br->cur_face == -1 || br->cur_face >= nSides)
+   {
+      mprintf("uvmap_cylinder: current face must be a side, not default or top/bottom\n");
+      Status("uvmap_cylinder: current face must be a side, not default or top/bottom");
+      return;
+   }
+   tx = br->txs[br->cur_face].tx_id;
+   if (tx < 0)
+      tx = br->tx_id;
+   if (tx < 0 || (tx >= BACKHACK_IDX && tx < TEXMEM_MAX) || !texmemGetTexture(tx))
+   {
+      mprintf("uvmap_cylinder: current face doesn't have a valid/usable texture\n");
+      Status("uvmap_cylinder: current face doesn't have a valid/usable texture");
+      return;
+   }
+
+   while (isspace(*args))
+      args++;
+   if (*args != '\0')
+   {
+      uScale = 1.0;
+      vScale = 1.0;
+      uOff = vOff = nFaces = bRotate = 0;
+      sscanf(args, "%f %f %d %d %d %d", &uScale, &vScale, &bRotate, &uOff, &vOff, &nFaces);
+   }
+   if (fabs(uScale) < 0.001)
+      uScale = (uScale > 0.0) ? 0.001f : -0.001f;
+   if (vScale != 0.0 && fabs(vScale) < 0.001)
+      vScale = (vScale > 0.0) ? 0.001f : -0.001f;
+   if (nFaces < 0)
+      nFaces = 0;
+
+   editUndoStoreStart(br);
+   brush_uvmap_cylinder(br, uScale, vScale, uOff, vOff, bRotate, nFaces ? nFaces : nSides);
+   if (gedit_reassign_texture(br, FALSE))
+      gedit_redraw_3d();
+   editUndoStoreBrush(br);
+}
+
+static double LabGamma(double c)
+{
+   if (c <= 0.04045)
+      return c / 12.92;
+   return pow((c + 0.055) / 1.055, 2.4);
+}
+
+static double LabF(double t)
+{
+   if (t > 0.008856)
+      return pow(t, 1.0 / 3.0);
+   return 7.787 * t + 16.0 / 116.0;
+}
+
+void gedit_rgb_to_lab(const uchar *rgb, double *lab)
+{
+   double r = LabGamma(rgb[0] / 255.0);
+   double g = LabGamma(rgb[1] / 255.0);
+   double b = LabGamma(rgb[2] / 255.0);
+   double x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+   double y = (0.2126 * r + 0.7152 * g + 0.0722 * b);
+   double z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+   double fx = LabF(x), fy = LabF(y), fz = LabF(z);
+   lab[0] = 116.0 * fy - 16.0;
+   lab[1] = 500.0 * (fx - fy);
+   lab[2] = 200.0 * (fy - fz);
+}
+
+int gedit_closest_pal_index(const uchar *rgb, const uchar *ipal, const uchar *pal)
+{
+   uint key = ((rgb[0] >> 3) | ((rgb[1] >> 3) << 5) | ((rgb[2] >> 3) << 10));
+   int best = ipal[key];
+   double lab[3], cand[3], bestDist, d;
+   int i;
+
+   gedit_rgb_to_lab(rgb, lab);
+   gedit_rgb_to_lab(&pal[best * 3], cand);
+   bestDist = sqrt((lab[0]-cand[0])*(lab[0]-cand[0]) + (lab[1]-cand[1])*(lab[1]-cand[1]) + (lab[2]-cand[2])*(lab[2]-cand[2]));
+   for (i = 0; i < 255; i++)
+   {
+      gedit_rgb_to_lab(&pal[i * 3], cand);
+      d = sqrt((lab[0]-cand[0])*(lab[0]-cand[0]) + (lab[1]-cand[1])*(lab[1]-cand[1]) + (lab[2]-cand[2])*(lab[2]-cand[2]));
+      if (d < bestDist)
+      {
+         bestDist = d;
+         best = i;
+      }
+   }
+   return best;
+}
+
+void gedit_floor_to_cam(void)
+{
+   mxs_vector *pos;
+   mxs_angvec *ang;
+   mxs_matrix rotmat;
+   mxs_vector dir, unitvec;
+
+   if (!vm_get_view_camera_loc(&pos, &ang))
+      return;
+   mx_ang2mat(&rotmat, ang);
+   unitvec.x = 20.0F; unitvec.y = 0; unitvec.z = 0;
+   mx_mat_mul_vec(&dir, &rotmat, &unitvec);
+   gedit_floor_brush(cur(), &dir);
+}
+
+#define kGeditClassSolid   0x01
+#define kGeditClassLit     0x02
+#define kGeditClassObject  0x04
+#define kGeditClassRoom    0x08
+#define kGeditClassFlow    0x10
+
+int gedit_brush_class(editBrush *br)
+{
+   int type = brushGetType(br);
+   int cls = 0;
+
+   if (type == brType_OBJECT)
+      cls = kGeditClassObject;
+
+   if (type == brType_TERRAIN)
+      return cls | kGeditClassSolid;
+   if (type == brType_FLOW)
+      return cls | kGeditClassFlow;
+   if (type == brType_LIGHT || (type == brType_OBJECT && brObjProp_getLightLevel(brObj_ID(br)) >= 0.0))
+      cls |= kGeditClassLit;
+   else if (type == brType_OBJECT && IsDoor(brObj_ID(br)))
+      return cls | kGeditClassSolid;
+   else if (type == brType_ROOM)
+      return cls | kGeditClassRoom;
+   return cls;
+}
+
+BOOL gedit_find_solid_match(editBrush *br)
+{
+   int hIter;
+   editBrush *other;
+
+   if (!br)
+      return FALSE;
+   if (br->br_id != -1)
+      return (gedit_brush_class(br) & kGeditClassSolid) != 0;
+
+   other = blistIterStart(&hIter);
+   while (other)
+   {
+      if (other->media == br->media && other != br && (gedit_brush_class(other) & kGeditClassSolid))
+      {
+         blistIterDone(hIter);
+         return TRUE;
+      }
+      other = blistIterNext(hIter);
+   }
+   return FALSE;
+}
+
+void gedit_texture_brush_nonvirtual(editBrush *br, int new_tx)
+{
+   if (!br || brushGetType(br) != brType_TERRAIN)
+      return;
+   editUndoStoreStart(br);
+   *_geditGetTxPtr(br) = new_tx;
+   _tex_finish(br);
+}
+
+void gedit_texture_current_face(int new_tx)
+{
+   editBrush *br = cur();
+   short oldFace;
+
+   if (!br)
+      return;
+   if (new_tx == -1)
+      new_tx = 0;
+   editUndoStoreStart(br);
+   oldFace = br->cur_face;
+   br->cur_face = -1;
+   br->tx_id = new_tx;
+   if (gedit_reassign_texture(br, TRUE))
+      gedit_redraw_3d();
+   br->cur_face = oldFace;
+   editUndoStoreBrush(br);
+}

@@ -180,6 +180,5 @@ inline cLoopManager::cLoop::cLoop(IUnknown* pOuterUnknown, cLoopManager* pLoopMa
 {
 	INIT_DELEGATION(pOuterUnknown);
 
-	m_FrameInfo.fMinorMode = m_FrameInfo.nCount = 0;
 	gm_pLoop = this;
 }

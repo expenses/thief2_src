@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/skyobj.cpp,v 1.8 2000/02/21 18:49:53 bfarquha Exp $
 
 
@@ -283,7 +282,7 @@ static inline void ComputeSkyPointColor(mxs_vector *pSkyPointColor, float fLatAn
    float fGlowDegree = mx_dot_vec(&GlowDirection, &DirVec);
    float fGlowCos = cos(g_SkyObj.fGlowAng*DEG/2);
 
-   if (fGlowDegree < fGlowCos) // no glow here
+   if (fGlowDegree <= fGlowCos || fGlowCos >= 0.999999) // no glow here
       return;
 
    if (g_SkyObj.fGlowScale < MY_OMEGA)

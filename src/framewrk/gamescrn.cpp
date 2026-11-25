@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/gamescrn.cpp,v 1.5 2000/02/19 13:16:17 toml Exp $
 #include <gamescrn.h>
 #include <scrnmode.h>

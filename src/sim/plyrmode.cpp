@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/plyrmode.cpp,v 1.24 2000/03/09 22:57:22 adurant Exp $
 //
@@ -78,6 +77,8 @@ sModeSpeedScale g_ModeBaseSpeeds[kPM_NumModes] =
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static BOOL g_bCarryFootstepScheme;
+
 void PlayerModeInit()
 {
    Assert_(g_pPlayerMode == NULL);
@@ -86,6 +87,7 @@ void PlayerModeInit()
    headmoveKeyboardReset();
    headmoveSetRelPosX(0);
    headmoveSetRelPosY(0);
+   g_bCarryFootstepScheme = config_is_defined("carry_footstep_scheme");
 }
 
 void PlayerModeTerm()
@@ -481,29 +483,6 @@ void cPlayerMode::DoStrideSound(int play_vol, const mxs_vector &foot_loc)
 
    switch (m_curMode)
    {
-      case kPM_Stand:
-      case kPM_Crouch:
-      {
-         eMediaState media_state = PhysGetObjMediaState(PlayerObject());
-   
-         if ((media_state == kMS_Air) && PhysObjOnGround(PlayerObject()))
-         {
-            cTagSet Event("Event Footstep");
-            ESndPlayLoc(&Event, PlayerObject(), g_pPlayerMovement->GetGroundObj(), &foot_loc, &schema_params);
-         }
-         else
-         if (media_state == kMS_Liquid_Standing)
-         {
-            ObjID flow_arch = GetFlowArch(PLAYER_FOOT);
-
-            cTagSet Event("Event Footstep");
-            Event.Add(cTag("MediaLevel", "Foot"));
-            ESndPlayLoc(&Event, PlayerObject(), flow_arch, &foot_loc, &schema_params);
-         }
-         
-         break;
-      }
-
       case kPM_Swim:
       {
          eMediaState media_state = PhysGetObjMediaState(PlayerObject());
@@ -547,8 +526,49 @@ void cPlayerMode::DoStrideSound(int play_vol, const mxs_vector &foot_loc)
 
       case kPM_BodyCarry:
       {
-         // @TODO: body-carry-specific footsteps?
+         if (g_bCarryFootstepScheme)
+         {
+            eMediaState media_state = PhysGetObjMediaState(PlayerObject());
 
+            if ((media_state == kMS_Air) && PhysObjOnGround(PlayerObject()))
+            {
+               cTagSet Event("Event Carrystep");
+               ESndPlayLoc(&Event, PlayerObject(), g_pPlayerMovement->GetGroundObj(), &foot_loc, &schema_params);
+            }
+            else
+            if (media_state == kMS_Liquid_Standing)
+            {
+               ObjID flow_arch = GetFlowArch(PLAYER_FOOT);
+
+               cTagSet Event("Event Footstep");
+               Event.Add(cTag("MediaLevel", "Foot"));
+               ESndPlayLoc(&Event, PlayerObject(), flow_arch, &foot_loc, &schema_params);
+            }
+
+            break;
+         }
+      }
+
+      case kPM_Stand:
+      case kPM_Crouch:
+      {
+         eMediaState media_state = PhysGetObjMediaState(PlayerObject());
+   
+         if ((media_state == kMS_Air) && PhysObjOnGround(PlayerObject()))
+         {
+            cTagSet Event("Event Footstep");
+            ESndPlayLoc(&Event, PlayerObject(), g_pPlayerMovement->GetGroundObj(), &foot_loc, &schema_params);
+         }
+         else
+         if (media_state == kMS_Liquid_Standing)
+         {
+            ObjID flow_arch = GetFlowArch(PLAYER_FOOT);
+
+            cTagSet Event("Event Footstep");
+            Event.Add(cTag("MediaLevel", "Foot"));
+            ESndPlayLoc(&Event, PlayerObject(), flow_arch, &foot_loc, &schema_params);
+         }
+         
          break;
       }
 

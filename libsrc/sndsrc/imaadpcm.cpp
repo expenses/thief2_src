@@ -386,52 +386,59 @@ DecompressIMABlock(
 
 
 //
+// decompress the start of a block of IMA ADPCM data (RIFF WAVE block format)
+//  returns # of bytes consumed
+//
+long
+IMA_ADPCM::DecompressBlock( BOOL          isStereo,
+                            char          *pInBuff,
+                            short         *pOutBuff,
+                            long          nSamples )
+{
+   IMAHeaderWord  *pIMAHdr1, *pIMAHdr2;
+   long bytesEaten;
+
+   // This is first fetch in this block, so we must set
+   // the decompressor state from the header word(s) at the
+   // start of the block
+   pIMAHdr1 = (IMAHeaderWord *) pInBuff;
+   *pOutBuff++ = pIMAHdr1->curValue;
+   pInBuff += sizeof(IMAHeaderWord);
+   bytesEaten = sizeof(IMAHeaderWord);
+   if ( isStereo ) {
+      pIMAHdr2 = (IMAHeaderWord *) pInBuff;
+      *pOutBuff++ = pIMAHdr2->curValue;
+      pInBuff += sizeof(IMAHeaderWord);
+      bytesEaten = 2 * sizeof(IMAHeaderWord);
+   }
+   if ( nSamples > 1 ) {
+      if ( isStereo ) {
+         Init( isStereo, pIMAHdr1->curValue, pIMAHdr1->stepIndex,
+               pIMAHdr2->curValue, pIMAHdr2->stepIndex );
+      } else {
+         Init( FALSE, pIMAHdr1->curValue, pIMAHdr1->stepIndex, 0, 0 );
+      }
+      return Decompress( pInBuff, pOutBuff, nSamples - 1 ) + bytesEaten;
+   }
+
+   return bytesEaten;
+}
+
+
+//
 // decompress a block of IMA ADPCM data (RIFF WAVE block format)
 //  returns ptr to next byte in input buffer
 //
 char *
-DecompressIMABlkPartial( IMA_ADPCM     *pDecoder,
+DecompressIMABlkPartial( cSndDecoder   *pDecoder,
                            BOOL          isStereo,
                            char          *pInBuff,
                            short         *pOutBuff,
                            long          nSamples,
                            BOOL          getHeader )
 {
-   IMAHeaderWord  *pIMAHdr1, *pIMAHdr2;
-   long bytesEaten;
-   int nOut;
-
-   // decompress a block
    if ( getHeader ) {
-      // This is first fetch in this block, so we must set
-      // the decompressor state from the header word(s) at the
-      // start of the block
-      pIMAHdr1 = (IMAHeaderWord *) pInBuff;
-      nOut = 1;
-      pOutBuff[0] = pIMAHdr1->curValue;
-      pInBuff += sizeof(IMAHeaderWord);
-      if ( isStereo ) {
-         pIMAHdr2 = (IMAHeaderWord *) pInBuff;
-         pOutBuff[1] = pIMAHdr2->curValue;
-         nOut = 2;
-         pInBuff += sizeof(IMAHeaderWord);
-      }
-      if ( nSamples > 1 ) {
-         if ( isStereo ) {
-            pDecoder->Init( isStereo, pIMAHdr1->curValue, pIMAHdr1->stepIndex,
-                            pIMAHdr2->curValue, pIMAHdr2->stepIndex );
-         } else {
-            pDecoder->Init( FALSE, pIMAHdr1->curValue, pIMAHdr1->stepIndex, 0, 0 );
-         }
-         bytesEaten = pDecoder->Decompress( pInBuff, pOutBuff + nOut, nSamples - 1 );
-         pInBuff += bytesEaten;
-      }
-   } else {
-      // this is not the first fetch in the block
-      bytesEaten = pDecoder->Decompress( pInBuff, pOutBuff, nSamples );
-      pInBuff += bytesEaten;
+      return pInBuff + pDecoder->DecompressBlock( isStereo, pInBuff, pOutBuff, nSamples );
    }
-
-   return pInBuff;
+   return pInBuff + pDecoder->Decompress( pInBuff, pOutBuff, nSamples );
 }
-

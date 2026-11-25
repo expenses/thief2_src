@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/script/quesscpt.h,v 1.6 2000/01/05 17:00:32 BFarquha Exp $
 //
@@ -42,6 +41,14 @@ DECLARE_SCRIPT_SERVICE(Quest, 0x152)
 
    // Delete quest variable
    STDMETHOD_(BOOL, Delete)(THIS_ const char *pName) PURE;
+
+   STDMETHOD(BinSet)(THIS_ const char *pName, const void *pData, int iLen) PURE;
+
+   STDMETHOD_(const void*,BinGet)(THIS_ const char *pName, int ref iLen) PURE;
+
+   STDMETHOD_(BOOL,BinExists)(THIS_ const char* pName) PURE;
+
+   STDMETHOD_(BOOL, BinDelete)(THIS_ const char *pName) PURE;
 };
 
 

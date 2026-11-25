@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phclimb.cpp,v 1.30 1999/12/02 17:15:45 BFarquha Exp $
 //
@@ -37,6 +36,7 @@
 #include <phutils.h>
 #include <phmoapi.h>
 #include <physcast.h>
+#include <aiman.h>
 
 #include <phclimb.h>
 
@@ -509,6 +509,109 @@ static inline BOOL CanMantleOnto(ObjID objid)
 
 ////////////////////////////////////////
 
+BOOL MantleCastClear(cPhysModel *pModel, Location *pStart, Location *pEnd, mxs_vector *pMoveDir)
+{
+   mxs_matrix orien;
+   mxs_vector ledge_offset;
+   mxs_real   radius = ((cPhysSphereModel *)pModel)->GetRadius(PLAYER_HEAD);
+   ObjID      hit_obj = 0;
+   Location   hit_loc;
+   Location   start_loc, end_loc;
+   mx_mk_vec(&ledge_offset, 0, 0, 3.5);
+
+   mx_ang2mat(&orien, &pModel->GetRotation());
+
+   MakeHintedLocationFromVector(&start_loc, &pModel->GetLocationVec(PLAYER_HEAD), &pModel->GetLocation(PLAYER_HEAD));
+   MakeHintedLocationFromVector(&end_loc, &start_loc.vec, &start_loc);
+
+   mx_addeq_vec(&end_loc.vec, &ledge_offset);
+
+   // Cast up
+   #ifndef SHIP
+   if (config_is_defined("MantleSpew"))
+   {
+      mprintf("Casting up from %g %g %g\n", start_loc.vec.x, start_loc.vec.y, start_loc.vec.z);
+      mprintf("             to %g %g %g\n", end_loc.vec.x, end_loc.vec.y, end_loc.vec.z);
+   }
+   #endif
+
+   if (PhysRaycast(start_loc, end_loc, &hit_loc, &hit_obj, 0, kCollideOBB | kCollideTerrain) != kCollideNone)
+   {
+      #ifndef SHIP
+      if (config_is_defined("MantleSpew"))
+         mprintf("Mantle up failed\n");
+      #endif
+
+      return FALSE;
+   }
+
+   MakeHintedLocationFromVector(&start_loc, &end_loc.vec, &start_loc);
+
+   mx_copy_vec(&(*pMoveDir), &orien.vec[0]);
+   (*pMoveDir).z = 0;
+   if (!IsZeroVector((*pMoveDir)))
+      mx_normeq_vec(&(*pMoveDir));
+   mx_scaleeq_vec(&(*pMoveDir), radius * 2);
+
+   mx_addeq_vec(&end_loc.vec, &(*pMoveDir));
+
+   // Cast forward
+   #ifndef SHIP
+   if (config_is_defined("MantleSpew"))
+   {
+      mprintf("Casting forward from %g %g %g\n", start_loc.vec.x, start_loc.vec.y, start_loc.vec.z);
+      mprintf("                  to %g %g %g\n", end_loc.vec.x, end_loc.vec.y, end_loc.vec.z);
+   }
+   #endif
+
+   hit_obj = 0;
+   if (PhysRaycast(start_loc, end_loc, &hit_loc, &hit_obj, 0, kCollideOBB | kCollideTerrain) != kCollideNone)
+   {
+      #ifndef SHIP
+      if (config_is_defined("MantleSpew"))
+         mprintf("Mantle forward failed\n");
+      #endif
+
+      return FALSE;
+   }
+
+   *pStart = start_loc;
+   *pEnd = end_loc;
+   return TRUE;
+}
+
+BOOL CanMantleOntoNonAI(ObjID objid)
+{
+   BOOL bCanMantle;
+
+   if (g_pPhysCanMantleProp && g_pPhysCanMantleProp->Get(objid, &bCanMantle))
+      return bCanMantle;
+
+   if (g_pAIManager && g_pAIManager->AccessAI(objid))
+      return FALSE;
+
+   return TRUE;
+}
+
+BOOL MantleHeadingTowardsTarget(cPhysModel *pModel)
+{
+   mxs_matrix orien;
+   mxs_vector heading, targ;
+
+   AssertMsg(pModel->GetMantlingState() > 0, "pModel->GetMantlingState() > 0");
+
+   mx_ang2mat(&orien, &pModel->GetRotation());
+   heading = orien.vec[0];
+   heading.z = 0;
+   if (mx_mag2_vec(&heading) >= 0.0001)
+      mx_norm_vec(&heading, &heading);
+
+   pModel->GetMantlingTargVec(&targ);
+   return heading.x * targ.x + heading.y * targ.y > 0.5;
+}
+
+////////////////////////////////////////
+
 BOOL CheckMantle(ObjID objID)
 {
    cPhysModel *pModel;
@@ -734,6 +837,21 @@ BOOL CheckMantle(ObjID objID)
 
    return FALSE;
 }
+
+BOOL CheckMantleOrLedge(cPhysModel *pModel, BOOL bLedge)
+{
+   if (CheckMantle(pModel->GetObjID()))
+      return TRUE;
+
+   if (bLedge && pModel->GetMantlingState() == 0)
+   {
+      mxs_vector targ = pModel->GetLocationVec();
+      pModel->SetMantlingTargVec(targ);
+      pModel->SetMantlingState(7);
+   }
+   return FALSE;
+}
+
 
 ////////////////////////////////////////
 
@@ -1016,7 +1134,3 @@ void GetClimbingDir(ObjID objID, mxs_vector *dir)
       mx_copy_vec(dir, &orien.vec[2]);
    }
 }
-
-
-
-

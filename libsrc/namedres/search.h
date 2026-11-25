@@ -16,6 +16,7 @@ struct PathStorageNode
 {
 	IStore* pStore;
 	PathStorageNode* pNext;
+	int iPath;
 };
 
 class cFoundStream
@@ -74,7 +75,7 @@ private:
 
 private:
 	IStoreManager* m_pStoreMan;
-	unsigned char m_bPathParsed;
+	BOOL m_bPathParsed;
 	cDynArray<sSearchPathElement>* m_aPathStrings;
 	ISearchPath* m_pContext;
 	ISearchPath* m_pVariants;

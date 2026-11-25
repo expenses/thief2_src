@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/anim_txt.c,v 1.25 1999/08/05 17:28:08 Justin Exp $
 // hack for animating textures for ects prior to real syste
 
@@ -20,6 +19,8 @@
 #include <storeapi.h>
 #include <resapi.h>
 #include <resdata.h>
+#include <imgrstyp.h>
+#include <appagg.h>
 
 #include <texmem.h>
 #include <portal.h>
@@ -54,22 +55,63 @@ BOOL ectsAnimTxtValidName(char *fname)
    return FALSE;
 }
 
-BOOL ectsAnimTxtIgnore(const char *fname)
+static BOOL ectsAnimResExists(IResMan *pResMan, const char *path, const char *name)
 {
-   char *t, test_c;
+   IRes *pRes = IResMan_Bind(pResMan, name, RESTYPE_IMAGE, NULL, path, 0);
+   if (!pRes)
+      return FALSE;
+   COMRelease(pRes);
+   return TRUE;
+}
+
+BOOL ectsAnimTxtIgnore(const char *fname, const char *path)
+{
+   const char *t, *p;
+   char buf[256];
+   int frame, len;
+   BOOL found;
+   IResMan *pResMan;
+
    if (ectsAnimLoading) return FALSE;
    t=strrchr(fname,'_');
    if (t==fname) return FALSE;
    if (t==NULL) return FALSE;
    if (t>=fname+strlen(fname)-1) return FALSE;
-   if (((t-fname)==strlen(fname)-2)||   // one character after t
-       (*(t+2)=='.'))
+   p=t+1;
+   if ((*p<'1')||(*p>'9'))
+      return FALSE;
+   for (p++; *p && *p!='.'; p++)
+      if ((*p<'0')||(*p>'9'))
+         return FALSE;
+   if (p-t-1<=1)
+      return TRUE;
+
+   frame=atoi(t+1);
+   if (frame==0 || frame>=99)
+      return FALSE;
+
+   pResMan=AppGetObj(IResMan);
+   len=t-fname+1;
+   strncpy(buf,fname,len);
+   buf[len]='\0';
+   found=ectsAnimResExists(pResMan,path,buf);
+   buf[len-1]='\0';
+   if (!found && !ectsAnimResExists(pResMan,path,buf))
    {
-      test_c=*(t+1);
-      if ((test_c>='0')&&(test_c<='9'))
-         return TRUE;
+      SafeRelease(pResMan);
+      return FALSE;
    }
-   return FALSE;
+   if (frame>1)
+   {
+      strcat(buf,"_1");
+      if (!ectsAnimResExists(pResMan,path,buf))
+      {
+         SafeRelease(pResMan);
+         return FALSE;
+      }
+   }
+   SafeRelease(pResMan);
+   return TRUE;
 }
 
 int ectsAnimTxtTime=0;
@@ -144,7 +186,7 @@ IRes *ectsAnimSearchForFrame(char *name, int idx, char *path, BOOL portal_tmap)
    strcpy(buf,name);
    s=extension_p(buf);
    if ((s!=NULL)&&(s!=buf)) *(s-1)='\0';
-   if (strlen(buf)>=7) return NULL;   // too long a name for a frame add on
+   if (strlen(buf)>=30) return NULL;   // too long a name for a frame add on
    sprintf(buf+strlen(buf),"_%d",idx);
    return texmemLoadSingleRes(path, buf, portal_tmap);
 }

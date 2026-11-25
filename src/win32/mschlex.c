@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /* n:\bin\lex -p msch -l -o win32\mschlex.c c:\prj\cam\src\mschlex.lex */
 #define YYNEWLINE 10
 #define INITIAL 0
@@ -474,8 +473,8 @@ extern	int	mschmapch	YY_ARGS((int delim, int escape));
 #endif
 
 /* stdin and stdout may not neccessarily be constants */
-YY_DECL	FILE   *mschin = stdin;
-YY_DECL	FILE   *mschout = stdout;
+YY_DECL	FILE   *mschin;
+YY_DECL	FILE   *mschout;
 YY_DECL	int	mschlineno = 1;		/* line number */
 
 /*

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/physcast.cpp,v 1.13 2000/03/01 16:23:38 toml Exp $
 //
@@ -50,7 +49,7 @@ static BOOL m_spew;
 ////////////////////////////////////////
 
 void GatherPhysObjs(cPhysModel **pModelList, int *nModels, 
-                    Location &start, Location &end, int filter);
+                    Location &start, Location &end, int filter, mxs_real radius);
 
 BOOL RaycastVsSphere(cPhysModel *pModel, int submod, const mxs_vector &start, const mxs_vector &end, 
                      mxs_real radius, mxs_vector *hit, mxs_real* hit_time);
@@ -141,12 +140,12 @@ int PhysRaycast(Location &start, Location &end, Location *hit, ObjID *hit_obj, m
 
          if (PortalRaycastCell != -1)
          {
-            ubyte texture = WR_CELL(PortalRaycastCell)->render_list[PortalRaycastFindPolygon()].texture_id;
+            ushort texture = WR_CELL(PortalRaycastCell)->render_list[PortalRaycastFindPolygon()].texture_id;
             min_hit_obj = GetTextureObj(texture);
           
             used_end = l_hit;
 
-            hit_time_modifier = sqrt(mx_dist2_vec(&start.vec, &used_end.vec) / mx_dist2_vec(&start.vec, &end.vec)); 
+            hit_time_modifier = min_hit_time; 
          }
          else
             min_hit_obj = OBJ_NULL;
@@ -159,7 +158,7 @@ int PhysRaycast(Location &start, Location &end, Location *hit, ObjID *hit_obj, m
    #endif
 
    // Gather the physics objects to cast against
-   GatherPhysObjs(pModelList, &nModels, start, used_end, filter);
+   GatherPhysObjs(pModelList, &nModels, start, used_end, filter, 0.0);
 
    #ifdef PROFILE_MORE
    TIMER_MarkStop(PR_Gather);
@@ -490,7 +489,7 @@ BOOL RaycastVsOBB(cPhysModel *pModel, const mxs_vector &start, const mxs_vector 
 static bool obj_added[MAX_PHYSCAST_OBJIDS / 8];
 
 void GatherPhysObjs(cPhysModel **pModelList, int *nModels, 
-                    Location &start, Location &end, int filter)
+                    Location &start, Location &end, int filter, mxs_real radius)
 {
    int cell_list[MAX_PHYSCAST_CELLS];
    int num_cells;
@@ -500,6 +499,9 @@ void GatherPhysObjs(cPhysModel **pModelList, int *nModels,
    mxs_vector max;
 
    Assert_(gMaxObjID < MAX_PHYSCAST_OBJIDS);
+
+   if (!(filter & (kCollideAllPhys | kInsideOBB)))
+      return;
 
    // Blast our obj_added array
    memset(obj_added, 0, sizeof(bool) * MAX_PHYSCAST_OBJIDS / 8);
@@ -518,6 +520,11 @@ void GatherPhysObjs(cPhysModel **pModelList, int *nModels,
          max.el[i] = end.vec.el[i];
       }
    }
+
+   for (i=0; i<3; i++)
+      min.el[i] -= radius;
+   for (i=0; i<3; i++)
+      max.el[i] += radius;
 
    // Gather cells intersecting our bbox
    num_cells = PortalCellsInArea(cell_list, MAX_PHYSCAST_CELLS, &min, &max, &start);

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/palette.c,v 1.15 2000/02/19 12:35:31 toml Exp $
 // stupid little file to concentrate palette gnosis
 

@@ -369,6 +369,8 @@ struct sLoopFrameInfo
    unsigned    nCount;
    unsigned long  nTicks; // current timer ticks
    unsigned long  dTicks; // time since last frame
+   __int64        nTicks64;
+   __int64        dTicks64;
 };
 
 typedef struct sLoopFrameInfo sLoopFrameInfo;

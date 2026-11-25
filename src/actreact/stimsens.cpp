@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/actreact/stimsens.cpp,v 1.28 1998/10/24 00:55:35 mahk Exp $
 #include <appagg.h>
 
@@ -285,7 +284,13 @@ public:
 
       // swizzle kind into a name
       const sReactionDesc* react = Reactions->DescribeReaction(tron->effect.kind);
-      len += file->Write(react->name,sizeof(react->name));
+      if (!react)
+      {
+         char name[sizeof(react->name)] = "";
+         len += file->Write(name,sizeof(name));
+      }
+      else
+         len += file->Write(react->name,sizeof(react->name));
       // write out param
       len += file->Write(&tron->effect.param,sizeof(tron->effect.param));
 

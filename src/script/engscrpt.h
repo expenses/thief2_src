@@ -67,6 +67,15 @@ DECLARE_SCRIPT_SERVICE(Debug, 0xd7)
                        const string ref = NULL_STRING) PURE;
 
    STDMETHOD (Break)() PURE;
+
+   STDMETHOD (Log)(const string ref,
+                   const string ref = NULL_STRING,
+                   const string ref = NULL_STRING,
+                   const string ref = NULL_STRING,
+                   const string ref = NULL_STRING,
+                   const string ref = NULL_STRING,
+                   const string ref = NULL_STRING,
+                   const string ref = NULL_STRING) PURE;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

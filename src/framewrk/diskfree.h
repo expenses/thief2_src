@@ -19,4 +19,6 @@ EXTERN int compute_free_diskspace(char *str);
 // checks drive str (using above) messages with windows dialog if under minMB
 EXTERN BOOL CheckForDiskspaceAndMessage(char *str, int minMB);
 
+EXTERN BOOL CheckForWriteAccessAndMessage(void);
+
 #endif  // __DISKFREE_H

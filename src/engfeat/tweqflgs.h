@@ -73,6 +73,8 @@
 #define TWEQ_MC_NOPHYS   (1<<9)  // for emitted, is just passed on to launchProjectile
 #define TWEQ_MC_VHOT     (1<<10) // Anchor at vhot 1, rather than at center
 #define TWEQ_MC_HOSTONLY (1<<11) // run only on object host, not proxies
+#define TWEQ_MC_CRETSCALE (1<<12)
+#define TWEQ_MC_USEMODEL5 (1<<13) // random frame choice includes the last model slot
 
 
 // State which is transient

@@ -46,6 +46,7 @@ public:
 
     virtual BOOL DoGetDirectDraw(IDirectDraw4 **);
     virtual BOOL DoGetBitmapSurface(sGrBitmap *, IDirectDrawSurface4 **);
+    virtual BOOL DoIsPersistentMode();
     
     HWND GetMainWnd();
 

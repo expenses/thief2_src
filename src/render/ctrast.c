@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/ctrast.c,v 1.12 2000/03/19 15:18:43 patmac Exp $
 
 #include <string.h>
@@ -84,7 +83,7 @@ void ContrastUpdate()
    long new_time;
    float dt;
 
-   float current = get_image_av(8,.5);
+   float current = 0.0;
    static int blarg=8;
    float scale,about;
    

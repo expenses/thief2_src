@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/filevar.cpp,v 1.6 1998/09/22 14:13:24 mahk Exp $
 
 #include <appagg.h>
@@ -14,6 +13,7 @@
 
 #include <loopapi.h>
 #include <dispbase.h>
+#include <sdestool.h>
 #include <dbasemsg.h>
 #include <loopmsg.h>
 #include <dispbase.h>
@@ -72,6 +72,17 @@ cFileVarBase::~cFileVarBase()
    }
 }
 
+BOOL cFileVarBase::SetField(const sFieldDesc *field, const char *value, const TagVersion *ver,
+                            IStructDescTools *tools)
+{
+   if (VersionNumsCompare(ver, &mDesc->last_good_version) < 0)
+      return FALSE;
+   if (tools)
+      return tools->ParseField(field, value, mBlock) == S_OK;
+   AutoAppIPtr(StructDescTools);
+   return pStructDescTools->ParseField(field, value, mBlock) == S_OK;
+}
+
 void cFileVarBase::Reset()
 {
    memset(mBlock,0,mSize); 
@@ -79,6 +90,11 @@ void cFileVarBase::Reset()
 
 
 BOOL cFileVarBase::SetupFile(ITagFile* file)
+{
+   return SetupFile(file, NULL);
+}
+
+BOOL cFileVarBase::SetupFile(ITagFile* file, TagVersion* ver)
 {
    if (mDesc->game)
    {
@@ -97,6 +113,8 @@ BOOL cFileVarBase::SetupFile(ITagFile* file)
       file->CloseBlock(); 
       return FALSE; 
    }
+   if (ver)
+      *ver = v;
    return TRUE; 
 }
 
@@ -118,19 +136,22 @@ void cFileVarBase::DatabaseMsg(ulong msg, ITagFile* file)
          if (SetupFile(file))
          {
             ConfigSpew("filevar_spew",("Saving %s\n",mDesc->friendly_name)); 
-            file->Write((char*)mBlock,mSize); 
+            Write(file,(char*)mBlock,mSize); 
             CleanupFile(file); 
          }
          break; 
 
       case kDatabaseLoad:
-         if (SetupFile(file))
+      {
+         TagVersion v;
+         if (SetupFile(file,&v))
          {
             ConfigSpew("filevar_spew",("Loading %s\n",mDesc->friendly_name)); 
-            file->Read((char*)mBlock,mSize); 
+            Read(file,(char*)mBlock,mSize,&v); 
             CleanupFile(file); 
          }
          break; 
+      }
       case kDatabasePostLoad:
       case kDatabaseDefault:
          Update(); 

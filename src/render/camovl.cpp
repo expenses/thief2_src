@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/camovl.cpp,v 1.10 2000/03/16 19:47:18 bfarquha Exp $
 
 // "Overlay" (read "2d") effects for when we're looking through the remote camera.
@@ -41,6 +40,8 @@
 #include <objlight.h>
 #include <camera.h>
 #include <playrobj.h>
+#include <simtime.h>
+#include <tmgr.h>
 
 // For chips:
 #include <scrnman.h>
@@ -50,8 +51,17 @@
 
 #include <mprintf.h>
 #include <dev2d.h>
+#include <config.h>
+#include <lgd3d.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header!
+
+struct IDirect3DDevice9;
+class cD6States;
+extern IDirect3DDevice9 *g_lpD3D9Device;
+extern cD6States *pcStates;
+EXTERN BOOL UseD3DDisplay();
+EXTERN BOOL g_bD3DChips = TRUE;
 
 
 #define PI 3.14159265
@@ -60,6 +70,8 @@
 extern "C" BOOL g_lgd3d;
 
 
+EXTERN BOOL g_bD3DDistortionFX;
+
 class IRemoteCameraEffect
 {
 public:
@@ -67,6 +79,8 @@ public:
    virtual void Term() = 0;
    virtual void OnFrame() = 0;
    virtual void Render(BOOL bIsScreenLocked) = 0;
+   virtual void OnCameraSwitch() {}
+   virtual void GetDistortion(int *pEffects, int *pnEffects) {}
 };
 
 struct goddamn_stupid_r3s_point
@@ -104,11 +118,19 @@ public:
    virtual void Term();
    virtual void OnFrame();
    virtual void Render(BOOL bIsScreenLocked);
+   virtual void OnCameraSwitch() { nStartTime = GetSimTime(); }
+   virtual void GetDistortion(int *pEffects, int *pnEffects)
+   {
+      if (g_bD3DDistortionFX && nBasePoints)
+         pEffects[(*pnEffects)++] = 4;
+   }
 
 private:
    void ComputePolys();
    void ReadFrostedData();
    void SetupPoint(int pt, int x, int y, float a);
+   void ScalePoint(g2s_point *pPt, const float *pCenter, float fScale, float fAlpha);
+   void RenderD3D();
 
    int nPointsPerQuad;
    float fInnerCircleSize;
@@ -120,6 +142,9 @@ private:
    int nNumPolygons;
    sFrostyPolygon *pPolygons;
    goddamn_stupid_r3s_point *pPoints;
+   int nBasePoints;
+   goddamn_stupid_r3s_point *pBasePoints;
+   ulong nStartTime;
 };
 
 
@@ -141,7 +166,7 @@ void cFrostedEdgesEffect::ReadFrostedData()
 
    IResMan *pResMan = AppGetObj(IResMan);
 
-   pFrostedDataRes = IResMan_Bind(pResMan, "camovl.txt", RESTYPE_BINARY, NULL, "camera\\", 0);
+   pFrostedDataRes = IResMan_Bind(pResMan, "camovl.txt", RESTYPE_RAWTEXT, NULL, "camera\\", 0);
    if (!pFrostedDataRes)
       return;
 
@@ -243,11 +268,16 @@ void cFrostedEdgesEffect::Term()
 }
 
 
+static float fInvWidth;
+static float fInvHeight;
+
 inline void cFrostedEdgesEffect::SetupPoint(int pt, int x, int y, float a)
 {
    pPoints[(pt)].grp.sx = fix_make((x),0);
    pPoints[(pt)].grp.sy = fix_make((y),0);
    pPoints[(pt)].grp.i = 0;
+   pPoints[(pt)].grp.u = (float)(x * fInvWidth);
+   pPoints[(pt)].grp.v = (float)(y * fInvHeight);
    pPoints[(pt)].grp.h = 0;
    pPoints[(pt)].grp.d = 0;
    pPoints[(pt)].grp.w = 1;
@@ -303,6 +333,8 @@ void cFrostedEdgesEffect::ComputePolys()
       nHeight = Mode.h;
       nMidX = nWidth/2;
       nMidY = nHeight/2;
+      fInvWidth = 1.0f / nWidth;
+      fInvHeight = 1.0f / nHeight;
 
       // from dev2d if context is available, else find some other way to get it:
       // aspect is w/h
@@ -334,7 +366,7 @@ void cFrostedEdgesEffect::ComputePolys()
       for (i = 0; i < nPointsPerSide; i++)
       {
          nX = (i/(float)nPointsPerSide)*nWidth-DUMB_ADJUST;
-         fTheta = atan2((nHeight/2),(nX-nMidX));
+         fTheta = atan2((double)(nHeight/2),(double)(nX-nMidX));
 
          // Outer points (along edge of screen)
          SetupPoint(nQuad*nQuadPoints+i*3, nX, 0-DUMB_ADJUST, 1);
@@ -355,7 +387,7 @@ void cFrostedEdgesEffect::ComputePolys()
       for (i = 0; i < nPointsPerSide; i++)
       {
          nY = (i/(float)nPointsPerSide)*nHeight - DUMB_ADJUST;
-         fTheta = atan2((nMidY-nY),(nWidth/2));
+         fTheta = atan2((double)(nMidY-nY),(double)(nWidth/2));
 
          // Outer points (along edge of screen)
          SetupPoint(nQuad*nQuadPoints+i*3, nWidth, nY, 1);
@@ -377,7 +409,7 @@ void cFrostedEdgesEffect::ComputePolys()
       for (i = 0; i < nPointsPerSide; i++)
       {
          nX = nWidth-(i/(float)nPointsPerSide)*nWidth;
-         fTheta = atan2((-nHeight/2),(nX-nMidX));
+         fTheta = atan2((double)(-nHeight/2),(double)(nX-nMidX));
 
          // Outer points (along edge of screen)
          SetupPoint(nQuad*nQuadPoints+i*3, nX, nHeight, 1);
@@ -399,7 +431,7 @@ void cFrostedEdgesEffect::ComputePolys()
       for (i = 0; i < nPointsPerSide; i++)
       {
          nY = nHeight-(i/(float)nPointsPerSide)*nHeight;
-         fTheta = atan2((nMidY-nY),(-nWidth/2));
+         fTheta = atan2((double)(nMidY-nY),(double)(-nWidth/2));
 
          // Outer points (along edge of screen)
          SetupPoint(nQuad*nQuadPoints+i*3, 0-DUMB_ADJUST, nY, 1);
@@ -436,6 +468,87 @@ void cFrostedEdgesEffect::ComputePolys()
          pPolygons[i*2+1].pPoints[3] = (r3s_point *)(pPoints+i*3+2);
       }
    }
+}
+
+
+void cFrostedEdgesEffect::ScalePoint(g2s_point *pPt, const float *pCenter, float fScale, float fAlpha)
+{
+   float x = (fix_float(pPt->sx) - pCenter[0]) * fScale + pCenter[0];
+   pPt->sx = fix_from_float(x);
+   float y = (fix_float(pPt->sy) - pCenter[1]) * fScale + pCenter[1];
+   pPt->sy = fix_from_float(y);
+   pPt->u = x * fInvWidth;
+   pPt->v = y * fInvHeight;
+   pPt->a = fAlpha;
+}
+
+#define kFrostFadeStart 800
+#define kFrostFadeEnd   1150
+
+void cFrostedEdgesEffect::RenderD3D()
+{
+   if (r3d_state.cur_con->clip.clip_flags)
+   {
+      r3d_state.cur_con->clip.clip_flags = 0;
+      r3d_do_setup = TRUE;
+   }
+   if (!lgd3d_begin_effect(4))
+      return;
+
+   ulong nElapsed = GetSimTime() - nStartTime;
+   int nRings = nPointsPerQuad + 1;
+   float fInnerScale = 0.6f;
+   float fOuterScale = 0.65f;
+   float fOuterAlpha = 0.95f;
+   float fAlpha = 0.6f;
+   if (nElapsed < kFrostFadeEnd)
+   {
+      float f = (nElapsed < kFrostFadeStart) ? 0.0f
+              : (float)sqrt((double)(nElapsed - kFrostFadeStart) / (kFrostFadeEnd - kFrostFadeStart));
+      fInnerScale = 0.95f * f * 0.6f + (1.0f - f);
+      fOuterScale = f * 0.9f * 0.65f + (1.0f - f) * 1.1f;
+      fOuterAlpha = (1.0f - f) * 0.15f + 0.85f;
+      fAlpha = f * 0.7f * 0.6f;
+   }
+
+   int i;
+   for (i = 0; i < nNumPoints; i++)
+   {
+      pPoints[i].grp.i = fAlpha;
+      pPoints[i].grp.d = fAlpha;
+      pPoints[i].grp.a = fAlpha;
+   }
+
+   float center[2] = { nWidth * 0.5f, nHeight * 0.5f };
+   goddamn_stupid_r3s_point *pPt = pPoints;
+   for (i = 0; i < nRings; i++)
+   {
+      ScalePoint(&pPt[0].grp, center, fInnerScale, 0);
+      ScalePoint(&pPt[1].grp, center, fInnerScale, 0);
+      ScalePoint(&pPt[2].grp, center, fInnerScale, 0);
+      ScalePoint(&pPt[3].grp, center, fInnerScale, 0);
+      ScalePoint(&pPt[4].grp, center, fOuterScale, fOuterAlpha);
+      ScalePoint(&pPt[5].grp, center, fOuterScale, fOuterAlpha);
+      ScalePoint(&pPt[6].grp, center, fOuterScale, fOuterAlpha);
+      ScalePoint(&pPt[7].grp, center, fOuterScale, fOuterAlpha);
+      pPt += 8;
+   }
+
+   for (i = 0; i < nNumPolygons; i++)
+   {
+      r3d_do_setup = TRUE;
+      r3_draw_poly(4, pPolygons[i].pPoints);
+   }
+   lgd3d_end_effect();
+
+   for (i = 0; i < nNumPoints; i++)
+   {
+      pPoints[i].grp.i = 0;
+      pPoints[i].grp.d = 0;
+      pPoints[i].grp.a = 0;
+   }
+   if (pBasePoints)
+      memcpy(pPoints, pBasePoints, nBasePoints * sizeof(goddamn_stupid_r3s_point));
 }
 
 
@@ -477,10 +590,15 @@ void cFrostedEdgesEffect::Render(BOOL bIsScreenLocked)
    ////////////////////////////
    // Render:
 
-   for (int i = 0; i < nNumPolygons; i++)
+   if (g_bD3DChips && g_lpD3D9Device && pcStates)
+      RenderD3D();
+   else
    {
-      r3d_do_setup = TRUE;
-      r3_draw_poly(4, pPolygons[i].pPoints);
+      for (int i = 0; i < nNumPolygons; i++)
+      {
+         r3d_do_setup = TRUE;
+         r3_draw_poly(4, pPolygons[i].pPoints);
+      }
    }
 
 
@@ -565,7 +683,7 @@ void cSmudgesEffect::ReadSmudgeData()
 
    IResMan *pResMan = AppGetObj(IResMan);
 
-   pSmudgeDataRes = IResMan_Bind(pResMan, "camovl.txt", RESTYPE_BINARY, NULL, "camera\\", 0);
+   pSmudgeDataRes = IResMan_Bind(pResMan, "camovl.txt", RESTYPE_RAWTEXT, NULL, "camera\\", 0);
    if (!pSmudgeDataRes)
       return;
 
@@ -992,6 +1110,8 @@ class cChipData
 {
 public:
    void Render();
+   void ComputeUV(int i, int j, float fInvW, float fInvH, float *pU, float *pV);
+   void BuildDistortTexture();
 
    float fXPos;
    float fYPos;
@@ -1004,6 +1124,7 @@ public:
 
    int nXUpperLeft;
    int nYUpperLeft;
+   grs_bitmap *pDistortBm;
 };
 
 
@@ -1025,6 +1146,60 @@ void cChipData::Render()
 
 
 
+void cChipData::ComputeUV(int i, int j, float fInvW, float fInvH, float *pU, float *pV)
+{
+   sScreenPos *pPos = &SrcPos[i * CHIP_SIZE + j];
+   *pU = (pPos->fX - (float)(nXUpperLeft + j)) * fInvW * 0.5f + 0.5f;
+   *pV = (pPos->fY - (float)(nYUpperLeft + i)) * fInvH * 0.5f + 0.5f;
+   if (*pU < 0.0)
+      *pU = 0.0;
+   else if (*pU > 1.0)
+      *pU = 1.0;
+   if (*pV < 0.0)
+      *pV = 0.0;
+   else if (*pV > 1.0)
+      *pV = 1.0;
+}
+
+#define kChipDistortScale 0.0625
+#define kChipNeutralTexel 0xFF7F7F7F
+
+void cChipData::BuildDistortTexture()
+{
+   if (!pDistortBm)
+   {
+      pDistortBm = gr_alloc_bitmap(BMT_FLAT32, BMF_RGB_8888, CHIP_SIZE, CHIP_SIZE);
+      if (!pDistortBm)
+         return;
+   }
+   else if ((pDistortBm->flags & BMF_LOADED) && g_tmgr)
+      g_tmgr->unload_texture(pDistortBm);
+
+   sScrnMode Mode;
+   ScrnModeGet(&Mode);
+   float fInvW = 1.0f / (Mode.w * (float)kChipDistortScale);
+   float fInvH = 1.0f / ((float)kChipDistortScale * Mode.h);
+
+   ulong *pBits = (ulong *)pDistortBm->bits;
+   for (int n = pDistortBm->w * pDistortBm->h; n; n--)
+      *pBits++ = kChipNeutralTexel;
+
+   for (int i = 0; i < CHIP_SIZE; i++)
+   {
+      for (int j = StartStop[i].nStartIx; j <= StartStop[i].nEndIx; j++)
+      {
+         float u, v;
+         ComputeUV(i, j, fInvW, fInvH, &u, &v);
+         uchar *pTexel = pDistortBm->bits + pDistortBm->row * i + j * 4;
+         pTexel[0] = 0x7F;
+         pTexel[1] = (uchar)(u * 255.0);
+         pTexel[2] = (uchar)(v * 255.0);
+         pTexel[3] = 0xFF;
+      }
+   }
+}
+
+
 class cChipsEffect : public IRemoteCameraEffect
 {
 public:
@@ -1034,11 +1209,17 @@ public:
    virtual void Term();
    virtual void OnFrame();
    virtual void Render(BOOL bIsScreenLocked);
+   virtual void GetDistortion(int *pEffects, int *pnEffects)
+   {
+      if (g_bD3DDistortionFX && nNumChips && !bNoChips)
+         pEffects[(*pnEffects)++] = 1;
+   }
 
 private:
    void ReadChipData();
    void ComputeChipData();
    void ComputeChipBits(int ix, float fStartAng, float fStopAng);
+   void RenderD3D();
 
    cChipData *pChips;
    int nNumChips;
@@ -1070,7 +1251,7 @@ void cChipsEffect::ReadChipData()
 
    IResMan *pResMan = AppGetObj(IResMan);
 
-   pChipDataRes = IResMan_Bind(pResMan, "camovl.txt", RESTYPE_BINARY, NULL, "camera\\", 0);
+   pChipDataRes = IResMan_Bind(pResMan, "camovl.txt", RESTYPE_RAWTEXT, NULL, "camera\\", 0);
    if (!pChipDataRes)
       return;
 
@@ -1178,7 +1359,7 @@ void cChipsEffect::ComputeChipBits(int ix, float fStartAng, float fStopAng)
             fAng = (TWOPI-fAng)+PI*0.50000;
 
             // normalize it:
-            fAng = fmod(fAng, TWOPI);
+            fAng = fmod((double)fAng, TWOPI);
 
             if (fStopAng < TWOPI)
             {
@@ -1413,9 +1594,11 @@ for (int j = 0; j < CHIP_SIZE; j++)
 }
 */
    }
+
+   if (g_bD3DDistortionFX)
+      for (int nChip = 0; nChip < nNumChips; nChip++)
+         pChips[nChip].BuildDistortTexture();
 }
-
-
 
 void cChipsEffect::Init()
 {
@@ -1441,6 +1624,28 @@ void cChipsEffect::Term()
 }
 
 
+
+void cChipsEffect::RenderD3D()
+{
+   if (!g_bD3DChips)
+      return;
+
+   BOOL bZWrite = lgd3d_is_zwrite_on();
+   BOOL bZCompare = lgd3d_is_zcompare_on();
+   lgd3d_set_zwrite(FALSE);
+   lgd3d_set_zcompare(FALSE);
+
+   if (lgd3d_begin_effect(1))
+   {
+      for (int i = 0; i < nNumChips; i++)
+         pChips[i].Render();
+      lgd3d_end_effect();
+   }
+
+   lgd3d_set_zwrite(bZWrite);
+   lgd3d_set_zcompare(bZCompare);
+}
+
 void cChipsEffect::Render(BOOL bIsScreenLocked)
 {
    if (!g_lgd3d || !nNumChips || bNoChips)
@@ -1448,10 +1653,15 @@ void cChipsEffect::Render(BOOL bIsScreenLocked)
 
    ComputeChipData();
 
+   if (UseD3DDisplay())
+   {
+      RenderD3D();
+      return;
+   }
+
    if (!grd_canvas)
       return;
 
-   // This is EVIL!
    if (!bIsScreenLocked)
       ScrnLockDrawCanvas();
 
@@ -1487,6 +1697,167 @@ static IRemoteCameraEffect *(Effects[]) =
 
 
 static mxs_angvec FacingAng;
+
+enum eCamOvlImageMode
+{
+   kCamOvlImageStretch,
+   kCamOvlImage4x3Bars,
+   kCamOvlImage4x3,
+   kCamOvlImage16x9Bars,
+   kCamOvlImage16x9,
+};
+
+struct sCamOvlImage
+{
+   int nRes;
+   int mode;
+   uchar alpha;
+   uchar rgb[3];
+   uchar pad;
+   uchar barRGB[3];
+};
+
+inline void CamOvlSetQuad(goddamn_stupid_r3s_point *pPts, int x0, int y0, int x1, int y1,
+                          float u0, float u1, const float *pColor)
+{
+   int nX[4] = { x0, x1, x1, x0 };
+   int nY[4] = { y0, y0, y1, y1 };
+   float fU[4] = { u0, u1, u1, u0 };
+   float fV[4] = { 0.0, 0.0, 1.0, 1.0 };
+   for (int i = 0; i < 4; i++)
+   {
+      g2s_point *p = &pPts[i].grp;
+      p->sx = fix_make(nX[i], 0) - fix_make(0, 0x8000);
+      p->sy = fix_make(nY[i], 0) - fix_make(0, 0x8000);
+      p->w = 1.0;
+      p->u = fU[i];
+      p->v = fV[i];
+      p->r = pColor[0];
+      p->g = pColor[1];
+      p->b = pColor[2];
+      p->a = pColor[3];
+   }
+}
+
+void CameraOverlayDrawImage(int nTexture, sCamOvlImage *pImg)
+{
+   if (!r3d_state.cur_con)
+      return;
+
+   BOOL bZWrite = lgd3d_is_zwrite_on();
+   BOOL bZCompare = lgd3d_is_zcompare_on();
+   lgd3d_set_zwrite(FALSE);
+   lgd3d_set_zcompare(FALSE);
+   lgd3d_set_blend(TRUE);
+
+   r3_set_polygon_context(R3_PL_POLYGON | R3_PL_TEXTURE | R3_PL_RGBA_GOURAUD);
+   r3_set_color(0xffffff);
+   r3_set_texture((r3s_texture)nTexture);
+
+   sScrnMode Mode;
+   ScrnModeGet(&Mode);
+
+   float fColor[4];
+   fColor[0] = pImg->rgb[0] / 255.0f;
+   fColor[1] = pImg->rgb[1] / 255.0f;
+   fColor[2] = pImg->rgb[2] / 255.0f;
+   fColor[3] = pImg->alpha / 255.0f;
+
+   int x0 = 0, x1 = Mode.w, y0 = 0, y1 = Mode.h;
+   float u0 = 0.0, u1 = 1.0;
+   int nBars = 0;
+   switch (pImg->mode)
+   {
+      case kCamOvlImage4x3Bars:
+      case kCamOvlImage4x3:
+         if (Mode.h * 4 < Mode.w * 3)
+         {
+            int nW = Mode.h * 4 / 3;
+            x0 = (Mode.w - nW) / 2;
+            x1 = x0 + nW;
+            nBars = 1;
+         }
+         else if (Mode.h * 4 > Mode.w * 3)
+         {
+            int nH = Mode.w * 3 / 4;
+            y0 = (Mode.h - nH) / 2;
+            y1 = y0 + nH;
+            nBars = 2;
+         }
+         break;
+      case kCamOvlImage16x9Bars:
+      case kCamOvlImage16x9:
+      {
+         if (Mode.w * 9 == Mode.h * 16)
+            break;
+         double fAspect = (double)Mode.w / Mode.h;
+         if (fAspect > 4.0 / 3.0 && fAspect < 16.0 / 9.0)
+         {
+            int nTrim = Mode.h * 16 / 9 - Mode.w;
+            AssertMsg(nTrim >= 0, "trimw >= 0");
+            nTrim /= 2;
+            u0 = (float)nTrim / Mode.w;
+            u1 = (float)(Mode.w - nTrim) / Mode.w;
+         }
+         else if (Mode.h * 16 < Mode.w * 9)
+         {
+            int nW = Mode.h * 16 / 9;
+            x0 = (Mode.w - nW) / 2;
+            x1 = x0 + nW;
+            nBars = 1;
+         }
+         else
+         {
+            int nH = Mode.w * 3 / 4;
+            y0 = (Mode.h - nH) / 2;
+            y1 = y0 + nH;
+            u0 = 0.125f;
+            u1 = 0.875f;
+            nBars = 2;
+         }
+         break;
+      }
+   }
+
+   goddamn_stupid_r3s_point Pts[4];
+   r3s_point *pPts[4] = { (r3s_point *)&Pts[0], (r3s_point *)&Pts[1], (r3s_point *)&Pts[2], (r3s_point *)&Pts[3] };
+   int nStride = r3d_glob.cur_stride;
+   r3d_glob.cur_stride = sizeof(goddamn_stupid_r3s_point);
+
+   CamOvlSetQuad(Pts, x0, y0, x1, y1, u0, u1, fColor);
+   r3_draw_poly(4, pPts);
+
+   if (nBars)
+   {
+      float fBar[4] = { 0.0, 0.0, 0.0, 1.0 };
+      if (pImg->mode == kCamOvlImage4x3Bars || pImg->mode == kCamOvlImage16x9Bars)
+      {
+         r3_set_polygon_context(R3_PL_POLYGON | R3_PL_RGBA_GOURAUD);
+         fBar[0] = pImg->barRGB[0] / 255.0f;
+         fBar[1] = pImg->barRGB[1] / 255.0f;
+         fBar[2] = pImg->barRGB[2] / 255.0f;
+      }
+      if (nBars == 1)
+      {
+         CamOvlSetQuad(Pts, 0, 0, x0, Mode.h, 0, 0, fBar);
+         r3_draw_poly(4, pPts);
+         CamOvlSetQuad(Pts, x1, 0, Mode.w, Mode.h, 0, 0, fBar);
+      }
+      else
+      {
+         CamOvlSetQuad(Pts, 0, 0, Mode.w, y0, 0, 0, fBar);
+         r3_draw_poly(4, pPts);
+         CamOvlSetQuad(Pts, 0, y1, Mode.w, Mode.h, 0, 0, fBar);
+      }
+      r3_draw_poly(4, pPts);
+   }
+
+   r3d_glob.cur_stride = nStride;
+   lgd3d_set_zwrite(bZWrite);
+   lgd3d_set_zcompare(bZCompare);
+   lgd3d_set_blend(FALSE);
+}
+
 
 extern "C"
 void CameraOverlayInit()
@@ -1526,34 +1897,56 @@ void CameraOverlayOnFrame()
    }
 }
 
+BOOL D8_ColorCorrectionActive();
+void D8_FlushPostProcessing(BOOL bKeepTarget);
+EXTERN void lgd3d_run_effects(int *pEffects, int nEffects);
+
+extern "C"
+void CameraOverlayCameraSwitch()
+{
+   int i = 0;
+   while (Effects[i])
+   {
+      Effects[i]->OnCameraSwitch();
+      i++;
+   }
+}
+
 extern "C"
 void CameraOverlayRender(BOOL bIsScreenLocked)
 {
    int i = 0;
-   mxs_vector OriginPos={0,0,0};
+   int nEffects;
+   int aEffects[17];
+   mxs_vector OriginPos = {0, 0, 0};
 
-   if (!bIsScreenLocked)
+   if (UseD3DDisplay() && config_is_defined("d3d_disp_camoverlay_postpost") && pcStates && g_lpD3D9Device)
+      D8_FlushPostProcessing(D8_ColorCorrectionActive());
+
+   if (g_lgd3d && g_bD3DDistortionFX)
    {
-      // Wow if we could just do lgd3d_g2 stuff, then we could avoid all this.
-      r3_start_frame();
-      r3_set_view_angles(&OriginPos, &FacingAng, R3_DEFANG);
-      r3_set_space(R3_CLIPPING_SPACE);
-
-      while(Effects[i])
+      nEffects = 0;
+      while (Effects[i])
       {
-         Effects[i]->Render(bIsScreenLocked);
+         Effects[i]->GetDistortion(aEffects, &nEffects);
          i++;
       }
-
-      r3_end_frame();
-   }
-   else
-   {
-      while(Effects[i])
+      if (nEffects)
       {
-         Effects[i]->Render(bIsScreenLocked);
-         i++;
+         float fScale = 1.5f;
+         lgd3d_set_effect_param(nEffects + 5, nEffects, &fScale);
+         lgd3d_run_effects(aEffects, nEffects);
       }
    }
+
+   i = 0;
+   r3_start_frame();
+   r3_set_view_angles(&OriginPos, &FacingAng, R3_DEFANG);
+   r3_set_space(R3_CLIPPING_SPACE);
+   while (Effects[i])
+   {
+      Effects[i]->Render(FALSE);
+      i++;
+   }
+   r3_end_frame();
 }
-

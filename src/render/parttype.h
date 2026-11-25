@@ -37,6 +37,8 @@ struct st_ParticleList {
    fix *time_info;
    int *cell;
    uchar *render_data;   // special per-renderer data
+   int *nd_data4;
+   uchar *nd_data1;
 };
 
 enum ParticleLaunchType
@@ -103,6 +105,7 @@ enum ParticleRenderTypes
    PRT_VARIABLE_COLOR_SQUARE,
    PRT_SINGLE_COLOR_DISK,
    PRT_SCALED_BITMAP,
+   PRT_TYPE6,
 
    PRT_NUM_USER_EDITTABLE,
 
@@ -257,8 +260,14 @@ struct st_ParticleGroup
                             //Um, maybe this should have been lower case
                             //bool, but it would have forced other bools,
                             //where now we can turn it into flags! (oh joy)
-                            
 
+   mxs_vector bm_rot;
+   fix bm_ani_frame_time;
+   uint bm_flags;
+   fix bm_birth_time;
+   float bm_grow_speed;
+   int bm_reserved;
+   ulong bm_rgb[3];
 };
 
 // any custom transform should provide screenspace sx,sy

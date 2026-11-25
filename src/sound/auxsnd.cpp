@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/auxsnd.cpp,v 1.8 1999/06/28 21:28:12 mwhite Exp $
 // memory sound source stuff from Pat
 
@@ -89,7 +88,7 @@ CreateMemSoundSource( ISndMixer        *pMixer,          // your mixer
       // cracked the header successfully, if ADPCM, change the
       //  sound attributes to those of the decompressed data
       //
-      if ( attribs.dataType == kSndDataIMAADPCM ) {
+      if ( attribs.dataType >= kSndDataIMAADPCM ) {
          attribs.dataType = kSndDataPCM;
          attribs.bitsPerSample = 16;
          finalDataLen = ( attribs.numSamples << 1 ) * attribs.nChannels;
@@ -226,7 +225,7 @@ CreateMemSoundSourceLooped( ISndMixer           *pMixer,          // your mixer
       // cracked the header successfully, if ADPCM, change the
       //  sound attributes to those of the decompressed data
       //
-      if ( attribs.dataType == kSndDataIMAADPCM ) {
+      if ( attribs.dataType >= kSndDataIMAADPCM ) {
          attribs.dataType = kSndDataPCM;
          attribs.bitsPerSample = 16;
          finalDataLen = ( attribs.numSamples << 1 ) * attribs.nChannels;
@@ -433,7 +432,7 @@ CreateNRezStreamedSoundSource( ISndMixer           *pMixer,          // your mix
       // cracked the header successfully, if ADPCM, change the
       //  sound attributes to those of the decompressed data
       //
-      if ( attribs.dataType == kSndDataIMAADPCM )
+      if ( attribs.dataType >= kSndDataIMAADPCM )
       {
          attribs.dataType = kSndDataPCM;
          attribs.bitsPerSample = 16;
@@ -574,7 +573,7 @@ CreateSongSoundSource ( ISndMixer           *pMixer,
       // cracked the header successfully, if ADPCM, change the
       //  sound attributes to those of the decompressed data
       //
-      if ( attribs.dataType == kSndDataIMAADPCM )
+      if ( attribs.dataType >= kSndDataIMAADPCM )
       {
          attribs.dataType = kSndDataPCM;
          attribs.bitsPerSample = 16;

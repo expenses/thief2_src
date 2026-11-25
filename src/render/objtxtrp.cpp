@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/objtxtrp.cpp,v 1.4 1998/08/24 20:56:59 mahk Exp $
 // control for doing replacable textures on objects
 
@@ -14,6 +13,7 @@
 #include <storeapi.h>
 #include <resapi.h>
 #include <imgrstyp.h>
+#include <dev2d.h>
 
 #include <config.h>
 #include <cfgdbg.h>
@@ -51,6 +51,8 @@ static cObjTxtReplaceTable g_ObjTxtReplaceTable;
 // Forward Declare these two, so i can use them in the class
 void _ClearPtxt(IRes **pTxt);
 void _GogetPtxt(IRes **pTxt, const char *txtName);
+
+extern int g_nMipmapMode;
 
 typedef cAutoIPtr<IPropertyStore> cPS;
 
@@ -185,9 +187,18 @@ static void _GogetPtxt(IRes **pTxt, const char *txtName)
    }
    AutoAppIPtr(ResMan);
    // should really investigate txtName, check for txt16 and so on, expose from objmodel
-   IRes *pRes = pResMan->Bind(txtName, RESTYPE_IMAGE, NULL);
+   IRes *pRes = pResMan->Bind(txtName, RESTYPE_IMAGE, NULL, NULL, RES_BIND_IMAGE_FLAGS);
    if (pRes)
-      pRes->Lock();
+   {
+      if (g_nMipmapMode)
+      {
+         grs_bitmap *pBm = (grs_bitmap *)pRes->Lock();
+         if (pBm)
+            pBm->flags |= BMF_MIPMAP;
+      }
+      else
+         pRes->Lock();
+   }
    else
       Warning(("ObjTxtReplace can't seem to load %s as typed\n",txtName));
    *pTxt=pRes;

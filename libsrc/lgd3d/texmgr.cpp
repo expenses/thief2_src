@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
-#include <d3d.h>
+#include <d8dx6.h>
 
 #include <dbg.h>
 #include <dev2d.h>
@@ -25,6 +25,14 @@ do {              \
 #include <tmgr.h>
 #include <tdrv.h>
 #include <d6states.h>
+#include <comtools.h>
+#include <dispapi.h>
+#include <gshelapi.h>
+#include <wdisp.h>
+#include <wdspprov.h>
+#include <wdspmode.h>
+#include <wdispd3d.h>
+#include <wd3dmode.h>
 
 #ifdef MONO_SPEW
 #define put_mono(c) \
@@ -119,6 +127,7 @@ static uint texmem_used;
 static uint texmem_loaded;
 
 static BOOL swapout = FALSE;
+static BOOL dumped = FALSE;
 static BOOL overloaded = FALSE;
 static BOOL in_frame = FALSE;
 
@@ -273,8 +282,10 @@ static void dump_all_textures(void)
 {
    int i;
    BOOL end_and_start = in_frame;
+   BOOL was_swapout = swapout;
 
    swapout = FALSE;
+   dumped = TRUE;
    next_id = 0;
    if (end_and_start)
       g_driver->end_frame();
@@ -292,6 +303,9 @@ static void dump_all_textures(void)
    // reset all the size chains
    for (i=0; i<num_texture_sizes; i++)
       chain_list[i].head=-1;
+
+   if (was_swapout && g_pD3DModeOps)
+      g_pD3DModeOps->Flush2DCache();
 }
 
 
@@ -394,7 +408,7 @@ static void tmgr_reload_texture(grs_bitmap *bm)
 
 static void tmgr_load_texture(r3s_texture bm)
 {
-   tdrv_texture_info info;
+   tdrv_texture_info info = {0};
    tmap_chain *chain;
 
    put_mono('d');
@@ -415,6 +429,8 @@ static void tmgr_load_texture(r3s_texture bm)
          swapout_bitmap(&info, chain);
 
          while (do_load(&info) == -1) {
+            if (dumped)
+               return;
             if (swapout) {
                put_mono('2');
                mono_printf(("swapout _really_ failed; dumping all textures!"));
@@ -432,9 +448,6 @@ static void tmgr_load_texture(r3s_texture bm)
          if ((!swapout) && (info.id == next_id)) {
             texinfo[next_id].next = chain->head;
             chain->head = next_id;
-
-#line 461
-            AssertMsg(texinfo[next_id].size_index == info.size_index, "wrong size!");
 
             next_id++;
             if (next_id == max_textures) {
@@ -485,6 +498,7 @@ static void tmgr_start_frame(int frame)
    if (frame != cur_frame) {
       cur_frame = frame;
       overloaded = FALSE;
+      dumped = FALSE;
       abl = (abl*7 + bytes_loaded)/8;
       if ((frame & 0xf) == 0)
          mono_printf(("avg bytes downloaded per frame: %i        \n", abl));
@@ -511,17 +525,18 @@ static int tmgr_init(r3s_texture bm, int num_textures, int *texture_size_list_pa
    bytes_loaded = 0;
    texmem_loaded = 0;
    max_textures = num_textures;
-   texinfo = (tmgr_texture_info *)malloc(num_textures * sizeof(*texinfo));
+   texinfo = (tmgr_texture_info *)Malloc(num_textures * sizeof(*texinfo));
    init_bitmap_list();
 
    texture_size_list = texture_size_list_param;
    num_texture_sizes = num_texture_sizes_param;
-   chain_list = (tmap_chain *)malloc(num_texture_sizes * sizeof(tmap_chain));
+   chain_list = (tmap_chain *)Malloc(num_texture_sizes * sizeof(tmap_chain));
    for (i=0; i<num_texture_sizes; i++)
       chain_list[i].head = -1;
 
    tmgr_default_bm = bm;
    swapout = FALSE;
+   dumped = FALSE;
    overloaded = FALSE;
    in_frame = FALSE;
    tmgr_texture_clut = NULL;
@@ -553,11 +568,11 @@ static void tmgr_shutdown(void)
    put_mono('b');
    dump_all_textures();
 
-   free(texinfo);
+   Free(texinfo);
    texinfo = NULL;
 
    if (chain_list != NULL) {
-      free(chain_list);
+      Free(chain_list);
       chain_list = NULL;
    }
 

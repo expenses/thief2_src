@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <zipstrm.h>
 #include <zlib.h>
 #include <dynfunc.h>
@@ -150,7 +151,7 @@ long PkExplodeStreamToMem(IStoreStream * pSourceStream, void * pDest,
 
     if (!pPkBuffer)
 #line 99
-        pPkBuffer = (char *) Malloc(EXP_BUFFER_SIZE + kReadBufSize);
+        pPkBuffer = (char *) operator new(EXP_BUFFER_SIZE + kReadBufSize);
 
     char *          pWorkBuf = (char *) pPkBuffer;
     sPkExplodeInfo  explodeInfo;
@@ -189,14 +190,14 @@ long PkExplodeStreamToMem(IStoreStream * pSourceStream, void * pDest,
 void* ZAllocInterface(void*, unsigned int items, unsigned int size)
 {
 #line 239
-	return Malloc(size * items);
+	return malloc(size * items);
 }
 
 ///////////////////////////////////////
 
 void ZFreeInterface(void*, void* addr)
 {
-	Free(addr);
+	free(addr);
 }
 
 ///////////////////////////////////////
@@ -207,7 +208,7 @@ int ZInflateStreamToMem(IStoreStream* pStream, int nStreamSize, void* pData, int
 	if (!nStreamSize)
 		return 0;
 
-	char* inputBuffer = ((char*)(Malloc(BufferSize)));
+	char* inputBuffer = ((char*)(operator new(BufferSize)));
 	int fFlush = Z_NO_FLUSH;
 
 	long actualReadSize = pStream->Read((nStreamSize < BufferSize ? nStreamSize : BufferSize), inputBuffer);
@@ -217,7 +218,7 @@ int ZInflateStreamToMem(IStoreStream* pStream, int nStreamSize, void* pData, int
 #line 324
 		CriticalMsg("Inflating empty file!");
 #endif
-		Free(inputBuffer);
+		operator delete(inputBuffer);
 		return 0;
 	}
 
@@ -256,7 +257,7 @@ int ZInflateStreamToMem(IStoreStream* pStream, int nStreamSize, void* pData, int
 
 
 
-			Free(inputBuffer);
+			operator delete(inputBuffer);
 			return actualRead;
 		}
 		if (ret == Z_OK)
@@ -269,7 +270,7 @@ int ZInflateStreamToMem(IStoreStream* pStream, int nStreamSize, void* pData, int
 #line 372
 			CriticalMsg1("zlib inflate returned %d!\n", ret);
 #line 312
-			Free(inputBuffer);
+			operator delete(inputBuffer);
 			return -1;
 		}
 	} while (1);
@@ -309,8 +310,8 @@ cZipStream::~cZipStream()
 		char* pName;
 		GetName(&pName);
 		Warning(("cZipStream: %s deleted without being fully Closed!\n", pName));
-		Free(pName);
-		Free(m_pData);
+		operator delete(pName);
+		operator delete(m_pData);
 		m_nOpenCount = 0;
 		m_pData = NULL;
 	}
@@ -381,7 +382,7 @@ BOOL cZipStream::Open()
 		return TRUE;
 	}
 
-	m_pData = ((char*)(Malloc(m_pInfo->m_nUncompressedSize)));
+	m_pData = ((char*)(operator new(m_pInfo->m_nUncompressedSize)));
 	if (!m_pData)
 		return FALSE;
 
@@ -429,18 +430,18 @@ void cZipStream::Close()
 	AssertMsg(m_nOpenCount, "cZipStream closed more than opened");
 
 
-	if (!m_pInfo->m_nCompressionMethod)
-	{
-		--m_nOpenCount;
-	}
-	else
+	if (m_pInfo->m_nCompressionMethod)
 	{
 		--m_nOpenCount;
 		if (!m_nOpenCount)
 		{
-			Free(m_pData);
+			operator delete(m_pData);
 			m_pData = NULL;
 		}
+	}
+	else
+	{
+		--m_nOpenCount;
 	}
 }
 
@@ -457,7 +458,9 @@ void cZipStream::GetName(char** ppName)
 
 BOOL cZipStream::SetPos(long nPos)
 {
-	if (!m_nOpenCount || nPos >= m_pInfo->m_nUncompressedSize)
+	if (!m_nOpenCount)
+		return FALSE;
+	if (nPos >= m_pInfo->m_nUncompressedSize)
 		return FALSE;
 
 	m_nLastPos = nPos;
@@ -468,10 +471,10 @@ BOOL cZipStream::SetPos(long nPos)
 
 long cZipStream::GetPos()
 {
-	if (!m_nOpenCount)
-		return -1;
+	if (m_nOpenCount)
+		return m_nLastPos;
 
-	return m_nLastPos;
+	return -1;
 }
 
 ///////////////////////////////////////

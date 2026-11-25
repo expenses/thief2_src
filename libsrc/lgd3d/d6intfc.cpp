@@ -30,6 +30,10 @@
 #include <setup.h>
 #include <texture.h>
 #include <dev2d.h>
+extern "C" BOOL g_bWD3D9Device;
+extern "C" void setwbnf(double znear, double zfar);
+cD6Frame* D8_CreateFrame(unsigned long dwWidth, unsigned long dwHeight, lgd3ds_device_info* psDeviceInfo);
+#define LGD3D_INIT_ASSERT_LINE 603
 
 
 #ifdef SHIP
@@ -49,6 +53,7 @@ do { \
 #define put_mono(c)
 #endif
 
+float g_fMaxZ = 1.0f;
 extern "C" BOOL lgd3d_z_normal = TRUE;
 
 static DWORD dwZBiasStackPtr = 0;
@@ -148,14 +153,21 @@ int lgd3d_init(lgd3ds_device_info* device_info)
 #ifdef WARN_ON
         Warning(("lgd3d_init():: library already initialized!\n"));
 #endif
-#line 112
+#line LGD3D_INIT_ASSERT_LINE
         AssertMsg(lgd3d_g_bInitialized == 1, "Missuse of the variable\"lgd3d_g_bInitialized\"\n");
         return 1;
     }
     else
     {
+        z2d = g_fMaxZ;
         lgd3d_g_bInitialized = 1;
-        pcFrame = new cD6Frame(grd_cap->w, grd_cap->h, device_info);
+        w2d = 1.0;
+        if (g_bWD3D9Device)
+            pcFrame = D8_CreateFrame(grd_cap->w, grd_cap->h, device_info);
+        else
+            pcFrame = new cD6Frame(grd_cap->w, grd_cap->h, device_info);
+        if (lgd3d_g_bInitialized)
+            setwbnf(z_near, z_far);
         if (!lgd3d_g_bInitialized)
             lgd3d_shutdown();
         return lgd3d_g_bInitialized;
@@ -187,9 +199,11 @@ void lgd3d_clean_render_surface(BOOL bDepthBuffToo)
 
 void lgd3d_shutdown(void)
 {
-    if (pcFrame)
+    if (pcFrame) {
+        pcFrame->ReleaseRenderer();
 #line 161
         delete pcFrame;
+    }
     pcFrame = NULL;
     lgd3d_g_bInitialized = 0;
 }
@@ -247,7 +261,6 @@ void lgd3d_zclear(void)
 typedef float D3DMATRIX_FLAT[16];
 
 static inline void set1(D3DMATRIX_FLAT mat);
-static void setwbnf(void* pUnknown, double znear, double zfar);
 
 int lgd3d_indexed_spoly(int n, r3s_point** vpl, r3ixs_info* info)
 {
@@ -300,9 +313,9 @@ void lgd3d_rgblit_tmap_setup(grs_bitmap *bm)
 
 int lgd3d_get_depth_buffer_state(void)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->GetDepthBufferState();
+    if (pcFrame)
+        return pcStates->GetDepthBufferState();
+    return -1;
 }
 
 static int lgd3d_rgblit_trifan(int n, r3s_point **ppl)
@@ -318,23 +331,24 @@ static int lgd3d_rgblit_indexed_trifan(int n, r3s_point** vpl, r3ixs_info* info)
 
 int lgd3d_set_shading(BOOL bSmoothShading)
 {
-    if (!pcFrame) return -1;
-    return pcStates->SetSmoothShading(bSmoothShading);
+    if (pcFrame)
+        return pcStates->SetSmoothShading(bSmoothShading);
+    return -1;
 }
 
 BOOL lgd3d_is_smooth_shading_on(void)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->IsSmoothShadingOn();
+    if (pcFrame)
+        return pcStates->IsSmoothShadingOn();
+    return -1;
 }
 
 
 int lgd3d_is_alpha_blending_on(void)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->IsAlphaBlendingOn();
+    if (pcFrame)
+        return pcStates->IsAlphaBlendingOn();
+    return -1;
 }
 
 void lgd3d_rgbalit_tmap_setup(grs_bitmap* bm)
@@ -481,9 +495,9 @@ static int lgd3d_rgba_poly(int n, r3s_point **ppl)
 
 BOOL lgd3d_get_texture_wrapping(DWORD dwLevel)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->GetTexWrapping(dwLevel);
+    if (pcFrame)
+        return pcStates->GetTexWrapping(dwLevel);
+    return -1;
 }
 
 
@@ -518,31 +532,27 @@ void lgd3d_set_znearfar(double znear, double zfar)
     z1 = zfar / (zfar - znear);
     z2 = znear * z1;
     z1 = z1 - zbias;
-    if (pcStates)
-        setwbnf(g_lpD3Ddevice, znear, zfar);
+    setwbnf(znear, zfar);
 }
 
-static void setwbnf(void* pUnknown, double znear, double zfar)
+extern "C" void setwbnf(double znear, double zfar)
 {
     D3DMATRIX_FLAT mat1, mat2, mat3;
+    if (!pcRenderer)
+        return;
     set1(mat1);
     set1(mat2);
     set1(mat3);
     if (zfar <= znear)
-    {
-    } else {
-        IDirect3DDevice3_SetTransform((LPDIRECT3DDEVICE3)pUnknown,
-            D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&mat1);
-        IDirect3DDevice3_SetTransform((LPDIRECT3DDEVICE3)pUnknown,
-            D3DTRANSFORMSTATE_VIEW, (LPD3DMATRIX)&mat2);
-        double t = zfar / (zfar - znear);
-        mat3[10] = t;
-        mat3[14] = (float)(-znear) * t;
-        mat3[11] = 1.0f;
-        mat3[15] = 0.0f;
-        IDirect3DDevice3_SetTransform((LPDIRECT3DDEVICE3)pUnknown,
-            D3DTRANSFORMSTATE_PROJECTION, (LPD3DMATRIX)&mat3);
-    }
+        return;
+    pcRenderer->SetTransform(0, (D3DMATRIX*)&mat1);
+    pcRenderer->SetTransform(1, (D3DMATRIX*)&mat2);
+    float t = (float)(zfar / (zfar - znear));
+    mat3[10] = t;
+    mat3[14] = (float)(-znear * t);
+    mat3[11] = 1.0f;
+    mat3[15] = 0.0f;
+    pcRenderer->SetTransform(2, (D3DMATRIX*)&mat3);
 }
 
 void lgd3d_get_alpha_texture_bitmask(grs_rgb_bitmask* bitmask)
@@ -637,8 +647,9 @@ void lgd3d_set_fog_enable(BOOL enable)
 
 BOOL lgd3d_set_poly_mode(ePolyMode eNewMode)
 {
-    if (!pcFrame) return 0;
-    return pcRenderBuffer->SetPolyMode(eNewMode);
+    if (pcFrame)
+        return pcRenderBuffer->SetPolyMode(eNewMode);
+    return 0;
 }
 
 int cD6Primitives::GetPolyMode()
@@ -648,9 +659,9 @@ int cD6Primitives::GetPolyMode()
 
 ePolyMode lgd3d_get_poly_mode()
 {
-    if (!pcFrame)
-        return (ePolyMode)0;
-    return (ePolyMode)pcRenderBuffer->GetPolyMode();
+    if (pcFrame)
+        return (ePolyMode)pcRenderBuffer->GetPolyMode();
+    return (ePolyMode)0;
 }
 
 int lgd3d_use_linear_table_fog(int bUseIt)
@@ -702,19 +713,25 @@ void lgd3d_blend_normal(void)
 
 void lgd3d_set_offsets(int x, int y)
 {
-    g_XOffset = x;
-    g_YOffset = y;
+    g_fXOffsetBase = (float)x;
+    g_fYOffsetBase = (float)y;
+    g_XOffset = (float)x - g_fTexelCenterX;
+    g_YOffset = (float)y - g_fTexelCenterY;
 }
 
 void lgd3d_set_z(float z)
 {
     if (lgd3d_z_normal)
+    {
         z2d = z;
+        if (z2d >= 1.0)
+            z2d = g_fMaxZ;
+    }
     else
     {
         z2d = z1 - (z2 / z);
-        if (z2d > 1.0)
-            z2d = 1.0;
+        if (z2d >= 1.0)
+            z2d = g_fMaxZ;
         else if (z2d < 0.0)
             z2d = 0.0;
     }
@@ -819,34 +836,47 @@ double lgd3d_set_zbias(double new_bias)
     return old_bias;
 }
 
-void lgd3d_push_zbias_i(int nZBias)
+void lgd3d_set_zbias_table(int nScale, double fRange)
 {
-    if (dwZBiasStackPtr < 7)
-    {
-        drZBiasStock[dwZBiasStackPtr] = zbias;
-        dwZBiasStackPtr++;
-#line 1086
-        AssertMsg1(nZBias >= 0 && nZBias <= 16, "Z-Bias value %i is out of the [0,16] range", nZBias);
-        lgd3d_set_zbias(drZBiasTable[nZBias]);
-    }
-    else
-    {
-        CriticalMsg("Z-Bias stack overflow!");
-    }
+    if (nScale < 1)
+        nScale = 1;
+    for (int i = 1; i <= 10; i++)
+        drZBiasTable[i] = (double)(nScale << i) / fRange;
 }
 
 void lgd3d_pop_zbias(void)
 {
-    if (dwZBiasStackPtr != 0)
-    {
-        dwZBiasStackPtr--;
-        lgd3d_set_zbias(drZBiasStock[dwZBiasStackPtr]);
-    }
-    else
-    {
-#line 1103
+    if (dwZBiasStackPtr == 0) {
+#line 504
         CriticalMsg("Z-Bias stack underflow!");
+        return;
     }
+    zbias = drZBiasStock[dwZBiasStackPtr--];
+    z1 = z_far / (z_far - z_near) - zbias;
+}
+
+void lgd3d_push_zbias_i(int nZBias)
+{
+    if (dwZBiasStackPtr > 6) {
+#line 512
+        CriticalMsg("Z-Bias stack overflow!");
+        return;
+    }
+    drZBiasStock[++dwZBiasStackPtr] = zbias;
+#line 520
+    AssertMsg1(nZBias >= 0 && nZBias <= 16, "Z-Bias value %i is out of the [0,16] range", nZBias);
+    zbias = drZBiasTable[nZBias];
+    z1 = z_far / (z_far - z_near) - zbias;
+}
+
+int lgd3d_set_alpha_test_ref(int nRef)
+{
+    int nOld = g_nAlphaTestRef;
+    if (pcStates)
+        pcStates->SetAlphaTestRef(nRef);
+    else
+        g_nAlphaTestRef = nRef;
+    return nOld;
 }
 
 
@@ -870,23 +900,23 @@ void lgd3d_clear(int c)
 
 int lgd3d_is_zwrite_on(void)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->IsZWriteOn();
+    if (pcFrame)
+        return pcStates->IsZWriteOn();
+    return -1;
 }
 
 int lgd3d_is_zcompare_on(void)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->IsZCompareOn();
+    if (pcFrame)
+        return pcStates->IsZCompareOn();
+    return -1;
 }
 
 int lgd3d_is_fog_on(void)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->IsFogOn();
+    if (pcFrame)
+        return pcStates->IsFogOn();
+    return -1;
 }
 
 
@@ -979,9 +1009,9 @@ static inline void set1(D3DMATRIX_FLAT mat)
 
 BOOL lgd3d_set_texture_wrapping(DWORD dwLevel, BOOL bSetSmooth)
 {
-    if (!pcFrame)
-        return -1;
-    return pcStates->SetTexWrapping(dwLevel, bSetSmooth);
+    if (pcFrame)
+        return pcStates->SetTexWrapping(dwLevel, bSetSmooth);
+    return -1;
 }
 
 } // extern "C"

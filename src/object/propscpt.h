@@ -28,6 +28,7 @@ DECLARE_SCRIPT_SERVICE(Property, 0xda)
    STDMETHOD(Remove)(object obj, const char* prop) PURE;
    STDMETHOD(CopyFrom)(object targ, const char* prop, object src) PURE;
    STDMETHOD_(BOOL,Possessed)(object obj, const char* prop) PURE;
+   STDMETHOD_(BOOL,PossessedSimple)(object obj, const char* prop) PURE;
 };
 
 #endif // __PROPSCPT_H

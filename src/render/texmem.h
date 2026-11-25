@@ -13,7 +13,7 @@
 #include <g2.h>
 #include <resapi.h>
 
-#define TEXMEM_MAX           256    // actual maximum number of entries
+#define TEXMEM_MAX           1024   // actual maximum number of entries
 #define TEXMEM_NO_HND         -1    // no texture handle available
 #define TEXMEM_NO_ALIGN       -1    // align field not set...
 
@@ -43,6 +43,7 @@ EXTERN BOOL        texmem_find_align;
 #define WATERIN_IDX  247
 #define WATEROUT_IDX 248
 #define BACKHACK_IDX 249
+#define TEXMEM_EXT_FIRST_IDX 255
 
 // and callback info
 // set these "global" callback idxs when you need to get data in to RN callbacks 'n such

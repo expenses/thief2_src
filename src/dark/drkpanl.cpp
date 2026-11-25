@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkpanl.cpp,v 1.15 1999/11/02 15:55:08 BODISAFA Exp $
 #include <appagg.h>
 #include <drkpanl.h>
@@ -113,12 +112,15 @@ bool cDarkPanel::region_cb(uiEvent *ev, Region *reg, void *data)
 {
    cDarkPanel* us = (cDarkPanel*)data; 
    if (ev->type == UI_EVENT_KBD_COOKED)
-      switch(ev->subtype ^ KB_FLAG_DOWN)
+   {
+      if ((ev->subtype ^ KB_FLAG_DOWN) == KEY_ESC)
       {
-         case KEY_ESC:
-            us->OnEscapeKey(); 
-            return TRUE; 
+         us->OnEscapeKey(); 
+         return TRUE; 
       }
+      if (ev->subtype != KEY_ESC && us->OnKey(ev))
+         return TRUE; 
+   }
    return FALSE;
 }
 

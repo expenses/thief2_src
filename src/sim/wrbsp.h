@@ -63,6 +63,7 @@ EXTERN void wrBspTreeRefCells(uint node_index);
 
 EXTERN void wrBspTreeAddPostSplit(BspNode *n, int cell_id);
 EXTERN void wrBspTreeApplyPostSplits();
+EXTERN void wrBspTreeClearPostSplits();
 
 EXTERN void wrBspTreeDump();
 

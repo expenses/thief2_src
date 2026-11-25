@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgutil.c,v 1.5 2000/02/19 12:55:03 toml Exp $
 
 #include <lg.h>
@@ -13,6 +12,9 @@
 #include <csgutil.h>
 #include <csgalloc.h>
 #include <memall.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 void ChangePh(PortalPolygon *poly, PortalPolyhedron *ph, PortalPolyhedron *dest)
@@ -25,13 +27,25 @@ void ChangePh(PortalPolygon *poly, PortalPolyhedron *ph, PortalPolyhedron *dest)
       Error(1, "ChangePh: Tried to change invalid polyhedron.\n");
 }
 
+#if _MSC_VER < 1400
+void CsgError(char *msg, ...)
+{
+   char buf[512];
+   va_list ap;
+   va_start(ap, msg);
+   vsprintf(buf, msg, ap);
+   va_end(ap);
+   Error(1, "%s", buf);
+}
+#endif
+
 PortalPolygon *GetPhNext(PortalPolygon *poly, PortalPolyhedron *ph)
 {
    if (poly->ph[0] == ph)
       return poly->ph_next[0];
    if (poly->ph[1] == ph)
       return poly->ph_next[1];
-   Error(1, "GetPhNext: Tried to get next field with wrong polyhedron.\n");
+   CsgError("GetPhNext: Tried to get next field with wrong polyhedron.\n");
    return 0;
 }
 
@@ -42,7 +56,7 @@ void SetPhNext(PortalPolygon *poly, PortalPolyhedron *ph, PortalPolygon *next)
    else if (poly->ph[1] == ph)
       poly->ph_next[1] = next;
    else
-      Error(1, "SetPhNext: Tried to set next field with wrong polyhedron.\n");
+      CsgError("SetPhNext: Tried to set next field with wrong polyhedron.\n");
 }
 
 PortalPolygon *AddPolyToList(PortalPolygon *list, PortalPolygon *poly, PortalPolyhedron *ph)

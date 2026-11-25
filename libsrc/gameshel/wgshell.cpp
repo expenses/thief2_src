@@ -122,7 +122,7 @@ cWinGameShell::cWinGameShell(int fFlags, IUnknown * pOuterUnknown)
     AssertMsg(!gm_pWinGameShell, "Only one instance of game shell allowed");
     gm_pWinGameShell = this;
 
-    if (GetPrivateProfileInt("WinShell", "ShowCursor", FALSE, "lg.ini"))
+    if (GetPrivateProfileInt("WinShell", "ShowCursor", FALSE, ".\\lg.ini"))
         m_fCreateFlags |= kShowNativeCursor;
 }
 
@@ -311,10 +311,26 @@ STDMETHODIMP_(void) cWinGameShell::DisplayFlush()
 // Get the present tick count, in msec since initialization or timer restart
 //
 
-STDMETHODIMP_(unsigned long) cWinGameShell::GetTimerTick()
+STDMETHODIMP_(unsigned __int64) cWinGameShell::GetTimerTick()
 {
     // @TBD (toml 05-06-96): This should be moved to a proper timer library thing
-    return WindowsTimeToGameTime(timeGetTime());
+    if (m_fLegacyTimer)
+        return (unsigned __int64)WindowsTimeToGameTime(timeGetTime()) * 1000;
+
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+
+    unsigned __int64 ticks = now.QuadPart - m_PerfStart.QuadPart;
+    unsigned __int64 usec = ticks * 1000000 / m_PerfFreq.QuadPart;
+    ticks -= usec * m_PerfFreq.QuadPart / 1000000;
+
+    m_PerfElapsed += ticks;
+    unsigned __int64 usecElapsed = m_PerfElapsed * 1000000 / m_PerfFreq.QuadPart;
+    m_PerfElapsed -= usecElapsed * m_PerfFreq.QuadPart / 1000000;
+
+    m_ulTimeOffset += usec + usecElapsed;
+    m_PerfStart = now;
+    return m_ulTimeOffset;
 }
 
 ///////////////////////////////////////
@@ -324,8 +340,15 @@ STDMETHODIMP_(unsigned long) cWinGameShell::GetTimerTick()
 
 STDMETHODIMP_(void) cWinGameShell::SetTimer(unsigned long ulTimeOffset)
 {
-    m_ulTimeOffset = ulTimeOffset;
-    m_ulStartTime = timeGetTime();
+    if (m_fLegacyTimer)
+    {
+        m_ulTimeOffset = ulTimeOffset;
+        m_ulStartTime = timeGetTime();
+        return;
+    }
+    m_ulTimeOffset = (unsigned __int64)ulTimeOffset * 1000;
+    QueryPerformanceCounter(&m_PerfStart);
+    m_PerfElapsed = 0;
 }
 
 ///////////////////////////////////////
@@ -452,10 +475,17 @@ HRESULT cWinGameShell::Init()
     // Start by assuming we're active
     m_flags |= kActive;
 
-    if (!GetPrivateProfileInt("WinShell", "DisableInactiveBlock", FALSE, "lg.ini"))
+    if (!GetPrivateProfileInt("WinShell", "DisableInactiveBlock", FALSE, ".\\lg.ini"))
         m_flags |= kBlockInactive;
 
-    m_ulStartTime = timeGetTime();
+    if (m_fLegacyTimer)
+        m_ulStartTime = timeGetTime();
+    else
+    {
+        QueryPerformanceCounter(&m_PerfStart);
+        QueryPerformanceFrequency(&m_PerfFreq);
+        m_PerfElapsed = 0;
+    }
 
     return NOERROR;
 
@@ -734,7 +764,7 @@ BOOL cWinGameShell::PreTranslateMessage(MSG * pMsg)
                             // "kindly" shoved into it (we need that memory!)
 
                             // @TBD (toml 05-07-96): Golf wants windows clipboard, flight doesn't -- must resolve
-                            if (GetPrivateProfileInt("WinShell", "DisableWindowsPrintScreen", TRUE, "lg.ini") && OpenClipboard(NULL))
+                            if (GetPrivateProfileInt("WinShell", "DisableWindowsPrintScreen", TRUE, ".\\lg.ini") && OpenClipboard(NULL))
                             {
                                 EmptyClipboard();
                                 CloseClipboard();

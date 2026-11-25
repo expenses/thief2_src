@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/scrptprp.cpp,v 1.25 1999/05/19 16:12:30 mahk Exp $
 #include <scrptapi.h>
 #include <scrptprp.h>
@@ -44,6 +43,7 @@
 // For script datapath
 #include <datapath.h>
 #include <config.h>
+#include <dbfile.h>
 
 // Command stuff
 #include <ctype.h>
@@ -155,6 +155,18 @@ HRESULT cScriptProp::AddModule(const char* name)
 
 ////////////////////////////////////////
 
+BOOL ScriptPropEnsureModule(const char *name)
+{
+   if (!name || !*name)
+      return FALSE;
+   for (cScriptProp::cModuleSet::cIter iter = cScriptProp::TheProp->Modules(); !iter.Done(); iter.Next())
+      if (!stricmp(iter.Value().name, name))
+         return TRUE;
+   return SUCCEEDED(cScriptProp::TheProp->AddModule(name));
+}
+
+////////////////////////////////////////
+
 void cScriptProp::DropModule(const char* name)
 {
    sModule mod(name);
@@ -211,6 +223,7 @@ void cScriptProp::LoadModules(ITagFile* file)
          mpScriptMan->AddModule(mod);
       }
       cleanup_file(file);
+      dbPatchRequestScripts();
    }
 }
 
@@ -324,8 +337,11 @@ static sFileMenuFilter scr_file_filters[] =
 // filename (also clobbers trailing whitespace)
 static void prune_path(char *str)
 {
+   if (!str || !*str)
+      return;
+
    int length = strlen(str);
-   for (char* s = str + length - 1; s >= str && isspace(*s); s--)
+   for (char* s = str + length - 1; s >= str && isspace((uchar)*s); s--)
       *s = '\0';
 
    int search = length - 1;
@@ -344,7 +360,7 @@ static char _fname_buf[256]="";
 static char *get_real_fname(char *str, eFileMenuMode fMode)
 {
   if (str != NULL)
-      while (isspace(*str)) str++;
+      while (isspace((uchar)*str)) str++;
 
 #ifdef DIALOG
    if (str == NULL || *str == '\0')

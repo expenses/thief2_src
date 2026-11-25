@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/propscpt.cpp,v 1.20 1999/06/10 20:21:58 Justin Exp $
 
 #include <string.h>
@@ -380,6 +379,21 @@ public:
       }
 
       return prop->IsRelevant(obj);
+   }
+
+   STDMETHOD_(BOOL,PossessedSimple)(object sobj, const char* propname)
+   {
+      ObjID obj = ScriptObjID(sobj); 
+      HEY_OBJ_NULL(obj,FALSE); 
+
+      IProperty* prop = PropMan()->GetPropertyNamed(propname);
+      if (prop->GetID() == PROPID_NULL)
+      {
+         Warning(("'%s' is not a property name\n", propname));
+         return FALSE;
+      }
+
+      return prop->IsSimplyRelevant(obj);
    }
 
 

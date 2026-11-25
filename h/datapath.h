@@ -76,6 +76,7 @@
 #endif
 
 #include <types.h>
+#include <lg_file.h>
 
 #ifdef __cplusplus
 extern "C"  {
@@ -115,7 +116,7 @@ typedef struct Datapath
 #define DatapathClear(pdp) memset(pdp, 0, sizeof(Datapath))
 void DatapathFree(Datapath *pdp);
 
-FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode);
+LGFILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode);
 int DatapathFDOpen(Datapath *pdp, const char *fname, int access, ... );
 int DatapathFind(Datapath *pdp, const char *fname, char *buff, int len);
 bool DatapathAdd(Datapath *pdp, const char *path);

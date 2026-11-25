@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 #pragma once
 #ifndef _DPCCS_H
 #define _DPCCS_H

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/ghostlup.cpp,v 1.10 1999/08/31 14:46:00 Justin Exp $
 //
 // Ghost system loop client, including save/load

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <limits.h>
 
 #include <sdesc.h>
 #include <dbg.h>
@@ -75,12 +76,11 @@ const sFieldDesc* StructDescFindField(const sStructDesc* desc, const char* name)
 	for (which = 0; which < desc->nfields && strnicmp(name, desc->fields[which].name, 0x20u); ++which)
 		;
 
-	if (which >= desc->nfields) {
-    	Warning(("StructDescFindField: Field %s not found in struct %s\n", name, desc->name));
-    	return NULL;
-	} else {
-	    return &desc->fields[which];
-	}
+	if (which < desc->nfields)
+		return &desc->fields[which];
+
+	Warning(("StructDescFindField: Field %s not found in struct %s\n", name, desc->name));
+	return NULL;
 }
 
 long sd_cast_to_long(void* val, ulong size, BOOL is_signed)
@@ -281,24 +281,130 @@ static void unparse_enum(const sFieldDesc* desc, const void* val, char* out)
 		strcpy(out, *((const char**)desc->data + i - desc->min));
 }
 
+// Inside StructToFullString/StructFromFullString the "{ a; b }" syntax characters in string fields are escaped
+BOOL g_bSdescEscapeStrings;
+static int gEscapeDepth;
+
+static void EscapeString(char* out, const char* in, int len)
+{
+	if (!out)
+		return;
+	if (in)
+	{
+		char c = *in;
+		--len;
+		for (; c; c = *in)
+		{
+			if (len <= 0)
+				break;
+			switch (c)
+			{
+				case ';':
+					if (len < 2) { len = 0; break; }
+					*out++ = '$'; *out++ = ':'; ++in; len -= 2;
+					break;
+				case '{':
+					if (len < 2) { len = 0; break; }
+					*out++ = '$'; *out++ = '('; ++in; len -= 2;
+					break;
+				case '}':
+					if (len < 2) { len = 0; break; }
+					*out++ = '$'; *out++ = ')'; ++in; len -= 2;
+					break;
+				case '$':
+					if (len < 2) { len = 0; break; }
+					*out++ = '$'; *out++ = '$'; ++in; len -= 2;
+					break;
+				default:
+					*out++ = c; ++in; --len;
+					break;
+			}
+		}
+	}
+	*out = '\0';
+}
+
+static void UnescapeString(char* out, const char* in, int len)
+{
+	if (!out)
+		return;
+	if (in)
+	{
+		char c = *in;
+		--len;
+		for (; c; c = *in, --len)
+		{
+			if (len <= 0)
+				break;
+			if (c == '$')
+			{
+				++in;
+				switch (*in)
+				{
+					case ':': *out = ';'; break;
+					case '(': *out = '{'; break;
+					case ')': *out = '}'; break;
+					case '$': *out = '$'; break;
+					default:
+						*out++ = '$';
+						--len;
+						if (len <= 0 || !*in)
+							goto next;
+						*out = *in;
+						break;
+				}
+			}
+			else
+				*out = c;
+			++out;
+			++in;
+next:
+			;
+		}
+	}
+	*out = '\0';
+}
+
 static void parse_string(const sFieldDesc* desc, void* val, const char* in)
 {
+	if (gEscapeDepth)
+	{
+		UnescapeString(static_cast<char*>(val), in, desc->size);
+		return;
+	}
 	strncpy(static_cast<char*>(val), in, desc->size);
 	static_cast<char*>(val)[desc->size - 1] = '\0';
 }
 
 static void unparse_string(const sFieldDesc* desc, const void* val, char* out)
 {
+	if (gEscapeDepth)
+	{
+		EscapeString(out, static_cast<const char*>(val), desc->size);
+		return;
+	}
 	strncpy(out, static_cast<const char*>(val), desc->size);
+	if (desc->size > 0)
+		out[desc->size - 1] = '\0';
 }
 
 static void parse_stringptr(const sFieldDesc* desc, void* val, const char* in)
 {
+	if (gEscapeDepth)
+	{
+		UnescapeString(*static_cast<char**>(val), in, INT_MAX);
+		return;
+	}
 	strcpy(*static_cast<char**>(val), in);
 }
 
 static void unparse_stringptr(const sFieldDesc* desc, const void* val, char* out)
 {
+	if (gEscapeDepth)
+	{
+		EscapeString(out, *static_cast<char* const*>(val), INT_MAX);
+		return;
+	}
 	strcpy(out, *static_cast<char* const*>(val));
 }
 
@@ -309,7 +415,7 @@ static void parse_voidptr(const sFieldDesc* desc, void* val, const char* in)
 
 static void unparse_voidptr(const sFieldDesc* desc, const void* val, char* out)
 {
-	sprintf(out, "%p", *static_cast<void* const*>(val));
+	sprintf(out, "%p", val);
 }
 
 static void parse_point(const sFieldDesc* desc, void* val, const char* in)
@@ -361,7 +467,7 @@ static void unparse_rgba(const sFieldDesc* desc, const void* rawVal, char* out)
 static void parse_double_vec(const sFieldDesc* desc, void* rawVal, const char* in)
 {
 	double* val = reinterpret_cast<double*>(rawVal);
-	sscanf(in, "%lf, %lf %lf", &val[0], &val[1], &val[2]);
+	sscanf(in, "%lf, %lf, %lf", &val[0], &val[1], &val[2]);
 }
 
 static void unparse_double_vec(const sFieldDesc* desc, const void* rawVal, char* out)
@@ -372,7 +478,7 @@ static void unparse_double_vec(const sFieldDesc* desc, const void* rawVal, char*
 
 static void parse_ang(const sFieldDesc* desc, void* val, const char* in)
 {
-	*reinterpret_cast<ushort*>(val) = (ushort)floor((float)atof(in) * 32768.0f * (1.0 / 180.0) + 0.5);
+	*reinterpret_cast<ushort*>(val) = (ushort)floor(atof(in) * 32768.0 / 180.0 + 0.5);
 }
 
 static void unparse_ang(const sFieldDesc* desc, const void* val, char* out)
@@ -384,17 +490,17 @@ static void parse_ang_vec(const sFieldDesc* desc, void* rawVal, const char* in)
 {
 	mxs_angvec* val = reinterpret_cast<mxs_angvec*>(rawVal);
 
-	float x, y, z;
-	sscanf(in, "%lf, %lf %lf", &x, &y, &z);
-	val->tz = floor(x * 32768.0f * (1.0 / 180.0) + 0.5);
-	val->ty = floor(y * 32768.0f * (1.0 / 180.0) + 0.5);
-	val->tx = floor(z * 32768.0f * (1.0 / 180.0) + 0.5);
+	double z = 0, y = 0, x = 0;
+	sscanf(in, "%lf, %lf, %lf", &x, &y, &z);
+	val->tz = floor(x * 32768.0 / 180.0 + 0.5);
+	val->ty = floor(y * 32768.0 / 180.0 + 0.5);
+	val->tx = floor(z * 32768.0 / 180.0 + 0.5);
 }
 
 static void unparse_ang_vec(const sFieldDesc* desc, const void* rawVal, char* out)
 {
 	const mxs_angvec* val = reinterpret_cast<const mxs_angvec*>(rawVal);
-	sprintf(out, "%0.2lf, %0.2lf, %0.2lf",
+	sprintf(out, "%0.2f, %0.2f, %0.2f",
 		val->tz * 180.0 / 32768.0,
 		val->ty * 180.0 / 32768.0,
 		val->tx * 180.0 / 32768.0);
@@ -412,7 +518,7 @@ static void unparse_float(const sFieldDesc* desc, const void* val, char* out)
 
 static void parse_fix(const sFieldDesc* desc, void* val, const char* in)
 {
-	float num;
+	float num = 0;
 	sscanf(in, "%f", &num);
 	*reinterpret_cast<long*>(val) = (long)(num * 65536.0);
 }
@@ -424,7 +530,7 @@ static void unparse_fix(const sFieldDesc* desc, const void* val, char* out)
 
 static void parse_fixvec(const sFieldDesc* desc, void* rawVal, const char* in)
 {
-	float vec[3];
+	float vec[3] = { 0 };
 	long* val = reinterpret_cast<long*>(rawVal);
 
 	sscanf(in, "%f %f %f", &vec[0], &vec[1], &vec[2]);
@@ -480,7 +586,7 @@ static void(*unparse_funcs[])(const sFieldDesc*, const void*, char*) =
 static void unparse_fixvec(const sFieldDesc* desc, const void* rawVal, char* out)
 {
 	const long* val = reinterpret_cast<const long*>(rawVal);
-	sprintf(out, "%0.2f %0.2f %0.2f", val[0] * (1.0f / 65536.0f), val[1] * (1.0f / 65536.0f), val[2] * (1.0f / 65536.0f));
+	sprintf(out, "%0.2f, %0.2f, %0.2f", val[0] * (1.0f / 65536.0f), val[1] * (1.0f / 65536.0f), val[2] * (1.0f / 65536.0f));
 }
 
 static void parse_double(const sFieldDesc* desc, void* val, const char* in)
@@ -560,7 +666,9 @@ void StructDumpStruct(const void* struc, const sStructDesc* desc)
 
 BOOL StructDescIsSimple(const sStructDesc* desc)
 {
-	return desc->nfields <= 1;
+	if (!desc)
+		return TRUE;
+	return desc->nfields == 1;
 }
 
 BOOL StructToSimpleString(const void* struc, const sStructDesc* desc, char* out)
@@ -623,6 +731,8 @@ BOOL StructToFullString(const void* struc, const sStructDesc* desc, char* out, i
 			strcpy(out, "{ ");
 			p = &out[strlen(out)];
 		}
+		if (g_bSdescEscapeStrings)
+			++gEscapeDepth;
 		for (int i = 0; i < desc->nfields; ++i)
 		{
 			if (desc->fields[i].size > bufsiz)
@@ -652,6 +762,8 @@ BOOL StructToFullString(const void* struc, const sStructDesc* desc, char* out, i
 			}
 			p += strlen(buf);
 		}
+		if (g_bSdescEscapeStrings)
+			--gEscapeDepth;
 
 		Free(buf);
 
@@ -682,6 +794,7 @@ BOOL StructFromFullString(const void* struc, const sStructDesc* desc, const char
 	{
 		int i = 0;
 		const char* p = strchr(in, '{');
+		++gEscapeDepth;
 		for (; p && i < desc->nfields; ++i)
 		{
 			while (isspace(*++p))
@@ -694,6 +807,7 @@ BOOL StructFromFullString(const void* struc, const sStructDesc* desc, const char
 			*const_cast<char*>(delim) = tmp;
 			p = delim;
 		}
+		--gEscapeDepth;
 	}
 
 	return TRUE;

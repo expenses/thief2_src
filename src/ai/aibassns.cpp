@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aibassns.cpp,v 1.95 2000/02/28 11:30:48 toml Exp $
 //
@@ -2311,6 +2310,11 @@ void AIUpdateVisibility(ObjID objId)
       {
          visibility.lighting += selflitval;
       }
+
+      if (pVisibility)
+         visibility.lightingHistory = pVisibility->lightingHistory;
+      else
+         visibility.lightingHistory = (visibility.lighting << 16) | 1;
 
       //
       // Calculate movement rating

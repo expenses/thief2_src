@@ -3,13 +3,13 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phoprop.cpp,v 1.15 1999/06/18 16:38:59 JON Exp $
 //
 // Physics other properties/relations
 //
 
+#include <config.h>
 #include <matrix.h>
 #include <rand.h>
 
@@ -203,9 +203,20 @@ static sPropertyDesc PhysRopePropDesc =
    { "Physics: Misc", "Rope"},
 }; 
 
+BOOL g_bForceCorrectRopeLengths;
+static float g_fRopeGroundMargin = 4.5;
+
 class cRopeOps : public cClassDataOps<sPhysRopeProp>
 {
 public:
+   STDMETHOD_(sDatum,New)()
+   {
+      sPhysRopeProp *pRopeProp = new sPhysRopeProp;
+      memset(pRopeProp, 0, sizeof(*pRopeProp));
+      if (g_bForceCorrectRopeLengths)
+         pRopeProp->calc_correct_len = TRUE;
+      return pRopeProp;
+   };
    STDMETHOD_(int,Version)() { return 1001; };
 };
  
@@ -225,6 +236,7 @@ static sFieldDesc RopeFields[] =
    { "Desired Length",  kFieldTypeFloat,  FieldLocation(sPhysRopeProp, desired_length),  kFieldFlagNone },
    { "Length",          kFieldTypeFloat,  FieldLocation(sPhysRopeProp, length),          kFieldFlagNone },
    { "Deployed",        kFieldTypeBool,   FieldLocation(sPhysRopeProp, deployed),        kFieldFlagNone },
+   { "Calc Correct Len", kFieldTypeBool,  FieldLocation(sPhysRopeProp, calc_correct_len), kFieldFlagNone },
 };
 
 static sStructDesc RopeDesc = StructDescBuild(sPhysRopeProp, kStructFlagNone, RopeFields);
@@ -258,11 +270,21 @@ BOOL DeployRope(ObjID objID)
 
    Location end, hit;
 
+   float margin = (g_bForceCorrectRopeLengths || pRopeProp->calc_correct_len) ? g_fRopeGroundMargin : 1.0;
+
    MakeLocationFromVector(&end, &base_loc);
-   end.vec.z -= pRopeProp->desired_length + 1.0;
+   end.vec.z -= pRopeProp->desired_length + margin;
 
    if (!PortalRaycast(&start, &end, &hit, TRUE))
-      true_length = (start.vec.z - hit.vec.z) - 1.0;
+   {
+      true_length = start.vec.z - hit.vec.z;
+      if (true_length > margin)
+         true_length -= margin;
+      else if (true_length > 1.0)
+         true_length -= 1.0;
+      else
+         true_length *= 0.9;
+   }
    else
       true_length = pRopeProp->desired_length;
 
@@ -382,6 +404,17 @@ void LGAPI PhysRopeListener(sPropertyListenMsg * msg, PropListenerData data)
 void PhysRopePropInit()
 {
    Assert_(g_pPhysRopeProp == NULL);
+
+   g_bForceCorrectRopeLengths = config_is_nonzero("force_correct_rope_lengths");
+   if (g_bForceCorrectRopeLengths)
+   {
+      int cnt = 1;
+      config_get_value("rope_ground_margin", CONFIG_FLOAT_TYPE, (config_valptr)&g_fRopeGroundMargin, &cnt);
+      if (g_fRopeGroundMargin < 1.0)
+         g_fRopeGroundMargin = 1.0;
+      else if (g_fRopeGroundMargin > 6.0)
+         g_fRopeGroundMargin = 6.0;
+   }
 
    g_pPhysRopeProp = new cPhysRopeProperty(&PhysRopePropDesc);
 

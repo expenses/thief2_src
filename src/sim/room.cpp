@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/room.cpp,v 1.5 1998/06/22 16:08:22 CCAROLLO Exp $
 //
@@ -215,9 +214,9 @@ BOOL cRoom::PointInside(const mxs_vector &pt) const
    for (int i=0; i<6; i++)
    {
       if (PointPlaneDist(m_Plane[i], pt) > ON_PLANE_EPSILON)
-         break;
+         return FALSE;
    }
-   return (i == 6);
+   return TRUE;
 }
 
 BOOL cRoom::LineIntersect(const mxs_vector &from, const mxs_vector &to) const

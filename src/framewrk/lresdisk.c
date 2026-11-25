@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //////////
 //
 // $Header: r:/t2repos/thief2/src/framewrk/lresdisk.c,v 1.17 1998/11/06 01:47:34 dc Exp $

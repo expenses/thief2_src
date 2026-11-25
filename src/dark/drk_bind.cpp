@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drk_bind.cpp,v 1.14 2000/02/19 13:09:06 toml Exp $
 
 //dark binds processing

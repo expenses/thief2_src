@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/ged_room.cpp,v 1.24 1999/12/01 09:25:43 MAT Exp $
 // room database gediting
 
@@ -39,6 +38,7 @@
 #include <rportal.h>
 #include <doorphys.h>
 #include <mprintf.h>
+#include <port.h>
 #include <roomtowr.h>
 #include <psnd.h>
 
@@ -567,4 +567,41 @@ static Command g_RoomCommands[] =
 void ged_room_init()
 {
    COMMANDS(g_RoomCommands,HK_ALL);
+}
+
+void ConvertRGBToHSB(float *pHue, float *pSat, float *pBright, double r, double g, double b)
+{
+   double fMax = (r > g) ? r : g;
+   double fMin = (r > g) ? g : r;
+   int R, G, B;
+
+   if (b > fMax)
+      fMax = b;
+   else if (b < fMin)
+      fMin = b;
+
+   if (fMax == fMin)
+   {
+      *pHue = 0.0;
+      *pSat = 0.0;
+      *pBright = (float)fMax;
+      return;
+   }
+
+   double fRange = fMax - fMin;
+   if (fMin == r)
+      *pHue = (float)((3.0 - (g - b) / fRange) / 6.0);
+   else if (fMin == g)
+      *pHue = (float)((5.0 - (b - r) / fRange) / 6.0);
+   else
+      *pHue = (float)((1.0 - (r - g) / fRange) / 6.0);
+   *pSat = (float)(fRange / fMax);
+
+   portal_convert_hsb_to_rgb(&R, &G, &B, *pHue, *pSat);
+   if (fMax == r)
+      *pBright = (float)(r / (R / 255.0));
+   else if (fMax == g)
+      *pBright = (float)(g / (G / 255.0));
+   else
+      *pBright = (float)(b / (B / 255.0));
 }

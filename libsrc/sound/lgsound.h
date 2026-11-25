@@ -41,6 +41,7 @@ extern "C" {
 // the single most important call here!!
 // How to create the mixer in the first place
 BOOL SndCreateMixer(ISndMixer **ppMixer, IUnknown *pOuter);
+BOOL SndCreateALMixer(ISndMixer **ppMixer, IUnknown *pOuter);
 #define SndCreateDSMixer SndCreateMixer
 BOOL SndCreateQSMixer(ISndMixer **ppMixer, IUnknown *pOuter);
 BOOL SndCreateA3DMixer(ISndMixer **ppMixer, IUnknown *pOuter);
@@ -134,7 +135,8 @@ typedef enum _eSndSquelchMode {
 
 typedef enum _eSndDataType {
    kSndDataPCM,
-   kSndDataIMAADPCM
+   kSndDataIMAADPCM,
+   kSndDataOgg
 } eSndDataType;
 
 //
@@ -188,6 +190,14 @@ typedef struct _sSndAttribs {
    int32          samplesPerBlock;
    uint32         numSamples;
 } sSndAttribs;
+
+// header of a "DrkS" sound resource, followed by the sample data
+typedef struct _sDrkSHeader {
+   char           tag[4];
+   sSndAttribs    attribs;
+   uint32         dataLen;
+   uint32         dataOffset;
+} sDrkSHeader;
 
 typedef struct _sSndSetup {
 	void        *hwnd;

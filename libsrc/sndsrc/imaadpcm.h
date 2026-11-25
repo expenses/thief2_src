@@ -17,7 +17,25 @@
 
 #define kIMAADPCM_FlagStereo 1
 
-class IMA_ADPCM {
+class cSndDecoder {
+public:
+   virtual        ~cSndDecoder() {}
+
+   // decompress the start of a block, including its header
+   // return # of bytes consumed
+   virtual long   DecompressBlock( BOOL isStereo, char *pIn, short *pOut, long nSamps ) = 0;
+
+   // return # of bytes consumed
+   virtual long   Decompress( char *pIn, short *pOut, long nSamps ) = 0;
+
+   // return # of samples generated
+   virtual long   Compress( short *pIn, char *pOut, long nSamps ) { return 0; }
+
+   // return # of samples generated (0 or 1)
+   virtual long   EndCompress( char *pOut ) { return 0; }
+};
+
+class IMA_ADPCM : public cSndDecoder {
 public:
    IMA_ADPCM();
    virtual        ~IMA_ADPCM();
@@ -25,14 +43,16 @@ public:
    // set compressor/decompressor state
    void           Init( BOOL stereo, int predSample1, int index1, int predSample2, int index2 );
 
+   virtual long   DecompressBlock( BOOL isStereo, char *pIn, short *pOut, long nSamps );
+
    // return # of samples generated
-   long           Compress( short *pIn, char *pOut, long nSamps );
+   virtual long   Compress( short *pIn, char *pOut, long nSamps );
 
    // return # of samples generated (0 or 1)
-   long           EndCompress( char *pOut );
+   virtual long   EndCompress( char *pOut );
 
    // return # of bytes consumed
-   long           Decompress( char *pIn, short *pOut, long nSamps );
+   virtual long   Decompress( char *pIn, short *pOut, long nSamps );
 
    /*
    // return packed compressor state
@@ -77,7 +97,7 @@ extern "C" {
 //  fetch of a new block, pState points to a longword which holds the
 //  decompressor state between calls in the same block
 //
-char *DecompressIMABlkPartial( IMA_ADPCM* pDecoder, BOOL isStereo, char *pIn,
+char *DecompressIMABlkPartial( cSndDecoder* pDecoder, BOOL isStereo, char *pIn,
                                short *pOut, long nSamps, BOOL getHeader); //, unsigned long *pState );
 
 // this is the header that starts each ADPCM block

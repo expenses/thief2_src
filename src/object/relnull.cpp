@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/relnull.cpp,v 1.4 1998/05/22 01:23:27 TOML Exp $
 #include <linkbase.h>
 #include <relnull.h>
@@ -122,6 +121,12 @@ STDMETHODIMP_(LinkID) cNullRelation::GetSingleLink(ObjID source, ObjID dest)
 }
 
 STDMETHODIMP_(BOOL) cNullRelation::AnyLinks(ObjID source, ObjID dest)
+{
+   Scream();
+   return E_FAIL;
+}
+
+STDMETHODIMP cNullRelation::AddFullAtID(LinkID, ObjID, ObjID, void*)
 {
    Scream();
    return E_FAIL;

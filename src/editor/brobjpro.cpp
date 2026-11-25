@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/brobjpro.cpp,v 1.3 2000/02/19 12:27:45 toml Exp $
 // expose brush property info to brush/editor system
 // mostly for objects which have props which make them behave like other brush types

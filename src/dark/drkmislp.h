@@ -40,6 +40,7 @@ EXTERN void MissionLoopReset(int to_where);
 //
 EXTERN void SetNextMission(int mission); 
 EXTERN int GetNextMission(void); 
+EXTERN void SetFollowingMission(int mission); 
 
 //
 // Show the briefing movie

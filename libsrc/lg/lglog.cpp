@@ -63,7 +63,7 @@ int __Debug_False = 0;
 
 static FILE *hLogFile;
 
-const int kDebugIndentTextLen = 2;
+const int kDebugIndentTextLen = 3;
 const int kMaxIndent = 250;
 const int kMaxIndentSpaces = kDebugIndentTextLen * kMaxIndent;
 
@@ -357,7 +357,7 @@ void LGAPI _LogWriteMsgFileLine(const char *m, const char *f, unsigned l)
 
 ///////////////////////////////////////
 
-int LGAPI _LogWriteMsg(const char * m)
+void LGAPI _LogWriteMsg(const char * m)
     {
     if (g_Log.pfnLogger)
        {
@@ -365,7 +365,6 @@ int LGAPI _LogWriteMsg(const char * m)
        (*g_Log.pfnLogger)(m, 0, 0);
        g_Log.Unlock();
        }
-    return 1; // Is this being used? (toml 04-30-96)
     }
 
 ///////////////////////////////////////

@@ -27,8 +27,10 @@ EXTERN void ObjSetHasRefs(ObjID obj, BOOL hasrefs);
 // 'render transparency' property
 
 #define PROP_ALPHA_NAME "RenderAlpha"
+#define PROP_ALPHAREF_NAME "RendAlphaRef"
 
 EXTERN IFloatProperty *gAlphaRenderProp;
+EXTERN IFloatProperty *gAlphaRefRenderProp;
 
 //
 // 'Self illumination' Property

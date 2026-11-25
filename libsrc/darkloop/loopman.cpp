@@ -589,14 +589,12 @@ BOOL cLoopManager::cLoop::IsPaused(void)
 
 HRESULT cLoopManager::cLoop::ChangeMinorMode(int minorMode)
 {
-	if (minorMode != m_FrameInfo.fMinorMode)
-	{
-		m_fNewMinorMode = minorMode;
-		m_fState |= kLoopNewMinorMode;
-		return S_OK;
-	}
+	if (minorMode == m_FrameInfo.fMinorMode)
+		return S_FALSE;
 
-	return S_FALSE;
+	m_fNewMinorMode = minorMode;
+	m_fState |= kLoopNewMinorMode;
+	return S_OK;
 }
 
 int cLoopManager::cLoop::GetMinorMode(void)
@@ -609,8 +607,8 @@ HRESULT cLoopManager::cLoop::SendMessage(eLoopMessage message, tLoopMessageData 
 	if (m_pCurrentDispatch)
 	{
 		HRESULT result = m_pCurrentDispatch->SendMessage(message, hData, flags);
-		if (!result)
-			return result;
+		if (SUCCEEDED(result))
+			return S_OK;
 	}
 #line 794
 	AssertMsg(m_pCurrentDispatch, "Cannot dispatch messages: no loop mode");
@@ -622,8 +620,8 @@ HRESULT cLoopManager::cLoop::SendSimpleMessage(eLoopMessage message)
 	if (m_pCurrentDispatch)
 	{
 		HRESULT result = m_pCurrentDispatch->SendSimpleMessage(message);
-		if (!result)
-			return result;
+		if (SUCCEEDED(result))
+			return S_OK;
 	}
 #line 803
 	AssertMsg(m_pCurrentDispatch, "Cannot dispatch messages: no loop mode");
@@ -635,8 +633,8 @@ HRESULT cLoopManager::cLoop::PostMessage(eLoopMessage message, tLoopMessageData 
 	if (m_pCurrentDispatch)
 	{
 		HRESULT result = m_pCurrentDispatch->PostMessage(message, hData, flags);
-		if (!result)
-			return result;
+		if (SUCCEEDED(result))
+			return S_OK;
 	}
 #line 812
 	AssertMsg(m_pCurrentDispatch, "Cannot dispatch messages: no loop mode");
@@ -648,8 +646,8 @@ HRESULT cLoopManager::cLoop::PostSimpleMessage(eLoopMessage message)
 	if (m_pCurrentDispatch)
 	{
 		HRESULT result = m_pCurrentDispatch->PostSimpleMessage(message);
-		if (!result)
-			return result;
+		if (SUCCEEDED(result))
+			return S_OK;
 	}
 #line 821
 	AssertMsg(m_pCurrentDispatch, "Cannot dispatch messages: no loop mode");
@@ -661,8 +659,8 @@ HRESULT cLoopManager::cLoop::ProcessQueue(void)
 	if (m_pCurrentDispatch)
 	{
 		HRESULT result = m_pCurrentDispatch->ProcessQueue();
-		if (!result)
-			return result;
+		if (SUCCEEDED(result))
+			return S_OK;
 	}
 #line 830
 	AssertMsg(m_pCurrentDispatch, "Cannot dispatch messages: no loop mode");

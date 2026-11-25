@@ -34,7 +34,7 @@ int cRelocationSetBase::Find(void **ptr)
 // Add a pointer to the relocation set
 //
 
-void cRelocationSetBase::Insert(void **ptr)
+void cRelocationSetBase::Insert(void **ptr, ushort * pRowBytes)
 {
 #if DEBUG
     if (Find(ptr) != kNotFound)
@@ -51,13 +51,20 @@ void cRelocationSetBase::Insert(void **ptr)
     {
         m_nAllocedPtrs += kIncrBlockPtrs;
         if (m_PtrList)
+        {
             m_PtrList = (uint8 ***) realloc(m_PtrList, m_nAllocedPtrs * sizeof(uint8 **));
+            m_RowBytesList = (ushort **) realloc(m_RowBytesList, m_nAllocedPtrs * sizeof(ushort *));
+        }
         else
+        {
             m_PtrList = (uint8 ***) malloc(m_nAllocedPtrs * sizeof(uint8 **));
+            m_RowBytesList = (ushort **) malloc(m_nAllocedPtrs * sizeof(ushort *));
+        }
 
     }
 
     // Now that we've got a valid space to put the pointer, let's put it in.
+    m_RowBytesList[m_nPtrs] = pRowBytes;
     m_PtrList[m_nPtrs++] = (uint8 **) ptr;
 }
 
@@ -77,6 +84,7 @@ void cRelocationSetBase::Remove(void **ptr)
         // Now that we've found the pointer, let's remove it
         // by replacing the deleted pointer with the last pointer in the list
         m_PtrList[i] = m_PtrList[--m_nPtrs];
+        m_RowBytesList[i] = m_RowBytesList[m_nPtrs];
     }
     else
         DebugMsg2("Failed to remove pointer from relocation set (0x%x, 0x%x)", ptr, *ptr);
@@ -88,7 +96,7 @@ void cRelocationSetBase::Remove(void **ptr)
 // Reset base and fixup set members
 //
 
-void cRelocationSetBase::SetBaseAddress(const void *newBaseAddr)
+void cRelocationSetBase::SetBaseAddress(const void *newBaseAddr, uint newRowBytes)
 {
     // Let's calculate the difference between the
     // actual address and the spoofed address. Storing it as a difference
@@ -100,10 +108,32 @@ void cRelocationSetBase::SetBaseAddress(const void *newBaseAddr)
 
     if (ptrDifference)
     {
-        for (int i = m_nPtrs; --i >= 0;)
-            *(m_PtrList[i]) += ptrDifference;
+        if (newRowBytes != m_RowBytes && m_RowBytes)
+        {
+            for (int i = m_nPtrs; --i >= 0;)
+            {
+                uint8 ** pPtr = m_PtrList[i];
+                if (*pPtr != m_pBaseAddr)
+                {
+                    uint offset = *pPtr - m_pBaseAddr;
+                    *pPtr = (uint8 *) newBaseAddr + (offset / m_RowBytes) * newRowBytes + offset % m_RowBytes;
+                }
+                else
+                    *pPtr += ptrDifference;
+                *(m_RowBytesList[i]) = newRowBytes;
+            }
+        }
+        else
+        {
+            for (int i = m_nPtrs; --i >= 0;)
+            {
+                *(m_PtrList[i]) += ptrDifference;
+                *(m_RowBytesList[i]) = newRowBytes;
+            }
+        }
 
         // Finally, lets set the new base address of the block
+        m_RowBytes = newRowBytes;
         m_pBaseAddr = (uint8 *) newBaseAddr;
     }
 }

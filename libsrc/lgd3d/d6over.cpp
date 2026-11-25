@@ -208,8 +208,6 @@ HRESULT lgd3d_aol_set_position(HLGD3DOVERLAY hOver, float fScreenX, float fScree
 
 
 
-    AssertMsg(pcOverlayHandler, "pcOverlayHandler == NULL");
-    AssertMsg(hOver, "hOver == 0");
     cD6AlphaOverlay* pOver = NULL;
     if (pcOverlayHandler->AlphaOverlayFromHandle(hOver, &pOver) != 0)
     {
@@ -261,10 +259,6 @@ HRESULT lgd3d_aol_set_color(HLGD3DOVERLAY hOver, int nRed, int nGreen, int nBlue
 }
 HRESULT lgd3d_aol_set_alpha(HLGD3DOVERLAY hOver, int nAlpha)
 {
-#line 305
-    AssertMsg(pcOverlayHandler, "pcOverlayHandler == NULL");
-    AssertMsg(hOver, "hOver == 0");
-    AssertMsg((int)nAlpha >= 0 && (int)nAlpha < 0x100, "nAlpha out of range");
     cD6AlphaOverlay* pOver = NULL;
     if (pcOverlayHandler->AlphaOverlayFromHandle(hOver, &pOver) != 0)
     {

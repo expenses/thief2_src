@@ -76,7 +76,7 @@ BOOL cDelimList::IsDelimiter(char c1, const char *pszDelimiters)
     char c2;
     while ((c2 = *pszDelimiters) != '\0')
         {
-        if (isspace(c2))
+        if (isspace((unsigned char)c2))
             continue;
         if (c2 == c1)
             return TRUE;
@@ -98,7 +98,7 @@ unsigned long cDelimList::ValidateText(BOOL fSave, const char *pList, const char
         {
         // Skip the leading spaces
         for (; *p; p++)
-            if (!isspace(*p))
+            if (!isspace((unsigned char)*p))
                 break;
 
         // If we are at the end of the string...
@@ -112,7 +112,7 @@ unsigned long cDelimList::ValidateText(BOOL fSave, const char *pList, const char
         // Scan until a delimiter is found...
         for (; *p; p++)
             {
-            if (isspace(*p) && !pTrailSpace)
+            if (isspace((unsigned char)*p) && !pTrailSpace)
                 pTrailSpace = p;
             else
                 pTrailSpace = 0;
@@ -145,7 +145,7 @@ unsigned long cDelimList::ValidateText(BOOL fSave, const char *pList, const char
 
         // Skip the spaces...
         for (; *p; p++)
-            if (!isspace(*p))
+            if (!isspace((unsigned char)*p))
                 break;
 
         // If we aren't at a delimiter...

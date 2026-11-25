@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/editgeom.c,v 1.130 2000/02/19 13:10:33 toml Exp $
 
 // test code for geometry editor
@@ -420,12 +419,12 @@ static Command all_keys[]=
             "log cell traversal to traverse.log\n" },
    { "clear", TOGGLE_BOOL, &rendloop_clear, "clear framebuffer to pink" },
    { "max_polys", VAR_INT, &max_draw_polys, "maximum polygons to draw" },
-   { "show_lightmap", TOGGLE_BOOL, &show_lightmap, "display light sampling" },
+   { "show_lightmap", TOGGLE_BOOL, &show_lightmap, "display light sampling", 0, 1},
    { "render_info", FUNC_INT, print_info, "rendering stats at some volume" },
    { "detail_level", VAR_FLOAT, &portal_detail_level,
-           "mipmap detail level (0-1)" },
-   { "dot_clamp", VAR_FLOAT, &dot_clamp, "mipmap orientation limit" },
-   { "surf_256", TOGGLE_BOOL, &surf_256, "surfaces are all row==256" },
+           "mipmap detail level (0-1)", 0, 1},
+   { "dot_clamp", VAR_FLOAT, &dot_clamp, "mipmap orientation limit", 0, 1},
+   { "surf_256", TOGGLE_BOOL, &surf_256, "surfaces are all row==256", 0, 1},
    { "show_span_lengths", TOGGLE_BOOL, &show_span_lengths, 0 },
    { "show_render_times", TOGGLE_BOOL, &show_render_times, "detailed rendering timing info" },
    { "info_volume", VAR_INT, &portal_info_volume, "determine amount of rendering information" },
@@ -433,33 +432,33 @@ static Command all_keys[]=
  // @TODO: optimize
  // when we have shippable levels, test which combination of these three
  // flags is fastest
-   { "portal_clip_poly", TOGGLE_BOOL, &portal_clip_poly, 0 },
-   { "portal_clip_fast", TOGGLE_BOOL, &portal_clip_fast, 0 },
-   { "poly_clip_fast", TOGGLE_BOOL, &poly_clip_fast, 0 },
+   { "portal_clip_poly", TOGGLE_BOOL, &portal_clip_poly, 0, 0, 1},
+   { "portal_clip_fast", TOGGLE_BOOL, &portal_clip_fast, 0, 0, 1},
+   { "poly_clip_fast", TOGGLE_BOOL, &poly_clip_fast, 0, 0, 1},
 
 #ifndef SHIP
-   { "always_slow_split", TOGGLE_BOOL, &always_slow_split, "force split objects to do things the hard way" },
-   { "show_particle_counts", TOGGLE_INT, &show_particle_counts, "show count of particle sim/render" },
+   { "always_slow_split", TOGGLE_BOOL, &always_slow_split, "force split objects to do things the hard way", 0, 1},
+   { "show_particle_counts", TOGGLE_INT, &show_particle_counts, "show count of particle sim/render", 0, 1},
    { "show_particle_sim", FUNC_VOID, ParticleGroupCountSim, "list particle objects set to always_simulate" },
 #endif
 
    { "cache_feedback", TOGGLE_BOOL, &cache_feedback, "get extra surface cache info" },
-   { "light_scale", VAR_FLOAT, &light_scale, 0 },
-   { "player_light", VAR_INT, &player_light, "attach a light to the player" },
-   { "min_light", VAR_FLOAT, &dynamic_light_min, "minimum dynamic light on a surface allowed visible" },
-   { "max_dist_2", VAR_FLOAT, &max_dist_2, "maximum distance dynamic light can reach" },
+   { "light_scale", VAR_FLOAT, &light_scale, 0, 0, 1},
+   { "player_light", VAR_INT, &player_light, "attach a light to the player", 0, 1},
+   { "min_light", VAR_FLOAT, &dynamic_light_min, "minimum dynamic light on a surface allowed visible", 0, 1},
+   { "max_dist_2", VAR_FLOAT, &max_dist_2, "maximum distance dynamic light can reach", 0, 1},
 
-   { "keep_all_lit", TOGGLE_BOOL, &keep_all_lit, 0 },
+   { "keep_all_lit", TOGGLE_BOOL, &keep_all_lit, 0, 0, 1},
 
-   { "show_cells", TOGGLE_BOOL, &show_cells, "Display cells containing refs" },
-   { "span_clip", TOGGLE_BOOL, &g2pt_span_clip, "enable span clipping in the renderer" },
-   { "portal_model", TOGGLE_BOOL, &portal_model, "render models through portal tmappers" },
+   { "show_cells", TOGGLE_BOOL, &show_cells, "Display cells containing refs", 0, 1},
+   { "span_clip", TOGGLE_BOOL, &g2pt_span_clip, "enable span clipping in the renderer", 0, 1},
+   { "portal_model", TOGGLE_BOOL, &portal_model, "render models through portal tmappers", 0, 1},
    { "full_obj_test", TOGGLE_BOOL, &portal_object_complete_test, "choose all/incomplete cell lists for object sort testing" },
 
-   { "show_split", TOGGLE_BOOL, &show_split, "outline objects being split" },
-   { "show_bbox", TOGGLE_BOOL, &show_bbox, "show bounding boxes around objects" },
-   { "show_bbox_2d", TOGGLE_BOOL, &show_bbox_2d, "outline objects" },
-   { "disable_topsort", TOGGLE_BOOL, &disable_topsort, "disable good objsort" },
+   { "show_split", TOGGLE_BOOL, &show_split, "outline objects being split", 0, 1},
+   { "show_bbox", TOGGLE_BOOL, &show_bbox, "show bounding boxes around objects", 0, 1},
+   { "show_bbox_2d", TOGGLE_BOOL, &show_bbox_2d, "outline objects", 0, 1},
+   { "disable_topsort", TOGGLE_BOOL, &disable_topsort, "disable good objsort", 0, 1},
 
    // Shading Table Fun
    { "show_shadtab", FUNC_VOID, show_shad_tab, "draw shading table" },
@@ -478,11 +477,11 @@ static Command all_keys[]=
 
  // the following flags should be desupported
 //   { "asm_outer",     TOGGLE_BOOL, &asm_outer, 0 },
-   { "palette_light", TOGGLE_BOOL, &palette_light, 0 },
-   { "skip_clip",     TOGGLE_BOOL, &skip_clip, 0 },
-   { "project_space", TOGGLE_BOOL, &project_space, 0 },
-   { "linear_map",    TOGGLE_BOOL, &linear_map, "affine mapper for terrain" },
-   { "surface_cache", TOGGLE_BOOL, &surface_cache, "cache lit surfaces" },
+   { "palette_light", TOGGLE_BOOL, &palette_light, 0, 0, 1},
+   { "skip_clip",     TOGGLE_BOOL, &skip_clip, 0, 0, 1},
+   { "project_space", TOGGLE_BOOL, &project_space, 0, 0, 1},
+   { "linear_map",    TOGGLE_BOOL, &linear_map, "affine mapper for terrain", 0, 1},
+   { "surface_cache", TOGGLE_BOOL, &surface_cache, "cache lit surfaces", 0, 1},
 
 };
 

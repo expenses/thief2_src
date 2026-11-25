@@ -127,6 +127,8 @@ void r3_use_g2(void)
    r3_setup_prim_funcs(poly_g2_setup_funcs, g2_convert,
       g2_convert_indexed,
       do_g2_line, do_g2_point);
+   r3d_using_lgd3d = FALSE;
+   r3d_using_g2 = TRUE;
    r3_set_prim();
 }
 

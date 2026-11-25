@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 #include <lg.h>
 #include <config.h>
 #include <cfgdbg.h>
@@ -16,7 +15,6 @@
 #include <loopapi.h>
 
 #include <init.h>
-#include <allocovr.h>
 
 // must be last header
 #include <dbmem.h>

@@ -33,6 +33,7 @@ DECLARE_INTERFACE_(IInvStringProperty,IStringProperty)
  
 EXTERN IInvStringProperty* CreateInvStringProperty(const sPropertyDesc* desc, ePropertyImpl impl);  
 EXTERN IInvStringProperty* CreateInvStringPropertyFromStore(const sPropertyDesc* desc, IPropertyStore* impl); 
+EXTERN void RebuildSymNameTable(void);
 
 #endif // __NAMEPROP_H
 

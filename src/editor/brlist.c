@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/brlist.c,v 1.18 2000/02/19 12:27:43 toml Exp $
 
 //
@@ -215,6 +214,8 @@ int blistInsert(editBrush *new)
 }
 
 // removes from the current brush list position
+static void _blistIterFixup(brushElem *toToast, int pos);
+
 editBrush *blistDelete(void)
 {
    editBrush *us=NULL;
@@ -266,6 +267,7 @@ editBrush *blistDelete(void)
           return NULL;
       }
 
+      _blistIterFixup(toToast,cur_bl->cursor_pos);
       llist_remove(toToast);
       HheapFree(&cur_bl->brushHeap,toToast);
 #ifdef DBG_ON
@@ -309,11 +311,13 @@ int blistSetPostoBrush(editBrush *targ)
 typedef struct _sBlistIter {
    brushElem   *ptr;
    int          idx;     // 0 at start, -1 if freed from beneath the top
+   BOOL         restart; // our brush was deleted at the head, restart from the head
 } sBlistIter;
 
 #define iterPtr(hnd)     (iter_stack[hnd].ptr)
 #define iterBrush(hnd)  ((iter_stack[hnd].ptr)->data)
 #define iterIdx(hnd)     (iter_stack[hnd].idx)
+#define iterRestart(hnd) (iter_stack[hnd].restart)
 
 #define ITER_STACK_DEPTH 8
 static sBlistIter iter_stack[ITER_STACK_DEPTH];
@@ -326,6 +330,27 @@ static int        iter_last_used=-1;
 #else
 #define blistIterDebugHeader(hnd)
 #endif
+
+// fix up any active iterators when toToast is removed from the list
+static void _blistIterFixup(brushElem *toToast, int pos)
+{
+   int i;
+
+   for (i=0; i<=iter_stack_ptr; i++)
+   {
+      if (iterPtr(i)==toToast)
+      {
+         iterPtr(i)=llist_prev(toToast);
+         if (iterIdx(i)==0)
+         {
+            iterRestart(i)=TRUE;
+            continue;
+         }
+      }
+      if (pos<iterIdx(i))
+         iterIdx(i)--;
+   }
+}
 
 editBrush *_blistIterFinish(int hnd)
 {
@@ -348,6 +373,7 @@ editBrush *blistIterStart(int *iter_handle)
    *iter_handle=++iter_stack_ptr;
    iterPtr(*iter_handle)=llist_head(&cur_bl->list);   
    iterIdx(*iter_handle)=0;
+   iterRestart(*iter_handle)=FALSE;
    return _blistIterFinish(*iter_handle);   
 }
 
@@ -358,6 +384,13 @@ editBrush *blistIterNext(int iter_handle)
    blistIterDebugHeader(iter_handle);
    if (iterPtr(iter_handle)==llist_end(&cur_bl->list))
       iterPtr(iter_handle)=NULL;
+   else if (iterRestart(iter_handle))
+   {
+      iterRestart(iter_handle)=FALSE;
+      iterPtr(iter_handle)=llist_head(&cur_bl->list);
+      if (iterPtr(iter_handle)==llist_end(&cur_bl->list))
+         iterPtr(iter_handle)=NULL;
+   }
    else
    {
       iterPtr(iter_handle)=llist_next(iterPtr(iter_handle));
@@ -394,7 +427,7 @@ int blistCheck(editBrush *chk)
    if ((curIter!=NULL)&&(chk==curIter->data)) // shortcut as mentioned above
       return curIdx;                          // look, mom, we just know!
 #endif
-   if ((iter_last_used!=-1)&&(chk==iterBrush(iter_last_used)))
+   if ((iter_last_used!=-1)&&(!iterRestart(iter_last_used))&&(chk==iterBrush(iter_last_used)))
       return iterIdx(iter_last_used);
    forallinlist(brushElem,&cur_bl->list, loopvar)
    {

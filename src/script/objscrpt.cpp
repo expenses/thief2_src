@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 #include <types.h>
 #include <refsys.h>
 
@@ -39,6 +38,8 @@
 #include <wrdb.h>
 #include <traitbas.h>
 #include <objquery.h>
+#include <objscale.h>
+#include <pgrpprop.h>
 
 // Must be last header
 #include <dbmem.h>
@@ -230,14 +231,16 @@ public:
    STDMETHOD_(vector,Position)(object obj)
    {
       ObjPos* pos = ObjPosGet(obj);
-      Assert_(pos!=NULL);
+      if (!pos)
+         return vector(0,0,0);
       return pos->loc.vec; 
    }
 
    STDMETHOD_(vector,Facing)(object obj)
    {
       ObjPos* pos = ObjPosGet(obj);
-      Assert_(pos!=NULL);
+      if (!pos)
+         return vector(0,0,0);
       mxs_angvec& ang = pos->fac; 
       return vector(ANG2DEGREES(ang.tx),ANG2DEGREES(ang.ty),ANG2DEGREES(ang.tz)); 
    }
@@ -309,6 +312,111 @@ public:
    {
       ObjID obj = ScriptObjID(scr_obj);
       return rendobj_object_visible(obj);
+   }
+
+   STDMETHOD_(vector,ObjectToWorld)(object obj, const vector ref obj_pos)
+   {
+      ObjPos* pos = ObjPosGet(obj);
+      Assert_(pos!=NULL);
+      if (!pos)
+         return obj_pos;
+
+      vector result(0,0,0);
+      mxs_matrix m1, m2;
+      mxs_trans t;
+      mxs_vector scale;
+      mx_mk_rot_z_mat(&m1, pos->fac.tz);
+      mx_rot_y_mat(&m2, &m1, pos->fac.ty);
+      mx_rot_x_mat(&t.mat, &m2, pos->fac.tx);
+      t.vec = pos->loc.vec;
+      if (ObjGetScale(obj, &scale))
+      {
+         mxs_vector scaled;
+         scaled.x = obj_pos.x * scale.x;
+         scaled.y = obj_pos.y * scale.y;
+         scaled.z = obj_pos.z * scale.z;
+         mx_trans_mul_vec(&result, &t, &scaled);
+      }
+      else
+         mx_trans_mul_vec(&result, &t, &obj_pos);
+      return result;
+   }
+
+   STDMETHOD_(vector,WorldToObject)(object obj, const vector ref world_pos)
+   {
+      ObjPos* pos = ObjPosGet(obj);
+      Assert_(pos!=NULL);
+      if (!pos)
+         return world_pos;
+
+      vector result(0,0,0);
+      mxs_matrix m1, m2;
+      mxs_trans t;
+      mxs_vector scale;
+      mx_mk_rot_z_mat(&m1, pos->fac.tz);
+      mx_rot_y_mat(&m2, &m1, pos->fac.ty);
+      mx_rot_x_mat(&t.mat, &m2, pos->fac.tx);
+      t.vec = pos->loc.vec;
+      if (ObjGetScale(obj, &scale))
+      {
+         mxs_vector local;
+         mx_trans_tmul_vec(&local, &t, &world_pos);
+         if (scale.x != 0)
+            scale.x = 1.0 / scale.x;
+         if (scale.y != 0)
+            scale.y = 1.0 / scale.y;
+         if (scale.z != 0)
+            scale.z = 1.0 / scale.z;
+         result.x = local.x * scale.x;
+         result.y = local.y * scale.y;
+         result.z = local.z * scale.z;
+      }
+      else
+         mx_trans_tmul_vec(&result, &t, &world_pos);
+      return result;
+   }
+
+   STDMETHOD_(boolean,CalcRelTransform)(object parent_obj, object child_obj, vector ref rel_pos, vector ref rel_facing, int rel_type, int sub_or_vhot_or_joint)
+   {
+      sDetailAttachLinkData data;
+      memset(&data, 0, sizeof(data));
+
+      switch (rel_type)
+      {
+         case RelObject:
+            data.type = kDAT_object;
+            break;
+         case RelJoint:
+            data.type = kDAT_joint;
+            data.joint = sub_or_vhot_or_joint;
+            break;
+         case RelVHot:
+            data.type = kDAT_vhot;
+            data.vhot_or_sub = sub_or_vhot_or_joint;
+            break;
+         case RelSubObject:
+            data.type = kDAT_subobject;
+            data.vhot_or_sub = sub_or_vhot_or_joint;
+            break;
+         case RelSubPhysModel:
+            data.type = kDAT_submodel;
+            data.vhot_or_sub = sub_or_vhot_or_joint;
+            break;
+         default:
+            return FALSE;
+      }
+
+      if (!DetailAttachCalcRelTransform(ScriptObjID(child_obj), ScriptObjID(parent_obj), &data))
+         return FALSE;
+
+      rel_pos = data.rel_pos;
+      rel_facing = vector(ANG2DEGREES(data.rel_rot.tx), ANG2DEGREES(data.rel_rot.ty), ANG2DEGREES(data.rel_rot.tz));
+      return TRUE;
+   }
+
+   STDMETHOD_(object, Archetype)(object scr_obj)
+   {
+      return TraitMan()->GetArchetype(ScriptObjID(scr_obj));
    }
 
 protected:

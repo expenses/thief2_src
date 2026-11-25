@@ -83,7 +83,7 @@ void print_info(int vol)
 }
    
 extern bool span_clip, linear_map;
-extern bool project_space;
+extern BOOL project_space;
 extern bool cache_feedback;
 bool direct;
 

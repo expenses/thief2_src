@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/portapp.c,v 1.41 2000/02/19 12:35:33 toml Exp $
 
 #include <aggmemb.h>
@@ -71,7 +70,7 @@ extern float game_zoom_factor;
 
 Command portal_commands[] =
 {
-   { "light_bright", FUNC_STRING, _toggle_light_bright,    "render without lightmaps" },
+   { "light_bright", FUNC_STRING, _toggle_light_bright,    "render without lightmaps", 0, 1},
 
    // random testing 'n weirdness                             
    { "old_raycast", TOGGLE_BOOL, &use_old_raycast },
@@ -87,13 +86,13 @@ Command portal_commands[] =
 
 #ifndef SHIP
    // visualization
-   { "show_mip", TOGGLE_BOOL, &draw_solid_by_MIP_level,           "levels of detail in rendering" },
-   { "show_cell", TOGGLE_BOOL, &draw_solid_by_cell,               "show cells in rendering database" },
-   { "show_poly", TOGGLE_BOOL, &draw_solid_wireframe,             "show polygon outlines" },
-   { "show_poly_flags", TOGGLE_BOOL, &draw_solid_by_poly_flags,   "show flag settings of polygons" },
-   { "show_cell_flags", TOGGLE_BOOL, &draw_solid_by_cell_flags,   "show flag settings of cells" },
-   { "show_poly_edges", TOGGLE_BOOL, &draw_wireframe_around_tmap, "show wireframes in world" },
-   { "show_all_edges", TOGGLE_BOOL, &draw_wireframe_around_poly,  "show complete wireframes" },
+   { "show_mip", TOGGLE_BOOL, &draw_solid_by_MIP_level,           "levels of detail in rendering", 0, 1},
+   { "show_cell", TOGGLE_BOOL, &draw_solid_by_cell,               "show cells in rendering database", 0, 1},
+   { "show_poly", TOGGLE_BOOL, &draw_solid_wireframe,             "show polygon outlines", 0, 1},
+   { "show_poly_flags", TOGGLE_BOOL, &draw_solid_by_poly_flags,   "show flag settings of polygons", 0, 1},
+   { "show_cell_flags", TOGGLE_BOOL, &draw_solid_by_cell_flags,   "show flag settings of cells", 0, 1},
+   { "show_poly_edges", TOGGLE_BOOL, &draw_wireframe_around_tmap, "show wireframes in world", 0, 1},
+   { "show_all_edges", TOGGLE_BOOL, &draw_wireframe_around_poly,  "show complete wireframes", 0, 1},
    // stat gathering fun
    { "wr_stats", FUNC_VOID, wr_mono_stats, "dump all worldrep stats" },
    { "wr_check_cells", FUNC_VOID, wr_check_cells, "do assertion checking on worldrep" },
@@ -109,7 +108,7 @@ Command portal_commands[] =
    { "dump_bsp", FUNC_VOID, wrBspTreeDump,  "dump the worldrep bsp tree" },
 
 #ifdef EDITOR
-   { "show_one_cell", FUNC_INT, show_one_cell,    "wireframe on given cell" },
+   { "show_one_cell", FUNC_INT, show_one_cell,    "wireframe on given cell", 0, 1},
    { "cell_teleport", FUNC_INT, teleport_to_cell, "move editor cam to given cell" },
 #endif
 };

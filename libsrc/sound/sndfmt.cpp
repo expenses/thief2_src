@@ -25,6 +25,9 @@
 
 #include <sndvoc.h>
 #include <mprintf.h>
+#pragma pack(push, 8)
+#include <vorbis/vorbisfile.h>
+#pragma pack(pop)
 
 static int
 openWaveHeader(
@@ -188,7 +191,7 @@ SndCrackWaveHeader(
    mmio.pchBuffer = (char *) pRezData;
    mmio.cchBuffer = rezLen;
 
-   hmmio = mmioOpen(NULL, &mmio, MMIO_READ);
+   hmmio = mmioOpen(NULL, &mmio, MMIO_READWRITE);
    if(hmmio==NULL)
       return TRUE;
 
@@ -304,8 +307,95 @@ SndCrackVocHeader(
       pAttribs->dataType = kSndDataPCM;
       pAttribs->samplesPerBlock = 1;
       *pNumSamples = *pDataLen / pAttribs->bytesPerBlock;
+      pAttribs->numSamples = *pNumSamples;
    }
    return !voiceBlockFound;
+}
+
+struct sOggMemFile
+{
+   char   *pData;
+   long   pos;
+   long   len;
+};
+
+static size_t OggMemRead(void *ptr, size_t size, size_t nmemb, void *datasource)
+{
+   sOggMemFile *pFile = (sOggMemFile *) datasource;
+   long n = size * nmemb;
+   if ( pFile->pos + n > pFile->len )
+      n = pFile->len - pFile->pos;
+   if ( n <= 0 )
+      return 0;
+   memcpy( ptr, pFile->pData + pFile->pos, n );
+   pFile->pos += n;
+   return n / size;
+}
+
+static int OggMemSeek(void *datasource, ogg_int64_t offset, int whence)
+{
+   sOggMemFile *pFile = (sOggMemFile *) datasource;
+   switch ( whence ) {
+      case SEEK_SET:
+         pFile->pos = (long) offset;
+         break;
+      case SEEK_CUR:
+         pFile->pos += (long) offset;
+         break;
+      case SEEK_END:
+         pFile->pos = pFile->len - (long) offset;
+         break;
+   }
+   if ( pFile->pos < 0 )
+      pFile->pos = 0;
+   else if ( pFile->pos > pFile->len )
+      pFile->pos = pFile->len;
+   return pFile->pos;
+}
+
+static long OggMemTell(void *datasource)
+{
+   return ((sOggMemFile *) datasource)->pos;
+}
+
+static BOOL
+SndCrackOggHeader(
+                  void          *pRezData,
+                  uint32        rezLen,
+                  void          **ppData,
+                  uint32        *pDataLen,
+                  uint32        *pNumSamples,
+                  sSndAttribs   *pAttribs )
+{
+   OggVorbis_File vf;
+   sOggMemFile memFile;
+   ov_callbacks callbacks = { OggMemRead, OggMemSeek, NULL, OggMemTell };
+
+   memFile.pData = (char *) pRezData;
+   memFile.pos = 0;
+   memFile.len = rezLen;
+   if ( ov_open_callbacks( &memFile, &vf, NULL, 0, callbacks ) < 0 )
+      return TRUE;
+
+   vorbis_info *vi = ov_info( &vf, -1 );
+   if ( vi->channels < 1 || vi->channels > 2 ) {
+      ov_clear( &vf );
+      return TRUE;
+   }
+
+   pAttribs->nChannels = vi->channels;
+   pAttribs->bitsPerSample = 16;
+   pAttribs->sampleRate = vi->rate;
+   pAttribs->dataType = kSndDataOgg;
+   uint32 nSamples = (uint32) ov_pcm_total( &vf, -1 );
+   pAttribs->numSamples = nSamples;
+   pAttribs->samplesPerBlock = nSamples;
+   pAttribs->bytesPerBlock = rezLen;
+   *pNumSamples = nSamples;
+   *ppData = pRezData;
+   *pDataLen = rezLen;
+   ov_clear( &vf );
+   return FALSE;
 }
 
 //
@@ -323,6 +413,26 @@ SndCrackRezHeader(
 {
    char *buf = (char *) pRezData;
    BOOL bad;
+
+   if ( buf == NULL )
+      return TRUE;
+
+   if ( strncmp( buf, "DrkS", 4 ) == 0 ) {
+      sDrkSHeader *pHdr = (sDrkSHeader *) buf;
+      if ( pHdr->dataOffset == 0 )
+         return TRUE;
+      *pAttribs = pHdr->attribs;
+      *pNumSamples = pHdr->attribs.numSamples;
+      if ( pHdr->attribs.dataType >= kSndDataOgg ) {
+         uint32 len = pHdr->dataLen + pHdr->dataOffset;
+         *pDataLen = (len < rezLen) ? len : rezLen;
+         *ppData = buf;
+      } else {
+         *pDataLen = pHdr->dataLen;
+         *ppData = buf + pHdr->dataOffset;
+      }
+      return FALSE;
+   }
 
    // determine the file image type (WAVE or VOC)
    // extract sound attribs from rez header
@@ -343,6 +453,10 @@ SndCrackRezHeader(
       if ( bad ) mprintf( "SndCrackVocHeader returned error\n");
       TLOG3("SndCrackVocHeader %ld bytes, %ld samples %d badFlag",
            rezLen, *pNumSamples, bad );
+   } else if ( strncmp( buf, "OggS", 4 ) == 0 ) {
+      bad = SndCrackOggHeader( pRezData, rezLen, ppData, pDataLen,
+                               pNumSamples, pAttribs );
+      if ( bad ) mprintf( "SndCrackOggHeader returned error\n");
    } else {
       // Error - Rez is not a recognized sound file image type
       mprintf("Unrecognizable sound file type\n");

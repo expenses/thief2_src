@@ -148,7 +148,6 @@ void WorldRepLoadGodCell(FILE *f, int n, Vertex *vlist)
       p->render_list[i].texture_id = (i >= p->num_polys - num_p);
 
       p->render_list[i].u_base = p->render_list[i].v_base = 0;
-      p->render_list[i].texture_anchor = 0;
 
       p->render_list[i].u = &cv2[i*2];
       p->render_list[i].v = &cv2[i*2+1];

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiaware.cpp,v 1.6 2000/02/19 12:17:21 toml Exp $
 //
@@ -55,7 +54,7 @@ static sFieldDesc g_AIAwarenessFieldDesc[] =
    { "Level enter time",   kFieldTypeInt,    FieldLocation(sAIAwareness, time)                                                          },
    { "Time last contact",  kFieldTypeInt,    FieldLocation(sAIAwareness, lastContact)                                                   },
    { "Pos last contact",   kFieldTypeVector, FieldLocation(sAIAwareness, lastPos)                                                       },
-   { "Last pulse level",   kFieldTypeEnum,   FieldLocation(sAIAwareness, peak),  kFieldFlagNone,     0, FieldNames(g_ppszAIAwareAlertLevels) },
+   { "Last pulse level",   kFieldTypeEnum,   FieldLocation(sAIAwareness, lastPulse),  kFieldFlagNone,     0, FieldNames(g_ppszAIAwareAlertLevels) },
    { "Vision cone",        kFieldTypeInt,    FieldLocation(sAIAwareness, sourceCone)                                                    }, 
    { "Time last update",     kFieldTypeInt,  FieldLocation(sAIAwareness, updateTime)                                                    },
    { "Time last update LOS", kFieldTypeInt,  FieldLocation(sAIAwareness, LOSTime)                                                        },

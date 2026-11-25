@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgemit.c,v 1.46 2000/02/19 12:54:59 toml Exp $
 
 #include <string.h>
@@ -31,6 +30,7 @@
 #include <missrend.h>
 #include <rand.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 
@@ -174,7 +174,7 @@ static int vertex_palette(BspVertex *point)
          return i;
    }
    if (num_vertices == MAX_PALETTE)
-      Error(1, "Too many vertices in cell (MAX_PALETTE).\n");
+      CsgError("Too many vertices in cell (max %d).\n", MAX_PALETTE);
    vpal[num_vertices] = *point;
    return num_vertices++;
 }
@@ -223,7 +223,7 @@ static bool check_poly_reversed(int k)
    cp = best_cp;
 
    if (i == -1)
-      Error(1, "check_poly_reversed: Couldn't find non-colinear points.\n");
+      CsgError("check_poly_reversed: Couldn't find non-colinear points.\n");
 
      // shift the points down until the first three points aren't colinear
    while (i != 2) {
@@ -505,7 +505,7 @@ void compute_poly_texture_info(mxs_vector *norm, int brush, int face)
             best_sz = sz, best = i;
       }
       if (best == -1)
-         Error(1, "Couldn't find good tmap mapping for plane.\n");
+         CsgError("Couldn't find good tmap mapping for plane.\n");
 
       if (brush >= 0)
          rot_a = CB_FACE_TEX_ROT(brush, face);
@@ -713,7 +713,7 @@ static void emit_cell(int cell, int medium)
 
    PortalCell *p;
    if (cell >= MAX_REGIONS)
-      Error(1, "Too many cells.\n");
+      CsgError("Too many cells.\n");
 
    vl = 0;   // vertex list count
    vl_r = 0; // vertex list rendered count
@@ -809,7 +809,7 @@ static void emit_cell(int cell, int medium)
          set_polygon_center_point(&p->poly_list[surface], vc, 
                                   &p->render_list[surface], cell);
 
-         k = p->render_list[surface].texture_anchor = 0;
+         k = 0;
          plane = p->poly_list[surface].planeid;
          wr_brfaces[cell][surface] = poly_brface[i];
          compute_poly_texture(&p->render_list[surface], &p->vpool[p->vertex_list[vc+k]], &p->plane_list[plane], poly_brface[i] >> 8, poly_brface[i] & 255, p, surface, vc);
@@ -838,7 +838,7 @@ static void emit_cell(int cell, int medium)
          set_polygon_center_point(&p->poly_list[surface], vc, 
                                   &p->render_list[surface], cell);
 
-         k = p->render_list[surface].texture_anchor = 0;
+         k = 0;
          plane = p->poly_list[surface].planeid;
          compute_poly_texture(&p->render_list[surface], &p->vpool[p->vertex_list[vc+k]], &p->plane_list[plane], -1, -1, p, surface, vc);
 
@@ -883,7 +883,7 @@ void emit_vertex_list(PortalPolygon *poly)
    n = 0;
    do {
       if (n == MAX_PPP*2)
-         Error(1, "Too many points per polygon, increase MAX_PPP\n");
+         CsgError("Too many points per polygon, increase MAX_PPP\n");
       verts[n++] = vertex_palette(&edge->data->start);
       verts[n++] = vertex_palette(&edge->data->end);
       edge = edge->poly_next;
@@ -1016,7 +1016,7 @@ static void subdivide_poly(PortalPolygon *poly)
       subdivide_poly(poly);
       ++cur_poly;
       if (cur_poly == MAX_POLYGONS)
-         Error(1, "Too many polygons per polyhedron; increase MAX_POLYGONS\n");
+         CsgError("Too many polygons per polyhedron; increase MAX_POLYGONS\n");
       copy_poly_foo();
       subdivide_poly(res);
    } else if (max_v - min_v > MAX_LM_SIZE) {
@@ -1045,7 +1045,7 @@ static void subdivide_poly(PortalPolygon *poly)
       subdivide_poly(poly);
       ++cur_poly;
       if (cur_poly == MAX_POLYGONS)
-         Error(1, "Too many polygons per polyhedron; increase MAX_POLYGONS\n");
+         CsgError("Too many polygons per polyhedron; increase MAX_POLYGONS\n");
       copy_poly_foo();
       subdivide_poly(res);
    } else {
@@ -1227,7 +1227,7 @@ static int find_dir(mxs_vector *norm)
          return i;
    }
    if (num_dirs >= MAX_TJOINT_DIRS)
-      Error(1, "Increase MAX_TJOINT_DIRS.\n");
+      CsgError("Increase MAX_TJOINT_DIRS.\n");
    dirs[num_dirs] = *norm;
    return num_dirs++;
 }
@@ -1261,7 +1261,7 @@ static int find_projected_dir(int dir, mxs_vector *loc)
 
    // add a new edge
    if (num_edges >= MAX_TJOINT_EDGES)
-      Error(1, "Increase MAX_TJOINT_EDGES");
+      CsgError("Increase MAX_TJOINT_EDGES");
 
    e = num_edges++;
 

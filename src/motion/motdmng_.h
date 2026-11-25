@@ -20,9 +20,11 @@ typedef struct
 typedef IRes *MotDataHandle;
 
 EXTERN MotDataHandle *motDataHandles;
+EXTERN void **motDataPtrs;
 
 #define MotDmngeIsLocked(mot_num) (motDataHandles[mot_num]!=NULL)
 #define MotDmngeHandle(mot_num) (motDataHandles[mot_num])
+#define MotDmngeData(mot_num) (motDataPtrs[mot_num])
 
 
 #endif

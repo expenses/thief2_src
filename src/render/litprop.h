@@ -39,6 +39,8 @@ EXTERN BOOL ObjLightGet(ObjID obj, sLightProp **light);
 EXTERN BOOL ObjLightSet(ObjID obj, sLightProp *light);
 EXTERN BOOL ObjLightGetBrightness(ObjID obj, float *brightness);
 EXTERN BOOL ObjGetSpotlight(ObjID obj, mxs_vector **data);
+EXTERN BOOL ObjGetVhotTrans(mxs_trans *trans, ObjID obj, int vhot, BOOL world);
+EXTERN BOOL ObjGetSubobjTrans(mxs_trans *trans, ObjID obj, int subobj, BOOL world);
 #ifdef EDITOR
 EXTERN void ObjLightShine(ObjID obj);
 #endif // EDITOR
@@ -66,6 +68,10 @@ DECLARE_PROPERTY_INTERFACE(IColorProperty)
 };
 
 EXTERN BOOL ObjColorGet(ObjID obj, float *hue, float *saturation);
+EXTERN void ObjColorSet(ObjID obj, float hue, float saturation);
+EXTERN BOOL ObjColorIsSimplyRelevant(ObjID obj);
+EXTERN BOOL ObjColorIsRelevant(ObjID obj);
+EXTERN BOOL ObjIsLightRelevant(ObjID obj);
 
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\

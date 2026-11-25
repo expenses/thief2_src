@@ -22,6 +22,7 @@
 #include <sndsegi.h>
 #include <nrezseg.h>
 #include <mprintf.h>
+#include <lg_file.h>
 
 //
 // This module holds the playlist initialization method, and the method for
@@ -112,7 +113,7 @@ cSndSource::SetPlaylist( SndPlaylist   pList )
    uint32               rawDataLen, bytesToRead, len, samplesThisSegment;
    void                 *pRawData;
    BOOL                 prevWasDual, isDual, notDone, blewIt;
-   FILE                 *inFile;
+   LGFILE                 *inFile;
    Id                   rezId;
    int                  i;
 
@@ -189,14 +190,14 @@ cSndSource::SetPlaylist( SndPlaylist   pList )
 
          case plFileSingle:
             pFileSingle = (SSPLFileSingle *) pOp;
-            inFile = fopen( pFileSingle->name, "rb" );
+            inFile = lg_fopen( pFileSingle->name, "rb" );
             assert ( inFile != NULL );
-            fseek( inFile, 0L, SEEK_END );
-            len = ftell( inFile );
-            fseek( inFile, 0L, SEEK_SET );
+            fseek( inFile->fp, 0L, SEEK_END );
+            len = ftell( inFile->fp );
+            fseek( inFile->fp, 0L, SEEK_SET );
             bytesToRead = ( len < sizeof(tmpBuff) ) ? len : sizeof(tmpBuff);
-            fread( tmpBuff, 1, bytesToRead, inFile );
-            fclose( inFile );
+            lg_fread( tmpBuff, 1, bytesToRead, inFile );
+            lg_fclose( inFile );
             blewIt = SndCrackRezHeader( tmpBuff, bytesToRead,
                                         &pRawData, &rawDataLen,
                                         &(pFileSingle->nSamples), &attribs );

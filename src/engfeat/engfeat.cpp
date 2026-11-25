@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/engfeat.cpp,v 1.75 2000/01/24 12:08:42 adurant Exp $
 
 //#define PROFILE_ON
@@ -53,6 +52,7 @@
 #include <doorphys.h>
 #include <doorrep.h>
 #include <scrptprp.h>
+#include <objremap.h>
 #include <lockprop.h>
 #include <contain.h>
 #include <contprop.h>
@@ -729,6 +729,7 @@ sLoopModeDesc EngineFeaturesClients =
 
 void EngineFeaturesCreate(void)
 {
+   g_pfnPersistObjRemap = ObjRemapOnLoad;
    ILoopClientFactory *factory=CreateLoopFactory(our_array);
    AutoAppIPtr(LoopManager);
    pLoopManager->AddClientFactory(factory,&our_factory_id);

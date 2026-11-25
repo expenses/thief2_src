@@ -16,6 +16,7 @@
 
 #include <lg.h>
 #include <sndseg.h>
+#include <oggdec.h>
 
 // TBD: stereo ADPCM
 // TBD: stereo with frequency doubling
@@ -76,9 +77,10 @@ cSndSegment::InitBase( uint32       offset,
  
    switch( mAttribs.dataType ) {
       case kSndDataPCM:
-         mBytesPerSample = (mAttribs.bitsPerSample * mAttribs.nChannels) >> 3;
+         mBytesPerSample = (mAttribs.bitsPerSample * mAttribs.nChannels) / 8;
          break;
       case kSndDataIMAADPCM:
+      case kSndDataOgg:
          mBytesPerSample = 2 * mAttribs.nChannels;
          break;
    }
@@ -91,6 +93,9 @@ cSndSegment::InitBase( uint32       offset,
    if ( mAttribs.dataType == kSndDataIMAADPCM ) {
       mpInBuffer = new char[mAttribs.bytesPerBlock];
       mpDecoder = new IMA_ADPCM;
+   } else if ( mAttribs.dataType == kSndDataOgg ) {
+      mpInBuffer = new char[mAttribs.bytesPerBlock];
+      mpDecoder = new cOggDecoder;
    }
 
    //
@@ -267,7 +272,7 @@ cSndSegment::GetData( void    *pDst,
       mSrcOffset += nBytes;
 
 
-   } else if ( mAttribs.dataType == kSndDataIMAADPCM ) {
+   } else if ( mAttribs.dataType >= kSndDataIMAADPCM ) {
 
 
       ///////////////////////////////////////////////////

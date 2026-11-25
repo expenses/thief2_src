@@ -121,11 +121,14 @@ static int clip_flags[] =
    R3_CLIP_UV | R3_CLIP_RGBA | R3_CLIP_SPEC,
 };
 
+BOOL r3d_using_lgd3d;
+BOOL r3d_using_g2;
+
   // internal function to set up function pointers
 #ifdef DBG_ON
  void r3_compute_prim_funcs(int funcs, char *name)
 #else
- void r3_compute_prim_funcs(int funcs)
+ __forceinline void r3_compute_prim_funcs(int funcs)
 #endif
 {
    int poly_mode;

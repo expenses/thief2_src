@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phprop.cpp,v 1.72 2000/03/07 19:56:19 toml Exp $
 //
@@ -267,8 +266,6 @@ STDMETHODIMP cPhysAttrOps::Read(sDatum* pdat, IDataOpsFile* file, int version)
      file->Read(&pAttrProp->pore_size, sizeof(mxs_real));
    else
      pAttrProp->pore_size = 0.0;
-
-   pAttrProp->edge_trigger = !!(pAttrProp->edge_trigger);
 
    return S_OK;
 }

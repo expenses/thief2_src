@@ -26,21 +26,17 @@ cD6States* pcStates = NULL;
 
 extern "C" {
 extern BOOL lgd3d_punt_d3d;
-#ifdef SHIP
-#define PUNT_D3D 0
-#else
 #define PUNT_D3D lgd3d_punt_d3d
-#endif
 BOOL b_SS2_UseSageTexManager = FALSE;
 
 
 
-static sTexBlendArgs sTexBlendArgsProtos[3][2] = {
+sTexBlendArgs sTexBlendArgsProtos[3][2] = {
     { { D3DTOP_MODULATE, 2, 0, D3DTOP_SELECTARG2, 2, 0 }, { D3DTOP_DISABLE, 2, 1, D3DTOP_DISABLE, 2, 0 } },
     { { D3DTOP_MODULATE, 2, 0, D3DTOP_MODULATE, 2, 0 }, { D3DTOP_DISABLE, 2, 1, D3DTOP_DISABLE, 2, 0 } },
     { { D3DTOP_BLENDDIFFUSEALPHA, 2, 0, D3DTOP_SELECTARG2, 2, 0 }, { D3DTOP_DISABLE, 2, 1, D3DTOP_DISABLE, 2, 0 } },
 };
-static sTexBlendArgs sMultiTexBlendArgsProtos[3][2] = {
+sTexBlendArgs sMultiTexBlendArgsProtos[3][2] = {
     { { D3DTOP_SELECTARG1, 2, 0, D3DTOP_DISABLE, 2, 0 }, { D3DTOP_MODULATE, 2, 1, D3DTOP_DISABLE, 2, 0 } },
     { { D3DTOP_SELECTARG1, 2, 0, D3DTOP_SELECTARG2, 2, 0 }, { D3DTOP_SELECTARG2, 2, 1, D3DTOP_MODULATE, 2, 1 } },
     { { D3DTOP_MODULATE, 2, 0, D3DTOP_SELECTARG1, 2, 0 }, { D3DTOP_BLENDTEXTUREALPHA, 2, 1, D3DTOP_SELECTARG2, 2, 1 } },
@@ -49,7 +45,6 @@ static sTexBlendArgs sMultiTexBlendArgsProtos[3][2] = {
 
 extern texture_manager* g_tmgr;
 extern ushort** grd_pal16_list;
-static void calc_size(tdrv_texture_info* info, d3d_cookie cookie);
 static void GetAvailableTexMem(DWORD *local, DWORD *agp);
 static HRESULT WINAPI EnumTextureFormatsCallback(LPDDPIXELFORMAT lpDDPixFmt, LPVOID lpContext);
 static ushort* texture_pal_opaque[256];
@@ -144,12 +139,8 @@ static void blit_32to16(tdrv_texture_info *info, ushort *dst, uint drow);
 
 
 cD6States::cD6States():
-#ifdef NEWDARK
-    nd_14(0), nd_18(0), nd_1C(0), nd_20(0), nd_24(0), nd_28(0), nd_30(0),
-    m_psCurrentRS(0), m_psSetRS(0), m_bCanDither(0), m_bCanAntialias(0), m_bCanModulate(0),
-#endif
-    m_bTextureListInitialized(0), m_bTexture_RGB(0), m_bUsingLocalMem(0), m_bLocalMem_available(0),
-    m_bAGP_available(0), m_bWBuffer(0), m_bSpecular(0)
+    m_bTexture_RGB(0), m_bUsingLocalMem(0), m_bLocalMem_available(0),
+    m_bAGP_available(0), m_bWBuffer(0), m_bSpecular(0), m_bTextureListInitialized(0)
 {
 }
 
@@ -345,9 +336,9 @@ void cD6States::InitTextureManager()
 
 
 
-unsigned long cD6States::GetRenderStatesSize()
+DWORD cD6States::GetTextureLevel()
 {
-    return 0xC0;
+    return 0;
 }
 
 void cD6States::SetPointerToCurrentStates(char* pData)
@@ -379,6 +370,7 @@ void cD6States::SetCommonDefaultStates(DWORD dwRequestedFlags, int bMultiTexture
 
 
 
+#line 543
     D6CheckedSetRS(D3DRENDERSTATE_DITHERENABLE, m_psCurrentRS->bDitheringOn);
 
     m_bCanAntialias = (dwRequestedFlags & LGD3DF_CAN_DO_ANTIALIAS) != 0;
@@ -732,81 +724,7 @@ int cD6States::reload_texture_a(tdrv_texture_info* info)
 
 int cD6States::load_texture(tdrv_texture_info* info)
 {
-    int n;
-    DWORD local_start;
-    DWORD agp_start;
-    int size;
-    int result;
-
-    n = info->id;
-    local_start = 0;
-    agp_start = 0;
-    if (info->size_index >= 0) {
-        size = m_texture_size_list[info->size_index];
-    } else {
-        size = 0;
-    }
-
-    if ((m_texture_caps & D3DPTEXTURECAPS_SQUAREONLY) && (info->w != info->h)) {
-        return -1;
-    }
-
-    if (b_SS2_UseSageTexManager == 0) {
-        GetAvailableTexMem(m_bLocalMem_available ? &local_start : NULL, m_bAGP_available ? &agp_start : NULL);
-        if ((local_start < (DWORD)size) && (m_bUsingLocalMem != 0) && (m_bAGP_available != 0)) {
-#ifndef SHIP
-            if (bSpewOn != 0) {
-                mprintf("using nonlocal vidmem textures...\n");
-            }
-#endif
-            m_bUsingLocalMem = 0;
-            m_DeviceSurfaceCaps = NONLOCAL_CAPS;
-        }
-        if ((m_bUsingLocalMem ? local_start : agp_start) < (DWORD)size) {
-            return -1;
-        }
-    }
-#line 837
-    AssertMsg(n >= 0 && n < LGD3D_MAX_TEXTURES, "Texture id out of range");
-    result = reload_texture(info);
-    if ((result != 0) && (m_bUsingLocalMem != 0) && (m_bAGP_available != 0)) {
-#ifndef SHIP
-        if (bSpewOn != 0) {
-            mprintf("using nonlocal vidmem textures...\n");
-        }
-#endif
-        m_bUsingLocalMem = 0;
-        m_DeviceSurfaceCaps = NONLOCAL_CAPS;
-        result = reload_texture(info);
-    }
-    if (result != 0) {
-        return result;
-    }
-
-    if ((b_SS2_UseSageTexManager == 0) && (size == 0)) {
-        DWORD local_end;
-        DWORD agp_end;
-        GetAvailableTexMem(m_bLocalMem_available ? &local_end : NULL, m_bAGP_available ? &agp_end : NULL);
-        if ((m_bLocalMem_available != 0) && (local_start > local_end)) {
-            info->size_index = local_start - local_end;
-            if (m_bAGP_available != 0) {
-                info->size_index += agp_start - agp_end;
-            }
-        } else {
-            if ((m_bAGP_available != 0) && (agp_start != agp_end)) {
-                info->size_index = agp_start - agp_end;
-            } else {
-                Warning(("no AGP memory left"));
-                if ((info->w == 1) && (info->h == 1)) {
-                    info->size_index = 0x10;
-                    return 0;
-                }
-                Error(1, "Direct3d device driver does not accurately report texture memory usage.\n  Contact your 3d accelerator vendor for updated drivers.");
-                return -1;
-            }
-        }
-    }
-    return 0;
+    return reload_texture(info);
 }
 
 
@@ -852,6 +770,186 @@ void cD6States::release_texture(int n)
     pEntry->pTdrvBitmap = NULL;
 }
 
+#ifndef DDSCAPS2_MIPMAPSUBLEVEL
+#define DDSCAPS2_MIPMAPSUBLEVEL 0x00010000L
+#endif
+
+#define D6_AVG2(a, b, m) ((((a) & (m)) + ((b) & (m))) >> 1 & (m))
+#define D6_AVG4(a, b, c, d, m) ((((a) & (m)) + ((b) & (m)) + ((c) & (m)) + ((d) & (m))) >> 2 & (m))
+
+static ushort D6Avg2_1555(ushort a, ushort b)
+{
+    return D6_AVG2(a, b, 0x1f) | D6_AVG2(a, b, 0x3e0) | D6_AVG2(a, b, 0x7c00) | D6_AVG2(a, b, 0x8000);
+}
+
+static ushort D6Avg4_1555(ushort a, ushort b, ushort c, ushort d)
+{
+    return D6_AVG4(a, b, c, d, 0x1f) | D6_AVG4(a, b, c, d, 0x3e0) | D6_AVG4(a, b, c, d, 0x7c00)
+         | D6_AVG4(a, b, c, d, 0x8000);
+}
+
+static ushort D6Avg2_4444(ushort a, ushort b)
+{
+    return D6_AVG2(a, b, 0xf000) | D6_AVG2(a, b, 0xf00) | D6_AVG2(a, b, 0xf0) | D6_AVG2(a, b, 0xf);
+}
+
+static ushort D6Avg4_4444(ushort a, ushort b, ushort c, ushort d)
+{
+    return D6_AVG4(a, b, c, d, 0xf000) | D6_AVG4(a, b, c, d, 0xf00) | D6_AVG4(a, b, c, d, 0xf0)
+         | D6_AVG4(a, b, c, d, 0xf);
+}
+
+static ushort D6Avg2_565(ushort a, ushort b)
+{
+    return D6_AVG2(a, b, 0x1f) | D6_AVG2(a, b, 0x7e0) | D6_AVG2(a, b, 0xf800);
+}
+
+static ushort D6Avg4_565(ushort a, ushort b, ushort c, ushort d)
+{
+    return D6_AVG4(a, b, c, d, 0x1f) | D6_AVG4(a, b, c, d, 0x7e0) | D6_AVG4(a, b, c, d, 0xf800);
+}
+
+#define D6_SAMPLE16(name, avg2, avg4)                                                          \
+static ushort name(ushort* p, int pitch, BOOL bShrinkX, BOOL bShrinkY)                         \
+{                                                                                               \
+    ushort b;                                                                                   \
+    if (!bShrinkX)                                                                              \
+        b = *(ushort*)((uchar*)p + pitch);                                                      \
+    else if (bShrinkY)                                                                          \
+        return avg4(p[0], p[1], *(ushort*)((uchar*)p + pitch), *(ushort*)((uchar*)p + pitch + 2)); \
+    else                                                                                        \
+        b = p[1];                                                                               \
+    return avg2(p[0], b);                                                                       \
+}
+
+D6_SAMPLE16(D6Sample1555, D6Avg2_1555, D6Avg4_1555)
+D6_SAMPLE16(D6Sample4444, D6Avg2_4444, D6Avg4_4444)
+D6_SAMPLE16(D6Sample565, D6Avg2_565, D6Avg4_565)
+
+static HRESULT D6LockMipPair(IDirectDrawSurface4* pCurMip, IDirectDrawSurface4* pPrevMip,
+                             DDSURFACEDESC2* pCur, DDSURFACEDESC2* pPrev)
+{
+    memset(pPrev, 0, sizeof(*pPrev));
+    memset(pCur, 0, sizeof(*pCur));
+    pPrev->dwSize = sizeof(*pPrev);
+    pCur->dwSize = sizeof(*pCur);
+    HRESULT hr = pPrevMip->Lock(NULL, pPrev, DDLOCK_READONLY | DDLOCK_WAIT, NULL);
+    if (hr) {
+#line 3448
+        CheckHResult(hr, "pPrevMip->Lock");
+        return hr;
+    }
+    hr = pCurMip->Lock(NULL, pCur, DDLOCK_WRITEONLY | DDLOCK_NOSYSLOCK | DDLOCK_WAIT, NULL);
+    if (hr) {
+#line 3456
+        CheckHResult(hr, "pCurMip->Lock");
+        pPrevMip->Unlock(NULL);
+    }
+    return hr;
+}
+
+static HRESULT D6GenerateMip8888(IDirectDrawSurface4* pCurMip, IDirectDrawSurface4* pPrevMip)
+{
+    DDSURFACEDESC2 cur, prev;
+    HRESULT hr = D6LockMipPair(pCurMip, pPrevMip, &cur, &prev);
+    if (hr)
+        return hr;
+    uchar* src = (uchar*)prev.lpSurface;
+    uchar* dst = (uchar*)cur.lpSurface;
+    DWORD x, y, c;
+    if (cur.dwHeight < prev.dwHeight) {
+        if (cur.dwWidth < prev.dwWidth) {
+            for (y = 0; y < cur.dwHeight; y++, src += prev.lPitch * 2, dst += cur.lPitch) {
+                uchar* s0 = src;
+                uchar* s1 = src + prev.lPitch;
+                for (x = 0; x < cur.dwWidth; x++, s0 += 8, s1 += 8)
+                    for (c = 0; c < 4; c++)
+                        dst[x * 4 + c] = (s0[c] + s0[c + 4] + s1[c] + s1[c + 4]) >> 2;
+            }
+        } else {
+            for (y = 0; y < cur.dwHeight; y++, src += prev.lPitch * 2, dst += cur.lPitch) {
+                uchar* s0 = src;
+                uchar* s1 = src + prev.lPitch;
+                for (x = 0; x < cur.dwWidth; x++, s0 += 4, s1 += 4)
+                    for (c = 0; c < 4; c++)
+                        dst[x * 4 + c] = (s0[c] + s1[c]) >> 1;
+            }
+        }
+    } else {
+        for (y = 0; y < cur.dwHeight; y++, src += prev.lPitch, dst += cur.lPitch) {
+            uchar* s0 = src;
+            for (x = 0; x < cur.dwWidth; x++, s0 += 8)
+                for (c = 0; c < 4; c++)
+                    dst[x * 4 + c] = (s0[c] + s0[c + 4]) >> 1;
+        }
+    }
+    pPrevMip->Unlock(NULL);
+    pCurMip->Unlock(NULL);
+    return 0;
+}
+
+#define D6_GENERATE_MIP16(name, sample)                                                         \
+static HRESULT name(IDirectDrawSurface4* pCurMip, IDirectDrawSurface4* pPrevMip)                \
+{                                                                                               \
+    DDSURFACEDESC2 cur, prev;                                                                   \
+    HRESULT hr = D6LockMipPair(pCurMip, pPrevMip, &cur, &prev);                                 \
+    if (hr)                                                                                     \
+        return hr;                                                                              \
+    uchar* src = (uchar*)prev.lpSurface;                                                        \
+    uchar* dst = (uchar*)cur.lpSurface;                                                         \
+    DWORD x, y;                                                                                 \
+    if (cur.dwHeight < prev.dwHeight) {                                                         \
+        for (y = 0; y < cur.dwHeight; y++, src += prev.lPitch * 2, dst += cur.lPitch) {         \
+            ushort* s0 = (ushort*)src;                                                          \
+            ushort* d = (ushort*)dst;                                                           \
+            if (cur.dwWidth < prev.dwWidth) {                                                   \
+                for (x = 0; x < cur.dwWidth; x++)                                               \
+                    d[x] = sample(s0 + x * 2, prev.lPitch, TRUE, TRUE);                         \
+            } else {                                                                            \
+                for (x = 0; x < cur.dwWidth; x++)                                               \
+                    d[x] = sample(s0 + x, prev.lPitch, FALSE, TRUE);                            \
+            }                                                                                   \
+        }                                                                                       \
+    } else {                                                                                    \
+        for (y = 0; y < cur.dwHeight; y++, src += prev.lPitch, dst += cur.lPitch) {             \
+            ushort* s0 = (ushort*)src;                                                          \
+            ushort* d = (ushort*)dst;                                                           \
+            for (x = 0; x < cur.dwWidth; x++)                                                   \
+                d[x] = sample(s0 + x * 2, prev.lPitch, TRUE, FALSE);                            \
+        }                                                                                       \
+    }                                                                                           \
+    pPrevMip->Unlock(NULL);                                                                     \
+    pCurMip->Unlock(NULL);                                                                      \
+    return 0;                                                                                   \
+}
+
+D6_GENERATE_MIP16(D6GenerateMip1555, D6Sample1555)
+D6_GENERATE_MIP16(D6GenerateMip4444, D6Sample4444)
+D6_GENERATE_MIP16(D6GenerateMip565, D6Sample565)
+
+static HRESULT D6GenerateMipLevel(DDPIXELFORMAT* pf, IDirectDrawSurface4* pCurMip, IDirectDrawSurface4* pPrevMip,
+                                  DWORD nLevel)
+{
+    if (nLevel > 1) {
+        if (pf->dwRGBBitCount == 32) {
+            if (!D6GenerateMip8888(pCurMip, pPrevMip))
+                return 0;
+        } else if (pf->dwRGBBitCount == 16) {
+            if (pf->dwRGBAlphaBitMask == 0x8000) {
+                if (!D6GenerateMip1555(pCurMip, pPrevMip))
+                    return 0;
+            } else if (pf->dwRGBAlphaBitMask == 0xf000) {
+                if (!D6GenerateMip4444(pCurMip, pPrevMip))
+                    return 0;
+            } else if (pf->dwGBitMask == 0x7e0) {
+                if (!D6GenerateMip565(pCurMip, pPrevMip))
+                    return 0;
+            }
+        }
+    }
+    return pCurMip->Blt(NULL, pPrevMip, NULL, DDBLT_WAIT, NULL);
+}
+
 int cD6States::reload_texture(tdrv_texture_info* info)
 {
     IDirectDrawSurface4* DeviceSurface;
@@ -888,7 +986,7 @@ int cD6States::reload_texture(tdrv_texture_info* info)
     LastError = CreateDDSurface(cookie, &ddsd, &SysmemSurface);
 
 
-
+#line 987
     CheckHResult(LastError, "CreateDDSurface() failed");
     AssertMsg(SysmemSurface, "NULL SysmemSurface");
 
@@ -950,6 +1048,28 @@ int cD6States::reload_texture(tdrv_texture_info* info)
 
 
     CheckHResult(LastError, "Failed to unlock sysmem surface.");
+    if (ddsd.dwMipMapCount > 1) {
+        DDSCAPS2 caps;
+        IDirectDrawSurface4* pPrev = SysmemSurface;
+        IDirectDrawSurface4* pCur;
+        memset(&caps, 0, sizeof(caps));
+        caps.dwCaps = DDSCAPS_MIPMAP;
+        caps.dwCaps2 = DDSCAPS2_MIPMAPSUBLEVEL;
+        for (DWORD i = 0; i < ddsd.dwMipMapCount - 1; i++) {
+            LastError = pPrev->GetAttachedSurface(&caps, &pCur);
+            if (LastError) {
+#line 4040
+                CheckHResult(LastError, "GetAttachedSurface for mipmap");
+                break;
+            }
+            LastError = D6GenerateMipLevel(pixel_format, pCur, pPrev, i + 1);
+            if (i)
+                pPrev->Release();
+            pPrev = pCur;
+        }
+        if (pPrev != SysmemSurface)
+            pPrev->Release();
+    }
     LastError = (*pDeviceTexture)->Load(SysmemTexture);
 #line 1061
     CheckHResult(LastError, "Failed to load device texture from sysmem texture.");
@@ -1173,6 +1293,11 @@ void cD6States::TurnOffTexuring(int bTexOff)
         CheckHResult(hr, "SetTexture failed");
         m_psSetRS->naTextureId[0] = -1;
         g_bTexSuspended = 1;
+        if (g_nAlphaTestMode && m_psSetRS->bAlphaTestOn) {
+            hr = SET_RS(g_lpD3Ddevice, D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
+            CheckHResult(hr, "SetRenderStateForGlobal failed");
+            m_psSetRS->bAlphaTestOn = FALSE;
+        }
     } else {
         SetTextureNow();
     }
@@ -1290,8 +1415,9 @@ void cD6States::SetFogDensity(float density)
         if (g_bUseTableFog || g_bUseVertexFog) {
 
         pcRenderBuffer->FlushPrimitives();
-        m_psSetRS->fFogTableDensity = m_psCurrentRS->fFogTableDensity =
-            !g_bWFog ? (float)(density * z_far * 0.5) : density;
+        if (!g_bWFog)
+            density = density * z_far * 0.5;
+        m_psSetRS->fFogTableDensity = m_psCurrentRS->fFogTableDensity = density;
         if (PUNT_D3D) {
         } else {
             HRESULT hr = SET_RENDER_STATE(g_lpD3Ddevice, D3DRENDERSTATE_FOGTABLEDENSITY, *(DWORD*)&m_psCurrentRS->fFogTableDensity);
@@ -1305,21 +1431,19 @@ void cD6States::SetFogDensity(float density)
 int cD6States::UseLinearTableFog(BOOL bUseIt)
 {
     int old;
-    if (g_bUseTableFog) {
+    if (!g_bUseTableFog)
+        return 0;
 
-        old = (m_psCurrentRS->eFogMode == D3DFOG_LINEAR);
-        if (old != bUseIt) {
-            pcRenderBuffer->FlushPrimitives();
-            m_psCurrentRS->eFogMode = bUseIt ? D3DFOG_LINEAR : D3DFOG_EXP;
-            m_psSetRS->eFogMode = m_psCurrentRS->eFogMode;
-            HRESULT hr = SET_RENDER_STATE(g_lpD3Ddevice, D3DRENDERSTATE_FOGTABLEMODE, m_psCurrentRS->eFogMode);
+    old = (m_psCurrentRS->eFogMode == D3DFOG_LINEAR);
+    if (old != bUseIt) {
+        pcRenderBuffer->FlushPrimitives();
+        m_psCurrentRS->eFogMode = bUseIt ? D3DFOG_LINEAR : D3DFOG_EXP;
+        m_psSetRS->eFogMode = m_psCurrentRS->eFogMode;
+        HRESULT hr = SET_RENDER_STATE(g_lpD3Ddevice, D3DRENDERSTATE_FOGTABLEMODE, m_psCurrentRS->eFogMode);
 #line 1657
-            CheckHResult(hr, "SetRenderStateForGlobal failed");
-        }
-
-    return old;
+        CheckHResult(hr, "SetRenderStateForGlobal failed");
     }
-    return 0;
+    return old;
 }
 
 
@@ -1343,7 +1467,7 @@ void cD6States::SetFogStartAndEnd(float fStart, float fEnd)
 {
 
 
-    if (g_bUseTableFog) {
+    if (g_bUseTableFog || g_bUseVertexFog) {
         float start = LinearWorldIntoFogCoef(fStart);
         float end = LinearWorldIntoFogCoef(fEnd);
         m_psSetRS->fFogStart = m_psCurrentRS->fFogStart = start;
@@ -1371,10 +1495,10 @@ void cD6States::SetLinearFogDistance(float param)
         end = param;
         if (z_far < param)
             end = (float)z_far;
-        if (z_near > param)
-            start = (float)z_near;
-        else
+        if (z_near <= param)
             start = (float)((param - z_near) * 0.2 + z_near);
+        else
+            start = (float)z_near;
         SetFogStartAndEnd(start, end);
     }
 }
@@ -1449,7 +1573,7 @@ void cD6States::ResetDefaultAlphaModulate()
 
 void cD6States::EnableFog(BOOL enable)
 {
-    if (g_bUseTableFog || g_bUseVertexFog) {
+    if ((g_bUseTableFog || g_bUseVertexFog) && m_psCurrentRS->bFogOn != enable) {
         pcRenderBuffer->FlushPrimitives();
         m_psCurrentRS->bFogOn = enable;
         m_psSetRS->bFogOn = enable;
@@ -1574,10 +1698,13 @@ void cD6States::SetTextureNow()
 {
     HRESULT hr;
     g_bTexSuspended = 0;
-    sTextureData *pEntry = &g_saTextures[m_psCurrentRS->naTextureId[0]];
-    hr = ((LPDIRECT3DDEVICE3)(g_lpD3Ddevice))->SetTexture(0, (LPDIRECT3DTEXTURE2)pEntry->lpTexture);
+    int n = m_psCurrentRS->naTextureId[0];
+    if (n != -1) {
+        sTextureData *pEntry = &g_saTextures[n];
+        hr = ((LPDIRECT3DDEVICE3)(g_lpD3Ddevice))->SetTexture(0, (LPDIRECT3DTEXTURE2)pEntry->lpTexture);
 #line 2055
-    CheckHResult(hr, "SetTexture failed");
+        CheckHResult(hr, "SetTexture failed");
+    }
 }
 
 
@@ -1760,10 +1887,186 @@ void cD6States::SetTexturePalette(uint start, uint n, uchar *pal, int slot)
 }
 
 
+int g_nAlphaTestMode = 1;
+int g_nAlphaTestRef = 127;
+DWORD g_dwTexMagFilter = D3DTFG_LINEAR;
+DWORD g_dwTexMinFilter = D3DTFN_LINEAR;
+DWORD g_dwLightMapMagFilter = D3DTFG_LINEAR;
+DWORD g_dwLightMapMinFilter = D3DTFN_LINEAR;
+int g_nTexFilterMode = 1;
+int g_nLightMapFilterMode = 1;
+BOOL g_bTrilinearFiltering;
+
+void cD6States::SetAlphaTestRef(int nRef)
+{
+    if (nRef < 0)
+        nRef = 0;
+    else if (nRef > 255)
+        nRef = 255;
+    if (g_nAlphaTestRef != nRef && g_nAlphaTestMode) {
+        if (m_psSetRS->bAlphaTestOn || m_psCurrentRS->bAlphaTestOn)
+            pcRenderBuffer->FlushPrimitives();
+        if (m_psSetRS->bAlphaTestOn) {
+            int nAlphaRef = nRef;
+            if (m_psSetRS->bAlphaOn)
+                nAlphaRef = m_psSetRS->nAlphaColor * nRef / 255;
+            g_nAlphaTestRef = nRef;
+            HRESULT hr = SET_RS(g_lpD3Ddevice, D3DRENDERSTATE_ALPHAREF, nAlphaRef);
+#line 255
+            CheckHResult(hr, "SetRenderStateForGlobal failed");
+            return;
+        }
+    }
+    g_nAlphaTestRef = nRef;
+}
+
+void cD6States::ResetAlphaTest()
+{
+    if (m_psSetRS->bAlphaTestOn) {
+        pcRenderBuffer->FlushPrimitives();
+        m_psSetRS->bAlphaTestOn = FALSE;
+        HRESULT hr = SET_RS(g_lpD3Ddevice, D3DRENDERSTATE_ALPHATESTENABLE, m_psSetRS->bAlphaTestOn);
+#line 288
+        CheckHResult(hr, "SetRenderStateForGlobal failed");
+    }
+}
+
+void cD6States::SetTrilinearFiltering(BOOL bOn)
+{
+    HRESULT hr;
+    g_bTrilinearFiltering = bOn;
+    if (bOn) {
+        hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+#line 493
+        CheckHResult(hr, "SetTextureStageState failed");
+        hr = SET_STS(g_lpD3Ddevice, 1, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+        CheckHResult(hr, "SetTextureStageState failed");
+    } else {
+        hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MIPFILTER, D3DTFP_POINT);
+#line 498
+        CheckHResult(hr, "SetTextureStageState failed");
+        hr = SET_STS(g_lpD3Ddevice, 1, D3DTSS_MIPFILTER, D3DTFP_POINT);
+        CheckHResult(hr, "SetTextureStageState failed");
+    }
+}
+
+void cD6States::SetMipmapBias(float fBias)
+{
+    if (fBias < -16.0f)
+        fBias = -16.0f;
+    else if (fBias > 16.0f)
+        fBias = 16.0f;
+    HRESULT hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MIPMAPLODBIAS, *(DWORD*)&fBias);
+#line 510
+    CheckHResult(hr, "SetTextureStageState failed");
+    hr = SET_STS(g_lpD3Ddevice, 1, D3DTSS_MIPMAPLODBIAS, *(DWORD*)&fBias);
+    CheckHResult(hr, "SetTextureStageState failed");
+}
+
+void cD6States::SetTextureMipmapBias(float fBias)
+{
+    if (fBias < -16.0f)
+        fBias = -16.0f;
+    else if (fBias > 16.0f)
+        fBias = 16.0f;
+    HRESULT hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MIPMAPLODBIAS, *(DWORD*)&fBias);
+#line 521
+    CheckHResult(hr, "SetTextureStageState failed");
+}
+
+void cD6States::ApplyTextureFilter()
+{
+    m_psCurrentRS->eMagTexFilter = (D3DTEXTUREMINFILTER)g_dwTexMagFilter;
+    m_psSetRS->eMagTexFilter = (D3DTEXTUREMINFILTER)g_dwTexMagFilter;
+    m_psCurrentRS->eMinTexFilter = (D3DTEXTUREMINFILTER)g_dwTexMinFilter;
+    m_psSetRS->eMinTexFilter = (D3DTEXTUREMINFILTER)g_dwTexMinFilter;
+    HRESULT hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MAGFILTER, m_psCurrentRS->eMagTexFilter);
+#line 648
+    CheckHResult(hr, "SetTextureStageState failed");
+    hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MINFILTER, m_psCurrentRS->eMinTexFilter);
+    CheckHResult(hr, "SetTextureStageState failed");
+}
+
+void cD6States::ApplyLightmapFilter()
+{
+    m_psCurrentRS->eLightMapMagFilter = (D3DTEXTUREMINFILTER)g_dwLightMapMagFilter;
+    m_psSetRS->eLightMapMagFilter = (D3DTEXTUREMINFILTER)g_dwLightMapMagFilter;
+    m_psCurrentRS->eLightMapMinFilter = (D3DTEXTUREMINFILTER)g_dwLightMapMinFilter;
+    m_psSetRS->eLightMapMinFilter = (D3DTEXTUREMINFILTER)g_dwLightMapMinFilter;
+    HRESULT hr = SET_STS(g_lpD3Ddevice, 1, D3DTSS_MAGFILTER, m_psCurrentRS->eLightMapMagFilter);
+#line 657
+    CheckHResult(hr, "SetTextureStageState failed");
+    hr = SET_STS(g_lpD3Ddevice, 1, D3DTSS_MINFILTER, m_psCurrentRS->eLightMapMinFilter);
+    CheckHResult(hr, "SetTextureStageState failed");
+}
+
+void cD6States::SetTextureFilterMode(int nMode)
+{
+    g_nTexFilterMode = nMode;
+    if (nMode == 0) {
+        g_dwTexMagFilter = D3DTFG_POINT;
+        g_dwTexMinFilter = D3DTFN_POINT;
+    } else if (nMode == 1) {
+        g_dwTexMagFilter = D3DTFG_LINEAR;
+        g_dwTexMinFilter = D3DTFN_LINEAR;
+    } else {
+        g_dwTexMagFilter = D3DTFG_ANISOTROPIC;
+        g_dwTexMinFilter = D3DTFN_ANISOTROPIC;
+        if ((DWORD)nMode > g_sD3DDevDesc.dwMaxAnisotropy)
+            nMode = g_sD3DDevDesc.dwMaxAnisotropy;
+        HRESULT hr = SET_STS(g_lpD3Ddevice, 0, D3DTSS_MAXANISOTROPY, nMode);
+#line 681
+        CheckHResult(hr, "SetTextureStageState failed");
+    }
+    ApplyTextureFilter();
+}
+
+void cD6States::SetLightmapFilterMode(int nMode)
+{
+    g_nLightMapFilterMode = nMode;
+    if (nMode == 0) {
+        g_dwLightMapMagFilter = D3DTFG_POINT;
+        g_dwLightMapMinFilter = D3DTFN_POINT;
+    } else if (nMode == 1) {
+        g_dwLightMapMagFilter = D3DTFG_LINEAR;
+        g_dwLightMapMinFilter = D3DTFN_LINEAR;
+    } else {
+        g_dwLightMapMagFilter = D3DTFG_ANISOTROPIC;
+        g_dwLightMapMinFilter = D3DTFN_ANISOTROPIC;
+        if ((DWORD)nMode > g_sD3DDevDesc.dwMaxAnisotropy)
+            nMode = g_sD3DDevDesc.dwMaxAnisotropy;
+        HRESULT hr = SET_STS(g_lpD3Ddevice, 1, D3DTSS_MAXANISOTROPY, nMode);
+#line 707
+        CheckHResult(hr, "SetTextureStageState failed");
+    }
+    ApplyLightmapFilter();
+}
+
+void cD6States::SetCullMode(DWORD dwCull)
+{
+    if (m_psCurrentRS->dwCullMode != dwCull) {
+        pcRenderBuffer->FlushPrimitives();
+        m_psCurrentRS->dwCullMode = dwCull;
+        m_psSetRS->dwCullMode = dwCull;
+        HRESULT hr = SET_RS(g_lpD3Ddevice, D3DRENDERSTATE_CULLMODE, dwCull);
+#line 948
+        CheckHResult(hr, "SetRenderStateForGlobal failed");
+    }
+}
+
+void cD6States::SetColorWriteEnable(DWORD dwMask)
+{
+    HRESULT hr = SET_RS(g_lpD3Ddevice, D3DRENDERSTATE_COLORWRITEENABLE, dwMask);
+#line 1573
+    CheckHResult(hr, "SetRenderStateForGlobal failed");
+}
+
 cImStates* cImStates::m_Instance = NULL;
 
 void cD6States::SetAlphaPalette(ushort* pal)
 {
+    if (alpha_pal == pal)
+        return;
     pcRenderBuffer->FlushPrimitives();
     alpha_pal = pal;
 }
@@ -1780,9 +2083,9 @@ void cD6States::SetChromaKey(int r, int g, int b)
     }
     m_psCurrentRS->chroma_key = b >> 3;
     if (g_RGBTextureFormat.dwGBitMask == GBitMask15)
-        m_psCurrentRS->chroma_key += ((g >> 3) << 5) + ((r >> 3) << 10);
+        m_psCurrentRS->chroma_key |= ((g >> 3) << 5) | ((r >> 3) << 10);
     else
-        m_psCurrentRS->chroma_key += ((g >> 2) << 5) + ((r >> 3) << 11);
+        m_psCurrentRS->chroma_key |= ((g >> 2) << 5) | ((r >> 3) << 11);
 }
 
 BOOL cD6States::SetTexWrapping(DWORD dwLevel, BOOL bSetSmooth)
@@ -2514,14 +2817,14 @@ void cMSStates::cook_info(tdrv_texture_info* info)
 
 void cMSStates::SetLightMapMode(ulong flag)
 {
-    if (flag >= 3) {
+    if (flag >= 4) {
         Warning(("cMSStates::SetLightMapMode -- invalid mode", flag));
     } else {
         m_psCurrentRS->dwTexBlendMode[1] = flag;
     }
 }
 
-static void calc_size(tdrv_texture_info* info, d3d_cookie cookie)
+void calc_size(tdrv_texture_info* info, d3d_cookie cookie)
 {
     int* table;
     int w;
@@ -2921,16 +3224,15 @@ static void blit_32to16(tdrv_texture_info *info, ushort *dst, uint drow)
     int w;
     unsigned int x;
 
-    bm = info->bm;
     pS = (unsigned int*)info->bits;
+    bm = info->bm;
     w = bm->w;
     h = bm->h;
     for (y = 0; y < (unsigned int)h; y++) {
         for (x = 0; x < (unsigned int)w; x++, pS++, dst++) {
-            *dst = (unsigned short)((*pS & 0xf0000000) >> 0x10) |
-                   (unsigned short)((*pS & 0xf00000) >> 0xc) |
-                   (unsigned short)((*pS & 0xf000) >> 8) |
-                   (unsigned short)((*pS & 0xf0) >> 4);
+            *dst = (unsigned short)((((*pS >> 24) | (*pS >> 8)) & 0xf0) |
+                   ((*pS >> 12) & 0xf00) |
+                   ((*pS >> 4) & 0xf));
         }
         if (drow > (unsigned int)w) {
             dst = dst + (drow - w);
@@ -3165,4 +3467,258 @@ static int get_num_sizes(int* dest, int count, int* source_table)
         source_table[si] = di;  // reassign to index
     }
     return count;
+}
+
+extern "C" uchar *palmgr_get_pal(int slot);
+
+#define MONO_BLIT(dsttype, nbytes, store)                                   \
+   int i, j;                                                                \
+   grs_bitmap *bm = info->bm;                                               \
+   uchar *src = info->bits;                                                 \
+   int skip = bm->row - ((bm->align + bm->w) >> 3);                         \
+   for (i=0; i<bm->h; i++) {                                                \
+      uchar *d = (uchar *)dst;                                              \
+      int bit = 1 << (7 - (bm->align & 7));                                 \
+      for (j=0; j<bm->w; j++) {                                             \
+         uchar on = (*src & bit) ? 0xff : 0;                                \
+         src += bit & 1;                                                    \
+         store;                                                             \
+         d += nbytes;                                                       \
+         bit = ((bit & 1) << 7) | (bit >> 1);                               \
+      }                                                                     \
+      dst = (dsttype *)((uchar *)dst + drow);                               \
+      src += skip;                                                          \
+   }
+
+static void blit_mono_to_a8(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   MONO_BLIT(uchar, 1, d[0] = on)
+}
+
+static void blit_mono_to_a8l8(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   MONO_BLIT(uchar, 2, (d[0] = 0xff, d[1] = on))
+}
+
+static void blit_mono_to_argb(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   MONO_BLIT(uchar, 4, (d[0] = 0xff, d[1] = 0xff, d[2] = 0xff, d[3] = on))
+}
+
+static void blit_8to32(tdrv_texture_info *info, uchar *dst, int dpitch, uchar *pal)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      uchar *d = dst;
+      for (j=0; j<bm->w; j++, d += 4) {
+         uchar *c = pal + src[j] * 3;
+         d[0] = c[2];
+         d[1] = c[1];
+         d[2] = c[0];
+         d[3] = 0xff;
+      }
+      dst += dpitch * 4;
+      src += bm->row;
+   }
+}
+
+static void blit_8to32_trans(tdrv_texture_info *info, uchar *dst, int dpitch, uchar *pal)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      uchar *d = dst;
+      for (j=0; j<bm->w; j++, d += 4) {
+         uchar *c = pal + src[j] * 3;
+         d[0] = c[2];
+         d[1] = c[1];
+         d[2] = c[0];
+         d[3] = src[j] ? 0xff : 0;
+      }
+      src += bm->row;
+      dst += dpitch * 4;
+   }
+}
+
+static void blit_a8_to_argb(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      uchar *d = dst;
+      for (j=0; j<bm->w; j++, d += 4) {
+         d[0] = 0xff;
+         d[1] = 0xff;
+         d[2] = 0xff;
+         d[3] = src[j];
+      }
+      dst += drow;
+      src += bm->row;
+   }
+}
+
+static void blit_a8_to_a8l8(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      uchar *d = dst;
+      for (j=0; j<bm->w; j++, d += 2) {
+         d[0] = 0xff;
+         d[1] = src[j];
+      }
+      dst += drow;
+      src += bm->row;
+   }
+}
+
+static void blit_a4_to_a8(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      for (j=0; j<bm->w; j++)
+         dst[j] = (src[j] << 4) | src[j];
+      dst += drow;
+      src += bm->row;
+   }
+}
+
+static void blit_a4_to_a8l8(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      uchar *d = dst;
+      for (j=0; j<bm->w; j++, d += 2) {
+         d[0] = 0xff;
+         d[1] = (src[j] << 4) | src[j];
+      }
+      dst += drow;
+      src += bm->row;
+   }
+}
+
+static void blit_a4_to_argb(tdrv_texture_info *info, uchar *dst, int drow)
+{
+   int i, j;
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+
+   for (i=0; i<bm->h; i++) {
+      uchar *d = dst;
+      for (j=0; j<bm->w; j++, d += 4) {
+         d[0] = 0xff;
+         d[1] = 0xff;
+         d[2] = 0xff;
+         d[3] = (src[j] << 4) | src[j];
+      }
+      dst += drow;
+      src += bm->row;
+   }
+}
+
+static void blit_dxt(tdrv_texture_info *info, uchar *dst, uint dpitch)
+{
+   grs_bitmap *bm = info->bm;
+   uchar *src = info->bits;
+   int rows;
+
+   switch (bm->flags & BMF_RGB_MASK) {
+      case BMF_DXT1:
+      case BMF_DXT2:
+      case BMF_DXT3:
+      case BMF_DXT4:
+      case BMF_DXT5:
+         break;
+      default:
+         return;
+   }
+   rows = (bm->h + 3) / 4;
+   if (dpitch == bm->row) {
+      memcpy(dst, src, rows * dpitch);
+      return;
+   }
+   for (; rows; rows--) {
+      memcpy(dst, src, bm->row);
+      dst += dpitch;
+      src += bm->row;
+   }
+}
+
+void LoadSurfaceBits(DDSURFACEDESC2 *ddsd, tdrv_texture_info *info)
+{
+   grs_bitmap *bm = info->bm;
+   uchar *dst = (uchar *)ddsd->lpSurface;
+   int pitch = ddsd->lPitch;
+   int bpp = ddsd->ddpfPixelFormat.dwRGBBitCount;
+
+   if (ddsd->ddpfPixelFormat.dwFlags & DDPF_PALETTEINDEXED8) {
+      blit_8to8(info, dst, pitch);
+      return;
+   }
+   switch (bm->type) {
+      case BMT_MONO:
+         if (bpp == 32)
+            blit_mono_to_argb(info, dst, pitch);
+         else if (bpp == 16)
+            blit_mono_to_a8l8(info, dst, pitch);
+         else
+            blit_mono_to_a8(info, dst, pitch);
+         return;
+
+      case BMT_FLAT8:
+         if ((bm->flags & BMF_RGB_MASK) == BMF_RGB_A8) {
+            if (bpp == 32)
+               blit_a8_to_argb(info, dst, pitch);
+            else if (bpp == 16)
+               blit_a8_to_a8l8(info, dst, pitch);
+            else
+               blit_8to8(info, dst, pitch);
+         } else if ((bm->flags & BMF_RGB_MASK) == BMF_RGB_A4) {
+            if (bpp == 32)
+               blit_a4_to_argb(info, dst, pitch);
+            else if (bpp == 16)
+               blit_a4_to_a8l8(info, dst, pitch);
+            else
+               blit_a4_to_a8(info, dst, pitch);
+         } else {
+            uchar *pal = palmgr_get_pal(bm->align);
+            if (bm->flags & BMF_TRANS)
+               blit_8to32_trans(info, dst, pitch / 4, pal);
+            else
+               blit_8to32(info, dst, pitch / 4, pal);
+         }
+         return;
+
+      case BMT_FLAT32:
+         blit_32to32(info, (ushort *)dst, pitch / 2);
+         return;
+
+      case BMT_DXT:
+         blit_dxt(info, dst, pitch);
+         return;
+
+      default:
+         blit_16to16(info, (ushort *)dst, pitch / 2);
+         return;
+   }
+}
+
+void cMSStates::SetTextureNow()
+{
+    cD6States::SetTextureNow();
 }

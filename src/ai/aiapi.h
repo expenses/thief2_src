@@ -20,6 +20,7 @@
 
 #include <comtools.h>
 #include <simtime.h>
+#include <aitype.h>
 
 #pragma pack(4)
 
@@ -144,6 +145,8 @@ DECLARE_INTERFACE_(IAIManager, IUnknown)
    //
    STDMETHOD_(void, ListenForCollisions)(ObjID) PURE;
    STDMETHOD_(void, UnlistenForCollisions)(ObjID) PURE;
+
+   STDMETHOD_(BOOL, CreateAIWithMode)(THIS_ ObjID objId, const char * pszBehaviorSet, eAIMode mode) PURE;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/cretprop.h,v 1.11 2000/01/29 13:22:02 adurant Exp $
 #pragma once
 
@@ -79,6 +78,8 @@ DECLARE_PROPERTY_INTERFACE(ICreaturePoseProperty)
 //
 
 #define PROP_CREATURENONPHYS_NAME "NonPhysCreature"
+#define PROP_CREATURESCALE_NAME "CretScale"
+#define PROP_CREATURENOHEADTRACK_NAME "CretHTrack"
 
 //
 // functions
@@ -95,5 +96,9 @@ EXTERN BOOL ObjGetCreatureType(ObjID obj, int *pType);
 EXTERN BOOL ObjIsNonPhysicalCreature(ObjID obj);
 
 EXTERN BOOL ObjIsPosed(ObjID obj);
+EXTERN BOOL ObjGetCreatureScale(ObjID obj, float *pScale);
+EXTERN float ObjCreatureScale(ObjID obj);
+EXTERN void ObjSetCreatureScale(ObjID obj, float scale);
+EXTERN BOOL ObjCreatureNoHeadTrack(ObjID obj);
 
 #endif

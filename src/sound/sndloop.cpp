@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/sndloop.cpp,v 1.27 2000/02/28 17:28:28 toml Exp $
 
 #include <lg.h>

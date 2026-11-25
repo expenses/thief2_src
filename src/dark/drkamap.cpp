@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkamap.cpp,v 1.24 2000/03/05 17:50:23 patmac Exp $
 
 #include <drkamap.h>
@@ -11,6 +10,8 @@
 #include <propert_.h>
 #include <dataops_.h>
 #include <keydefs.h>
+#include <metasnd.h>
+#include <guistyle.h>
 
 #include <sdesbase.h>
 #include <sdestool.h>
@@ -69,11 +70,11 @@ static IAutomapProperty* gAutoMapProp = NULL;
 
 // We allow up to 8 map pages, and up to 32 decals per page
 
-#define MAX_AMAP_PAGES 8
+#define MAX_AMAP_PAGES 32
 // MAX_AMAP_DECALS_PER_PAGE should be a multiple of 32
-#define MAX_AMAP_DECALS_PER_PAGE 64
+#define MAX_AMAP_DECALS_PER_PAGE 256
 #define AMAP_LONGS_PER_PAGE (MAX_AMAP_DECALS_PER_PAGE >> 5)
-#define MAX_MISSION_MAPS 32
+#define MAX_MISSION_MAPS 40
 
 struct sVisited
 {
@@ -94,6 +95,27 @@ sFileVarDesc gVisitedDesc =
 
 // The actual global variable
 cFileVar<sVisited,&gVisitedDesc> gVisited; 
+
+EXTERN BOOL g_bDark1;
+
+static void SetVisited(int miss, int page, int location)
+{
+   if ((uint)miss < MAX_MISSION_MAPS && (uint)page < MAX_AMAP_PAGES && (uint)location < MAX_AMAP_DECALS_PER_PAGE)
+      gVisited.visited[miss][page][location>>5] |= (1 << (location & 31));
+}
+
+static BOOL IsVisited(int miss, int page, int location)
+{
+   if ((uint)miss < MAX_MISSION_MAPS && (uint)page < MAX_AMAP_PAGES && (uint)location < MAX_AMAP_DECALS_PER_PAGE)
+      return (gVisited.visited[miss][page][location>>5] & (1 << (location & 31))) != 0;
+   return FALSE;
+}
+
+static void CopyVisited(int to, int from)
+{
+   if (to != from && (uint)to < MAX_MISSION_MAPS && (uint)from < MAX_MISSION_MAPS)
+      memcpy(&gVisited.visited[to],&gVisited.visited[from],sizeof(gVisited.visited[to]));
+}
 
 
 // -1 - display all decals as if they have been visited
@@ -160,17 +182,20 @@ float GetCompassOffset()
 
 void TransferMapInfo()
 {
+  if (g_bDark1)
+    return;
+
   int prevmiss = gMapSourceData.sourcemiss;
   const sMissionData* missdata = GetMissionData();
-  Assert_((missdata->num < MAX_MISSION_MAPS) && (missdata->num >= 0));
-  Assert_((prevmiss < MAX_MISSION_MAPS));
   int curmiss = missdata->num;
 
   if ((curmiss==prevmiss) || (prevmiss<=0))  //don't copy in this case.
     return;
+  if ((uint)curmiss >= MAX_MISSION_MAPS || (uint)prevmiss >= MAX_MISSION_MAPS)
+    return;
 
   //sigh, memcpy goes the opposite way of what I thought... copies to curmiss now.
-  memcpy(&gVisited.visited[curmiss],&gVisited.visited[prevmiss],sizeof(gVisited.visited[curmiss]));
+  CopyVisited(curmiss, prevmiss);
 }
 
 void LoadMapSourceInfo(ITagFile* file)
@@ -319,23 +344,24 @@ DarkAutomapGetLocationVisited( int page, int location )
 void
 DarkAutomapSetLocationVisited( int page, int location )
 {
+   if (g_bDark1)
+      return;
+
    AutoAppIPtr(QuestData); 
    int locsVisited, p, l;
    const sMissionData* missdata = GetMissionData();
-   Assert_((missdata->num < MAX_MISSION_MAPS) && (missdata->num >= 0));
 
    // page should always be valid, location may be -1
-   assert( (page >= 0) && (page < MAX_AMAP_PAGES) );
    if ( (location >= 0) && (location < MAX_AMAP_DECALS_PER_PAGE) ) {
       // tell the automap the player has visited the room
-      gVisited.visited[missdata->num][page][location>>5] |= (1 << (location & 31));
+      SetVisited(missdata->num, page, location);
    }
 
    // set the quest variable that tracks total number of locations visited
    locsVisited = 0;
    for ( p = 0; p < MAX_AMAP_PAGES; p++ ) {
       for ( l = 0; l < MAX_AMAP_DECALS_PER_PAGE; l++ ) {
-         if ( gVisited.visited[missdata->num][p][l>>5] & (1 << (l & 31)) ) {
+         if ( IsVisited(missdata->num, p, l) ) {
             locsVisited++;
          }
       }
@@ -390,7 +416,7 @@ class cAutomap: public cDarkPanel
    static sDarkPanelDesc gDesc; 
 
 public:
-   cAutomap(): cDarkPanel(&gDesc),mpQuestData(AppGetObj(IQuestData)) {}; 
+   cAutomap(): cDarkPanel(&gDesc),mpQuestData(AppGetObj(IQuestData)) { mPageNum = 0; }; 
    ~cAutomap() { SafeRelease(mpQuestData); }; 
 
    enum eRects
@@ -414,6 +440,7 @@ protected:
    void RedrawDisplay(); 
    void OnButtonList(ushort action, int button); 
    void OnLoopMsg(eLoopMessage, tLoopMessageData ); 
+   BOOL OnKey(uiEvent* ev); 
    void InitUI(); 
    void TermUI(); 
 
@@ -496,6 +523,7 @@ void cAutomap::TermUI()
       SafeRelease(mArrows[i]); 
    }
    uiRemoveRegionHandler( &mMapRegion, mMapRegionEventHandlerID );
+   region_destroy( &mMapRegion, FALSE );
 
    if ( mMapMode == kMapModeAddText ) {
       // add annotation-in-progress if not 0 length
@@ -519,6 +547,8 @@ void cAutomap::TermUI()
 
 #define EXTRA_VERTICAL_SPACING 0
 
+static BOOL gAmapLeftAlignNotes;
+
 static void
 DrawAnnotation( sAmapAnnotation  *pAnnotation,
                 BOOL             bWithCursor )
@@ -530,7 +560,7 @@ DrawAnnotation( sAmapAnnotation  *pAnnotation,
    BOOL bLastLineEmpty;
 
    strcpy( txtCopy, pAnnotation->text );
-   bLastLineEmpty = (txtCopy[strlen(txtCopy) - 1] == '\n');
+   bLastLineEmpty = txtCopy[0] && (txtCopy[strlen(txtCopy) - 1] == '\n');
    pToken = strtok( txtCopy, "\n" );
    if ( pToken == NULL ) {
       // if we want cursor for empty string, we at least need to know height of font
@@ -543,7 +573,9 @@ DrawAnnotation( sAmapAnnotation  *pAnnotation,
       y = pAnnotation->y;
       while ( pToken ) {
          gr_string_size( pToken, &w, &h );
-         x = pAnnotation->x - (w/2);
+         x = pAnnotation->x;
+         if ( !gAmapLeftAlignNotes )
+            x -= (w/2);
          gr_string( pToken, x, y );
          endX = x + w;
          endY = y;
@@ -579,7 +611,7 @@ OverlapsAnnotation( sAmapAnnotation    *pAnnotation,
    yTop = pAnnotation->y;
    while ( pToken ) {
       gr_string_size( pToken, &w, &h );
-      xLeft = pAnnotation->x - (w / 2);
+      xLeft = gAmapLeftAlignNotes ? pAnnotation->x : pAnnotation->x - (w / 2);
       xRight = xLeft + w;
       yBottom = yTop + h;
       if ( (y >= yTop) && (y < yBottom) &&
@@ -707,7 +739,6 @@ void cAutomap::RedrawDisplay()
      return;
    grs_bitmap* map = (grs_bitmap*)mapsrc->Lock(); 
    int numDecals, decal;
-   ulong *pVisitedDecals;
 
    Rect& mapr = mRects[(int)kMap]; 
 
@@ -725,10 +756,11 @@ void cAutomap::RedrawDisplay()
       DarkAutomapSetLocationVisited( prop->page, prop->location );
    }
 
-   pVisitedDecals = &(gVisited.visited[missdata->num][mPageNum][0]);
    sprintf(buf,"%s/p%03dra",missdata->path,mPageNum); 
    FetchUIRects(buf, tmpRects);
    numDecals = tmpRects.Size();
+
+   gAmapLeftAlignNotes = config_is_defined("dark_map_lalign_notes");
 
    //////////////////////////////////////////////////////////////////////////
    //
@@ -746,9 +778,9 @@ void cAutomap::RedrawDisplay()
          // remember that we are really somewhere
          youAreHere = decal;
 
-      } else {
+      } else if ( !g_bDark1 || (gImEverywhere != 0) ) {
 
-         if ( (pVisitedDecals[decal>>5] & (1 << (decal & 31))) || (gImEverywhere != 0) ) {
+         if ( IsVisited(missdata->num, mPageNum, decal) || (gImEverywhere != 0) ) {
             // Get the image
             sprintf(buf,"%s/p%03dr%03d",missdata->path,mPageNum,decal);
 
@@ -852,6 +884,35 @@ void cAutomap::RedrawButtons()
 
 ////////////////////////////////////////
 
+BOOL cAutomap::OnKey(uiEvent* ev)
+{
+   int code = ((uiCookedKeyEvent*)ev)->code; 
+   if (!(code & KB_FLAG_DOWN) || mMapMode != kMapModeNormal)
+      return FALSE; 
+
+   switch (code & ~KB_FLAG_DOWN)
+   {
+      case KEY_SPACE:
+         OnButtonList(BUTTONGADG_LCLICK, kDone); 
+         return TRUE; 
+      case KEY_ENTER:
+         metaSndPlayGUICallback(StyleSoundSelect); 
+         OnButtonList(BUTTONGADG_LCLICK, kGoals); 
+         return TRUE; 
+      case KEY_PGUP:
+      case KEY_LEFT:
+         metaSndPlayGUICallback(StyleSoundSelect); 
+         OnButtonList(BUTTONGADG_LCLICK, kPrev); 
+         return TRUE; 
+      case KEY_RIGHT:
+      case KEY_PGDN:
+         metaSndPlayGUICallback(StyleSoundSelect); 
+         OnButtonList(BUTTONGADG_LCLICK, kNext); 
+         return TRUE; 
+   }
+   return FALSE; 
+}
+
 void cAutomap::OnButtonList(ushort action , int button)
 {
    if (action & (BUTTONGADG_LCLICK|BUTTONGADG_RCLICK))
@@ -918,11 +979,30 @@ void cAutomap::OnLoopMsg(eLoopMessage msg, tLoopMessageData data)
 
          if (pos)
             mPageNum = pos->page; 
+         else if (config_is_nonzero("dark_map_remember_last"))
+         {
+            if (mpQuestData->Exists(CUR_PAGE_QVAR))
+               mPageNum = mpQuestData->Get(CUR_PAGE_QVAR);
+
+            int min = mpQuestData->Get(MIN_PAGE_QVAR);
+            if (mPageNum < min || mPageNum > mpQuestData->Get(MAX_PAGE_QVAR))
+               mPageNum = min;
+         }
          else // default to first page 
             mPageNum = mpQuestData->Get(MIN_PAGE_QVAR); 
 
       }
       break; 
+
+      case kMsgExitMode:
+         if (config_is_nonzero("dark_map_remember_last"))
+         {
+            if (mpQuestData->Exists(CUR_PAGE_QVAR))
+               mpQuestData->Set(CUR_PAGE_QVAR, mPageNum);
+            else
+               mpQuestData->Create(CUR_PAGE_QVAR, mPageNum, kQuestDataMission);
+         }
+         break;
    }
    cDarkPanel::OnLoopMsg(msg,data);
 }

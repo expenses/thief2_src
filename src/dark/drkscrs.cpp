@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkscrs.cpp,v 1.9 2000/02/29 19:10:54 patmac Exp $
 #include <scrptapi.h>
 #include <scrptbas.h>
@@ -107,6 +106,26 @@ DECLARE_SCRIPT_SERVICE_IMPL(cDarkGameSrv,DarkGame)
    {
       DarkAutomapSetLocationVisited( page, location );
       return S_OK;
+   }
+
+   STDMETHOD_(void, SetNextMission)(int mission)
+   {
+      SetFollowingMission(mission);
+   }
+
+   STDMETHOD_(int, GetCurrentMission)()
+   {
+      return GetNextMission();
+   }
+
+   STDMETHOD_(BOOL, RespawnPlayer)()
+   {
+      return FALSE;
+   }
+
+   STDMETHOD(FadeIn)(float time)
+   {
+      return E_FAIL;
    }
 };
 

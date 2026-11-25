@@ -37,6 +37,37 @@ typedef struct
 
 ////////////////////////////////////////////////////////////////////////////////
 
+enum eDetailAttachType
+{
+   kDAT_object,
+   kDAT_vhot,
+   kDAT_joint,
+   kDAT_submodel,
+   kDAT_subobject,
+   kDAT_transparent_decal,
+};
+
+enum eDetailAttachFlags
+{
+   kDAF_NoAutoDelete = 0x01,
+   kDAF_NoJointRot   = 0x02,
+};
+
+typedef struct
+{
+   uchar type;
+   uchar joint;
+   short vhot_or_sub;
+   mxs_vector rel_pos;
+   mxs_angvec rel_rot;
+   uchar flags;
+   uchar pad;
+   ulong decal_plane_norm;
+   float decal_plane_dist;
+} sDetailAttachLinkData;
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define PROP_PARTICLE_GROUP_NAME       "ParticleGroup"
 #define PROP_PARTICLE_LAUNCH_INFO_NAME "PGLaunchInfo"
 
@@ -77,6 +108,8 @@ EXTERN ParticleGroup *ObjGetParticleGroup(ObjID obj);
 EXTERN void ObjSetParticleGroup(ObjID obj, ParticleGroup *pg);
 EXTERN void ObjGetParticleAttachment(ObjID obj, ObjID *attach_obj, sParticleAttachLinkData **data);
 EXTERN ParticleLaunchInfo *ObjGetParticleGroupLaunchInfo(ObjID obj);
+
+EXTERN BOOL DetailAttachCalcRelTransform(ObjID child, ObjID parent, sDetailAttachLinkData *data);
 
 EXTERN BOOL ObjIsParticleGroup(ObjID obj);
 

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/lnkbyobj.cpp,v 1.14 1998/10/15 00:28:21 mahk Exp $
 #include <lnkbyobj.h>
 #include <linkman.h>
@@ -110,12 +109,12 @@ void LinksByObj::RemoveRelation(RelationID id)
    {
       ObjID obj = iter.Key();
       LinkSet* set = iter.Value();
-      LinkSet::cIter iter;
-      for (iter = set->Iter(); !iter.Done(); iter.Next())
+      LinkSet::cIter liter;
+      for (liter = set->Iter(); !liter.Done(); liter.Next())
       {
-         if (id == LINKID_RELATION(iter.Value()))
+         if (id == LINKID_RELATION(liter.Value()))
          {
-            set->Delete(iter.Node());
+            set->Delete(liter.Node());
          }
       }
       if (set->GetFirst() == NULL)

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/hud.c,v 1.3 2000/02/19 12:35:25 toml Exp $
 
 #include <string.h>

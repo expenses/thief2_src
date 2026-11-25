@@ -73,7 +73,8 @@ EXTERN IPhysPPlateProperty *g_pPhysPPlateProp;
 struct sPhysRopeProp
 {
    mxs_real length;
-   BOOL     deployed;
+   short    deployed;
+   short    calc_correct_len;
 
    mxs_real desired_length;
 };
@@ -97,6 +98,7 @@ EXTERN BOOL DeployRope(ObjID objID);
 EXTERN BOOL PhysRopeListenerLock;
 
 EXTERN IPhysRopeProperty *g_pPhysRopeProp;
+EXTERN BOOL g_bForceCorrectRopeLengths;
 
 ///////////////////////////////////////////////////////////////////////////////
 //

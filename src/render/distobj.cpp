@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/distobj.cpp,v 1.6 2000/02/21 18:49:52 bfarquha Exp $
 
 
@@ -217,12 +216,12 @@ void cDistantArt::Init()
       return;
 
    IResMan *pResMan = AppGetObj(IResMan);
-   pDistantArtRes1 = IResMan_Bind(pResMan, g_DistantObj.Texture1Name, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", 0);
+   pDistantArtRes1 = IResMan_Bind(pResMan, g_DistantObj.Texture1Name, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", RES_BIND_IMAGE_FLAGS);
    if (!pDistantArtRes1)
       return;
 
    if (g_DistantObj.Texture2Name[0])
-      pDistantArtRes2 = IResMan_Bind(pResMan, g_DistantObj.Texture2Name, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", 0);
+      pDistantArtRes2 = IResMan_Bind(pResMan, g_DistantObj.Texture2Name, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", RES_BIND_IMAGE_FLAGS);
 
    // Load palette
    IRes *pPalRes = IResMan_Bind(pResMan, IRes_GetName(pDistantArtRes1), RESTYPE_PALETTE,

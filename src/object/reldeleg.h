@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/reldeleg.h,v 1.5 2000/01/29 13:24:53 adurant Exp $
 #pragma once
 
@@ -82,6 +81,9 @@ public:
    { return pInner->GetSingleLink(source, dest); };
    STDMETHOD_(BOOL, AnyLinks)(ObjID source, ObjID dest)
    { return pInner->AnyLinks(source,dest); };
+
+   STDMETHOD(AddFullAtID)(LinkID id, ObjID source, ObjID dest, void* data)
+   { return pInner->AddFullAtID(id,source,dest,data); };
    
 private:
    IRelation* pInner;

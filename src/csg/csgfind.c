@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgfind.c,v 1.3 2000/02/19 12:55:00 toml Exp $
 
 // find_brface_from_poly
@@ -18,10 +17,17 @@
 #include <csgutil.h>
 #include <csgbbox.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 int num_brush_faces[MAX_FACE_BRUSHES];
 BspPlane brush_faces[MAX_FACE_BRUSHES][MAX_FACES];
+
+void clear_brush_faces(void)
+{
+   memset(num_brush_faces, 0, sizeof(num_brush_faces));
+   memset(brush_faces, 0, sizeof(brush_faces));
+}
 
 #define BBOX_EPSILON   0.1
 
@@ -150,7 +156,7 @@ int find_brface_from_poly(PortalPolygon *poly)
       // if currently doing error processing,
       // don't abort if none
       if (!error_find && y < 0)
-         Error(1, "find_brface_from_poly: Unable to find csg face\n");
+         CsgError("find_brface_from_poly: Unable to find csg face\n");
    }
    return y;
 }

@@ -44,6 +44,8 @@ typedef struct sHeatDiskCluster {
 
    // disks/blob at z=1
    int num_disks;
+
+   BOOL z_compare;
 } sHeatDiskCluster;
 
 

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/actreact/reaction.cpp,v 1.11 2000/01/28 11:28:21 adurant Exp $
 #include <appagg.h>
 #include <reactio_.h>
@@ -34,6 +33,8 @@
 // for spew
 #include <config.h>
 #include <cfgdbg.h>
+
+#include <crjoint.h>
 
 // Must be last header
 #include <dbmem.h>
@@ -215,6 +216,7 @@ struct sWeakPointParam
    mxs_real      yoffset;
    mxs_real      zoffset;
    mxs_real      radius;
+   int           parent_joint;
 };
 
 static eReactionResult LGAPI WeakPoint_func(sReactionEvent* ev, const sReactionParam* param, tReactionFuncData )
@@ -322,7 +324,8 @@ static sFieldDesc WeakPoint_fields[] =
    { "X Offset",kFieldTypeFloat,FieldLocation(sWeakPointParam,xoffset) },
    { "Y Offset",kFieldTypeFloat,FieldLocation(sWeakPointParam,yoffset) },
    { "Z Offset",kFieldTypeFloat,FieldLocation(sWeakPointParam,zoffset) },
-   { "Radius",kFieldTypeFloat,FieldLocation(sWeakPointParam,radius) }
+   { "Radius",kFieldTypeFloat,FieldLocation(sWeakPointParam,radius) },
+   { "Parent Joint",kFieldTypeEnum,FieldLocation(sWeakPointParam,parent_joint),kFieldFlagNone,0,22,22,g_pJointNames }
 };
 
 static sStructDesc WeakPoint_sdesc = StructDescBuild(sWeakPointParam,kStructFlagNone,WeakPoint_fields);

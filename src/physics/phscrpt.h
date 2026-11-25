@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phscrpt.h,v 1.18 1999/12/10 14:45:33 PATMAC Exp $
 //
@@ -70,6 +69,10 @@ DECLARE_SCRIPT_SERVICE(Physics, 0x141)
    STDMETHOD(Activate)(const object obj) PURE;
 
    STDMETHOD_(BOOL, ValidPos)(const object obj) PURE;
+
+   STDMETHOD_(BOOL, IsRope)(const object ref obj) PURE;
+
+   STDMETHOD_(void, GetClimbingObject)(const object ref climber, object ref climbobj) PURE;
 };
 
 

@@ -20,4 +20,10 @@ DeclDynFunc_(HRESULT, WINAPI, DirectDrawEnumerateA, (LPDDENUMCALLBACK cb, void *
 
 BOOL LoadDirectDraw();
 
+#if defined(_D3D9_H_)
+DeclDynFunc_(IDirect3D9 *, WINAPI, Direct3DCreate9, (UINT SDKVersion));
+#define DynDirect3DCreate9      (DynFunc(Direct3DCreate9).GetProcAddress())
+#endif
+BOOL LoadDirect3D9();
+
 #endif /* !__WDSPDYNF_H */

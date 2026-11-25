@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/dmgreact.cpp,v 1.13 2000/02/05 19:38:26 adurant Exp $
 
 #include <appagg.h>
@@ -97,9 +96,8 @@ static ReactionID create_damage(IReactions* pReactions)
 // acts as if it had taken damage
 //
 
-struct sSpoofDamageParam : public sDamage
+struct sSpoofDamageParam : public sDamageParam
 {
-   BOOL use_stim;
 };
 
 
@@ -143,7 +141,7 @@ static sFieldDesc spoof_damage_fields[] =
    { "Use stimulus as type", kFieldTypeBool, FieldLocation(sDamageParam,use_stim), },
 };
 
-static sStructDesc spoof_damage_sdesc = StructDescBuild(sSpoofDamageParam,kStructFlagNone,damage_fields);
+static sStructDesc spoof_damage_sdesc = StructDescBuild(sSpoofDamageParam,kStructFlagNone,spoof_damage_fields);
 
 static ReactionID create_spoof_damage(IReactions* pReactions)
 {

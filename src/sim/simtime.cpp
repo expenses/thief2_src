@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/simtime.cpp,v 1.16 2000/03/17 17:40:22 bfarquha Exp $
 
 #include <lg.h>
@@ -81,7 +80,7 @@ static tSimTime clamp_frame_time(tSimTime ftime)
          ftime = gParams.maxFrameTime;
    }
 
-   if (gParams.scaleFrameTime > 0.0)
+   if (gParams.scaleFrameTime > 0.0 && gParams.scaleFrameTime != 1.0)
       ftime *= gParams.scaleFrameTime;
 
    return ftime;
@@ -197,18 +196,20 @@ static void simtime_app_init(void)
 {
 #ifndef SHIP
    COMMANDS(commands,HK_ALL);
+#endif
 
    sSimTimingParams params = *GetSimTimingParams();
    config_get_int("max_frame_time",&params.maxFrameTime);
    config_get_int("min_frame_time",&params.minFrameTime);
 
+#ifndef SHIP
    config_get_int("force_frame_time", &params.maxFrameTime);
    config_get_int("force_frame_time", &params.minFrameTime);
 
    config_get_float("scale_sim_time", &params.scaleFrameTime);
+#endif
 
    SetSimTimingParams(&params);
-#endif
 }
 
 static void simtime_app_term(void)

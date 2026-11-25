@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/texmem.c,v 1.50 2000/02/14 20:35:21 bfarquha Exp $
 // this system tracks and deals with current textures in memory
 // knows how to load them and convert into portal format
@@ -103,6 +102,7 @@
 
 #include <mipmap.h>
 #include <texmem.h>
+#include <family.h>
 #include <rnd.h>
 #include <rand.h>
 #include <palmgr.h>
@@ -295,7 +295,9 @@ void texmem_free_tmap(grs_bitmap *bm)
 }
 
 // raw free based on idx - silent check
-static BOOL texmem_core_free_idx(int idx)
+#define TEXMEM_FREE_NO_SHRINK 2
+
+static BOOL texmem_core_free_idx(int idx, int flags)
 {
    if (texmem_loadid[idx]<=TEXMEM_LOADID_NULL)
       return FALSE;   //
@@ -323,11 +325,16 @@ static BOOL texmem_core_free_idx(int idx)
    texmem_loadid[idx]=TEXMEM_LOADID_NULL;
    if (texmem_align_set[idx]!=TEXMEM_NO_ALIGN)
       texmem_align_set[idx]=TEXMEM_NO_ALIGN;
-   if (idx==texmem_cur_max-1)   // in other words, idx is last one in the list
+   if (!flags && idx==texmem_cur_max-1)   // in other words, idx is last one in the list
    {
       while (idx>0)             // while there are places
          if (texmem_loadid[idx]==TEXMEM_LOADID_NULL)
-            idx--;              // this was null, keep going down
+         {
+            if (idx == TEXMEM_EXT_FIRST_IDX + 1)
+               idx = WATERIN_IDX - 1;
+            else
+               idx--;              // this was null, keep going down
+         }
          else
             break;              // oops, real data, better stop
       texmem_cur_max=idx+1;     // cur max is one past the one with data
@@ -343,13 +350,13 @@ static BOOL texmem_free_idx(int idx)
       Warning(("free_idx: called with a bad idx %d loadid %d\n",idx,texmem_loadid[idx]));
       return FALSE;
    }
-   return texmem_core_free_idx(idx);
+   return texmem_core_free_idx(idx, 0);
 }
 
 ///////////////////////////////////////
 // resname callbacks
 
-#define MAX_POWER 11
+#define MAX_POWER 13
 static BOOL _texmem_check_size(int w, int h)
 {
    BOOL rv=TRUE;
@@ -435,6 +442,7 @@ BOOL texmem_interpret_new_res(IRes *pRes,
    grs_bitmap *pbm_new;
    IResHack *pResHack;
    int use_align=texmem_cur_align;
+   char res_path[32];
 
 #ifdef DEEPC
    // In Deep Cover we get the palette from the image itself.
@@ -502,7 +510,10 @@ BOOL texmem_interpret_new_res(IRes *pRes,
    // If this is an animation frame, and anim_txt isn't ready for it,
    // then ignore it. This will return TRUE iff the name is a valid
    // animation frame name *and* anim_txt isn't prepared to deal with it.
-   if (ectsAnimTxtIgnore(IRes_GetName(pRes))) {
+   fam_get_res_path(pRes, res_path);
+   if (res_path[0])
+      strcat(res_path, "\\");
+   if (ectsAnimTxtIgnore(IRes_GetName(pRes), res_path[0] ? res_path : NULL)) {
       SafeRelease(pResHack);
       return FALSE;
    }
@@ -787,7 +798,7 @@ int texmemLoadSingleAtIdx(char *dirname, char *fname, int idx)
       Warning(("Hey! loadsingle at idx called with bad idx\n"));
       return TEXMEM_NO_HND;
    }
-   texmem_core_free_idx(idx);  // dont want to be warned if its unused
+   texmem_core_free_idx(idx, TEXMEM_FREE_NO_SHRINK);  // dont want to be warned if its unused
    if (idx == texmem_cur_max)
       texmem_cur_max++;
    texmem_callback_idx=idx;
@@ -795,7 +806,7 @@ int texmemLoadSingleAtIdx(char *dirname, char *fname, int idx)
 
    // Actually load the name image, then mipmap it...
    pResMan = AppGetObj(IResMan);
-   pRes = IResMan_Bind(pResMan, fname, RESTYPE_IMAGE, NULL, dirname, 0);
+   pRes = IResMan_Bind(pResMan, fname, RESTYPE_IMAGE, NULL, dirname, RES_BIND_IMAGE_FLAGS);
    SafeRelease(pResMan);
 
    if (!pRes) {
@@ -838,7 +849,7 @@ IRes *texmemLoadSingleRes(char *dirname, char *fname, BOOL doMipmap)
    IResMan *pResMan = AppGetObj(IResMan);
    IRes *pRes;
 
-   pRes = IResMan_Bind(pResMan, fname, RESTYPE_IMAGE, NULL, dirname, 0);
+   pRes = IResMan_Bind(pResMan, fname, RESTYPE_IMAGE, NULL, dirname, RES_BIND_IMAGE_FLAGS);
    SafeRelease(pResMan);
    if (pRes)
       if (doMipmap)
@@ -882,7 +893,7 @@ int texmemLoadDir(char *dirname)
 //  ie. returns the "count" of successful frees
 int texmemFreeSingle(int handle)
 {
-   return texmem_core_free_idx(handle)?1:0;
+   return texmem_core_free_idx(handle, 0)?1:0;
 }
 
 // use a texture name to free a given texture

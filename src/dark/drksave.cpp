@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drksave.cpp,v 1.16 2000/03/21 15:57:09 adurant Exp $
 #include <appagg.h>
 #include <drksave.h>
@@ -42,6 +41,7 @@
 #include <stdio.h>
 
 #include <command.h>
+#include <datapath.h>
 #include <config.h>
 
 #include <mprintf.h>
@@ -50,6 +50,7 @@
 
 // must be last header
 #include <dbmem.h>
+#include <lg_file.h>
 
 
 //----------------------------------------
@@ -143,7 +144,7 @@ HRESULT DarkSaveGame(const char* descstr, ITagFile* file)
 
    const char* fname = CHECKPOINT_SAVE; 
    // pack the checkpoint into the saved game
-   FILE* cp = fopen(fname,"rb"); 
+   LGFILE* cp = lg_fopen(fname,"rb"); 
    if (!cp)
       return kDarkSaveCheckpoint;
 
@@ -153,14 +154,14 @@ HRESULT DarkSaveGame(const char* descstr, ITagFile* file)
    
    // copy the file in 4k blocks 
    char buf[4096]; 
-   while (!feof(cp))
+   while (!feof(cp->fp))
    {
-      int len = fread(buf,1,sizeof(buf),cp); 
+      int len = lg_fread(buf,1,sizeof(buf),cp); 
       if (file->Write(buf,len) != len)
          return kDarkSaveCheckpoint; 
    }
 
-   fclose(cp); 
+   lg_fclose(cp); 
 
    if (FAILED(file->CloseBlock()))
       return kDarkSaveBlockClose; 
@@ -177,7 +178,7 @@ HRESULT DarkSaveGame(const char* descstr, ITagFile* file)
 
 long DarkSaveGameFile(const char* desc, const char* fname)
 {
-   ITagFile* file = TagFileOpen(fname,kTagOpenWrite); 
+   ITagFile* file = TagFileOpen(FMPathPrependTemp(fname),kTagOpenWrite); 
    long retval = DarkSaveGame(desc,file); 
    SafeRelease(file); 
    return retval; 
@@ -305,7 +306,7 @@ HRESULT DarkLoadGame(ITagFile* file)
    if (SUCCEEDED(file->OpenBlock(&checkpoint_tag,&v)))
    {
       // unpack the checkpoint from the saved game
-      FILE* cp = fopen(CHECKPOINT_SAVE,"wb"); 
+      LGFILE* cp = lg_fopen(CHECKPOINT_SAVE,"wb"); 
       if (!cp)
          return kDarkSaveBlockOpen; 
    
@@ -315,11 +316,14 @@ HRESULT DarkLoadGame(ITagFile* file)
       {
          int len = file->Read(buf,sizeof(buf));
 
-         if (fwrite(buf,1,len,cp) != len)
+         if (lg_fwrite(buf,1,len,cp) != len)
+         {
+            lg_fclose(cp); 
             return kDarkSaveCheckpoint; 
+         }
       }
 
-      fclose(cp); 
+      lg_fclose(cp); 
 
       if (FAILED(file->CloseBlock()))
          return kDarkSaveBlockClose; 
@@ -416,7 +420,7 @@ BOOL DarkGameIsMidMission(ITagFile* file)
 
 void DarkQuickSaveGame(void)
 {
-   mkdir(SAVE_PATH); 
+   FMMakeDir(SAVE_PATH, NULL); 
    cStr desc = FetchUIString("gamesav","quick_save"); 
    BOOL success = SUCCEEDED(DarkSaveGameFile(desc,SAVE_PATH"\\"QUICK_SAVE)); 
    char* msg = (success) ? "success" : "failure"; 
@@ -425,7 +429,7 @@ void DarkQuickSaveGame(void)
 
 void DarkQuickLoadGame(void)
 {
-   long success =   DarkQuickLoadGameFile(SAVE_PATH"\\"QUICK_SAVE); 
+   long success =   DarkQuickLoadGameFile(FMPathPrependTemp(SAVE_PATH"\\"QUICK_SAVE)); 
 
    switch(success)
    {
@@ -477,14 +481,14 @@ long DarkQuickLoadGameFile(const char* filename)
 
 EXTERN void DarkSaveCheckpoint(void)
 {
-   ITagFile* file = TagFileOpen(CHECKPOINT_SAVE,kTagOpenWrite); 
+   ITagFile* file = TagFileOpen(FMPathPrependTemp(CHECKPOINT_SAVE),kTagOpenWrite); 
    long retval = DarkSaveGameInternal("Mission Start",file); 
    SafeRelease(file); 
 }
 
 EXTERN void DarkRestoreCheckpoint(void)
 {
-   ITagFile* file = BufTagFileOpen(CHECKPOINT_SAVE,kTagOpenRead); 
+   ITagFile* file = BufTagFileOpen(FMPathPrependTemp(CHECKPOINT_SAVE),kTagOpenRead); 
    long retval = DarkLoadGameInternal(file); 
    SafeRelease(file); 
 }
@@ -498,7 +502,7 @@ EXTERN void DarkRestoreCheckpoint(void)
 static void edit_load_game(char* arg)
 {
    // strip trailing whitespace
-   for (char* s = arg+strlen(arg)-1; s >= arg && isspace(*s); s--)
+   for (char* s = arg+strlen(arg)-1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0';
 
    DarkLoadGameFile(arg); 
@@ -507,7 +511,7 @@ static void edit_load_game(char* arg)
 static void edit_save_game(char* arg)
 {
    // strip trailing whitespace
-   for (char* s = arg+strlen(arg)-1; s >= arg && isspace(*s); s--)
+   for (char* s = arg+strlen(arg)-1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0';
 
    DarkSaveGameFile("From Editor",arg); 

@@ -17,13 +17,7 @@
 cResourceTypeData* cResMan::GetResourceTypeData(IRes* pRes)
 {
 	IResControl* pResControl;
-	if (FAILED(pRes->QueryInterface(IID_IResControl, (void**)&pResControl)))
-	{
-#line 46
-	CriticalMsg("Resource without an IResControl!");
-	return NULL;
-	}
-	else
+	if (SUCCEEDED(pRes->QueryInterface(IID_IResControl, (void**)&pResControl)))
 	{
 	ulong manData = pResControl->GetManData();
 	pResControl->Release();
@@ -35,6 +29,12 @@ cResourceTypeData* cResMan::GetResourceTypeData(IRes* pRes)
 	}
 
 	return (cResourceTypeData*)manData;
+	}
+	else
+	{
+#line 46
+	CriticalMsg("Resource without an IResControl!");
+	return NULL;
 	}
 }
 
@@ -173,7 +173,7 @@ void cResMan::MungePaths(const char* pPathName, const char* pExpRelPath, char** 
 				++nExpLen;
 			}
 
-			*ppRelPath = static_cast<char*>(Malloc(nExpLen + nImpLen + 1));
+			*ppRelPath = new char[nExpLen + nImpLen + 1];
 			strcpy(*ppRelPath, pExpRelPath);
 
 			if (needSlash)
@@ -201,7 +201,7 @@ void cResMan::RestorePath(char* pPath, char* pName, char OldSlash, int bCombined
 	*(pName - 1) = OldSlash;
 
 	if (bCombinedPaths)
-	Free(pPath);
+	delete [] pPath;
 }
 
 ///////////////////////////////////////
@@ -340,7 +340,7 @@ void cResMan::FreeData(cResourceTypeData* pData, BOOL bTestUser)
 				if (pathName)
 				{
 #line 439
-					Free(pathName);
+					operator delete(pathName);
 				}
 			}
 #endif

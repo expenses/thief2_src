@@ -27,7 +27,7 @@
 #include <ged_csg.h>
 #include <brtypes.h>
 
-#define MAX_CSG_BRUSHES   7068
+#define MAX_CSG_BRUSHES   16384
 EXTERN struct _editBrush *csg_brush[MAX_CSG_BRUSHES];
 EXTERN int csg_num_brushes;
 

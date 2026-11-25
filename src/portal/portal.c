@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //  $Header: r:/t2repos/thief2/src/portal/portal.c,v 1.140 2000/02/24 23:41:41 mahk Exp $
 //
 //  PORTAL
@@ -91,6 +90,7 @@ r3s_texture (*portal_get_texture)(int d) = make_texture_map;
 ulong portal_fog_color[3];
 float portal_fog_dist = 0;
 BOOL portal_fog_on = TRUE;
+BOOL portal_fog_config_on = TRUE;
 ulong fog_r3_color;
 float fog_dist_modifier = .05;
 extern mxs_vector portal_sunlight;
@@ -1046,6 +1046,51 @@ void portal_validate_lists(char *where)
 
 bool skip_clip;
 
+static int point_pool_overflow;
+static int point_pool_max_overflow;
+static int point_pool_used;
+static int point_pool_live;
+static int point_pool_size;
+static r3s_point *point_pool;
+static r3s_point *point_pool_end;
+
+static r3s_point *alloc_cell_points(int n)
+{
+   r3s_point *p;
+   int used = point_pool_used + n;
+   if (used <= point_pool_size) {
+      p = point_pool + point_pool_used;
+      point_pool_live += n;
+      point_pool_used = used;
+      return p;
+   }
+   point_pool_overflow += n;
+   if (point_pool_overflow > point_pool_max_overflow)
+      point_pool_max_overflow = point_pool_overflow;
+   return Malloc(n * sizeof(r3s_point));
+}
+
+static void free_cell_points(r3s_point *p, int n)
+{
+   if (p >= point_pool && p < point_pool_end) {
+      point_pool_live -= n;
+      if (point_pool_live)
+         return;
+      if (point_pool_max_overflow) {
+         if (point_pool)
+            Free(point_pool);
+         point_pool_size += (point_pool_max_overflow + 0x100) & ~0xff;
+         point_pool = Malloc(point_pool_size * sizeof(r3s_point));
+         point_pool_end = point_pool + point_pool_size;
+         point_pool_max_overflow = 0;
+      }
+      point_pool_used = 0;
+   } else if (p) {
+      point_pool_overflow -= n;
+      Free(p);
+   }
+}
+
 bool setup_cell(PortalCell *r)
 {  PROF
    int i;
@@ -1072,10 +1117,11 @@ bool setup_cell(PortalCell *r)
    CLUT(r).clut_id = 0;
    CLUT(r).clut_id2 = 0;
    CLUT(r).next = 0;
+   CLUT(r).fog_zone = 0;
 
    r3d_ccodes_or = 0;
 
-   POINTS(r) = Malloc(r->num_vertices * sizeof(r3s_point));
+   POINTS(r) = alloc_cell_points(r->num_vertices);
    r3_transform_block(r->num_vertices, POINTS(r), r->vpool);
    NEED_CLIP(r) = skip_clip ? r3d_ccodes_or : 1;
 
@@ -1096,7 +1142,7 @@ void free_cell(PortalCell *r)
    if (CLIP_DATA(r))
       PortalClipFree(CLIP_DATA(r));
    if (POINTS(r))
-      Free(POINTS(r));
+      free_cell_points(POINTS(r), r->num_vertices);
 
    //free_render_data(r->render_data);
    r->render_data = 0;
@@ -1372,13 +1418,12 @@ void portal_traverse_scene(int cell)
 
         // avoid us getting in an infinite loop;
         // although this may result in major sorting bugs!
-      if (++count == 1024) {
+      if (++count == 20480) {
 #ifndef SHIP
          if (trav_file)
             fprintf(trav_file, "Apparent cell cycle!\n");
 #endif
-         mprintf("Apparent cell cycle in portal_traverse_scene\n");
-         mprintf(" cell %d, center %g %g %g\n", n, WR_CELL(n)->sphere_center.x, WR_CELL(n)->sphere_center.y, WR_CELL(n)->sphere_center.z);
+         mprintf("WARNING: Apparent cell cycle in portal_traverse_scene (cell %d, center %g %g %g)\n", n, WR_CELL(n)->sphere_center.x, WR_CELL(n)->sphere_center.y, WR_CELL(n)->sphere_center.z);
          r_sorted_count = r_total_count;
          break;
       }
@@ -1403,7 +1448,7 @@ void portal_traverse_scene(int cell)
 }
 
 int last_r_count;
-bool project_space=TRUE;
+BOOL project_space=TRUE;
 
 #ifdef STATS_ON
 static void zero_stats(void);
@@ -1627,7 +1672,7 @@ void (*portal_render_overlays_cback)(void);
 extern int num_water_polys;
 extern int portal_hack_blend;
 extern bool background_setup;
-extern bool punt_hardware_lighting;
+extern BOOL punt_hardware_lighting;
 extern void portal_do_blendtest(void);
 extern BOOL g_zbuffer;
 

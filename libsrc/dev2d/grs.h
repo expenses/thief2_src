@@ -43,6 +43,7 @@ typedef struct grs_mode_info {
 #define GRM_IS_NATIVE      16    /* whether the mode is native or "emulated"       */
 #define GRM_CAN_FULLSCREEN 32    /* whether the mode can be full screen            */
 #define GRM_CAN_WINDOW     64    /* whether the mode can be in a window            */
+#define GRM_IS_WIDE        128
 
 /* amazing rgb type. */
 typedef ulong grs_rgb;
@@ -65,6 +66,17 @@ typedef struct grs_bitmap {
    ushort row;       /* bytes in row of containing bitmap */
    uchar wlog;       /* log2 of w */
    uchar hlog;       /* log2 of h */
+   uchar rowlog;
+   uchar bpp;
+   uchar wlog0;
+   uchar hlog0;
+   short w0;
+   short h0;
+   uchar exflags;
+   uchar compression;
+   uchar mips;
+   uchar pad;
+   void *extra;
 } grs_bitmap;
 
 /* stencil element for non-rectangular clipping. */

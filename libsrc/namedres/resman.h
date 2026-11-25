@@ -12,7 +12,6 @@
 #include <aggmemb.h>
 #include <hashset.h>
 
-#pragma pack(4)
 
 class cResMan :
 	public cCTDelegating<IResMan>,
@@ -91,16 +90,19 @@ private:
 	void DoDumpSnapshot(FILE* fp);
 	int VerifyStorage(IStore* pStorage);
 	IRes* GetResource(const char* pName, const char* pTypeName, IStore* pStore);
-	void MungePaths(const char* pPathName, const char* pExpRelPath, char** ppRelPath, char** ppName, char* pOldSlash, int* pbCombinedPaths);
-	void RestorePath(char* pPath, char* pName, char OldSlash, int bCombinedPaths);
+	static void MungePaths(const char* pPathName, const char* pExpRelPath, char** ppRelPath, char** ppName, char* pOldSlash, int* pbCombinedPaths);
+	static void RestorePath(char* pPath, char* pName, char OldSlash, int bCombinedPaths);
 	cResourceTypeData* FindResourceTypeData(IStore* pStore, const char* pResName, IResType* pType);
 	IRes* CreateResource(IStore* pStorage, const char* pName, const char* pExt, const char* pTypeName, uint);
-	IResType* GetResType(const char* pTypeName);
+	IResType* STDMETHODCALLTYPE GetResType(const char* pTypeName);
 
 private:
 	cResManARQ m_ResManARQ;
 	IStoreManager* m_pStoreMan;
 	ISearchPath* m_pDefSearchPath;
+	friend void ResRefreshStorage();
+	friend IStoreStream* ResFindStoreStream(const char* pName, const char* pRelPath, IStore** ppStore);
+	friend IStoreStream* ResOpenConfigFile(const char* pPathName, const char* pRelPath, IStore** ppStore);
 	ISearchPath* m_pGlobalContext;
 	ISearchPath* m_pDefVariants;
 	cInstalledResTypeHash m_ResTypeHash;
@@ -112,7 +114,9 @@ private:
 	IResType** m_ppResFactories;
 	int m_nResFactories;
 	int m_FreshStamp;
+#ifndef SHIP
 	cResStats* m_pResStats;
+#endif
 	int m_fDidInit;
 	cDefResMem m_DefResMem;
 };

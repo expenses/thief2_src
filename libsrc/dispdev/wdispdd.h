@@ -75,11 +75,13 @@ private:
     virtual cWinDisplayModeOperations * DoSetMode(const sGrModeInfo &, int flags, sGrModeCap * pReturnModeInfo);
     virtual BOOL DoGetDirectDraw(IDirectDraw4 **);
     virtual BOOL DoGetBitmapSurface(sGrBitmap *, IDirectDrawSurface4 **);
+    virtual BOOL DoIsPersistentMode();
 
     ///////////////////////////////////
 
     friend class cDDModeOpsBase;
     cDDModeOpsBase * m_pModeOps;
+    BOOL             m_bPersistentMode;
 
     ///////////////////////////////////
 
@@ -94,7 +96,8 @@ private:
 
     enum eFlags
     {
-        kAlwaysEmulate  = 0x01
+        kAlwaysEmulate  = 0x01,
+        kDesktopRes     = 0x02
     };
 
     int                 m_Flags;

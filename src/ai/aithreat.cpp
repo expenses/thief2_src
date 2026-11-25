@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aithreat.cpp,v 1.4 1999/11/22 17:49:12 henrys Exp $
 //
@@ -111,6 +110,16 @@ static sFieldDesc _g_AIThreatResponseFieldDesc[] =
    THREAT_RESPONSE_FIELDS(4),
    THREAT_RESPONSE_FIELDS(5),
    THREAT_RESPONSE_FIELDS(6),
+   THREAT_RESPONSE_FIELDS(7),
+   THREAT_RESPONSE_FIELDS(8),
+   THREAT_RESPONSE_FIELDS(9),
+   THREAT_RESPONSE_FIELDS(10),
+   THREAT_RESPONSE_FIELDS(11),
+   THREAT_RESPONSE_FIELDS(12),
+   THREAT_RESPONSE_FIELDS(13),
+   THREAT_RESPONSE_FIELDS(14),
+   THREAT_RESPONSE_FIELDS(15),
+   THREAT_RESPONSE_FIELDS(16),
 };
 
 static sStructDesc _g_AIThreatResponseStructDesc = StructDescBuild(sAIThreatResponse, kStructFlagNone, _g_AIThreatResponseFieldDesc);

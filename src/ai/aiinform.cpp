@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiinform.cpp,v 1.10 2000/02/11 18:27:47 bfarquha Exp $
 //
@@ -128,6 +127,16 @@ static sFieldDesc _g_AIInformResponseFieldDesc[] =
    INFORM_RESPONSE_FIELDS(4),
    INFORM_RESPONSE_FIELDS(5),
    INFORM_RESPONSE_FIELDS(6),
+   INFORM_RESPONSE_FIELDS(7),
+   INFORM_RESPONSE_FIELDS(8),
+   INFORM_RESPONSE_FIELDS(9),
+   INFORM_RESPONSE_FIELDS(10),
+   INFORM_RESPONSE_FIELDS(11),
+   INFORM_RESPONSE_FIELDS(12),
+   INFORM_RESPONSE_FIELDS(13),
+   INFORM_RESPONSE_FIELDS(14),
+   INFORM_RESPONSE_FIELDS(15),
+   INFORM_RESPONSE_FIELDS(16),
 #endif
 };
 
@@ -516,7 +525,7 @@ STDMETHODIMP_(void) cAIInform::OnActionProgress(IAIAction * pAction)
                   if (pAwareness && pAwareness->ValidLastPos())
                      m_Current.loc = pAwareness->lastPos;
 
-                  if (m_pAI->AccessSoundEnactor()->RequestConcept(m_Current.concept))
+                  if (SUCCEEDED(m_pAI->AccessSoundEnactor()->RequestConcept(m_Current.concept)))
                   {
                      m_RetellDelay.Reset();
                      break;

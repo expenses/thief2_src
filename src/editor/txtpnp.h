@@ -9,6 +9,8 @@
 #ifndef __TXTPNP_H
 #define __TXTPNP_H
 
+#include <editbrs.h>
+
 // returns TXTPNP_NO_PAL_UP if no palette up, else returns currently chosen texture
 EXTERN int txtPnP_pal_query(void);
 #define TXTPNP_NO_PAL_UP (-2)
@@ -20,5 +22,9 @@ EXTERN BOOL txtPnP_allow_attach;
 EXTERN BOOL txtPnP_attached(void);
 EXTERN void txtPnP_detach(void);
 EXTERN void txtPnP_attach(void);
+
+EXTERN editBrush *txtPnP_br;
+EXTERN int txtPnP_texture;
+EXTERN char *txtPnP_get_brush_face_name(editBrush *br, int face);
 
 #endif  // __TXTPNP_H

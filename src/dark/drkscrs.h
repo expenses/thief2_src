@@ -49,6 +49,14 @@ DECLARE_SCRIPT_SERVICE(DarkGame,0x1b4)
    STDMETHOD_(BOOL, GetAutomapLocationVisited)(int page, int location) PURE;
 
    STDMETHOD(SetAutomapLocationVisited)(int page, int location) PURE;
+
+   STDMETHOD_(void, SetNextMission)(int mission) PURE;
+
+   STDMETHOD_(int, GetCurrentMission)() PURE;
+
+   STDMETHOD_(BOOL, RespawnPlayer)() PURE;
+
+   STDMETHOD(FadeIn)(float time) PURE;
 };
 
 

@@ -1,4 +1,5 @@
-#line 33
+#line 32
+#include <windows.h>
 #include <storbase.h>
 #include <hshsttem.h>
 
@@ -10,7 +11,7 @@ cNamedStorage::cNamedStorage(IStore* pStore)
 		m_pStore = pStore;
 		pStore->AddRef();
 		const char* pName = pStore->GetName();
-		m_pName = (char*)Malloc(strlen(pName) + 1);
+		m_pName = (char*)operator new(strlen(pName) + 1);
 		strcpy(m_pName, pName);
 	}
 }
@@ -21,7 +22,7 @@ cNamedStorage::cNamedStorage(const char* pName)
 #line 45
 	AssertMsg(pName, "cNamedStorage being created without a name!");
 
-	m_pName = static_cast<char*>(Malloc(strlen(pName) + 1));
+	m_pName = static_cast<char*>(operator new(strlen(pName) + 1));
 	strcpy(m_pName, pName);
 }
 
@@ -35,7 +36,7 @@ cNamedStorage::~cNamedStorage()
 
 	if (m_pName)
 	{
-		Free(m_pName);
+		operator delete(m_pName);
 		m_pName = NULL;
 	}
 }
@@ -55,7 +56,7 @@ cNamedStream::cNamedStream(const char* pName, BOOL bExists)
 {
 
 	AssertMsg(pName, "cNamedStream being created without a name!");
-	m_pName = static_cast<char*>(Malloc(strlen(pName) + 1));
+	m_pName = static_cast<char*>(operator new(strlen(pName) + 1));
 	strcpy(m_pName, pName);
 }
 
@@ -63,7 +64,7 @@ cNamedStream::~cNamedStream()
 {
 	if (m_pName)
 	{
-		Free(m_pName);
+		operator delete(m_pName);
 		m_pName = NULL;
 	}
 }
@@ -84,9 +85,7 @@ tHashSetKey cStreamHashByName::GetKey(tHashSetNode p) const
 
 cStorageBase::cStorageBase()
 	: m_ulRefs(1)
-#ifdef NEWDARK
 	, m_pNDBase(NULL)
-#endif
 {
 }
 
@@ -96,29 +95,32 @@ cStorageBase::~cStorageBase()
 
 STDMETHODIMP cStorageBase::QueryInterface(REFIID id, void **ppI)
 {
-	*ppI = NULL;
 	if (IsEqualOrIUnknownGUID(id, IID_IStore))
 	{
 		*ppI = (IStore*)this;
 		AddRef();
+		return S_OK;
 	}
-	else if (IsEqualGUID(id, IID_IStoreHierarchy))
+	if (!IsEqualGUID(id, IID_IStoreHierarchy))
 	{
-		*ppI = (IStoreHierarchy*)this;
-		AddRef();
+		*ppI = NULL;
+		return E_NOINTERFACE;
 	}
-	return *ppI ? S_OK : E_NOINTERFACE;
+	*ppI = (IStoreHierarchy*)this;
+	AddRef();
+	return S_OK;
 }
 
 STDMETHODIMP_(ULONG) cStorageBase::AddRef()
 {
-	return ++m_ulRefs;
+	return InterlockedIncrement(&m_ulRefs);
 }
 
 STDMETHODIMP_(ULONG) cStorageBase::Release()
 {
-	if (--m_ulRefs)
-		return m_ulRefs;
+	LONG refs = InterlockedDecrement(&m_ulRefs);
+	if (refs)
+		return refs;
 
 	delete this;
 	return 0;

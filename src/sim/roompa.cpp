@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/roompa.cpp,v 1.10 1998/08/26 14:10:14 CCAROLLO Exp $
 //
@@ -59,8 +58,10 @@ void cRoomPropAgent::PropagateBF(const mxs_vector &startPos, const cRoom *startR
 {
    AUTO_TIMER(AI_BF_Prop);
 
+#ifndef SHIP
    static BOOL spew = config_is_defined("RoomPropSpew");
    static BOOL spew_stats = config_is_defined("RoomPropSpewStats");
+#endif
 
    const cRoom  *pHeadRoom;
    int active_room_head;

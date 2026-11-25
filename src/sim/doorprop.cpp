@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/doorprop.cpp,v 1.23 2000/03/07 19:54:00 toml Exp $
 //
@@ -151,6 +150,7 @@ static sFieldDesc RotDoorPropFields[] =
    { "Hard Limits?",   kFieldTypeBool,   FieldLocation(sRotDoorProp, hard_limits),     kFieldFlagNone },
    { "Blocks Vision?", kFieldTypeBool,   FieldLocation(sRotDoorProp, vision_blocking), kFieldFlagNone },
    { "Blocks Sound %", kFieldTypeFloat,  FieldLocation(sRotDoorProp, sound_blocking),  kFieldFlagNone },
+   { "Lean Blocks Sound %", kFieldTypeFloat, FieldLocation(sRotDoorProp, lean_sound_blocking), kFieldFlagNone },
    { "Push Mass",      kFieldTypeFloat,  FieldLocation(sRotDoorProp, push_mass),       kFieldFlagNone },
    { "Clockwise?",     kFieldTypeBool,   FieldLocation(sRotDoorProp, clockwise),       kFieldFlagNone },
    { "Room ID #1",     kFieldTypeInt,    FieldLocation(sRotDoorProp, room1),           kFieldFlagNotEdit },
@@ -428,6 +428,7 @@ static sFieldDesc TransDoorPropFields[] =
    { "Hard Limits?",     kFieldTypeBool,   FieldLocation(sTransDoorProp, hard_limits),   kFieldFlagNone },
    { "Blocks Vision?",   kFieldTypeBool,   FieldLocation(sRotDoorProp, vision_blocking), kFieldFlagNone },
    { "Blocks Sound %",   kFieldTypeFloat,  FieldLocation(sRotDoorProp, sound_blocking),  kFieldFlagNone },
+   { "Lean Blocks Sound %", kFieldTypeFloat, FieldLocation(sTransDoorProp, lean_sound_blocking), kFieldFlagNone },
    { "Push Mass",        kFieldTypeFloat,  FieldLocation(sRotDoorProp, push_mass),       kFieldFlagNone },
    { "Room ID #1",       kFieldTypeInt,    FieldLocation(sRotDoorProp, room1),           kFieldFlagNotEdit },
    { "Room ID #2",       kFieldTypeInt,    FieldLocation(sRotDoorProp, room2),           kFieldFlagNotEdit },

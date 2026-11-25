@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiscrpt.cpp,v 1.17 2000/02/19 12:45:34 toml Exp $
 //
@@ -33,6 +32,8 @@
 
 #include <objscrt.h>
 #include <aiscrpt.h>
+#include <aistnapi.h>
+#include <aifreeze.h>
 
 #include <netmsg.h>
 #include <memall.h>
@@ -345,6 +346,50 @@ public:
    {
       AutoAppIPtr(AIManager);
       return pAIManager->StartConversation(conversationID);
+   }
+
+   STDMETHOD_(BOOL, Stun)(object who, const string ref startTags, const string ref loopTags, float sec)
+   {
+      return DoAISetStun(who, (char*)(const char*)startTags, (char*)(const char*)loopTags, sec*1000);
+   }
+
+   STDMETHOD_(BOOL, IsStunned)(object who)
+   {
+      return AIGetStun(who);
+   }
+
+   STDMETHOD_(BOOL, UnStun)(object who)
+   {
+      return DoAIUnsetStun(who);
+   }
+
+   STDMETHOD_(BOOL, Freeze)(object who, float sec)
+   {
+      AutoAppIPtr(AIManager);
+      IAI* pAI;
+
+      if ((pAI = pAIManager->GetAI(who)) == NULL)
+         return FALSE;
+      pAI->Freeze(sec*1000);
+      pAI->Release();
+      return TRUE;
+   }
+
+   STDMETHOD_(BOOL, IsFrozen)(object who)
+   {
+      return AIIsFrozen(who);
+   }
+
+   STDMETHOD_(BOOL, UnFreeze)(object who)
+   {
+      AutoAppIPtr(AIManager);
+      IAI* pAI;
+
+      if ((pAI = pAIManager->GetAI(who)) == NULL)
+         return FALSE;
+      pAI->Unfreeze();
+      pAI->Release();
+      return TRUE;
    }
 
 };

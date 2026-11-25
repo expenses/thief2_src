@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiprcore.cpp,v 1.42 2000/03/06 17:19:20 toml Exp $
 //
@@ -29,6 +28,7 @@
 #include <aiapiiai.h>
 #include <aiprconv.h>
 #include <aiprops.h>
+#include <config.h>
 #include <aiprcore.h>
 #include <aiprdev.h>
 #include <aiteams.h>
@@ -334,6 +334,12 @@ public:
 // Structure descriptor
 //
 
+static char *g_AIEfficiencyFlagNames[] =
+{
+   "Allow Effic. While Visible",
+   "Allow Effic. While Combat",
+};
+
 static sFieldDesc g_AIEfficiencyFieldDesc [] =
 {
    { "Enabled",  kFieldTypeBool, FieldLocation(sAIEfficiency, fEnabled) },
@@ -351,6 +357,7 @@ static sFieldDesc g_AIEfficiencyFieldDesc [] =
 
    { "Effic. Exit dist sq.",        kFieldTypeFloat, FieldLocation(sAIEfficiency, distExitEffSq)         },
    { "Effic. Exit Z",               kFieldTypeFloat, FieldLocation(sAIEfficiency, zExitEff)              },
+   { "Flags",                       kFieldTypeBits,  FieldLocation(sAIEfficiency, flags), kFieldFlagUnsigned, 0, 2, 2, g_AIEfficiencyFlagNames },
 };
 
 static sStructDesc _g_AIEfficiencyStructDesc = StructDescBuild(sAIEfficiency, kStructFlagNone, g_AIEfficiencyFieldDesc);
@@ -1103,7 +1110,7 @@ static sFieldDesc _g_AIVisCtrlFieldDesc[] =
    { "Crouch mod",      kFieldTypeInt,    FieldLocation(sAIVisibilityControl, crouchMod)                                                       },
    { "Wall mod",        kFieldTypeInt,    FieldLocation(sAIVisibilityControl, wallMod)                                                      },
 
-   { "Corner lean mod", kFieldTypeInt,    FieldLocation(sAIVisibilityControl, cornerLeanMod)                                                      },
+   { "Corner lean mod", kFieldTypeFloat,   FieldLocation(sAIVisibilityControl, cornerLeanMod)                                                      },
 
 };
 
@@ -1279,15 +1286,17 @@ void AIInitCoreProps()
    StructDescRegister(&_g_AIAlertSenseMultsStructDesc);
    StructDescRegister(&_g_AIAwareDelayStructDesc);
 
-   g_pAINoGrowOBBProperty = CreateBoolProperty(&_g_AINoGrowOBBPropertyDesc, kPropertyImplSparse);
+   int listImpl = config_is_nonzero("ai_listprops_usehash") ? kPropertyImplHash : kPropertyImplSparse;
+
+   g_pAINoGrowOBBProperty = CreateBoolProperty(&_g_AINoGrowOBBPropertyDesc, listImpl);
    
-   g_pAITrackMediumProperty = CreateBoolProperty(&_g_AITrackMediumPropertyDesc, kPropertyImplSparse);
+   g_pAITrackMediumProperty = CreateBoolProperty(&_g_AITrackMediumPropertyDesc, listImpl);
 
-   g_pAICanPathWaterProperty = CreateBoolProperty(&_g_AICanPathWaterProperty, kPropertyImplSparse);
+   g_pAICanPathWaterProperty = CreateBoolProperty(&_g_AICanPathWaterProperty, listImpl);
 
-   g_pAINeedsLargeDoors = CreateBoolProperty(&_g_AINeedsBigDoors, kPropertyImplSparse);
+   g_pAINeedsLargeDoors = CreateBoolProperty(&_g_AINeedsBigDoors, listImpl);
 
-   g_pAIIgnoresCamerasProperty = CreateBoolProperty(&_g_AIIgnoresCamerasProperty, kPropertyImplSparse);
+   g_pAIIgnoresCamerasProperty = CreateBoolProperty(&_g_AIIgnoresCamerasProperty, listImpl);
 
 
    g_pAIProperty           = new cAIProperty;
@@ -1305,15 +1314,15 @@ void AIInitCoreProps()
    g_pAISoundTagsProperty  = CreateStringProperty(&_g_AISoundTagsPropertyDesc, kPropertyImplDense);
    g_pAIMotionTagsProperty = CreateStringProperty(&_g_AIMotionTagsPropertyDesc, kPropertyImplDense);
 
-   g_pAINoGhostProperty = CreateBoolProperty(&_g_AINoGhostPropertyDesc, kPropertyImplSparse);
-   g_pAINoHandoffProperty = CreateBoolProperty(&_g_AINoHandoffPropertyDesc, kPropertyImplSparse);
-   g_pAIIsProxyProperty = CreateBoolProperty(&_g_AIIsProxyPropertyDesc, kPropertyImplSparse);
+   g_pAINoGhostProperty = CreateBoolProperty(&_g_AINoGhostPropertyDesc, listImpl);
+   g_pAINoHandoffProperty = CreateBoolProperty(&_g_AINoHandoffPropertyDesc, listImpl);
+   g_pAIIsProxyProperty = CreateBoolProperty(&_g_AIIsProxyPropertyDesc, listImpl);
 
-   g_pAIForceImmediateInform = CreateBoolProperty(&_g_AIForceImmediateInform, kPropertyImplSparse);
+   g_pAIForceImmediateInform = CreateBoolProperty(&_g_AIForceImmediateInform, listImpl);
 
-   g_pAIInformSeenFrom = CreateBoolProperty(&_g_AIInformSeenFrom, kPropertyImplSparse);
+   g_pAIInformSeenFrom = CreateBoolProperty(&_g_AIInformSeenFrom, listImpl);
 
-   g_pAIIsSmallCreatureProp = CreateBoolProperty(&_g_AIIsSmallCreatureProp, kPropertyImplSparse);
+   g_pAIIsSmallCreatureProp = CreateBoolProperty(&_g_AIIsSmallCreatureProp, listImpl);
 
    g_pAIAlertnessProperty = new cAIAlertnessProperty;
    g_pAIAlertCapProperty = new cAIAlertCapProperty;

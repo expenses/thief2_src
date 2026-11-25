@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/starobj.cpp,v 1.6 2000/02/21 18:49:54 bfarquha Exp $
 
 
@@ -64,6 +63,7 @@ struct sMissionStarObj
    float fDensity;
    float fStarOffset; // 0 says no offset - stars fog like sky, higher numbers make stars "closer" than sky, in feet.
    float fMaxIntensity;
+   float fGlobalTransparency;
 };
 
 
@@ -100,6 +100,8 @@ static sFieldDesc g_aStarObjField[] =
      FieldLocation(sMissionStarObj, fStarOffset), },
    { "Max Sky Intensity", kFieldTypeFloat,
      FieldLocation(sMissionStarObj, fMaxIntensity), },
+   { "Global Transparency", kFieldTypeFloat,
+     FieldLocation(sMissionStarObj, fGlobalTransparency), },
 };
 
 static sStructDesc g_SDesc = StructDescBuild(sMissionStarObj, kStructFlagNone,
@@ -283,7 +285,7 @@ void cStars::Init()
    ushort nAlpha;
    for (int u = 0; u < 16; ++u)
       for (int v = 0; v < 16; ++v) {
-         fDist = sqrt((8 - u) * (8 - u) + (8 - v) * (8 - v));
+         fDist = sqrt((double)((8 - u) * (8 - u) + (8 - v) * (8 - v)));
          fAlpha = 8.0 - (ushort) ((fDist > 8.0)? 8.0 : fDist);  // clamp
          nAlpha = fAlpha * 15.0 / 8.0;
          g_aBitmapBits[u + 16 * v] = 0xfff | (nAlpha << 12);

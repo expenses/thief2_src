@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phmod.cpp,v 1.154 2000/03/20 09:45:23 adurant Exp $
 //
@@ -662,9 +661,10 @@ cPhysModel::cPhysModel(PhysReadWrite func) :
 
 void cPhysModel::UpdateDiskInfo()
 {
+   BOOL bPathable;
    bDiskCheck = TRUE;
    // If this is an AI, or a pathable object, then set "disk" bit
-   if (g_pObjPathableProperty->IsRelevant(m_objID) ||
+   if ((g_pObjPathableProperty->Get(m_objID, &bPathable) && bPathable) ||
        g_pAIProperty->IsRelevant(m_objID))
       m_flags |= kPMF_DiskCheck;
 }
@@ -1929,8 +1929,6 @@ void cPhysModel::UpdateTargetLocation(mxs_real dt)
 
             mx_subeq_vec(&targ, &m_pos.m_targetposition.loc.vec);
 
-            mprintf("targ: %g %g %g\n", targ.x, targ.y, targ.z);
-
             Assert_(fabs(targ.x) < 5.0);
 
          }
@@ -2143,7 +2141,7 @@ void cPhysModel::UpdateTargetLocation(tPhysSubModId i, mxs_real dt)
             return;
          }
 
-         mx_scale_vec(&submod_offset, &kGravityDir, (mxs_real)(i) * (pRopeProp->length / 8.0));
+         mx_scale_vec(&submod_offset, &kGravityDir, (mxs_real)(i) * ((g_bForceCorrectRopeLengths || pRopeProp->calc_correct_len) ? pRopeProp->length / 7.0 : pRopeProp->length / 8.0));
 
          if (i > 0)
          {
@@ -2348,11 +2346,13 @@ void cPhysModel::UpdateSpringMechanics(tPhysSubModId i, mxs_real dt)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+extern float g_fSwimChestOffset;
+
 void cPhysModel::UpdateMedium()
 {
    if (IsPlayer())
    {
-      int submod_media_trans[3] = {PLAYER_FOOT, PLAYER_BODY, PLAYER_HEAD};
+      int submod_media_trans[3] = {PLAYER_FOOT, (g_fSwimChestOffset > 0.0) ? PLAYER_HEAD : PLAYER_BODY, PLAYER_HEAD};
       int new_portal_medium[3];
       int new_portal_cell[3];
       eMediaState new_medium;
@@ -2367,7 +2367,9 @@ void cPhysModel::UpdateMedium()
                                       &GetLocation(submod_media_trans[i]));
 
          // @HACK: offset the player eyes by eye amount
-         if (submod_media_trans[i] == PLAYER_HEAD)
+         if ((i == 1) && (submod_media_trans[1] == PLAYER_HEAD))
+            new_loc.vec.z -= g_fSwimChestOffset;
+         else if (submod_media_trans[i] == PLAYER_HEAD)
             new_loc.vec.z += 0.8;
 
          if (CellFromLoc(&new_loc) != CELL_INVALID)

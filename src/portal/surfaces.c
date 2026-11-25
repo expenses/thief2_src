@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //  $Header: r:/t2repos/thief2/src/portal/surfaces.c,v 1.15 2000/02/19 13:18:51 toml Exp $
 //
 //  PORTAL

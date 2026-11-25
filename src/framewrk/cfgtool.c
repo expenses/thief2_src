@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $header: $
 #include <lg.h>
 #include <cfgtool.h>
@@ -44,71 +43,83 @@ void set_config_cmd(char* arg)
 
 void get_config_cmd(char* arg)
 {
-   char var[64];
+   char var[64] = "";
    char buf[80];
 
-   sscanf(arg,"%s ",var);
-   mprintf("getting '%s'\n",var);
-   if (config_get_raw(var,buf,sizeof(buf)))
+   if (*arg != '\0')
    {
-      char outbuf[90];
-      sprintf(outbuf,"Value: %s",buf);
-      Status(outbuf);
+      sscanf(arg,"%s ",var);
+      mprintf("getting '%s'\n",var);
+      if (config_get_raw(var,buf,sizeof(buf)))
+      {
+         char outbuf[90];
+         sprintf(outbuf,"Value: %s",buf);
+         Status(outbuf);
+      }
+      else
+         Status("No such config var");
    }
-   else
-      Status("No such config var");
 }
 
 
 void eval_config_cmd(char* arg)
 {
-   ulong n;
-   char var[64],*val;
+   ulong n = 0;
+   char var[64] = "", *val;
    char valbuf[80] = "";
    char cmdbuf[256];
 
-   sscanf(arg,"%s %n",var,&n);
-   for (val = arg + n; *val != '\0' && isspace(*val); val++)
-      ;
-   config_get_raw(var,valbuf,sizeof(valbuf));
-   sprintf(cmdbuf,val,valbuf);
-   if (CommandExecute(cmdbuf))
-      Status("No such command.");
+   if (*arg != '\0')
+   {
+      sscanf(arg,"%s %n",var,&n);
+      for (val = arg + n; *val != '\0' && isspace((uchar)*val); val++)
+         ;
+      config_get_raw(var,valbuf,sizeof(valbuf));
+      sprintf(cmdbuf,val,valbuf);
+      if (CommandExecute(cmdbuf))
+         Status("No such command.");
+   }
 }
 
 
 void ifdef_config_cmd(char* arg)
 {
-   ulong n;
-   char var[64],*cmd;
-   sscanf(arg,"%s %n",var,&n);
-   for (cmd = arg + n; *cmd != '\0' && isspace(*cmd); cmd++)
-      ;
-   if (config_is_defined(var))
-      if (CommandExecute(cmd))
-         Status("No such command.");
+   ulong n = 0;
+   char var[64] = "",*cmd;
+   if (*arg != '\0')
+   {
+      sscanf(arg,"%s %n",var,&n);
+      for (cmd = arg + n; *cmd != '\0' && isspace((uchar)*cmd); cmd++)
+         ;
+      if (config_is_defined(var))
+         if (CommandExecute(cmd))
+            Status("No such command.");
+   }
 }
 
 
 void ifndef_config_cmd(char* arg)
 {
-   ulong n;
-   char var[64],*cmd;
-   sscanf(arg,"%s %n",var,&n);
-   for (cmd = arg + n; *cmd != '\0' && isspace(*cmd); cmd++)
-      ;
-   if (!config_is_defined(var))
-      if (CommandExecute(cmd))
-         Status("No such command.");
+   ulong n = 0;
+   char var[64] = "",*cmd;
+   if (*arg != '\0')
+   {
+      sscanf(arg,"%s %n",var,&n);
+      for (cmd = arg + n; *cmd != '\0' && isspace((uchar)*cmd); cmd++)
+         ;
+      if (!config_is_defined(var))
+         if (CommandExecute(cmd))
+            Status("No such command.");
+   }
 }
 
 
 void undef_config_cmd(char* arg)
 {
    ulong n = 0;
-   char var[64], *cmd;
+   char var[64] = "", *cmd;
    sscanf(arg,"%s %n", var, &n);
-   for (cmd = arg + n; *cmd != '\0' && isspace(*cmd); cmd++)
+   for (cmd = arg + n; *cmd != '\0' && isspace((uchar)*cmd); cmd++)
       ;
    config_unset(var);
 }
@@ -194,12 +205,12 @@ void process_config_scripts(const char* prefix)
 BOOL find_file_in_config_path(char* targ, char* filename, char* path_var)
 {
    Datapath path;
-   char pathbuf[256] = "";
+   char pathbuf[4096] = "";
    BOOL result;
    DatapathClear(&path);
    config_get_raw(path_var,pathbuf,sizeof(pathbuf));
    DatapathAdd(&path,pathbuf);
-   result = DatapathFind(&path,filename,targ,80);
+   result = DatapathFind(&path,filename,targ,256);
    DatapathFree(&path);
    return result;
 }

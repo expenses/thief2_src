@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/script/sndscrpt.cpp,v 1.36 1999/08/05 17:34:28 Justin Exp $
 //
@@ -449,6 +448,7 @@ static void SFXParamsSetup(sfx_parm *pParams, int iFlags, eSoundNetwork net)
       pParams->flag |= SFXFLG_NET_AMB;
    else if (net == kSoundNoNetworkSpatial)
       pParams->flag |= SFXFLG_NO_NET;
+   pParams->blocking_factor = 0.0;
    pParams->group = 0;
    pParams->end_callback = &ActiveSoundDoneCallback;
    pParams->loop_callback = NULL;

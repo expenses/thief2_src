@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phcore.cpp,v 1.344 2000/03/09 14:40:47 ccarollo Exp $
 //
@@ -1566,7 +1565,7 @@ static void AdjustForRestAxes(cPhysModel *pModel, mxs_vector *rot_vel, mxs_vecto
             {
                cFaceContact faceContact((cPhysSphereModel *)pModel2, ((cPhysSphereModel *)pModel2)->GetRadius(0));
 
-               if ((faceContact.GetPoly != NULL) && (faceContact.GetNormal().z > 0))
+               if ((faceContact.GetPoly() != NULL) && (faceContact.GetNormal().z > 0))
                {
                   mx_copy_vec(&ground_normal, &faceContact.GetNormal());
                   best_z = ground_normal.z;
@@ -5475,6 +5474,9 @@ static BOOL CheckStep(cPhysClsn * pClsn, ObjID coll_OBB)
          }
       }
 
+      if (pModel->IsPlayer())
+         g_pPlayerMovement->m_LastMantleTime = GetSimTime();
+
       #ifndef SHIP
       if (config_is_defined("StepSpew"))
       {
@@ -6511,6 +6513,40 @@ static void UpdatePositions()
 }
 
 ////////////////////////////////////////
+
+// Pull pVec back along the path from pFrom toward pTarget until it is inside the world
+BOOL PullLocationIntoWorld(const Location *pTarget, mxs_vector *pVec, const mxs_vector *pFrom)
+{
+   Location test, ray_start, hit;
+   mxs_vector dir;
+   float dist;
+
+   test.vec = *pVec;
+   test.hint = pTarget->hint;
+   if (test.hint == -1)
+      test.hint = pTarget->cell;
+   test.cell = CELL_INVALID;
+
+   if (ComputeCellForLocation(&test) == CELL_INVALID)
+   {
+      mx_sub_vec(&dir, &pTarget->vec, pFrom);
+      if (mx_mag2_vec(&dir) <= 0.0001)
+         return FALSE;
+      dist = (float)sqrt(mx_mag2_vec(&dir));
+      ray_start = test;
+      mx_scale_addeq_vec(&test.vec, &dir, 0.1f / dist);
+      if (ComputeCellForLocation(&test) == CELL_INVALID)
+         return FALSE;
+      if (PortalRaycast(&test, &ray_start, &hit, TRUE))
+      {
+         *pVec = test.vec;
+         return TRUE;
+      }
+      mx_interpolate_vec(pVec, &test.vec, &ray_start.vec, 0.5);
+      return TRUE;
+   }
+   return FALSE;
+}
 
 // We might want to validate the positions of all moving models, but for
 // now, we'll just validate the player and creatures

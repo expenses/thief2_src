@@ -57,6 +57,7 @@ typedef struct
    void *val;
    char *comment;
    ulong contexts;
+   ulong flags;
 } Command;
 
 EXTERN bool CommandParse(char *inp, Command **res_1, char **res_2);

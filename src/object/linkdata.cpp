@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/linkdata.cpp,v 1.5 1998/10/08 16:25:04 MROWLEY Exp $
 #include <linkdat_.h>
 #include <linkdb_.h>
@@ -52,7 +51,7 @@ STDMETHODIMP cLargeLinkDataStore::Remove(LinkID id)
    if (elem != NULL) 
    {
       Table.Remove(elem);  
-      delete elem;
+      delete [] elem;
    }
    return S_OK;
 }

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /*
  * $Source: r:/t2repos/thief2/libsrc/gadget/uitexted.c,v $
  * $Revision: 1.10 $
@@ -178,7 +177,7 @@ void textgadg_draw_call(void* data, LGadBox* box)
 int _texttool_scan_space(TextGadg *t, int dir, bool look_for_empty, int n_pos)
 {
    while ((n_pos>=0)&&(n_pos<t->last_char))
-      if (isspace(t->text.buf[n_pos]))
+      if (isspace((unsigned char)t->text.buf[n_pos]))
          if (look_for_empty) return n_pos; else n_pos+=dir;
       else
          if (look_for_empty) n_pos+=dir; else return n_pos; 

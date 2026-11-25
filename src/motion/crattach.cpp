@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/crattach.cpp,v 1.30 1999/12/09 20:15:23 BODISAFA Exp $
 
 #include <lg.h>
@@ -63,9 +62,17 @@ static sRelationDesc sAttachRelDesc =
 
 static sRelationDataDesc sAttachRelDataDesc = LINK_DATA_DESC_FLAGS(sCreatureAttachInfo, kRelationDataAutoCreate);
 
+static char *rot_mode_names[] =
+{
+   "Default",
+   "Always Use Joint Rotation",
+   "Never Use Joint Rotation",
+};
+
 static sFieldDesc sAttachRelFields[] =
 {
    { "Joint",      kFieldTypeEnum, FieldLocation(sCreatureAttachInfo, joint),     kFieldFlagNone, 0, 22, 22, g_pJointNames },
+   { "Rot Mode",   kFieldTypeEnum, FieldLocation(sCreatureAttachInfo, rot_mode),  kFieldFlagNone, 0, 3, 3, rot_mode_names },
    { "Is Weapon?", kFieldTypeBool, FieldLocation(sCreatureAttachInfo, is_weapon), kFieldFlagNotEdit },
 };
 
@@ -120,7 +127,7 @@ void TermCreatureAttachments()
 BOOL CreatureAttachWeapon(ObjID creature, ObjID weaponObj, int weaponType)
 {
    LinkID linkID;
-   sCreatureAttachInfo attachInfo;
+   sCreatureAttachInfo attachInfo = {0};
 
    if(!OBJ_IS_CONCRETE(weaponObj))
    {
@@ -311,13 +318,16 @@ void CreatureAttachmentsPhysUpdate(ObjID creature)
                PhysicsListenerLock = FALSE;
             }
          }
-      } else
+      }
+#ifndef SHIP
+      else
       {
          if(PhysObjHasPhysics(link.dest))
          {
             Warning(("CreatureAttachmentsUpdate: do not support item with physics\n"));
          }
       }
+#endif
    }
    SafeRelease(Query);
 }

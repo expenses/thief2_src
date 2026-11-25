@@ -141,6 +141,8 @@ struct sAIVisibility
    
    // Time the visibility data was last refreshed
    ulong updateTime;
+
+   int   lightingHistory;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/datascrs.cpp,v 1.7 1998/10/05 17:22:53 mahk Exp $
 
 #include <scrptapi.h>

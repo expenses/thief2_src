@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkpanl.h,v 1.8 1999/11/02 15:55:20 BODISAFA Exp $
 #pragma once  
 #ifndef __DRKPANL_H
@@ -89,6 +88,8 @@ protected:
 
    // What to do on escape, base implemenation exits. 
    virtual void OnEscapeKey(void);
+
+   virtual BOOL OnKey(uiEvent* ev) { return FALSE; }
 
    //
    // Members

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/netsim.cpp,v 1.9 1999/08/31 14:44:40 Justin Exp $
 //
 // Network controller for the simulation

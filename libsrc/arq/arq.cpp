@@ -128,7 +128,7 @@ STDMETHODIMP_(ULONG) cARQManager::cComplexAggregateControl::AddRef()
 
 EXTERN tResult LGAPI _AsyncReadQueueCreate(REFIID riid, IAsyncReadQueue **ppQueue, IUnknown *pOuter)
 {
-    if (!GetPrivateProfileInt("Threading", "Enabled", 1, "lg.ini"))
+    if (!GetPrivateProfileInt("Threading", "Enabled", 1, ".\\lg.ini"))
         return 0;
 
 #line 143

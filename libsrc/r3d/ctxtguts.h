@@ -10,6 +10,7 @@
 
 void _r3_guts_ctxt_alloc(r3s_context *ctxt);
 void _r3_guts_ctxt_free(r3s_context *ctxt);
+void _r3_guts_term(void);
 void _r3_guts_ctxt_start(void);
 void _r3_guts_ctxt_end(void);
 void _r3_guts_ctxt_swapin(void);

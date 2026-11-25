@@ -26,7 +26,7 @@ typedef struct
 
 #ifdef EDITOR
 
-EXTERN float REAL_EPSILON;
+EXTERN double REAL_EPSILON;
 
 typedef void (*CSGReadWriteFunc) (void *buf, size_t elsize, size_t nelem);
 EXTERN void save_csg_internal_database(CSGReadWriteFunc func);

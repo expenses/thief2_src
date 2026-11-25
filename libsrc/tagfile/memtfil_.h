@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/prj/cam/src/RCS/memtfil_.h 1.1 1998/01/21 00:21:57 mahk Exp $
 #pragma once  
 #ifndef __MEMTFIL__H

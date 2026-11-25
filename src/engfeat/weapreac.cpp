@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/engfeat/weapreac.cpp,v 1.29 1998/10/22 22:27:41 CCAROLLO Exp $
 //

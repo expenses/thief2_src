@@ -46,7 +46,7 @@ EXTERN ubyte* BaseActiveArray; // Active array starting at the negative values
 
 // This is for stupid static arrays that want an upper bound on the number of objects there could possibly be
 // @TODO: get rid of this.
-#define HACK_MAX_OBJ     4096
+#define HACK_MAX_OBJ     8192
 
 
 

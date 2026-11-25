@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/propert_.h,v 1.31 2000/01/29 13:24:24 adurant Exp $
 #pragma once
 
@@ -308,6 +307,7 @@ template <class IFACE, const GUID *pIID>
 class cProperty: public cUnknownProperty<IFACE,pIID>,
                  public cStoredProperty
 {
+protected:
    typedef cStoredProperty cBase; 
 
 public:

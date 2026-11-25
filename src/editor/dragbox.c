@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/dragbox.c,v 1.53 2000/02/19 12:27:56 toml Exp $
 // mouse drag box for brush creation
 

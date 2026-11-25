@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/portal/wrfunc.c,v 1.26 2000/02/19 13:18:56 toml Exp $
 
 // World Representation Functions
@@ -305,12 +304,12 @@ bool portal_crosses_bbox(PortalCell *r, PortalPolygonCore *p,
 
    for (i=0; i < p->num_vertices; ++i) {
       Vertex *v = &vpool[vlist[i]];
-      if (v->x > mn->x) code &= ~1;
-      if (v->x < mx->x) code &= ~2;
-      if (v->y > mn->y) code &= ~4;
-      if (v->y < mx->y) code &= ~8;
-      if (v->z > mn->z) code &= ~16;
-      if (v->z < mx->z) code &= ~32;
+      if (v->x >= mn->x) code &= ~1;
+      if (v->x <= mx->x) code &= ~2;
+      if (v->y >= mn->y) code &= ~4;
+      if (v->y <= mx->y) code &= ~8;
+      if (v->z >= mn->z) code &= ~16;
+      if (v->z <= mx->z) code &= ~32;
    }
    if (code) // trivial reject on some side
       return FALSE;

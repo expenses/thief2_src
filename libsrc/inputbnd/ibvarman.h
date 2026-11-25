@@ -6,7 +6,7 @@
 
 class cIBInputMapper;
 
-typedef struct intrnl_var
+typedef struct _intrnl_var
 {
 	IB_var var;
 	aatree<intrnl_var_channel> channels;

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/motdmnge.c,v 1.11 2000/02/19 12:29:52 toml Exp $
 
 #include <lg.h>
@@ -22,6 +21,7 @@
 #include <dbmem.h>   // must be last header! 
 
 MotDataHandle *motDataHandles=NULL;
+void **motDataPtrs=NULL;
 static int    *motDataLockCnt=NULL;
 static int g_nMotHandles=0;
 
@@ -31,6 +31,7 @@ void MotDmngeInit(int num_motions)
    MotDataHandle *md;
 
    motDataHandles=(MotDataHandle *)Malloc(num_motions*sizeof(MotDataHandle));
+   motDataPtrs=(void **)Calloc(num_motions*sizeof(void *));
    motDataLockCnt=(int *)Malloc(num_motions*sizeof(int));
    memset(motDataLockCnt,0,sizeof(int)*num_motions);
    
@@ -59,6 +60,7 @@ void MotDmngeClose()
          }
       }
       Free(motDataHandles);
+      Free(motDataPtrs);
       Free(motDataLockCnt);
       motDataHandles=NULL;
       motDataLockCnt=NULL;
@@ -89,7 +91,7 @@ void MotDmngeLock(int mot_num)
       // who groks motset better...
       SafeRelease(pResMan);
       if (motDataHandles[mot_num]) {
-         IRes_Lock(motDataHandles[mot_num]);
+         motDataPtrs[mot_num]=IRes_Lock(motDataHandles[mot_num]);
       } else {
          Warning(("MotDmngeLock: no such resource %s.\n", name));
          return;
@@ -120,6 +122,7 @@ void MotDmngeUnlock(int mot_num)
          IRes_Unlock(*md);
          SafeRelease(*md);
          *md=NULL;
+         motDataPtrs[mot_num]=NULL;
       }
    }
    // mprintf("freeing %d\n",mot_num);

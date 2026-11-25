@@ -187,6 +187,7 @@ protected:
    static int expmod(int b, int e, uint m);
    static bool is_fermat_prime(uint n, uint numtests);
    static bool is_prime(uint n);
+   static uint next_prime(uint n);
 };
 
 ////////////////////////////////////////////////////////////

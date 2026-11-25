@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/ui/uiapp.cpp,v 1.24 2000/03/07 19:55:38 toml Exp $
 
 #include <config.h>
@@ -43,7 +42,7 @@ static Datapath uibindpath;
 
 void read_key_and_menu_bindings(void)
 {
-   char path[128]; //DatapathAdd only supports 128.  
+   char path[_MAX_PATH]; //DatapathAdd only supports 128.  
                    //Stop killing my stack pointer!  AMSD 2/16/00
                    //Mystery:  Why wasn't this broken before?
    DatapathClear(&uibindpath);

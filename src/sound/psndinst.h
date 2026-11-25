@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sound/psndinst.h,v 1.22 2000/01/29 13:41:46 adurant Exp $
 //
@@ -30,7 +29,10 @@ F_DECLARE_INTERFACE(IAIManager);
 ////////////////////////////////////////
 
 // Max active sounds.
-const int kMaxActiveSounds = 32;
+const int kMaxActiveSounds = 64;
+const int kMinActiveSounds = 32;
+
+extern int g_nMaxActiveSounds;
 
 ////////////////////////////////////////////////////////////////////////////////
 

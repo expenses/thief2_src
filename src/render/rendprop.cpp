@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/rendprop.cpp,v 1.48 2000/02/18 14:17:51 MAT Exp $
 
 #include <lg.h>
@@ -51,6 +50,7 @@
 #include <sdestool.h>
 
 // Must be last header
+#include <config.h>
 #include <dbmem.h>
 
 ////////////////////////////////////////////////////////////
@@ -136,6 +136,18 @@ static void ObjShadPropInit(void)
 
 #define ALPHA_IMP  kPropertyImplVerySparse
 
+sPropertyDesc alpha_ref_render_desc =
+{
+   PROP_ALPHAREF_NAME,
+   0,      // flags
+   NULL,   // constraints
+   1,0,    // version
+   {
+      "Renderer",
+      "Alpha Test Threshold"
+   }
+};
+
 sPropertyDesc alpha_render_desc =
 {
    PROP_ALPHA_NAME,
@@ -149,9 +161,16 @@ sPropertyDesc alpha_render_desc =
 };
 
 IFloatProperty *gAlphaRenderProp;
+IFloatProperty *gAlphaRefRenderProp;
+static char alpha_ui_name[64];
+
 static void AlphaRenderPropInit(void)
 {
+   if (config_get_raw("transparent_property_name", alpha_ui_name, sizeof(alpha_ui_name)) && alpha_ui_name[0])
+      alpha_render_desc.ui.friendly_name = alpha_ui_name;
+
    gAlphaRenderProp = CreateFloatProperty(&alpha_render_desc, ALPHA_IMP);
+   gAlphaRefRenderProp = CreateFloatProperty(&alpha_ref_render_desc, ALPHA_IMP);
 }
 
 ////////////////////////////////////////////////////////////
@@ -226,7 +245,7 @@ static sPropertyTypeDesc rendtype_tdesc =
    sizeof(int),
 };
 
-#define RTYPE_IMPL kPropertyImplSparseHash
+#define RTYPE_IMPL kPropertyImplHash
 
 IIntProperty* RenderTypeProp = NULL;
 

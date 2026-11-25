@@ -1,6 +1,7 @@
 #include "defresm.h"
 
 // COM includes
+#include <malloc.h>
 #include <comtools.h>
 #include <resguid.h>
 
@@ -51,15 +52,16 @@ void cDefResMem::OnFinalRelease()
 
 void* cDefResMem::ResMalloc(ulong nNumBytes)
 {
-	return Malloc(nNumBytes);
+	return malloc(nNumBytes);
 }
 
 void cDefResMem::ResFree(void* pData)
 {
-	Free(pData);
+	if (pData)
+		free(pData);
 }
 
 unsigned long cDefResMem::GetSize(void* pData)
 {
-	return MSize(pData);
+	return pData ? _msize(pData) : 0;
 }

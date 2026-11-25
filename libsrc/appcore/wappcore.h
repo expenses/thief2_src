@@ -52,7 +52,7 @@ private:
         DECLARE_DELEGATION();
     public:
         cWinAppOperations(cWindowsApplication * pWindowsApplication, IUnknown * pOuterUnknown)
-          : m_pWindowsApplication(pWindowsApplication), m_fFlags(0)
+          : m_hMainWnd(NULL), m_pWindowsApplication(pWindowsApplication), m_fFlags(0)
         {
             INIT_DELEGATION(pOuterUnknown);
         }

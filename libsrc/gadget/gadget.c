@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/libsrc/gadget/gadget.c,v 1.56 1998/09/09 14:59:27 KEVIN Exp $
 
 // library includes
@@ -38,6 +37,7 @@
 #include <gadgint.h>
 #include <uigadget.h>
 #include <uibutton.h>
+#include <curdat.h>
 
 #ifndef __WATCOMC__
 #define utoa ultoa
@@ -389,7 +389,13 @@ void LGadSetRootCursor(LGadRoot *vr, IDataSource *pCurs, Point anchor)
    if (oldsrc)
       IDataSource_Unlock(oldsrc);
    if (oldcurs)
+   {
       Free(oldcurs);
+      if (CurrentCursor == oldcurs)
+         CurrentCursor = NULL;
+      if (LastCursor == oldcurs)
+         LastCursor = NULL;
+   }
 }
 
 /* Makes the given LGadRoot the new actual UI root, for input purposes.  Returns zero for success,
@@ -413,23 +419,32 @@ LGadRoot* LGadCurrentRoot(void)
 }
 
 /* Will delete the LGadRoot and low-level structures.  Returns zero for success, negatives for failure. */
-int LGadDestroyRoot(LGadRoot *deadroot)
+void LGadDestroyRoot(LGadRoot *deadroot)
 {
    LGadDestroyBox(&deadroot->box, FALSE);
    // Not sure if there's a more abstract way to do this
    if (!deadroot->subroot)
    {
-      uiDestroySlab(deadroot->root_slab);
-      if (deadroot->pCursor)
-          IDataSource_Unlock(deadroot->pCursor);
-      if (deadroot->curs != NULL)
-         Free(deadroot->curs);
       if (deadroot->root_slab != NULL)
+         uiDestroySlab(deadroot->root_slab);
+      if (deadroot->pCursor)
+      {
+          IDataSource_Unlock(deadroot->pCursor);
+          deadroot->pCursor = NULL;
+      }
+      if (deadroot->curs != NULL)
+      {
+         Free(deadroot->curs);
+         deadroot->curs = NULL;
+      }
+      if (deadroot->root_slab != NULL)
+      {
          Free(deadroot->root_slab);
+         deadroot->root_slab = NULL;
+      }
    }
    if (deadroot->free_self)
       Free(deadroot);
-   return(0);
 }
 
 LGadRoot* LGadSetupSubRoot(LGadRoot* subroot, LGadRoot* parent, short x, short y, short w, short h)

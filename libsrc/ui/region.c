@@ -7,6 +7,7 @@
 
 #include <event.h>
 #include <gadgets.h>
+#include <curdat.h>
 
 
 typedef struct {
@@ -146,6 +147,11 @@ errtype region_destroy(Region *reg, bool draw)
    while (uiReleaseFocus(reg,ALL_EVENTS) == OK)
       /* repeat until no effect */;
 
+   if (CursorRegion == reg)
+      CursorRegion = NULL;
+   if (LastCursorRegion == reg)
+      LastCursorRegion = NULL;
+
    // Make us disappear
    region_remove(reg,draw);
 
@@ -172,10 +178,12 @@ errtype region_destroy(Region *reg, bool draw)
          lastp->next_region = curp->next_region;
       else
          (reg->parent)->sub_region = curp->next_region;
+      reg->parent = NULL;
    }
 
    // Shutdown handlers
    uiShutdownRegionHandlers(reg);
+   reg->status_flags &= ~EVENT_CB;
 
    // Then, we kill OURSELVES!!!!!!!!!!!!
    if (AUTODESTROY_FLAG & reg->status_flags)

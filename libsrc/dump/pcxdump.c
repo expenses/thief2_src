@@ -14,6 +14,7 @@
 #include <lg.h>
 #include <dev2d.h>
 #include <dump.h>
+#include <lg_file.h>
 
 #define  RGB_RED     0
 #define  RGB_GREEN   1
@@ -59,7 +60,7 @@ int  dmp_pcx_dump_screen(char *name)
    grs_bitmap *bmbuff;
    int fd;
 
-   fd = open(name,O_CREAT|O_BINARY|O_WRONLY,S_IREAD|S_IWRITE);
+   fd = lg_open(name,O_CREAT|O_BINARY|O_WRONLY,S_IREAD|S_IWRITE);
    if (fd == -1) {
        return 0;
    }
@@ -78,7 +79,7 @@ int  dmp_pcx_dump_screen(char *name)
    pcx.bytes_per_line = grd_bm.w;
    pcx.palette_type = 0;
 
-   write(fd,&pcx,sizeof(dps_head));
+   lg_write(fd,&pcx,sizeof(dps_head));
 
    bytes=pcx.bytes_per_line;
 
@@ -158,12 +159,12 @@ int  dmp_pcx_dump_screen(char *name)
 
       // flag for people to know the palette is next
       c = 12;
-      write(fd,&c,sizeof(char));
+      lg_write(fd,&c,sizeof(char));
 
-      write(fd,grd_pal,768);
+      lg_write(fd,grd_pal,768);
    }
 
-   close(fd);
+   lg_close(fd);
 
    return 1;
 }
@@ -186,6 +187,6 @@ static int writepcxline(uchar *p,int fp,int bytes)
          buf[j++] = (0xc0 + i);
       buf[j++] = c;
    } while(n < bytes);
-   write(fp,buf,j);
+   lg_write(fp,buf,j);
    return n;
 }

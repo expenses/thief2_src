@@ -14,7 +14,7 @@ uchar kbd_country = KBC_US;
 static void kb_make_delta(void)
 {
    int i,scan,len;
-   uchar cn;
+   uint cn;
    short *c;
    ushort a;
 

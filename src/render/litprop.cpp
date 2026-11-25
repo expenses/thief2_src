@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/litprop.cpp,v 1.58 2000/01/27 20:03:44 BFarquha Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
@@ -293,7 +292,7 @@ static sFieldDesc anim_light_fields [] =
    { "inner radius (0 for none)",
      kFieldTypeFloat, FieldLocation(sAnimLightProp, inner_radius) },
    { "quad lit",
-     kFieldTypeBool, FieldLocation(sLightProp, quad) },
+     kFieldTypeBool, FieldLocation(sAnimLightProp, quad) },
 
    { "offset from object", kFieldTypeVector,
      FieldLocation(sAnimLightProp, offset), kFieldFlagNone },
@@ -304,6 +303,8 @@ static sFieldDesc anim_light_fields [] =
      FieldLocation(sAnimLightProp, animation.countdown_ms), kFieldFlagNone },
    { "inactive", kFieldTypeBool,
      FieldLocation(sAnimLightProp, animation.inactive), kFieldFlagNone },
+   { "Dynamic Light", kFieldTypeBool,
+     FieldLocation(sAnimLightProp, dynamic), kFieldFlagNone },
 };
 
 
@@ -477,6 +478,29 @@ BOOL ObjLightGetBrightness(ObjID obj, float *brightness)
    }
 }
 
+void ObjColorSet(ObjID obj, float hue, float saturation)
+{
+   ColorInfo color;
+   color.hue = hue;
+   color.saturation = saturation;
+   g_ColorProp->Set(obj, &color);
+}
+
+BOOL ObjColorIsSimplyRelevant(ObjID obj)
+{
+   return g_ColorProp->IsSimplyRelevant(obj);
+}
+
+BOOL ObjColorIsRelevant(ObjID obj)
+{
+   return g_ColorProp->IsRelevant(obj);
+}
+
+BOOL ObjIsLightRelevant(ObjID obj)
+{
+   return g_LightProp->IsRelevant(obj) || g_AnimLightProp->IsRelevant(obj);
+}
+
 BOOL ObjColorGet(ObjID obj, float *hue, float *saturation)
 {
    ColorInfo *color;
@@ -579,6 +603,80 @@ EXTERN BOOL FindVhotLocation(mxs_vector *loc, ObjID obj, int vhot)
    mx_addeq_vec(loc, &pos->loc.vec);
 
    return bRetVal;
+}
+
+EXTERN mds_parm *getRendParms(ObjID obj, mds_model *m);
+
+BOOL ObjGetVhotTrans(mxs_trans *trans, ObjID obj, int vhot, BOOL world)
+{
+   int idx;
+   BOOL found = FALSE;
+
+   if (ObjGetModelNumber(obj, &idx) && objmodelGetModelType(idx) == OM_TYPE_MD)
+   {
+      mds_model *model = (mds_model *) objmodelGetModel(idx);
+      mds_parm *parms = getRendParms(obj, model);
+      mxs_trans local;
+      mxs_trans *dst = world ? &local : trans;
+      mxs_vector scale;
+
+      found = md_get_vhot_trans_object(model, vhot, parms, dst);
+      if (!found)
+         return found;
+
+      if (ObjGetScale(obj, &scale))
+      {
+         dst->vec.x *= scale.x;
+         dst->vec.y *= scale.y;
+         dst->vec.z *= scale.z;
+      }
+
+      if (world)
+      {
+         ObjPos *pos = ObjPosGet(obj);
+         mxs_trans obj_trans;
+         mx_ang2mat(&obj_trans.mat, &pos->fac);
+         obj_trans.vec = pos->loc.vec;
+         mx_mul_trans(trans, &obj_trans, &local);
+      }
+   }
+   return found;
+}
+
+BOOL ObjGetSubobjTrans(mxs_trans *trans, ObjID obj, int subobj, BOOL world)
+{
+   int idx;
+   BOOL found = FALSE;
+
+   if (ObjGetModelNumber(obj, &idx) && objmodelGetModelType(idx) == OM_TYPE_MD)
+   {
+      mds_model *model = (mds_model *) objmodelGetModel(idx);
+      mds_parm *parms = getRendParms(obj, model);
+      mxs_trans local;
+      mxs_trans *dst = world ? &local : trans;
+      mxs_vector scale;
+
+      found = md_get_subobj_trans_object(model, subobj, parms, dst);
+      if (!found)
+         return found;
+
+      if (ObjGetScale(obj, &scale))
+      {
+         dst->vec.x *= scale.x;
+         dst->vec.y *= scale.y;
+         dst->vec.z *= scale.z;
+      }
+
+      if (world)
+      {
+         ObjPos *pos = ObjPosGet(obj);
+         mxs_trans obj_trans;
+         mx_ang2mat(&obj_trans.mat, &pos->fac);
+         obj_trans.vec = pos->loc.vec;
+         mx_mul_trans(trans, &obj_trans, &local);
+      }
+   }
+   return found;
 }
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\

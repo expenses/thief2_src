@@ -125,8 +125,7 @@ RES_BASE::cResourceBase(IStore *pStore,
    m_ManData(NO_RES_APP_DATA),
    m_pStream(NULL),
    m_pAssignedData(0),
-   m_nAssignedCount(0),
-   m_ulRefs(1)
+   m_nAssignedCount(0)
 {
    IResMan *pResMan;
    pResMan = AppGetObj(IResMan);
@@ -151,6 +150,27 @@ RES_BASE::cResourceBase(IStore *pStore,
       m_pType = pType;
       pType->AddRef();
    }
+}
+
+///////////////////////////////////////
+
+RES_BASE_TEMPLATE
+STDMETHODIMP_(ULONG) RES_BASE::AddRef()
+{
+   return InterlockedIncrement(&__m_ulRefs.ul);
+}
+
+RES_BASE_TEMPLATE
+STDMETHODIMP_(ULONG) RES_BASE::Release()
+{
+   if (InterlockedDecrement(&__m_ulRefs.ul))
+      return __m_ulRefs.ul;
+
+   OnFinalRelease();
+
+   delete this;
+
+   return 0;
 }
 
 ///////////////////////////////////////

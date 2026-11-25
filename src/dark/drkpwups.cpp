@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkpwups.cpp,v 1.21 1999/12/21 10:52:44 adurant Exp $
 // Dark Specific Powerup Code and Script Services
 

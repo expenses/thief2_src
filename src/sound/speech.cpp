@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/speech.cpp,v 1.61 2000/02/08 23:10:40 patmac Exp $
 
 // This is the procedural core of spch.  No classes are defined here.
@@ -122,7 +121,7 @@ static cDynArray<cSpeechVoice *> g_VoiceList;
 //   inside SpeechEndCallback, because the first callback causes the speechEndCallbackHash
 //   to delete the callback function array, so the second callback ptr is a bullshit ptr - patmc
 //#define kCallbackEntryMax 4
-#define kCallbackEntryMax 1
+#define kCallbackEntryMax 4
 
 struct sCallbackHashEntry : public sHashFastEntry
 {
@@ -283,11 +282,15 @@ void SpeechEndCallback(int hSchema, ObjID schemaID, void *data)
 
    sCallbackHashEntry *pEntry = g_speechEndCallbackHash.Search((ObjID)data);
    if (pEntry)
+   {
+      SpeechCallbackFn aCallbackList[kCallbackEntryMax];
+      memcpy(aCallbackList, pEntry->m_aCallbackList, sizeof(aCallbackList));
       for (int i = 0; i < kCallbackEntryMax; ++i)
-         if (pEntry->m_aCallbackList[i])
-            pEntry->m_aCallbackList[i]((ObjID)data, hSchema, schemaID);
+         if (aCallbackList[i])
+            aCallbackList[i]((ObjID)data, hSchema, schemaID);
          else
             break;
+   }
 }
 
 
@@ -298,7 +301,10 @@ void SpeechHalt(ObjID AIObjID)
    if (pSpeechProperty->Get(AIObjID, &pSpeech))
    {
       if (pSpeech->flags & SPEECH_SPEAKING)
+      {
          SchemaPlayHalt(pSpeech->hSchemaPlay);
+         pSpeech->hSchemaPlay = 0;
+      }
       pSpeechProperty->Delete(AIObjID);
    }
 }
@@ -553,11 +559,15 @@ int SpeechSpeak(ObjID SpeakerObjID, const Label *pConcept,
 
    sCallbackHashEntry *pEntry = g_speechStartCallbackHash.Search(SpeakerObjID);
    if (pEntry)
+   {
+      SpeechCallbackFn aCallbackList[kCallbackEntryMax];
+      memcpy(aCallbackList, pEntry->m_aCallbackList, sizeof(aCallbackList));
       for (int i = 0; i < kCallbackEntryMax; ++i)
-         if (pEntry->m_aCallbackList[i])
-            pEntry->m_aCallbackList[i](SpeakerObjID, iSchemaHandle, SchemaID);
+         if (aCallbackList[i])
+            aCallbackList[i](SpeakerObjID, iSchemaHandle, SchemaID);
          else
             break;
+   }
 
    return iSchemaHandle;
 }

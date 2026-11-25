@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/vumanui.c,v 1.24 2000/02/19 13:13:47 toml Exp $
 
 #include <string.h>
@@ -87,7 +86,7 @@ DrawElement titledraw = { DRAWTYPE_TEXT, "My Title", 0, 6, 1 };
 static LGadMenu vmpop;
 static int popup_cam;
 static char **popup_commands;
-extern bool vm_display_enable;
+extern BOOL vm_display_enable;
 
 // is this a fuckup, or what - global state for menus in vm
 // this means a menu is in progress, if you need to know

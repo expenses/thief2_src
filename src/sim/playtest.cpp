@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/playtest.cpp,v 1.27 2000/02/24 23:33:43 patmac Exp $
 
 #ifdef PLAYTEST
@@ -603,7 +602,7 @@ static Command commands[] =
 
    { "ambient_spew", TOGGLE_BOOL, &ambient_mono },
    { "ambient_heartbeat", TOGGLE_BOOL, &ambient_heartbeat },
-   { "ambient_show", TOGGLE_BOOL, &g_ShowAmbients },
+   { "ambient_show", TOGGLE_BOOL, &g_ShowAmbients, NULL, 0, 1},
    { "ambient_dump", FUNC_VOID, AmbSoundDump },
 
    { "track_obj", FUNC_INT, ToggleTrackedObj, "toggle tracking on a given obj" },

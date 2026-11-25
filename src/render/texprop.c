@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/texprop.c,v 1.9 2000/02/19 12:35:40 toml Exp $
 // silly texture property config file craziness for EEE
 // this is _not_ shipping code

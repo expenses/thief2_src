@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drksavui.cpp,v 1.23 2000/02/26 16:49:55 toml Exp $
 
 #include <appagg.h>
@@ -28,12 +27,14 @@
 
 #include <panltool.h>
 #include <command.h>
+#include <datapath.h>
 #include <uianim.h>
 #include <filepanl.h>
 
 #include <btffact.h>
 
 #include <dbmem.h>
+#include <lg_file.h>
 
 //============================================================
 // Base file panel, derived from cFilePanel
@@ -236,7 +237,7 @@ void cSavePanel::DoFileOp(int which)
       return;
    }
 
-   mkdir(SAVE_PATH); 
+   FMMakeDir(SAVE_PATH, NULL); 
 
    ITagFile* file = TagFileOpen(fname,kTagOpenWrite); 
    HRESULT retval = E_FAIL; 
@@ -422,10 +423,10 @@ void cLoadBndPanel::ComputeSlot(int which)
    {
       slot.flags = 0; 
       static char str[128], *p_str;
-      FILE *fp = fopen (SlotFileName (which), "rb");
+      LGFILE *fp = lg_fopen(SlotFileName (which), "rb");
       if (fp) {
-         fgets (str, 127, fp);
-         fclose (fp);
+         fgets (str, 127, fp->fp);
+         lg_fclose(fp);
          for (p_str = str; ((*p_str == ';' || *p_str == ' ') && *p_str != '\n'); p_str++);
          strncpy (slot.buf, p_str, sizeof (slot.buf));
       }
@@ -544,10 +545,10 @@ void cSaveBndPanel::ComputeSlot(int which)
    {
       slot.flags = 0; 
       static char str[128], *p_str;
-      FILE *fp = fopen (SlotFileName (which), "rb");
+      LGFILE *fp = lg_fopen(SlotFileName (which), "rb");
       if (fp) {
-         fgets (str, 127, fp);
-         fclose (fp);
+         fgets (str, 127, fp->fp);
+         lg_fclose(fp);
          for (p_str = str; ((*p_str == ';' || *p_str == ' ') && *p_str != '\n'); p_str++);
          strncpy (slot.buf, p_str, sizeof (slot.buf));
       }
@@ -567,7 +568,7 @@ void cSaveBndPanel::DoFileOp(int which)
 {
    const char* fname = SlotFileName(which); 
 
-   mkdir(SAVE_PATH); 
+   FMMakeDir(SAVE_PATH, NULL); 
    MessageNamed("saving"); 
 
    //get header
@@ -592,27 +593,28 @@ void cSaveBndPanel::DoFileOp(int which)
 
 void cSaveBndPanel::BndAppendControls (char *fname)
 {
-   FILE *fp = fopen (fname, "ab");
+   LGFILE *fp = lg_fopen(fname, "ab");
 
    if (fp)
    {
-      fprintf (fp, "\n");
+      lg_fprintf(fp, "\n");
 
       char *controls[] = { "bow_zoom", "joystick_enable", "mouse_invert", "lookspring",
-                           "freelook", "mouse_sensitivity", "joy_rotate", "joystick_sensitivity",
-                           "joystick_deadzone", "rudder_sensitivity", "rudder_deadzone",
+                           "freelook", "mouse_sensitivity", "mouse_sensitivity_y_scale",
+                           "mouse_sensitivity_use_aspect", "crouch_unmount", "joy_rotate", "joystick_sensitivity",
+                           "joystick_deadzone", "rudder_sensitivity", "rudder_deadzone", "mwheel_deadzone",
                            "auto_equip", "auto_search", "goal_notify", "climb_touch", "\0"};
 
-      char str[32];
+      char str[64];
       char **p_control = controls;
 
       while (**p_control) {
          sprintf (str, "echo $%s", *p_control);
-         fprintf (fp, "%s %s\n", *p_control, g_pInputBinder->ProcessCmd (str));
+         lg_fprintf(fp, "%s %s\n", *p_control, g_pInputBinder->ProcessCmd (str));
          p_control++;
       }
 
-      fclose (fp);
+      lg_fclose(fp);
    }
 }
 

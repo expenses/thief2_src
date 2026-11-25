@@ -109,6 +109,11 @@ EXTERN void md_eval_vhots(mds_model *m,mds_parm parms[]);
 // and just gets all the points relative to the object space
 EXTERN void md_eval_vhots_object(mds_model *m,mds_parm parms[]);
 
+// Get the object space transform of a vhot or subobject.  Like
+// md_eval_vhots_object, ignores the 3d context.
+EXTERN int md_get_vhot_trans_object(mds_model *m, int vhot, mds_parm parms[], mxs_trans *t);
+EXTERN int md_get_subobj_trans_object(mds_model *m, int subobj, mds_parm parms[], mxs_trans *t);
+
 // These tables are for the vcolors, textures, vcalls, and for reading the result of vhots.  The vhots are in 
 // world coords.  You set the vcolor to the color index (if 8 bit) or color (if 16 bit or higher).  You set the 
 // vtext tab to the handle of the texture.

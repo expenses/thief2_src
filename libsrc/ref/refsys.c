@@ -425,25 +425,25 @@ BOOL ObjUpdateLocs (ObjID obj)
    BoundingPrism  prism;
    int            num_bins;     // how many bins for this RefSystem
    void          *pos;          // position of object
-   void          *bins; 
+   char           bins[OBJ_BINS_SPACE];
 
 #line 425
    Assert_(obj > 0); 
 
+   if (obj < 0)
+      return FALSE;
+
    pos = gObjPosFunc(obj);
-   if (obj < 0 || !pos)
+   if (!pos)
       return FALSE; 
       
    gBoundingPrismFunc (obj, pos, &prism);
 
-   bins = Malloc (OBJ_BINS_SPACE);
    for (sys = 0; sys < mNumRefSystems; sys++)
    {
       num_bins = mRefSystems[sys].bin_compute_func (obj, &prism, bins);
       mRefSystems[sys].bin_update_func (obj, sys, bins, num_bins);
    }
-
-   Free (bins);
 
    return TRUE;
 }

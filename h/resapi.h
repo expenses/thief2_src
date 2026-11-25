@@ -205,6 +205,14 @@ typedef struct sResMemStats
 //
 #define RES_IS_STATIC 0x01
 
+//
+// Flags for Bind
+//
+#define RES_BIND_IMAGE_TYPE_PRIO 0x02
+
+EXTERN BOOL g_bImageTypePrio;
+#define RES_BIND_IMAGE_FLAGS (g_bImageTypePrio ? RES_BIND_IMAGE_TYPE_PRIO : 0)
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IResMan

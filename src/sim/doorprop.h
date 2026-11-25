@@ -67,10 +67,13 @@ struct sRotDoorProp : public sDoorProp
 
    mxs_angvec base_closed_facing;
    mxs_angvec base_open_facing;
+
+   mxs_real lean_sound_blocking;
 };
 
 struct sTransDoorProp : public sDoorProp
 {
+   mxs_real lean_sound_blocking;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -8,8 +8,13 @@ enum eImgKind
 	kImgCEL,
 	kImgGIF,
 	kImgPCX,
-	kImgTGA
+	kImgTGA,
+	kImgPNG,
+	kImgDDS
 };
+
+struct grs_bitmap;
+grs_bitmap* ResReadImage(eImgKind kind, IStoreStream* pStream, IResMemOverride* pResMem);
 
 class cImageResource : public cResourceBase<IRes, &IID_IRes>
 {
@@ -38,4 +43,5 @@ public:
 
 protected:
 	eImgKind m_Kind;
+	struct sMaterial *m_pMaterial;
 };

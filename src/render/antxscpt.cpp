@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/antxscpt.cpp,v 1.8 1999/03/23 19:21:30 XEMU Exp $
 
 #include <string.h>

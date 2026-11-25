@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/filemenu.cpp,v 1.5 1998/10/17 19:28:42 dc Exp $
 
 #include <lg.h>
@@ -15,7 +14,10 @@
 // for the windows controls
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#pragma push_macro("STDMETHOD")
+#undef STDMETHOD
 #include <commdlg.h>
+#pragma pop_macro("STDMETHOD")
 
 #include <wappapi.h>
 #include <loopapi.h>
@@ -209,3 +211,26 @@ void FileMenu(void)
 }
 
 #endif
+
+static COLORREF g_aCustomColors[16];
+
+BOOL PickColor(int *pR, int *pG, int *pB)
+{
+   if (!pR || !pG || !pB)
+      return FALSE;
+
+   AutoAppIPtr(WinApp);
+   CHOOSECOLOR cc;
+   memset(&cc, 0, sizeof(cc));
+   cc.lStructSize = sizeof(cc);
+   cc.hwndOwner = pWinApp->GetMainWnd();
+   cc.rgbResult = RGB(*pR, *pG, *pB);
+   cc.lpCustColors = g_aCustomColors;
+   cc.Flags = CC_RGBINIT | CC_FULLOPEN;
+   if (!ChooseColor(&cc))
+      return FALSE;
+   *pR = GetRValue(cc.rgbResult);
+   *pG = GetGValue(cc.rgbResult);
+   *pB = GetBValue(cc.rgbResult);
+   return TRUE;
+}

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/init.cpp,v 1.107 2000/02/25 22:58:18 mwhite Exp $
 
 #include <float.h>
@@ -39,6 +38,19 @@
 #include <appname.h>
 #include <contexts.h>
 #include <init.h>
+#include <imgdds.h>
+#include <direct.h>
+#include <str.h>
+#include <lglog.h>
+#include <mprintf.h>
+#include <datapath.h>
+#include <version.h>
+
+extern int g_nMipmapMode;
+extern "C" BOOL UseD3DDisplay(void);
+BOOL g_bFamPal32Bit = TRUE;
+BOOL g_bLegacy32BitTxtPal;
+cAnsiStr g_AppVersionStr;
 #include <2dapp.h>
 #include <resapp.h>
 #include <gameinfo.h>
@@ -154,7 +166,7 @@ static void init_monochrome()
       strcpy(monofname,"monolog.txt");
    if (config_is_defined("monolog"))
       mono_logon(monofname, MONO_LOG_NEW, MONO_LOG_ALLWIN);
-   mono_to_debugger = !config_is_defined("nomonodebug");
+   mono_to_debugger = config_is_defined("monodebug");
 }
 
 //------------------------------------------------------------
@@ -271,6 +283,9 @@ tResult LGAPI CoreEngineCreateObjects(int argc, const char *argv[])
 
    // now that we have config, lets go make sure we can run
 
+   if (!config_is_defined("skip_writeaccess_check"))
+      CheckForWriteAccessAndMessage();
+
    if (!config_is_defined("skip_starting_checks"))
    {
       if (!CheckForDiskspaceAndMessage(NULL,MIN_STARTUP_DISK_MB))
@@ -330,6 +345,76 @@ tResult LGAPI CoreEngineCreateObjects(int argc, const char *argv[])
    int opt = kGameShellDefault & ~(kLockFrame | kFlushOnEndFrame);
    if (config_is_defined("multithread"))
       opt |= kMultithreadedShell;
+
+   g_ResDXTMode = config_is_nonzero("dxt_to_rgb32") ? kResDXTDecompress : kResDXTAuto;
+
+   config_get_int("mipmap_mode", &g_nMipmapMode);
+   if (g_nMipmapMode < 0)
+      g_nMipmapMode = 0;
+
+   if (UseD3DDisplay() && !config_is_nonzero("force_32bit"))
+      config_set_int("force_32bit", TRUE);
+   if (config_is_nonzero("force_32bit") && config_is_nonzero("force_32bit_textures"))
+   {
+      g_bForce32BitTextures = TRUE;
+      g_bFamPal32Bit = !config_is_nonzero("disable_32bit_fampal");
+      g_bLegacy32BitTxtPal = config_is_nonzero("legacy_32bit_txtpal");
+   }
+
+   if (LogGetOptions() & kLogToAll)
+   {
+      static const char *s_LogConfigVars[] =
+      {
+      "resname_base", "cd_path", "load_path", "script_module_path",
+      "movie_path", "include_path", "mod_path", "uber_mod_path",
+      "fm_path", "data_path", "variant_path", "install_path",
+      "script_path", "language", "fm", "fm_language",
+      "fm_language_forced", "game_screen_size", "game_screen_depth", "game_screen_flags",
+      "game_full_screen", "screen_size", "screen_depth", "d3d_driver_index",
+      "game_hardware", "vsync_mode", "force_windowed", "single_display_mode",
+      "ui_scale_mode", "use_d3d_display", "d3d_disp_scaled_2d_overlay", "framerate_cap",
+      "SlowFrame", "SlowFrameUI", "force_32bit", "force_32bit_textures",
+      "mipmap_mode", "lm_mipmap_mode", "lm_init_texmem", "lm_filter_margin",
+      "disable_lightmap_aniso", "tex_edge_padding", "disable_alpha_test", "alpha_test_as_opaque",
+      "default_alphatest_ref", "d3d_disp_enable_atoc", "d3d_disp_sw_cc", "d3d_disp_enable_hdr",
+      "multisampletype", "postprocess", "d3d_disp_enable_distortionfx", "sfx_device",
+      "sfx_channels", "mixer_rate", "sfx_vol_music", "sfx_vol_2d",
+      "sfx_vol_3d", "snd_speaker_config", "submerged_sound_occlusion", "force_underwater_reverb",
+      "sfx_mixer_timeout", "load_with_threaded_mixer", "game", "dark1",
+      "obj_min", "obj_max", "max_refs", "gui_font",
+      "use_hi_res_timer", "disable_simd_optimizations", "phys_freq", "enhanced_sky",
+      "skip_intro", "no_movies", "crop_movies", "new_mantle",
+      "new_mantle_fwd", "swim_chest_offset", "apply_dbmods", "dbmod_no_remap",
+      "z_far", "wr_render_zcomp", "render_weapon_particles", "legacy_force_match_unrefs",
+      "model_lod_dist_factor", "model_lod_force_low", "dark_zcomp_arm", "edit_screen_size",
+      "edit_screen_depth", "editor_disable_gdi", "game_mode_backup", "song_source_path",
+      "schema_base_path", "vbrush_dir", "d3d_disp_hw2d_msaa",
+      };
+      char buf[8192];
+
+      if (_getcwd(buf, sizeof(buf)))
+         mprint(_LogFmt("CWD: %s", buf));
+      const char *pszFMPath = *g_szFMPath ? g_szFMPath : NULL;
+      if (pszFMPath)
+         mprint(_LogFmt("FM Path: %s", pszFMPath));
+      mprint("-----------------------------------------------------------");
+      g_AppVersionStr.FmtStr("%s %s", APPNAME, VersionString());
+      mprint(_LogFmt("App Version: %s", (const char *)g_AppVersionStr));
+      mprint("--------------------- misc config -------------------------");
+      for (unsigned i = 0; i < sizeof(s_LogConfigVars) / sizeof(s_LogConfigVars[0]); i++)
+      {
+         const char *pszVar = s_LogConfigVars[i];
+         if (config_get_raw(pszVar, buf, sizeof(buf)))
+         {
+            buf[sizeof(buf) - 1] = '\0';
+            if (*buf)
+               mprint(_LogFmt("%s %s", pszVar, buf));
+            else
+               mprint(pszVar);
+         }
+      }
+      mprint("-----------------------------------------------------------");
+   }
 
    // Use the convenience macro to create all the basic game components
    CoreGameLibrariesCreate(APPNAME, argc, argv, dispkind, opt);
@@ -437,7 +522,8 @@ tResult LGAPI CoreEngineAppInit()
    InitIBVars ();
 
    //  pop dialog box about dxdrivers
-   DxWarnDlg();
+   if (config_is_defined("dx_warn_dlg"))
+      DxWarnDlg();
 
    // initialize the random number lib
    // note fullwise: we retardedly could be calling this twice,
@@ -456,6 +542,8 @@ tResult LGAPI CoreEngineAppExit()
 {
    MovieOnExit();
    g_pInputBinder->Term ();
+   SetGameIBVarsFunc(NULL);
+   g_pInputBinder = NULL;
    DispatchMsgAllClients(kMsgAppTerm,NULL,kDispatchReverse);
    DispatchShutdown();
    SafeRelease(pGameShell);

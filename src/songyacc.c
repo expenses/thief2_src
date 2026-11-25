@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /* n:\bin\yacc -p songyy -l -D songtok.h -o songyacc.c r:\prj\cam\src\songlang.y */
 #define SONG	257
 #define DECLARESECTIONS	258

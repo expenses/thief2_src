@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/twqscrpt.cpp,v 1.11 1999/05/27 17:25:18 Justin Exp $
 // 
 
@@ -149,7 +148,7 @@ static void _do_joints_props(ObjID obj, IProperty *prop, eTweqDo action, int xtr
       }
       primary=jcfg->primary_joint-1;
       if (primary>=MAX_TWEQ_JOINTS) primary=0;
-      if (primary==-1)  // special master control, not clear we want/need it...
+      if (primary<0)  // special master control, not clear we want/need it...
          bstate=&jstate->state;
       else
          bstate=&jstate->jnt_flgs[primary];

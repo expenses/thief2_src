@@ -2,6 +2,8 @@
 
 #include <d6states.h>
 
+#define D6PRIM_STATIC
+
 struct _MTVERTEX {
     float sx;
     float sy;
@@ -55,4 +57,6 @@ public:
     int DiffuseSpecularLitTrifanMTD(int, _r3s_point**, LGD3D_tex_coord**);
     int g2TrifanMTD(int, g2s_point**, LGD3D_tex_coord**);
     int g2UTrifanMTD(int, g2s_point**, LGD3D_tex_coord**);
+    int CubeTexTrifan(int n, _r3s_point** ppl, float* uvw, DWORD color);
+    int TexTrifanMT(int n, _r3s_point** ppl, float* uv, LGD3D_tex_coord** lm, DWORD color);
 };

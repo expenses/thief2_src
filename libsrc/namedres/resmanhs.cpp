@@ -62,7 +62,7 @@ cHashByResourceType::~cHashByResourceType()
 
 tHashSetKey cHashByResourceType::GetKey(tHashSetNode p) const
 {
-	if (((cResourceTypeData*)p)->m_pType)
+	if (p)
 		return (tHashSetKey)((cResourceTypeData*)p)->m_pType->GetName();
 	else
 		return NULL;
@@ -92,7 +92,7 @@ cResourceName::cResourceName(const char* pResName)
 	if (pResName)
 	{
 		size_t len = strlen(pResName);
-		m_pName = static_cast<char*>(Malloc(len + 1));
+		m_pName = new char[len + 1];
 		memmove(m_pName, pResName, len + 1);
 		strlwr(m_pName);
 	}
@@ -107,7 +107,7 @@ cResourceName::~cResourceName()
 	if (m_fFlags & 1)
 	{
 		for (int i = 0; i < m_ppFullNames->Size(); ++i)
-			Free((*m_ppFullNames)[i]);
+			operator delete((*m_ppFullNames)[i]);
 
 		delete m_ppFullNames;
 	}
@@ -125,7 +125,7 @@ cResourceName::~cResourceName()
 	m_pFirstStream = NULL;
 	if (m_pName)
 	{
-		Free(m_pName);
+		delete [] m_pName;
 		m_pName = NULL;
 	}
 }
@@ -230,7 +230,7 @@ cResourceData* cHashByResName::FindResData(const char* pName, IStore* pStore, BO
 					Insert(pNameData);
 				}
 
-				char* pNameCopy = static_cast<char*>(Malloc(strlen(pName) + 1));
+				char* pNameCopy = new char[strlen(pName) + 1];
 				strcpy(pNameCopy, pName);
 				pNameData->m_ppFullNames->Append(pNameCopy);
 			}

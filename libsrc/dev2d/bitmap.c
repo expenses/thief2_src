@@ -7,6 +7,8 @@
 #include <bitmap.h>
 #include <grmalloc.h>
 #include <valloc.h>
+#include <mode.h>
+#include <hw2dapi.h>
 
 uint gr_bm_type_to_flat(uint type)
 {
@@ -28,7 +30,7 @@ uchar gdd_pal_index = 0;
 
 static void set_pow2_flag(grs_bitmap *bm)
 {
-   if ((bm->row==(1<<bm->wlog))&&
+   if ((bm->row==(1<<bm->rowlog))&&
        (((bm->h-1)&bm->h)==0)&&
        (((bm->w-1)&bm->w)==0))
       bm->flags |= BMF_POW2;
@@ -44,6 +46,7 @@ void gr_init_bitmap (grs_bitmap *bm, uchar *p, uint type, uint flags,
 {
    int row;
    int v;
+   uint exflags = flags >> 16;
 
    /* generate flat bitmap of appropriate bitdepth to current mode. */
    if (type == BMT_DEVICE_VIDMEM_TO_FLAT)
@@ -66,9 +69,23 @@ void gr_init_bitmap (grs_bitmap *bm, uchar *p, uint type, uint flags,
    case BMT_FLAT16: row = 2*w; break;
    case BMT_FLAT24: row = 3*w; break;
    case BMT_FLAT32: row = 4*w; break;
-   case BMT_RSD8: row = 0; break;
+   case BMT_DXT:
+      switch (exflags & BMF_RGB_MASK) {
+      case BMF_DXT1:
+         row = ((w+3)/4) * 8;
+         break;
+      case BMF_DXT2:
+      case BMF_DXT3:
+      case BMF_DXT4:
+      case BMF_DXT5:
+         row = ((w+3)/4) * 16;
+         break;
+      default:
+         row = 0;
+         break;
+      }
+      break;
    default:
-      Warning(("gr_init_bm(): unsupported type\n"));
       row = 0;
       break;
    }
@@ -85,14 +102,49 @@ void gr_init_bitmap (grs_bitmap *bm, uchar *p, uint type, uint flags,
    bm->row = row;
    bm->wlog = bm->hlog = 0;
 
-   for (v=2; v<=row; v+=v)
+   for (v=2; v<=w; v+=v)
       bm->wlog++;
    for (v=2; v<=h; v+=v)
       bm->hlog++;
+   bm->rowlog = 0;
+   for (v=2; v<=row; v+=v)
+      bm->rowlog++;
+
+   bm->bpp = 0;
+   switch (type) {
+   case BMT_DEVICE_VIDMEM:
+      bm->bpp = grd_mode_info[grd_mode].bitDepth >> 3;
+      break;
+   case BMT_FLAT8:
+   case BMT_BANK8:
+   case BMT_TLUC8:
+      bm->bpp = 1;
+      break;
+   case BMT_FLAT16:
+   case BMT_BANK16:
+      bm->bpp = 2;
+      break;
+   case BMT_FLAT24:
+   case BMT_BANK24:
+      bm->bpp = 3;
+      break;
+   case BMT_FLAT32:
+      bm->bpp = 4;
+      break;
+   }
+
+   bm->wlog0 = bm->wlog;
+   bm->hlog0 = bm->hlog;
+   *(ushort *)&bm->exflags = (ushort)exflags;
+   bm->mips = 0;
+   bm->extra = NULL;
+   bm->w0 = w;
+   bm->h0 = h;
+   bm->pad = 0;
 
    set_pow2_flag(bm);
 
-   if (vMonitor(&bm->bits))
+   if ((bm->flags & (BMF_RELOCATABLE|BMF_DEVICE_VIDMEM)) && vMonitor(&bm->bits, &bm->row))
       bm->flags |= BMF_RELOCATABLE;
 }
 
@@ -104,6 +156,9 @@ void gr_close_bitmap (grs_bitmap *bm)
 
    if (bm->flags&BMF_RELOCATABLE)
       vUnmonitor(&bm->bits);
+
+   if ((bm->exflags & BMEF_HW2DCACHED) && g_pHW2D)
+      IHW2DRenderer_Invalidate(g_pHW2D, bm);
 }
 
 void gr_init_sub_bitmap_unsafe (grs_bitmap *sbm, grs_bitmap *dbm, int x, int y,
@@ -152,7 +207,7 @@ void gr_init_sub_bitmap_unsafe (grs_bitmap *sbm, grs_bitmap *dbm, int x, int y,
    // will work (since it worked for the parent) so we don't have to test
    // return value.
    if (sbm->flags & BMF_RELOCATABLE) {
-      vMonitor(&dbm->bits);
+      vMonitor(&dbm->bits, &dbm->row);
       dbm->flags |= BMF_RELOCATABLE;
    }
 }
@@ -191,7 +246,7 @@ grs_bitmap *gr_alloc_bitmap (uint type, uint flags, int w, int h)
    if (bm != NULL) {
       memcpy(bm, &tmp_bm, sizeof(tmp_bm));
       if (type == BMT_DEVICE_VIDMEM) {
-         if (vAlloc(&bm->bits, w, h))
+         if (vAlloc(&bm->bits, &bm->row, w, h))
             bm->flags |= BMF_RELOCATABLE;
       } else {
          bm->bits = ((uchar *)bm) + sizeof(tmp_bm);

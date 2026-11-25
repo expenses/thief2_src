@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/pickgame.cpp,v 1.8 1997/10/14 11:20:32 TOML Exp $
 #include <string.h>
 
@@ -81,9 +80,12 @@ static void init_game_cfg_vars(const char* name)
 
 }
 
+EXTERN BOOL g_bDark1 = FALSE;
+
 void AppSelectGame(const char* name)
 {
    const GameTableElem* game;
+   g_bDark1 = (name != NULL && strcmpi(name,"dark") == 0 && config_is_defined("dark1"));
    init_game_cfg_vars(name);
    for (game = GameTable; game->name != NULL; game++)
    {

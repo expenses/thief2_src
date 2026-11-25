@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/objedit.cpp,v 1.31 2000/02/24 23:40:12 mahk Exp $
 
 #include <windows.h>
@@ -581,7 +580,7 @@ static void resize_obj_space()
 static Command edit_mode_commands[] =
 {
    { "edit_links", FUNC_STRING, edit_link_cmd,
-     "edit_links [<src> [, <dest> [, <flavor>]]]", HK_EDITOR},
+     "edit_links [<src> [, <dest> [, <flavor>]]]", HK_EDITOR, 1},
    { "link_show_all", VAR_BOOL, &show_all_links,
      "show links marked as hidden in the link editor" },
    { "hilight_obj_type", FUNC_STRING, hilight_descendents,

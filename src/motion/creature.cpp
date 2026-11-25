@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/creature.cpp,v 1.206 2000/03/01 20:17:19 bfarquha Exp $
 /////////
 // ISSUES TO BE RESOLVED
@@ -573,6 +572,33 @@ static void LGAPI CreatureModelNameListener(sPropertyListenMsg* msg, PropListene
    }
 }
 
+static BOOL g_IgnoreCreatureScale = FALSE;
+
+static void LGAPI CreatureScaleListener(sPropertyListenMsg* msg, PropListenerData data)
+{
+   if (OBJ_IS_ABSTRACT(msg->obj))
+      return;
+
+   if (msg->type & (kListenPropModify|kListenPropSet|kListenPropUnset))
+   {
+      if (msg->type & kListenPropUnset)
+         g_IgnoreCreatureScale = TRUE;
+   }
+   else if (msg->type & kListenPropRebuildConcrete)
+   {
+      if (!(msg->type & kListenPropRebuildConcreteRelevant))
+         g_IgnoreCreatureScale = TRUE;
+   }
+   else
+      return;
+
+   cCreature *pCreature = CreatureFromObj(msg->obj);
+   if (pCreature)
+      pCreature->ResetLengths();
+
+   g_IgnoreCreatureScale = FALSE;
+}
+
 ///////////////////////////////////////////////////
 // creature non-phys listener
 
@@ -720,6 +746,14 @@ void CreaturesInit(int nCreatureTypes, const sCreatureDesc **ppCreatureDescs, co
       SafeRelease(prop);
    }
 
+   // install listener on creature scale property
+   prop=propman->GetPropertyNamed(PROP_CREATURESCALE_NAME);
+   if(prop)
+   {
+      prop->Listen(kListenPropModify|kListenPropSet|kListenPropUnset|kListenPropRebuildConcrete|kListenPropRebuildConcreteRelevant,CreatureScaleListener,NULL);
+      SafeRelease(prop);
+   }
+
    SafeRelease(propman);
 
    CreatureExplodeInit();
@@ -813,6 +847,8 @@ void CreaturesUpdate(const ulong timeDelta)
 
 BOOL CreatureExists(const ObjID obj)
 {
+   if (obj == OBJ_NULL)
+      return FALSE;
    int idx = obj_chandle_id(obj);
    return idx > 0 && CreatureHandle(idx)->pCreature;
 }
@@ -851,6 +887,9 @@ void CreatureUnFreeze(ObjID objID)
 
 cCreature *CreatureFromObj(ObjID obj)
 {
+   if (obj == OBJ_NULL)
+      return NULL;
+
    int idx = obj_chandle_id(obj);
    if (idx > 0)
       return CreatureHandle(idx)->pCreature;
@@ -1158,6 +1197,19 @@ static void InitMotorState(sMotorState *pMotorState)
 }
 
 // always does something safe, even if it can't find correct lengths values
+static void ScaleCreatureLengths(const sCreatureDesc *pCDesc,torso *pTorsos,limb *pLimbs,float scale)
+{
+   int i,j;
+
+   for (i=0; i<pCDesc->nTorsos; i++)
+      for (j=0; j<pTorsos[i].num_fixed_points; j++)
+         mx_scaleeq_vec(&pTorsos[i].pts[j],scale);
+
+   for (i=0; i<pCDesc->nLimbs; i++)
+      for (j=0; j<pLimbs[i].num_segments; j++)
+         pLimbs[i].seg_len[j]*=scale;
+}
+
 static void GetLengths(ObjID obj_id, const sCreatureDesc *pCDesc,torso *pTorsos,limb *pLimbs,float *pScale)
 {
    char name[38];
@@ -1201,6 +1253,13 @@ static void GetLengths(ObjID obj_id, const sCreatureDesc *pCDesc,torso *pTorsos,
       memcpy(pLimbs,pCur,nLimbs*sizeof(limb));
       pCur+=(nLimbs*sizeof(limb));
       *pScale=*((float *)(pCur));
+
+      float scale;
+      if (!g_IgnoreCreatureScale && ObjGetCreatureScale(obj_id,&scale))
+      {
+         ScaleCreatureLengths(pCDesc,pTorsos,pLimbs,scale);
+         *pScale*=scale;
+      }
    } else
    {
       failed=TRUE;
@@ -2343,7 +2402,7 @@ void cCreature::PostUpdateFilter(const ulong dt)
       mxs_matrix head_delta;
       mxs_real   head_track_rate = 100.0;
 
-      if ((m_trackingObj == -1) || (m_trackingObj > 0))
+      if (((m_trackingObj == -1) || (m_trackingObj > 0)) && !ObjCreatureNoHeadTrack(m_ObjID))
       {
          if (!PlayerObjectExists())
             return;
@@ -2531,8 +2590,11 @@ void cCreature::GetTransform(mxs_vector *pButtPos, mxs_angvec *pAngles)
 
    AssertMsg1(pPos,"No position for obj %d",m_ObjID);
 
-   *pButtPos=pPos->loc.vec;
-   *pAngles=pPos->fac;
+   if (pPos)
+   {
+      *pButtPos=pPos->loc.vec;
+      *pAngles=pPos->fac;
+   }
 }
 
 ///////////////////////////////////////////////////

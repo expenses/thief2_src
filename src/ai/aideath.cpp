@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aideath.cpp,v 1.16 2000/02/11 18:27:36 bfarquha Exp $
 //
@@ -23,6 +22,7 @@
 #include <aiapibhv.h>
 #include <aiapisnd.h>
 #include <aideath.h>
+#include <aiman.h>
 #include <aigoal.h>
 #include <aisndtyp.h>
 #include <aiprutil.h>
@@ -98,7 +98,8 @@ STDMETHODIMP_(void) cAIDeath::OnActionProgress(IAIAction * pAction)
 
    if (IsOwn(pAction) && !pAction->InProgress())
    {
-      CreatureBeDead(m_pAI->GetObjID());
+      if (!g_bAIDeathKeepPhys)
+         CreatureBeDead(m_pAI->GetObjID());
       m_pAI->Kill();
    }
 }
@@ -157,6 +158,7 @@ STDMETHODIMP cAIDeath::SuggestActions(cAIGoal * pGoal, const cAIActions & previo
    }
 
    cAIMotionAction * pAction = CreateMotionAction();
+   pAction->SetFocus(OBJ_NULL);
 
    // Select the proper death tags
    switch (m_DeathCause)

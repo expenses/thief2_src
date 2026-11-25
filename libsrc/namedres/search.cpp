@@ -4,6 +4,9 @@
 #include <storbase.h>
 #include <hshsttem.h>
 
+static int g_iSetupPath;
+static int g_nSetupDepth;
+
 IMPLEMENT_UNAGGREGATABLE_SELF_DELETE(cSearchPath, ISearchPath);
 
 ///////////////////////////////////////
@@ -52,7 +55,6 @@ struct SubpathEnumerateData
 
 cSearchPath::cSearchPath(IStoreManager* pStoreMan)
 	: m_bPathParsed(false),
-	m_aPathStrings(NULL),
 	m_pContext(NULL),
 	m_pVariants(NULL),
 	m_pPathStorages(NULL),
@@ -70,13 +72,14 @@ cSearchPath::~cSearchPath()
 	Clear();
 
 	if (m_pStoreMan)
-	{
 		m_pStoreMan->Release();
-		m_pStoreMan = NULL;
-	}
+	m_pStoreMan = NULL;
 
-	delete m_aPathStrings;
-	m_aPathStrings = NULL;
+	if (m_aPathStrings)
+	{
+		delete m_aPathStrings;
+		m_aPathStrings = NULL;
+	}
 }
 
 ///////////////////////////////////////
@@ -86,8 +89,8 @@ void cSearchPath::ClearStorages()
 	PathStorageNode* pNext = NULL;
 	for (PathStorageNode* pStoreNode = m_pPathStorages; pStoreNode != NULL; pStoreNode = pNext)
 	{
-		pStoreNode->pStore->Release();
 		pNext = pStoreNode->pNext;
+		pStoreNode->pStore->Release();
 		delete pStoreNode;
 	}
 
@@ -109,12 +112,10 @@ void cSearchPath::Clear()
 
 
 	for (int i = m_aPathStrings->Size() - 1; i >= 0; --i)
-		Free((*m_aPathStrings)[i].pPath);
+		operator delete((*m_aPathStrings)[i].pPath);
 
 	delete m_aPathStrings;
 	m_aPathStrings = new cDynArray<sSearchPathElement>();
-
-	ClearStorages();
 }
 
 ///////////////////////////////////////
@@ -150,25 +151,86 @@ ISearchPath* cSearchPath::Copy()
 
 ///////////////////////////////////////
 
+static void CleanStorePath(char* pDest, const char* pSrc)
+{
+	char* pEnd = pDest + MAX_PATH - 1;
+
+	if (*pSrc)
+	{
+		if (pSrc[1] != ':' && pSrc[0] != '\\' && pSrc[0] != '/'
+		    && (pSrc[0] != '.' || (pSrc[1] && pSrc[1] != '.' && pSrc[1] != '\\' && pSrc[1] != '/')))
+		{
+			*pDest++ = '.';
+			*pDest++ = '\\';
+		}
+
+		while (*pSrc && pDest < pEnd)
+		{
+			if (*pSrc == '\\' || *pSrc == '/')
+			{
+				++pSrc;
+				*pDest++ = '\\';
+				if (!*pSrc)
+					break;
+				while (*pSrc == '\\' || *pSrc == '/')
+				{
+					if (!*++pSrc)
+					{
+						*pDest = '\0';
+						return;
+					}
+				}
+			}
+			else
+				*pDest++ = *pSrc++;
+		}
+	}
+
+	*pDest = '\0';
+}
+
+static int FindPathElement(cDynArray<sSearchPathElement>& paths, const sSearchPathElement& elem)
+{
+	if (paths.AsPointer())
+	{
+		for (unsigned i = 0; i < paths.Size(); i++)
+			if (paths[i].fRecurse == elem.fRecurse && !stricmp(elem.pPath, paths[i].pPath))
+				return i;
+	}
+	return -1;
+}
+
 void cSearchPath::DoAddStore(const char* pStoreName, int fRecurse)
 {
 	if (!pStoreName)
 		return;
 
-	sSearchPathElement newEntry;
+	for (const char* p = pStoreName; *p; ++p)
+	{
+		if (!iswspace((uchar)*p))
+		{
+			char cleanPath[MAX_PATH];
+			sSearchPathElement newEntry;
 
-	GetNormalizedPath(pStoreName, &newEntry.pPath);
-	newEntry.fRecurse = fRecurse;
+			CleanStorePath(cleanPath, pStoreName);
+			GetNormalizedPath(cleanPath, &newEntry.pPath);
+			newEntry.fRecurse = fRecurse;
 
-	m_aPathStrings->Append(newEntry);
-	m_bPathParsed = FALSE;
+			if (FindPathElement(*m_aPathStrings, newEntry) == -1)
+			{
+				m_aPathStrings->Append(newEntry);
+				m_bPathParsed = FALSE;
+			}
+			return;
+		}
+	}
 }
 
 ///////////////////////////////////////
 
 void cSearchPath::DoAddPath(const char* pPath, int fRecurse)
 {
-	if (!pPath || strlen(pPath) == 0)
+	if (!pPath || !*pPath)
 		return;
 
 	char buff[512];
@@ -274,9 +336,10 @@ void cSearchPath::SetupSingleStore(const char* pStorePath, int fRecurse)
 	IStore* pStore = m_pStoreMan->GetStore(pStorePath, FALSE);
 	if (pStore && pStore->Exists())
 	{
-		PathStorageNode* pNode = ((PathStorageNode*)(Malloc(sizeof(PathStorageNode))));
+		PathStorageNode* pNode = ((PathStorageNode*)(operator new(sizeof(PathStorageNode))));
 		pNode->pStore = pStore;
 		pNode->pNext = NULL;
+		pNode->iPath = g_iSetupPath;
 		if (m_pPathStorages)
 			m_pLastNode->pNext = pNode;
 		else
@@ -311,7 +374,9 @@ void cSearchPath::SetupStorages()
 
 	if (m_aPathStrings && m_aPathStrings->Size())
 	{
+		++g_nSetupDepth;
 		Iterate(DispatchSetupStorage, TRUE, this);
+		--g_nSetupDepth;
 		m_bPathParsed = true;
 	}
 }
@@ -417,7 +482,7 @@ IStore* cSearchPath::Find(const char* pName, uint fFlags, IStore** ppCanonStore,
 	}
 
 	if (pRelPath)
-		Free(pRelPath);
+		operator delete(pRelPath);
 
 	return found;
 }
@@ -432,13 +497,13 @@ void* cSearchPath::BeginContents(const char* pPattern, uint fFlags, const char* 
 	if (!m_pPathStorages)
 		return NULL;
 
-	SearchCookie* pCookie = ((SearchCookie*)(Malloc(sizeof(SearchCookie))));
+	SearchCookie* pCookie = ((SearchCookie*)(operator new(sizeof(SearchCookie))));
 
 	pCookie->pNode = m_pPathStorages;
 
 	if (pRelPath)
 	{
-		pCookie->pPath = static_cast<char*>(Malloc(strlen(pRelPath) + 1));
+		pCookie->pPath = new char[strlen(pRelPath) + 1];
 		strcpy(pCookie->pPath, pRelPath);
 	}
 	else
@@ -450,7 +515,7 @@ void* cSearchPath::BeginContents(const char* pPattern, uint fFlags, const char* 
 
 	if (pPattern)
 	{
-		pCookie->pPattern = static_cast<char*>(Malloc(strlen(pPattern) + 1));
+		pCookie->pPattern = new char[strlen(pPattern) + 1];
 		strcpy(pCookie->pPattern, pPattern);
 	}
 	else
@@ -534,29 +599,38 @@ void cSearchPath::EndContents(void* pUntypedCookie)
 		return;
 
 	if (pCookie->pPattern)
-		Free(pCookie->pPattern);
+		delete pCookie->pPattern;
 
 	if (pCookie->pPath)
-		Free(pCookie->pPath);
+		delete pCookie->pPath;
 
 	if (pCookie->pStreamTable)
+	{
+		pCookie->pStreamTable->DestroyAll();
 		delete pCookie->pStreamTable;
+	}
 
-	Free(pCookie);
+	operator delete(pCookie);
 }
 
 ///////////////////////////////////////
 
 void cSearchPath::DoIterate(const char* pContext, tSearchPathIterateCallback callback, void* pClientData)
 {
-	int nPaths = m_aPathStrings->Size();
-	for (int i = 0; i < nPaths; ++i)
+	BOOL bGlobal = g_nSetupDepth && this == ((cStorageManager*)m_pStoreMan)->m_pGlobalContext;
+	uint nPaths = m_aPathStrings->Size();
+	for (uint i = 0; i < nPaths; ++i)
 	{
+		if (bGlobal)
+			g_iSetupPath = i + 1;
 		char fullpath[512];
 		strcpy(fullpath, pContext);
 		strcat(fullpath, (*m_aPathStrings)[i].pPath);
 		callback(this, fullpath, (*m_aPathStrings)[i].fRecurse, pClientData);
 	}
+
+	if (bGlobal)
+		g_iSetupPath = 0;
 }
 
 ///////////////////////////////////////
@@ -571,7 +645,6 @@ void doDispatchIterate(ISearchPath* /*pPath*/, const char* pContextStore, tSearc
 
 void cSearchPath::Iterate(tSearchPathIterateCallback callback, BOOL bUseContext, void* pClientData)
 {
-	static char pContext[4];
 	PathIterateData envelope;
 
 	if (bUseContext && m_pContext)
@@ -584,7 +657,7 @@ void cSearchPath::Iterate(tSearchPathIterateCallback callback, BOOL bUseContext,
 	}
 	else
 	{
-		DoIterate(pContext, callback, pClientData);
+		DoIterate("", callback, pClientData);
 	}
 }
 
@@ -605,7 +678,7 @@ cFoundStream::cFoundStream(IStore* pStore, const char* pName)
 	if (!pName)
 		CriticalMsg("Creating a cFoundStream without a name!");
 
-	m_pName = static_cast<char*>(Malloc(strlen(pName) + 1));
+	m_pName = static_cast<char*>(operator new(strlen(pName) + 1));
 	strcpy(m_pName, pName);
 }
 
@@ -619,7 +692,7 @@ cFoundStream::~cFoundStream()
 
 	if (m_pName)
 	{
-		Free(m_pName);
+		operator delete(m_pName);
 		m_pName = NULL;
 	}
 }

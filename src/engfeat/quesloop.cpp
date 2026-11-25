@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/quesloop.cpp,v 1.9 1998/10/27 12:20:38 mahk Exp $
 
 #include <lg.h>
@@ -30,6 +29,7 @@
 #include <command.h>
 #include <simpwrap.h>
 #include <quesfile.h>
+#include <quesbin.h>
 
 #include <campaign.h>
 #include <cmpgnmsg.h>
@@ -68,6 +68,9 @@ typedef struct _StateRecord
 
 TagFileTag QuestSystemTags[2] = { { "QUEST_DB" }, {"QUEST_CMP" } };
 TagVersion QuestSystemVersion = { 0, 1 };
+
+TagFileTag QuestBinTag = { "QUEST_CMPEX" };
+TagVersion QuestBinVersion = { 0, 1 };
 
 static ITagFile* tagfile = NULL;
 static long movefunc(void *buf, size_t elsize, size_t nelem)
@@ -108,6 +111,13 @@ EXTERN void QuestDataLoadTagFile(eQuestDataType type, ITagFile* file)
       pQuestData->Load(movefunc, type);
       cleanup_tagfile(file);
    }
+
+   if (type == kQuestDataCampaign
+       && setup_tagfile(file, &QuestBinTag, &QuestBinVersion))
+   {
+      g_pQuestBinData->Load(movefunc);
+      cleanup_tagfile(file);
+   }
 }
 
 EXTERN void QuestDataSaveTagFile(eQuestDataType type, ITagFile* File)
@@ -118,6 +128,13 @@ EXTERN void QuestDataSaveTagFile(eQuestDataType type, ITagFile* File)
    {
       AutoAppIPtr(QuestData); 
       pQuestData->Save(movefunc, type);
+      cleanup_tagfile(File);
+   }
+
+   if (type == kQuestDataCampaign && !g_pQuestBinData->IsEmpty()
+       && setup_tagfile(File, &QuestBinTag, &QuestBinVersion))
+   {
+      g_pQuestBinData->Save(movefunc);
       cleanup_tagfile(File);
    }
 }

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /* n:\bin\lex -l -o win32\schlex.c c:\prj\cam\src\schlex.lex */
 #define YYNEWLINE 10
 #define INITIAL 0
@@ -375,8 +374,8 @@ extern	int	yymapch	YY_ARGS((int delim, int escape));
 #endif
 
 /* stdin and stdout may not neccessarily be constants */
-YY_DECL	FILE   *yyin = stdin;
-YY_DECL	FILE   *yyout = stdout;
+YY_DECL	FILE   *yyin;
+YY_DECL	FILE   *yyout;
 YY_DECL	int	yylineno = 1;		/* line number */
 
 /*

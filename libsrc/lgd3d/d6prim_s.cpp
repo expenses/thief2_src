@@ -35,17 +35,13 @@ extern void (*gr_free)(void *p);
 extern "C" void (*lgd3d_release_ip_func)(void);
 
 // Global edge indices array for DrawStandardEdges (initialized in constructor)
-static WORD waEdgeIndices[50];
+D6PRIM_STATIC WORD waEdgeIndices[50];
 cD6Primitives* pcRenderBuffer = NULL;
 
 // Forward declaration from d6intfc.cpp
 extern "C" void lgd3d_release_indexed_primitives(void);
 
-#ifdef SHIP
-#define PUNT_D3D 0
-#else
 #define PUNT_D3D lgd3d_punt_d3d
-#endif
 
 
 
@@ -67,6 +63,7 @@ cImBuffer* cImBuffer::m_Instance = NULL;
 cD6Primitives::cD6Primitives():
     m_bFlushing(0),
     m_bPointMode(0),
+    m_iSavedTexId(-1),
     m_ePolyMode(1),
     m_dwNoCashedPoints(0),
     m_dwPointBufferSize(50),
@@ -79,7 +76,7 @@ cD6Primitives::cD6Primitives():
     for (int i = 0; i < 50; i++) {
         waEdgeIndices[i] = (WORD)i;
     }
-    CreateVertIndBuffer(16);
+    CreateVertIndBuffer(0xc00);
     lgd3d_release_ip_func = lgd3d_release_indexed_primitives;
 }
 
@@ -136,7 +133,7 @@ int cD6Primitives::g2UTrifanMTD(int count, g2s_point** points, LGD3D_tex_coord**
 }
 int cD6Primitives::g2TrifanMTD(int count, g2s_point** points, LGD3D_tex_coord** tex_coords)
 {
-    return g2Trifan(count, points);
+    return g2TrifanMTD(count, points, tex_coords);
 }
 
 cD6Primitives::~cD6Primitives()
@@ -252,21 +249,15 @@ int cD6Primitives::Poly(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(1);
     return 0;
@@ -309,21 +300,15 @@ int cD6Primitives::SPoly(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(1);
     return 0;
@@ -383,21 +368,15 @@ int cD6Primitives::RGB_Poly(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - pplj->grp.w * z2);
-                pvz->rhw = pplj->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - pplj->grp.w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = pplj->grp.w;
     }
     DrawPoly(1);
     return 0;
@@ -453,21 +432,15 @@ int cD6Primitives::RGBA_Poly(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(1);
     return 0;
@@ -510,21 +483,15 @@ int cD6Primitives::Trifan(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
         pv[i].color = color;
         pv[i].specular = m_dcFogSpecular;
     }
@@ -535,17 +502,15 @@ int cD6Primitives::Trifan(int n, r3s_point** ppl)
 
 int cD6Primitives::LitTrifan(int n, r3s_point** ppl)
 {
-    DWORD base_color = ((DWORD)m_nAlpha << 24) + 0xFFFFFF;
+    DWORD base_color = ((DWORD)m_nAlpha << 24) | 0xFFFFFF;
     _D3DTLVERTEX* pv = ReservePolySlots(n);
     for (int i = 0; i < n; i++)
     {
-        float u = ppl[i]->grp.u;
-        float v = ppl[i]->grp.v;
         float inten = ppl[i]->grp.i;
+        pv[i].tu = ppl[i]->grp.u;
+        pv[i].tv = ppl[i]->grp.v;
         if (inten > 1.0)
             inten = 1.0f;
-        pv[i].tu = u;
-        pv[i].tv = v;
         make_scolor(&pv[i].color, base_color, inten);
         pv[i].specular = m_dcFogSpecular;
         _D3DTLVERTEX* pvv = &pv[i];
@@ -575,21 +540,15 @@ int cD6Primitives::LitTrifan(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(0);
     return 0;
@@ -612,8 +571,7 @@ int cD6Primitives::RGBlitTrifan(int n, r3s_point** ppl)
     for (int i = 0; i < n; i++)
     {
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = ppl[i]->grp.u; pv[i].tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -644,21 +602,15 @@ int cD6Primitives::RGBlitTrifan(int n, r3s_point** ppl)
             if (lgd3d_z_normal) {
                 pvz->sz = (float)((p->p).z * inv_z_far);
             } else {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(0);
     return 0;
@@ -669,8 +621,7 @@ int cD6Primitives::RGBAlitTrifan(int n, r3s_point** ppl)
     for (int i = 0; i < n; i++)
     {
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = ppl[i]->grp.u; pv[i].tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -709,21 +660,15 @@ int cD6Primitives::RGBAlitTrifan(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(0);
     return 0;
@@ -746,7 +691,7 @@ do { \
       __dest->sz = z1 - z2 * w; \
       __dest->rhw = w;  \
       if (__dest->sz > 1.0) \
-         __dest->sz = 1.0;  \
+         __dest->sz = g_fMaxZ;  \
       else if (__dest->sz < 0.0) \
          __dest->sz = 0.0;  }\
 } while (0)
@@ -758,8 +703,7 @@ int cD6Primitives::RGBAFogLitTrifan(int n, r3s_point** ppl)
     for (int i = 0; i < n; i++)
     {
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = ppl[i]->grp.u; pv[i].tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -800,21 +744,15 @@ int cD6Primitives::RGBAFogLitTrifan(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(0);
     return 0;
@@ -825,8 +763,7 @@ int cD6Primitives::DiffuseSpecularLitTrifan(int n, r3s_point** ppl)
     for (int i = 0; i < n; i++)
     {
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = ppl[i]->grp.u; pv[i].tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -873,21 +810,15 @@ int cD6Primitives::DiffuseSpecularLitTrifan(int n, r3s_point** ppl)
             }
             else
             {
-                pvz->sz = (float)(z1 - (p->grp).w * z2);
-                pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - (p->grp).w * z2);
+                pvz->sz = z;
+                if (z >= 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = (p->grp).w;
     }
     DrawPoly(0);
     return 0;
@@ -1003,7 +934,7 @@ int cD6Primitives::CreateVertIndBuffer(unsigned long size)
 #line 1019
     m_pVIB = (_D3DTLVERTEX*)malloc(m_dwVIBSizeInEntries * sizeof(_D3DTLVERTEX));
     InitializeVIBCounters();
-    m_dwVIBmax = 0x100;
+    m_dwVIBmax = 0xc00;
     return m_pVIB != NULL;
 }
 
@@ -1213,9 +1144,9 @@ int cD6Primitives::PolyInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1277,9 +1208,9 @@ int cD6Primitives::SPolyInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1348,9 +1279,9 @@ int cD6Primitives::RGB_PolyInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1425,9 +1356,9 @@ int cD6Primitives::RGBA_PolyInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1485,21 +1416,15 @@ int cD6Primitives::TrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
                 }
                 else
                 {
-                    pvz->sz = (float)(z1 - (p->grp).w * z2);
-                    pvz->rhw = (p->grp).w;
-                    if (pvz->sz > 1.0)
-                    {
-                        pvz->sz = 1.0;
-                    }
-                    else
-                    {
-                        if (pvz->sz < 0.0)
-                        {
-                            pvz->sz = 0.0;
-                        }
-                    }
+                    float z = (float)(z1 - (p->grp).w * z2);
+                    pvz->sz = z;
+                    if (z >= 1.0)
+                        pvz->sz = g_fMaxZ;
+                    else if (z < 0.0)
+                        pvz->sz = 0.0;
                 }
             }
+            pvz->rhw = (p->grp).w;
             pv->color = color;
             pv->specular = m_dcFogSpecular;
         }
@@ -1518,13 +1443,11 @@ int cD6Primitives::LitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
         _D3DTLVERTEX* pv = GetIndPolySlot(n, (r3ixs_info*)pIter);
         if (!pv)
             continue;
-        float u = ppl[i]->grp.u;
-        float v = ppl[i]->grp.v;
         float inten = ppl[i]->grp.i;
+        pv->tu = ppl[i]->grp.u;
+        pv->tv = ppl[i]->grp.v;
         if (inten > 1.0)
             inten = 1.0f;
-        pv->tu = u;
-        pv->tv = v;
         make_scolor(&pv->color, base_color, inten);
         pv->specular = m_dcFogSpecular;
         _D3DTLVERTEX* pvv = pv;
@@ -1556,9 +1479,9 @@ int cD6Primitives::LitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1586,8 +1509,7 @@ int cD6Primitives::RGBlitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
         if (!pv)
             continue;
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv->tu = u; pv->tv = v;
+        pv->tu = ppl[i]->grp.u; pv->tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -1620,9 +1542,9 @@ int cD6Primitives::RGBlitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
             } else {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1650,8 +1572,7 @@ int cD6Primitives::RGBAlitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
         if (!pv)
             continue;
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv->tu = u; pv->tv = v;
+        pv->tu = ppl[i]->grp.u; pv->tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -1692,9 +1613,9 @@ int cD6Primitives::RGBAlitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1722,8 +1643,7 @@ int cD6Primitives::RGBAFogLitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
         if (!pv)
             continue;
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv->tu = u; pv->tv = v;
+        pv->tu = ppl[i]->grp.u; pv->tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -1766,9 +1686,9 @@ int cD6Primitives::RGBAFogLitTrifanInd(int n, r3s_point** ppl, r3ixs_info* info)
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1796,8 +1716,7 @@ int cD6Primitives::DiffuseSpecularLitTrifanInd(int n, r3s_point** ppl, r3ixs_inf
         if (!pv)
             continue;
         r3s_point* pp = ppl[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv->tu = u; pv->tv = v;
+        pv->tu = ppl[i]->grp.u; pv->tv = ppl[i]->grp.v;
         g2s_point* g2p = (g2s_point*)&pp->grp;
         int r = (int)(255.0f * g2p->r);
         if (r > 0xff) r = 0xff;
@@ -1846,9 +1765,9 @@ int cD6Primitives::DiffuseSpecularLitTrifanInd(int n, r3s_point** ppl, r3ixs_inf
             {
                 pvz->sz = (float)(z1 - (p->grp).w * z2);
                 pvz->rhw = (p->grp).w;
-                if (pvz->sz > 1.0)
+                if (pvz->sz >= 1.0)
                 {
-                    pvz->sz = 1.0;
+                    pvz->sz = g_fMaxZ;
                 }
                 else
                 {
@@ -1888,7 +1807,7 @@ void cD6Primitives::DrawLine(r3s_point *p0, r3s_point *p1)
                 pvv->sz = (float)(z1 - p0->grp.w * z2);
                 pvv->rhw = p0->grp.w;
                 if (pvv->sz > 1.0) {
-                    pvv->sz = 1.0;
+                    pvv->sz = g_fMaxZ;
                 } else if (pvv->sz < 0.0) {
                     pvv->sz = 0.0;
                 }
@@ -2005,13 +1924,11 @@ void cD6Primitives::Clear(int c)
 void cD6Primitives::StartNonTexMode()
 {
     m_iSavedTexId = pcStates->get_texture_id();
-    if (m_iSavedTexId != -1)
-        pcStates->TurnOffTexuring(TRUE);
+    pcStates->TurnOffTexuring(TRUE);
 }
 void cD6Primitives::EndNonTexMode()
 {
-    if (m_iSavedTexId != -1)
-        pcStates->TurnOffTexuring(FALSE);
+    pcStates->TurnOffTexuring(FALSE);
 }
 _D3DTLVERTEX* cD6Primitives::ReservePointSlots(int n)
 {
@@ -2384,8 +2301,7 @@ int cMSBuffer::TrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord** tex_c
     for (int i = 0; i < count; i++)
     {
         r3s_point* pp = points[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = points[i]->grp.u; pv[i].tv = points[i]->grp.v;
         float u2 = tex_coords[i]->u; float v2 = tex_coords[i]->v;
         pv[i].tu2 = u2; pv[i].tv2 = v2;
         _MTVERTEX* pvv = &pv[i];
@@ -2411,21 +2327,15 @@ int cMSBuffer::TrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord** tex_c
             }
             else
             {
-                pvz->sz = (float)(z1 - p->grp.w * z2);
-                pvz->rhw = p->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - p->grp.w * z2);
+                pvz->sz = z;
+                if (z > 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = p->grp.w;
         pv[i].color = color;
         pv[i].specular = m_dcFogSpecular;
     }
@@ -2473,21 +2383,15 @@ int cMSBuffer::LitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord** te
             }
             else
             {
-                pvz->sz = (float)(z1 - p->grp.w * z2);
-                pvz->rhw = p->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - p->grp.w * z2);
+                pvz->sz = z;
+                if (z > 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = p->grp.w;
     }
     DrawMTPoly();
     return 0;
@@ -2499,8 +2403,7 @@ int cMSBuffer::RGBlitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord**
     for (int i = 0; i < count; i++)
     {
         r3s_point* pp = points[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = points[i]->grp.u; pv[i].tv = points[i]->grp.v;
         float u2 = tex_coords[i]->u; float v2 = tex_coords[i]->v;
         pv[i].tu2 = u2; pv[i].tv2 = v2;
         g2s_point* g2p = (g2s_point*)&pp->grp;
@@ -2535,21 +2438,15 @@ int cMSBuffer::RGBlitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord**
             }
             else
             {
-                pvz->sz = (float)(z1 - p->grp.w * z2);
-                pvz->rhw = p->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - p->grp.w * z2);
+                pvz->sz = z;
+                if (z > 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = p->grp.w;
     }
     DrawMTPoly();
     return 0;
@@ -2561,8 +2458,7 @@ int cMSBuffer::RGBAlitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord*
     for (int i = 0; i < count; i++)
     {
         r3s_point* pp = points[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = points[i]->grp.u; pv[i].tv = points[i]->grp.v;
         float u2 = tex_coords[i]->u; float v2 = tex_coords[i]->v;
         pv[i].tu2 = u2; pv[i].tv2 = v2;
         g2s_point* g2p = (g2s_point*)&pp->grp;
@@ -2599,21 +2495,15 @@ int cMSBuffer::RGBAlitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coord*
             }
             else
             {
-                pvz->sz = (float)(z1 - p->grp.w * z2);
-                pvz->rhw = p->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - p->grp.w * z2);
+                pvz->sz = z;
+                if (z > 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = p->grp.w;
     }
     DrawMTPoly();
     return 0;
@@ -2625,8 +2515,7 @@ int cMSBuffer::RGBAFogLitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coo
     for (int i = 0; i < count; i++)
     {
         r3s_point* pp = points[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = points[i]->grp.u; pv[i].tv = points[i]->grp.v;
         float u2 = tex_coords[i]->u; float v2 = tex_coords[i]->v;
         pv[i].tu2 = u2; pv[i].tv2 = v2;
         g2s_point* g2p = (g2s_point*)&pp->grp;
@@ -2665,21 +2554,15 @@ int cMSBuffer::RGBAFogLitTrifanMTD(int count, _r3s_point** points, LGD3D_tex_coo
             }
             else
             {
-                pvz->sz = (float)(z1 - p->grp.w * z2);
-                pvz->rhw = p->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - p->grp.w * z2);
+                pvz->sz = z;
+                if (z > 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = p->grp.w;
     }
     DrawMTPoly();
     return 0;
@@ -2691,8 +2574,7 @@ int cMSBuffer::DiffuseSpecularLitTrifanMTD(int count, _r3s_point** points, LGD3D
     for (int i = 0; i < count; i++)
     {
         r3s_point* pp = points[i];
-        float u = pp->grp.u; float v = pp->grp.v;
-        pv[i].tu = u; pv[i].tv = v;
+        pv[i].tu = points[i]->grp.u; pv[i].tv = points[i]->grp.v;
         float u2 = tex_coords[i]->u; float v2 = tex_coords[i]->v;
         pv[i].tu2 = u2; pv[i].tv2 = v2;
         g2s_point* g2p = (g2s_point*)&pp->grp;
@@ -2737,21 +2619,70 @@ int cMSBuffer::DiffuseSpecularLitTrifanMTD(int count, _r3s_point** points, LGD3D
             }
             else
             {
-                pvz->sz = (float)(z1 - p->grp.w * z2);
-                pvz->rhw = p->grp.w;
-                if (pvz->sz > 1.0)
-                {
-                    pvz->sz = 1.0;
-                }
-                else
-                {
-                    if (pvz->sz < 0.0)
-                    {
-                        pvz->sz = 0.0;
-                    }
-                }
+                float z = (float)(z1 - p->grp.w * z2);
+                pvz->sz = z;
+                if (z > 1.0)
+                    pvz->sz = g_fMaxZ;
+                else if (z < 0.0)
+                    pvz->sz = 0.0;
             }
         }
+        pvz->rhw = p->grp.w;
+    }
+    DrawMTPoly();
+    return 0;
+}
+
+#ifndef D3DFVF_TEXCOORDSIZE3
+#define D3DFVF_TEXTUREFORMAT3 1
+#define D3DFVF_TEXCOORDSIZE3(CoordIndex) (D3DFVF_TEXTUREFORMAT3 << (CoordIndex * 2 + 16))
+#endif
+struct sD6CubeVertex {
+    _D3DTLVERTEX v;
+    float tw;
+};
+
+int cMSBuffer::CubeTexTrifan(int n, r3s_point** ppl, float* uvw, DWORD color)
+{
+    sD6CubeVertex verts[50];
+    for (int i = 0; i < n; i++, uvw += 3) {
+        verts[i].v.tu = uvw[0];
+        verts[i].v.tv = uvw[1];
+        verts[i].tw = uvw[2];
+        WriteIndPolyVertex(&verts[i].v, ppl[i]);
+        verts[i].v.rhw = ppl[i]->grp.w;
+        verts[i].v.color = color;
+        verts[i].v.specular = m_dcFogSpecular;
+    }
+    FlushPrimitives();
+    int bSuspend = (m_ePolyMode & 2) != 0;
+    if (bSuspend != g_bTexSuspended) {
+        if (bSuspend)
+            StartNonTexMode();
+        else
+            EndNonTexMode();
+    }
+    if ((g_bTexSuspended || pcStates->EnableMTMode(0)) && !PUNT_D3D && (m_ePolyMode & 3)) {
+        int hr = ((LPDIRECT3DDEVICE3)g_lpD3Ddevice)->DrawPrimitive(D3DPT_TRIANGLEFAN,
+            D3DFVF_TLVERTEX | D3DFVF_TEXCOORDSIZE3(0), verts, n, D3DDP_DONOTCLIP | D3DDP_DONOTUPDATEEXTENTS);
+#line 2093
+        CheckHResult(hr, "DrawPrimitive(poly) failed");
+    }
+    return 0;
+}
+
+int cMSBuffer::TexTrifanMT(int n, r3s_point** ppl, float* uv, LGD3D_tex_coord** lm, DWORD color)
+{
+    _MTVERTEX* pv = ReserveMTPolySlots(n);
+    for (int i = 0; i < n; i++, uv += 2) {
+        pv[i].tu = uv[0];
+        pv[i].tv = uv[1];
+        pv[i].tu2 = lm[i]->u;
+        pv[i].tv2 = lm[i]->v;
+        WriteIndPolyVertex((_D3DTLVERTEX*)&pv[i], ppl[i]);
+        pv[i].rhw = ppl[i]->grp.w;
+        pv[i].color = color;
+        pv[i].specular = m_dcFogSpecular;
     }
     DrawMTPoly();
     return 0;
@@ -2808,4 +2739,122 @@ int cMSBuffer::g2TrifanMTD(int count, g2s_point** points, LGD3D_tex_coord** tex_
         temp_free(clipped);
     }
     return result;
+}
+
+
+int cD6Primitives::TexTrifan(int n, r3s_point** ppl, float* uv, DWORD color)
+{
+    _D3DTLVERTEX* pv = ReservePolySlots(n);
+    for (int i = 0; i < n; i++, uv += 2) {
+        pv[i].tu = uv[0];
+        pv[i].tv = uv[1];
+        WriteIndPolyVertex(&pv[i], ppl[i]);
+        pv[i].rhw = ppl[i]->grp.w;
+        pv[i].color = color;
+        pv[i].specular = m_dcFogSpecular;
+    }
+    DrawPoly(0);
+    return 0;
+}
+
+int cD6Primitives::TexTrifanColors(int n, r3s_point** ppl, float* uv, DWORD* colors)
+{
+    _D3DTLVERTEX* pv = ReservePolySlots(n);
+    for (int i = 0; i < n; i++, uv += 2) {
+        pv[i].tu = uv[0];
+        pv[i].tv = uv[1];
+        WriteIndPolyVertex(&pv[i], ppl[i]);
+        pv[i].rhw = ppl[i]->grp.w;
+        pv[i].color = colors[i];
+        pv[i].specular = m_dcFogSpecular;
+    }
+    DrawPoly(0);
+    return 0;
+}
+
+
+int cD6Primitives::CubeTexTrifan(int n, r3s_point** ppl, float* uvw, DWORD color)
+{
+    sD6CubeVertex verts[50];
+    for (int i = 0; i < n; i++, uvw += 3) {
+        verts[i].v.tu = uvw[0];
+        verts[i].v.tv = uvw[1];
+        verts[i].tw = uvw[2];
+        WriteIndPolyVertex(&verts[i].v, ppl[i]);
+        verts[i].v.rhw = ppl[i]->grp.w;
+        verts[i].v.color = color;
+        verts[i].v.specular = m_dcFogSpecular;
+    }
+    FlushPrimitives();
+    int bSuspend = (m_ePolyMode & 2) != 0;
+    if (bSuspend != g_bTexSuspended) {
+        if (bSuspend)
+            StartNonTexMode();
+        else
+            EndNonTexMode();
+    }
+    if (!PUNT_D3D && (m_ePolyMode & 3)) {
+        int hr = ((LPDIRECT3DDEVICE3)g_lpD3Ddevice)->DrawPrimitive(D3DPT_TRIANGLEFAN,
+            D3DFVF_TLVERTEX | D3DFVF_TEXCOORDSIZE3(0), verts, n, D3DDP_DONOTCLIP | D3DDP_DONOTUPDATEEXTENTS);
+#line 524
+        CheckHResult(hr, "DrawPrimitive(poly) failed");
+    }
+    return 0;
+}
+
+int cD6Primitives::TexTrifanMT(int n, r3s_point** ppl, float* uv, LGD3D_tex_coord** lm, DWORD color)
+{
+    return TexTrifan(n, ppl, uv, color);
+}
+
+int cD6Primitives::g2TexPoly(int n, g2s_point** ppl, int nAlpha)
+{
+    int a = (m_nAlpha * nAlpha) >> 8;
+    _D3DTLVERTEX* pv = ReservePolySlots(n);
+    for (int i = 0; i < n; i++) {
+        g2s_point* p = ppl[i];
+        int c = (int)(p->i * 255.0) & 0xff;
+        int x = p->sx + 0x8000;
+        int y = p->sy + 0x8000;
+        if (x > (grd_canvas->gc).clip.f.right)
+            x = (grd_canvas->gc).clip.f.right;
+        if (x < (grd_canvas->gc).clip.f.left)
+            x = (grd_canvas->gc).clip.f.left;
+        if (y > (grd_canvas->gc).clip.f.bot)
+            y = (grd_canvas->gc).clip.f.bot;
+        if (y < (grd_canvas->gc).clip.f.top)
+            y = (grd_canvas->gc).clip.f.top;
+        pv[i].sx = (float)x / 65536.0f + g_XOffset;
+        pv[i].sy = (float)y / 65536.0f + g_YOffset;
+        pv[i].sz = (float)z2d;
+        pv[i].rhw = (float)w2d;
+        pv[i].color = (((((a << 8) | c) << 8) | c) << 8) | c;
+        pv[i].specular = m_dcFogSpecular;
+        pv[i].tu = p->u;
+        pv[i].tv = p->v;
+    }
+    DrawPoly(0);
+    return 0;
+}
+
+int cD6Primitives::g2TexClipPoly(int n, g2s_point** ppl, int nAlpha)
+{
+    g2s_point** clipped = NULL;
+    int nclipped = g2_clip_poly(n, 4, ppl, &clipped);
+    int result;
+    if (nclipped < 3)
+        result = 0x10;
+    else {
+        g2TexPoly(nclipped, clipped, nAlpha);
+        result = 0;
+    }
+    if (clipped && clipped != ppl)
+        temp_free(clipped);
+    return result;
+}
+
+void cD6Primitives::DrawTLVertices(int n, _D3DTLVERTEX* pVerts)
+{
+    ((LPDIRECT3DDEVICE3)g_lpD3Ddevice)->DrawPrimitive(D3DPT_TRIANGLEFAN, D3DFVF_TLVERTEX, pVerts, n,
+        D3DDP_DONOTCLIP | D3DDP_DONOTUPDATEEXTENTS);
 }

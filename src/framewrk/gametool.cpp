@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/gametool.cpp,v 1.9 1999/11/02 15:57:32 BODISAFA Exp $
 
 #include <gametool.h>
@@ -140,9 +139,11 @@ public:
       IRelation *pRel;
       pRel = pLinkManager->GetRelationNamed("AIAwareness");
       CleanLinks(obj,pRel->GetID());
+      pRel->Release();
 
       pRel = pLinkManager->GetRelationNamed("AIAttack");
       CleanLinks(obj,pRel->GetID());
+      pRel->Release();
 
 #ifdef NEW_NETWORK_ENABLED
       // Tell the other players where obj now is:

@@ -12,7 +12,7 @@
 #ifndef ___ANIMTXT_H
 #define ___ANIMTXT_H
 
-#define MAX_FRAMES 20
+#define MAX_FRAMES 99
 
 typedef struct {
    void  *animsys;

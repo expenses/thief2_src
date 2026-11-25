@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //  $Header: r:/t2repos/thief2/src/portal/portbg.c,v 1.22 2000/02/19 13:18:49 toml Exp $
 //
 //  PORTAL
@@ -254,6 +253,7 @@ static double compute_dist(r3s_point *pt, r3s_point *e1, r3s_point *e2)
 }
 
 extern BOOL g_lgd3d;
+extern BOOL r3d_using_g2;
 static void compute_intersect(r3s_point *out, r3s_point *in1, r3s_point *in2,
                                               float d0, float d1)
 {
@@ -281,7 +281,7 @@ static void compute_intersect(r3s_point *out, r3s_point *in1, r3s_point *in2,
 
    out->grp.sx = in1->grp.sx + interp*(in2->grp.sx - in1->grp.sx);
    out->grp.sy = in1->grp.sy + interp*(in2->grp.sy - in1->grp.sy);
-   if (g_lgd3d) {
+   if (g_lgd3d || r3d_using_g2) {
       out->grp.w = in1->grp.w + (in2->grp.w - in1->grp.w) * interp;
       out->p.z = 1 / out->grp.w;
    }

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/scrptcmd.cpp,v 1.1 1998/02/10 09:51:50 MAT Exp $
 
 /* --<<= --/-/-/-/-/-/-/ <<< ((( ((( /\ ))) ))) >>> \-\-\-\-\-\-\-- =>>-- *\
@@ -67,7 +66,7 @@
 static void script_test_message(char* arg)
 {
    // Munch trailing whitespace
-   for (char* s = arg + strlen(arg) - 1; s >= arg && isspace(*s); s++)
+   for (char* s = arg + strlen(arg) - 1; s >= arg && isspace((uchar)*s); s++)
       *s = '\0';
 
    AutoAppIPtr(ScriptMan);

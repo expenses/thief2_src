@@ -13,6 +13,8 @@
 // get a y or n 
 EXTERN BOOL winui_GetYorN(char *msg);
 
+EXTERN int winui_GetYesNoCancel(char *msg);
+
 // display a text message
 EXTERN void winui_Text(char *msg);
 

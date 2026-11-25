@@ -49,6 +49,7 @@ EXTERN void DarkAutomapSetLocationVisited( int page, int location );
 //
 #define MIN_PAGE_QVAR "MAP_MIN_PAGE"
 #define MAX_PAGE_QVAR "MAP_MAX_PAGE"
+#define CUR_PAGE_QVAR "MAP_CUR_PAGE"
 
 #define OOB_PAGE_QVAR "MAP_OOB_PAGE"
 #define OOB_LOC_QVAR  "MAP_OOB_LOC"

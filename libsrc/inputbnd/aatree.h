@@ -226,16 +226,14 @@ T* aatree<T>::Search(char* name, typename aatree<T>::aa_node* cur)
 	if (cur == null_node)
 		return NULL;
 
-	if (strcmp(name, cur->name) == 0)
-	{
-		cur_visited = cur;
-		return cur->info;
-	}
-
-	if (strcmp(name, cur->name) < 0)
+	int cmp = strcmp(name, cur->name);
+	if (cmp > 0)
+		return Search(name, cur->right);
+	if (cmp < 0)
 		return Search(name, cur->left);
 
-	return Search(name, cur->right);
+	cur_visited = cur;
+	return cur->info;
 }
 
 template <typename T>
@@ -314,14 +312,14 @@ int aatree<T>::Remove(char* name, typename aatree<T>::aa_node** ppOutNode, int d
 	if (*ppOutNode != null_node)
 	{
 		last_ptr = *ppOutNode;
-		if (strcmp(name, (*ppOutNode)->name) < 0)
-		{
-			Remove(name, &(*ppOutNode)->left, delete_info, info);
-		}
-		else
+		if (strcmp(name, (*ppOutNode)->name) >= 0)
 		{
 			del_ptr = *ppOutNode;
 			Remove(name, &(*ppOutNode)->right, delete_info, info);
+		}
+		else
+		{
+			Remove(name, &(*ppOutNode)->left, delete_info, info);
 		}
 
 		if (*ppOutNode == last_ptr)
@@ -334,7 +332,7 @@ int aatree<T>::Remove(char* name, typename aatree<T>::aa_node** ppOutNode, int d
 			}
 			else
 			{
-				operator delete(del_ptr->name);
+				delete[] del_ptr->name;
 				if (del_ptr != *ppOutNode)
 				{
 					del_ptr->name = new char[strlen((*ppOutNode)->name) + 1];
@@ -378,11 +376,11 @@ void aatree<T>::FreeTree(typename aatree<T>::aa_node** ppOutNode, int delete_inf
 	FreeTree(&(*ppOutNode)->left, delete_info);
 	FreeTree(&(*ppOutNode)->right, delete_info);
 
-	delete (*ppOutNode)->name;
+	delete[] (*ppOutNode)->name;
 	--num_nodes;
 
 	if (delete_info)
-		delete (*ppOutNode)->info;
+		delete[] (*ppOutNode)->info;
 
 	delete *ppOutNode;
 	*ppOutNode = null_node;

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/roompa.h,v 1.8 2000/01/31 10:00:36 adurant Exp $
 //
@@ -67,7 +66,7 @@ public:
 ////////////////////////////////////////
 
 // 1024 * 16 = 16k
-#define MAX_BF_ROOMS 1024
+#define MAX_BF_ROOMS 4096
 
 // array elements for A* search
 class cBFRoomInfo

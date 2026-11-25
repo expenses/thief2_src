@@ -18,8 +18,5 @@ int VersionNumsCompare(const VersionNum* v1, const VersionNum* v2) // reversed
         return diff;
 
     diff = v1->minor - v2->minor;
-    if (diff != 0)
-        return diff;
-
-    return 0;
+    return diff;
 }

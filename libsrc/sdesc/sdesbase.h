@@ -49,6 +49,7 @@ enum _eFieldFlags
    kFieldFlagUIWrap     = (1<<4),   // does the value wrap around at the ends?
    kFieldFlagUnsigned   = (1<<5),   // is this field unsigned?
    kFieldFlagHex        = (1<<6),   // is this field displayed as hex?
+   kFieldFlagPackedNormal = (1<<7),
 };
 
 // sStructDesc flags

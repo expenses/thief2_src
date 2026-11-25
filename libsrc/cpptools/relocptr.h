@@ -23,9 +23,9 @@ public:
 protected:
     cRelocationSetBase(const void * pInitialBase);
 
-    void Insert(void **);
+    void Insert(void **, ushort * pRowBytes);
     void Remove(void **);
-    void SetBaseAddress(const void * pNewBase);
+    void SetBaseAddress(const void * pNewBase, uint newRowBytes);
 
 private:
     enum
@@ -40,6 +40,8 @@ private:
     int       m_nPtrs;            // number of monitored ptrs in block
     int       m_nAllocedPtrs;     // Space for num pointers allocated
     uint8 *** m_PtrList;          // List of addresses of monitored pointers in block
+    uint      m_RowBytes;
+    ushort ** m_RowBytesList;
 
 };
 
@@ -52,7 +54,9 @@ inline cRelocationSetBase::cRelocationSetBase(const void *baseAddr)
   : m_pBaseAddr((uint8 *) baseAddr),
     m_nPtrs(0),
     m_nAllocedPtrs(0),
-    m_PtrList(NULL)
+    m_PtrList(NULL),
+    m_RowBytes(0),
+    m_RowBytesList(NULL)
 {
 }
 
@@ -65,6 +69,8 @@ inline cRelocationSetBase::~cRelocationSetBase(void)
 {
     if (m_PtrList != NULL)
         free(m_PtrList);
+    if (m_RowBytesList != NULL)
+        free(m_RowBytesList);
 }
 
 ///////////////////////////////////////
@@ -88,9 +94,9 @@ class cRelocationSet : public cRelocationSetBase
 public:
     cRelocationSet(const TYPE * pInitialBase);
 
-    void Insert(TYPE **);
+    void Insert(TYPE **, ushort * pRowBytes);
     void Remove(TYPE **);
-    void SetBaseAddress(const TYPE * pNewBase);
+    void SetBaseAddress(const TYPE * pNewBase, uint newRowBytes);
 
 };
 
@@ -105,9 +111,9 @@ inline cRelocationSet<TYPE>::cRelocationSet(const TYPE * pInitialBase)
 ///////////////////////////////////////
 
 template <class TYPE>
-inline void cRelocationSet<TYPE>::Insert(TYPE ** pp)
+inline void cRelocationSet<TYPE>::Insert(TYPE ** pp, ushort * pRowBytes)
 {
-    cRelocationSetBase::Insert(pp);
+    cRelocationSetBase::Insert(pp, pRowBytes);
 }
 
 ///////////////////////////////////////
@@ -122,9 +128,9 @@ inline void cRelocationSet<TYPE>::Remove(TYPE ** pp)
 
 
 template <class TYPE>
-inline void cRelocationSet<TYPE>::SetBaseAddress(const TYPE * pNewBase)
+inline void cRelocationSet<TYPE>::SetBaseAddress(const TYPE * pNewBase, uint newRowBytes)
 {
-    cRelocationSetBase::SetBaseAddress(pNewBase);
+    cRelocationSetBase::SetBaseAddress(pNewBase, newRowBytes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

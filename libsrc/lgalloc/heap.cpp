@@ -107,10 +107,12 @@ const unsigned kMaxAllocSize    = UINT_MAX - kUnitSize;
 // Placement operator new
 //
 
+#if _MSC_VER < 1300
 inline void * operator new(size_t, void *p)
 {
     return p;
 }
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

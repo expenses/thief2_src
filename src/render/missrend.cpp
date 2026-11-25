@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/missrend.cpp,v 1.13 2000/02/13 20:21:04 adurant Exp $
 #include <missrend.h>
 #include <appagg.h>
@@ -101,16 +100,42 @@ static cRenderParams gRenderParams;
 // SDESC 
 //
 
+static char *sunlight_mode_names[] =
+{
+   "Single Unshadowed",
+   "Quad + Objcast Shadows",
+   "Quad Unshadowed",
+   "Single + Objcast Shadows",
+};
+
 static sFieldDesc param_field[] = 
 {
    { "Palette Res", kFieldTypeString, FieldLocation(sMissionRenderParams,pal_res), },
    { "Ambient Light", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_light), },
    { "Use Sunlight", kFieldTypeBool, FieldLocation(sMissionRenderParams,use_sun), },
-   { "Quad Sunlight", kFieldTypeBool, FieldLocation(sMissionRenderParams,sunlight_quad), },
+   { "Sunlight Mode", kFieldTypeEnum, FieldLocation(sMissionRenderParams,sunlight_quad), kFieldFlagNone, 0, 4, 4, sunlight_mode_names },
    { "Sunlight Direction", kFieldTypeVector, FieldLocation(sMissionRenderParams,sunlight_vector), },
    { "Sunlight Hue (0-1)", kFieldTypeFloat, FieldLocation(sMissionRenderParams,sun_h), },
    { "Sunlight Saturation (0-1)", kFieldTypeFloat, FieldLocation(sMissionRenderParams,sun_s), },
    { "Sunlight Brightness (0-1023)", kFieldTypeFloat, FieldLocation(sMissionRenderParams,sun_b), },
+   { "Required View Dist", kFieldTypeFloat, FieldLocation(sMissionRenderParams,view_dist), },
+   { "Global AI Vis Bias", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[0]), },
+   { "Ambient Light Zone 1", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[1]), },
+   { "Amb Zone AI Vis Bias 1", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[1]), },
+   { "Ambient Light Zone 2", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[2]), },
+   { "Amb Zone AI Vis Bias 2", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[2]), },
+   { "Ambient Light Zone 3", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[3]), },
+   { "Amb Zone AI Vis Bias 3", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[3]), },
+   { "Ambient Light Zone 4", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[4]), },
+   { "Amb Zone AI Vis Bias 4", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[4]), },
+   { "Ambient Light Zone 5", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[5]), },
+   { "Amb Zone AI Vis Bias 5", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[5]), },
+   { "Ambient Light Zone 6", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[6]), },
+   { "Amb Zone AI Vis Bias 6", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[6]), },
+   { "Ambient Light Zone 7", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[7]), },
+   { "Amb Zone AI Vis Bias 7", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[7]), },
+   { "Ambient Light Zone 8", kFieldTypeVector, FieldLocation(sMissionRenderParams,ambient_zone[8]), },
+   { "Amb Zone AI Vis Bias 8", kFieldTypeFloat, FieldLocation(sMissionRenderParams,ai_vis_bias[8]), },
 };
 
 

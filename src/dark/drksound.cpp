@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drksound.cpp,v 1.22 2000/02/20 15:23:14 patmac Exp $
 
 #include <string.h>

@@ -76,6 +76,7 @@
 #endif
 
 #include <types.h>
+#include <lg_file.h>
 
 #ifdef __cplusplus
 extern "C"  {
@@ -84,8 +85,7 @@ extern "C"  {
 //	The Datapath structure maintains a list of data paths.  It should
 //	be cleared to 0 prior to use (static instances are clear at init already).
 
-#define NUM_DATAPATHS 16			   // was 8, which should have been plenty
-                                    // however, defdep needs more, for instance
+#define NUM_DATAPATHS 64
 typedef struct Datapath
 {
 	uchar numDatapaths;					// # valid paths
@@ -115,7 +115,7 @@ typedef struct Datapath
 #define DatapathClear(pdp) memset(pdp, 0, sizeof(Datapath))
 void DatapathFree(Datapath *pdp);
 
-FILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode);
+LGFILE *DatapathOpen(Datapath *pdp, const char *fname, const char *mode);
 int DatapathFDOpen(Datapath *pdp, const char *fname, int access, ... );
 int DatapathFind(Datapath *pdp, const char *fname, char *buff, int len);
 bool DatapathAdd(Datapath *pdp, const char *path);
@@ -182,6 +182,13 @@ void DatapathFindFlags(Datapath *pdp,bool files,bool dirs);
 #ifdef __cplusplus
 }
 #endif  // cplusplus
+
+EXTERN char g_szFMPath[];
+EXTERN Datapath *g_pModDatapath;
+EXTERN int g_iModDatapathFM;
+EXTERN const char *FMPathPrepend(const char *name, char *buf);
+EXTERN const char *FMPathPrependTemp(const char *name);
+EXTERN BOOL FMMakeDir(const char *pszName, char *pszOut);
 
 #endif
 

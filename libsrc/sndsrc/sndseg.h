@@ -77,7 +77,7 @@ protected:
    BOOL           mInited;          // TRUE iff Init has been done
    int            mBytesPerSample;  // size of output samples
 
-   IMA_ADPCM      *mpDecoder;        // IMA ADPCM decompressor state
+   cSndDecoder    *mpDecoder;        // IMA ADPCM decompressor state
 };
 
 #endif

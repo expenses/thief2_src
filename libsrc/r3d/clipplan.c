@@ -51,12 +51,16 @@ void r3_push_clip_plane(mxs_plane *p)
    }
 
    if (cclip.num_user_planes == cclip.max_user_planes) {
-      int n;
+      int n, size;
       void *q;
       n = cclip.max_user_planes * 2;
       if (n == 0) n = 1;
       
-      q = Realloc(cclip.clip_data, sizeof(r3s_clip_plane) * n);
+      size = sizeof(r3s_clip_plane) * n;
+      if (cclip.clip_data && size > R3_CLIP_POOL_SIZE)
+         q = ((void **)Realloc(((void **)cclip.clip_data) - 1, size + sizeof(void *))) + 1;
+      else
+         q = cclip.clip_data;
 #ifdef DBG_ON
       if (!q) {
          Warning(("r3d: r3_push_clip_plane: out of memory at depth %d\n", n));

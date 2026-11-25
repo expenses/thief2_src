@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkgolf.cpp,v 1.12 1999/08/05 17:45:34 Justin Exp $
 
 #include <math.h>

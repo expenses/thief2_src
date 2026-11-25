@@ -22,14 +22,14 @@ typedef unsigned tAIPathVertexID;
 typedef unsigned tAIPathCell2CellLinkID;
 typedef unsigned tAIPathCell2VertexLinkID;
 
-typedef ushort   tAIPathCellIDPacked;
-typedef ushort   tAIPathVertexIDPacked;
-typedef ushort   tAIPathCell2CellLinkIDPacked;
-typedef ushort   tAIPathCell2VertexLinkIDPacked;
+typedef unsigned tAIPathCellIDPacked;
+typedef unsigned tAIPathVertexIDPacked;
+typedef unsigned tAIPathCell2CellLinkIDPacked;
+typedef unsigned tAIPathCell2VertexLinkIDPacked;
 
 typedef ushort   tAIPathZone;
 
-typedef uchar    tAIPathOkBits;
+typedef ushort   tAIPathOkBits;
 
 typedef enum
 {

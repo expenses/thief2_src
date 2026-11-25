@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/resapp.c,v 1.21 2000/02/19 13:16:31 toml Exp $
 
 #include <lg.h>
@@ -19,6 +18,9 @@
 #include <resguid.h>
 #include <init.h>
 
+EXTERN void SubtitlesInit(void);
+EXTERN void SubtitlesTerm(void);
+
 // namedres stuff:
 #include <storeapi.h>
 #include <resapi.h>
@@ -32,9 +34,12 @@
 
 #include <mprintf.h>
 #include <memall.h>
-#include <dbmem.h>   // must be last header! 
+#include <dbmem.h>   // must be last header!
+
+void MtlConfigInit(void); 
 
 ISearchPath *gContextPath = NULL;
+BOOL g_bImageTypePrio;
 
 //////////////////////////////////////////////////////////////
 // INIT FUNC
@@ -45,9 +50,11 @@ static void register_res_types()
    IResMan * pResMan = AppGetObj(IResMan);
    IResType *pResType;
 
+   g_bImageTypePrio = !config_is_defined("legacy_image_type_prio");
    pResType = MakePaletteResourceType();
    IResMan_RegisterResType(pResMan, pResType);
    SafeRelease(pResType);
+   MtlConfigInit();
    pResType = MakeImageResourceType();
    IResMan_RegisterResType(pResMan, pResType);
    SafeRelease(pResType);
@@ -68,7 +75,7 @@ static void register_res_types()
 
 #define LRES_SIZE 256
 
-void InitAppData();
+EXTERN void InitAppData();
 
 #pragma off(unreferenced)
 static STDMETHODIMP InitFunc(IUnknown* goof)
@@ -147,6 +154,8 @@ static STDMETHODIMP InitFunc(IUnknown* goof)
 
    InitAppData();
 
+   SubtitlesInit();
+
    return kNoError;
 }
 #pragma on(unreferenced)
@@ -159,6 +168,8 @@ static STDMETHODIMP InitFunc(IUnknown* goof)
 #pragma off(unreferenced)
 STDMETHODIMP ShutdownFunc(IUnknown* goof)
 {
+   SubtitlesTerm();
+
    SafeRelease(gContextPath);
 
    if (config_is_defined("report_resource_stats")) {

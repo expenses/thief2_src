@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/pgroup.c,v 1.38 1998/10/31 14:31:34 CCAROLLO Exp $
 
 #include <stdlib.h>
@@ -23,6 +22,7 @@
 #include <rendprop.h>
 #include <scrnman.h>
 #include <lgd3d.h>
+#include <tmpalloc.h>
 #include <dbmem.h>
 #include <rand.h>
 #include <objmodel.h>
@@ -57,6 +57,10 @@ void pgroup_show_counts(void)
 #endif
 
 extern BOOL g_lgd3d;
+extern BOOL r3d_using_g2;
+EXTERN BOOL g_bSquarePartsAsDisks;
+EXTERN BOOL g_bPixelPartsAsDisks;
+EXTERN int g_bForce32BitTextures;
 
 // general utility macro
 // is this really the right condition?
@@ -282,14 +286,14 @@ void ParticleGroupTransformPoints(ParticleGroup *pg)
 void ParticleGroupRenderStart(ParticleGroup *pg)
 {
    if (pg->pl.n)
-      pg->points = Malloc(sizeof(r3s_point) * pg->pl.n);
+      pg->points = temp_malloc(sizeof(r3s_point) * pg->pl.n);
    pg->pc.particle_transform(pg);
 }
 
 void ParticleGroupRenderEnd(ParticleGroup *pg)
 {
    if (pg->points) {
-      Free(pg->points);
+      temp_free(pg->points);
       pg->points = NULL;
    }
    if (pg->free_locs && pg->pl.location) {
@@ -519,17 +523,92 @@ static void RenderSquareFixedColor(ParticleGroup *pg, int *list)
 #define HACK_SZ    (HACK_DIM * HACK_DIM)
 
 static grs_bitmap alpha_bm[HACK_NUM];
+static const uchar particle_alpha_32[32][32] = {
+   {199,202,194,189,193,192,187,181,180,181,196,207,211,218,225,234,234,229,225,223,220,220,217,215,215,215,218,218,217,216,217,217},
+   {197,189,185,186,190,196,194,199,200,199,207,215,216,217,223,233,234,230,227,225,220,217,217,216,216,217,218,220,220,220,218,218},
+   {187,185,181,185,192,197,203,213,213,213,213,216,213,216,223,230,233,231,231,226,220,217,217,217,217,217,218,220,223,223,222,218},
+   {186,185,190,190,193,200,210,216,216,215,215,213,213,217,220,228,225,229,230,227,220,220,217,217,217,220,223,224,224,224,220,222},
+   {186,186,186,192,193,197,211,220,220,220,218,218,220,220,226,228,225,230,232,229,225,222,222,220,220,222,224,224,226,224,223,220},
+   {183,185,181,190,194,197,210,222,226,224,222,223,224,227,227,232,233,237,232,232,230,227,225,224,223,223,224,224,222,220,220,218},
+   {174,181,189,192,197,207,215,224,227,226,220,224,225,227,228,231,237,234,237,237,235,233,230,229,227,225,223,220,220,220,218,217},
+   {168,181,197,202,206,211,217,224,225,225,218,223,223,223,225,225,232,234,229,232,235,234,233,232,230,228,224,222,218,217,217,213},
+   {169,185,197,206,207,208,216,220,222,224,220,216,218,222,222,223,231,227,225,225,234,233,233,234,234,230,226,222,217,215,215,213},
+   {172,186,202,205,203,203,210,218,222,222,218,216,217,215,220,226,229,223,224,227,231,232,232,234,234,231,228,224,216,211,213,213},
+   {176,190,199,203,207,206,206,215,218,217,217,217,216,217,223,227,228,224,223,228,229,231,232,231,233,232,229,224,215,211,213,213},
+   {187,192,202,206,206,208,207,210,211,213,215,213,210,217,223,227,231,228,225,228,229,230,231,231,229,229,229,227,222,217,213,213},
+   {199,194,203,208,210,208,210,208,203,205,206,200,203,217,223,226,230,229,227,226,227,229,229,227,226,226,226,225,226,223,220,213},
+   {210,205,205,210,215,215,207,205,199,197,193,194,203,216,220,223,228,230,224,220,223,225,225,218,222,224,224,223,224,224,224,218},
+   {220,217,213,217,213,211,208,207,197,190,196,200,210,213,218,222,226,226,220,215,220,220,218,213,217,222,223,222,222,223,224,224},
+   {228,224,223,224,217,211,210,213,208,202,202,206,215,216,216,222,224,223,218,213,213,210,213,220,220,217,220,218,220,223,225,230},
+   {229,231,230,228,222,213,208,213,211,205,205,211,213,217,220,224,223,220,220,217,210,205,207,216,217,216,215,217,220,224,228,230},
+   {229,232,231,230,224,218,216,213,213,216,218,218,217,220,225,226,225,222,220,216,206,202,197,203,208,211,215,217,225,228,228,228},
+   {227,228,231,230,227,226,224,223,220,226,226,225,223,227,232,229,226,228,225,210,199,196,199,200,206,211,220,224,220,217,217,220},
+   {226,227,229,233,234,232,230,231,234,237,234,231,233,231,231,233,231,229,224,205,197,203,205,200,207,211,215,216,210,206,202,207},
+   {227,228,227,230,232,235,234,235,237,240,239,237,235,232,233,232,230,225,217,203,205,208,210,215,215,215,215,213,207,200,193,192},
+   {231,229,227,230,233,236,234,234,237,238,240,239,237,231,227,228,224,217,211,205,205,207,216,223,223,216,213,213,205,199,192,178},
+   {231,231,229,231,234,235,235,236,236,235,237,238,233,227,220,222,217,211,208,207,206,213,222,224,220,213,211,207,206,200,187,174},
+   {232,232,229,230,233,234,234,235,234,234,234,235,227,224,223,220,213,211,213,210,211,218,224,220,220,215,210,207,203,196,187,174},
+   {232,233,232,231,229,230,233,233,233,233,230,231,228,223,225,220,215,213,216,216,220,222,225,224,220,213,206,200,194,192,183,176},
+   {235,234,232,230,228,228,229,229,228,226,226,227,228,226,224,224,224,220,222,222,224,223,229,228,223,211,197,187,183,185,183,178},
+   {232,232,233,229,227,227,228,225,226,225,224,226,228,227,226,225,227,228,228,224,223,222,227,227,220,207,192,185,178,177,185,185},
+   {231,232,233,229,226,225,226,225,224,222,222,222,224,220,223,223,228,230,226,223,220,220,222,217,215,205,193,189,187,185,187,189},
+   {232,232,233,229,227,227,225,225,224,218,220,222,223,222,222,224,228,224,218,216,218,217,213,210,210,202,194,193,190,187,186,192},
+   {234,234,233,231,232,230,228,227,225,222,223,226,227,223,224,226,226,222,211,210,213,211,211,207,208,199,199,193,186,185,186,189},
+   {235,236,235,235,234,231,229,226,226,226,225,228,230,226,225,226,227,222,213,205,203,202,199,199,196,196,196,193,189,187,193,197},
+   {235,236,237,236,234,233,231,228,226,228,228,230,233,229,225,225,225,224,213,200,194,190,187,185,186,192,193,193,192,194,203,206},
+};
+
+static const uchar particle_alpha_8[8][8] = {
+   {0,0,0,0,0,0,0,0},
+   {0,1,5,18,40,67,93,106},
+   {0,5,21,56,99,139,170,184},
+   {0,17,55,114,168,202,220,229},
+   {0,41,98,168,212,233,243,247},
+   {0,68,139,202,233,246,251,253},
+   {0,95,171,221,243,252,254,255},
+   {0,110,186,230,247,253,255,255},
+};
+
 static void init_bm(void)
 {
    int i;
    char *mem;
    static BOOL init=FALSE;
    if (init) return;
+
+   if (g_bForce32BitTextures) {
+      int x,y;
+      ulong *bits = (ulong *)Malloc(32 * 32 * sizeof(ulong));
+      ulong *p = bits;
+
+      gr_init_bitmap(&alpha_bm[0], (uchar *)bits, BMT_FLAT32, BMF_MIPMAP | BMF_RGB_8888, 32, 32);
+      for (y=0; y < 32; ++y) {
+         for (x=0; x < 32; ++x) {
+            float radius = sqrt((y-15.5)*(y-15.5) + (x-15.5)*(x-15.5)) / 15.5;
+            if (radius > 1) radius = 1;
+            radius *= 3.141592/2;
+            *p++ = ((((ulong)(cos(radius) * 255.5) & 0xff) * particle_alpha_32[y][x]) / 255) << 24 | 0xffffff;
+         }
+      }
+
+      bits = (ulong *)Malloc(16 * 16 * sizeof(ulong));
+      gr_init_bitmap(&alpha_bm[1], (uchar *)bits, BMT_FLAT32, BMF_MIPMAP | BMF_RGB_8888, 16, 16);
+      for (y=0; y < 16; ++y) {
+         int ey = (y < 8) ? y : 15 - y;
+         for (x=0; x < 16; ++x) {
+            int ex = (x < 8) ? x : 15 - x;
+            *bits++ = ((particle_alpha_8[ey][ex] * particle_alpha_32[y*2][x*2]) / 255) << 24 | 0xffffff;
+         }
+      }
+      init = TRUE;
+      return;
+   }
+
    mem = Malloc(HACK_NUM * HACK_SZ);
 
    for (i=0; i < HACK_NUM; ++i) {
       int x,y;
-      gr_init_bitmap(&alpha_bm[i], mem, BMT_FLAT8, BMF_TLUC, HACK_DIM, HACK_DIM);
+      gr_init_bitmap(&alpha_bm[i], mem, BMT_FLAT8, BMF_TLUC | BMF_MIPMAP, HACK_DIM, HACK_DIM);
       for (y=0; y < HACK_DIM; ++y) {
          for (x=0; x < HACK_DIM; ++x) {
             // we want a decaying alpha based on distance from center,
@@ -1188,6 +1267,10 @@ static void delete_particle(ParticleGroup *pg, int index)
       pg->pl.time_info[index] = pg->pl.time_info[num];
    if (pg->pl.render_data)
       pg->pl.render_data[index] = pg->pl.render_data[num];
+   if (pg->pl.nd_data4)
+      pg->pl.nd_data4[index] = pg->pl.nd_data4[num];
+   if (pg->pl.nd_data1)
+      pg->pl.nd_data1[index] = pg->pl.nd_data1[num];
 
    pg->pl.n = num;
    ++pg->delete_count;
@@ -1209,7 +1292,7 @@ static void update_particles(ParticleGroup *pg, int index, int num, fix time)
       Assert_((unsigned) i < pg->pl.n);
       if (pg->pl.time_info[i] < time_left) {
          // if the time for this particle has expired...
-         if (pg->anim_type == PAT_LAUNCH_CONTINUOUS && pg->launching && pg->active) {
+         if (pg->anim_type == PAT_LAUNCH_CONTINUOUS && pg->launching && pg->active && pg->pl.n == pg->n) {
             // compute time left for it to have relaunched
             time_left = time - pg->pl.time_info[i];
             // if a lot of time passed, don't sit in a loop
@@ -1539,6 +1622,8 @@ static void free_lists(ParticleGroup *pg)
       SAFE_FREE(pg->pl.cell);
       pg->pl.n = 0;
       pg->list_length = 0;
+      SAFE_FREE(pg->pl.nd_data4);
+      SAFE_FREE(pg->pl.nd_data1);
    }
    pg->pl.location = NULL;
    pg->pl.velocity = NULL;
@@ -1546,6 +1631,8 @@ static void free_lists(ParticleGroup *pg)
    pg->pl.cell = NULL;
    pg->free_locs = FALSE;
    pg->sort_lists = NULL;
+   pg->pl.nd_data4 = NULL;
+   pg->pl.nd_data1 = NULL;
 }
 
 #define ALLOCATE(a,b)  (a) = Malloc(sizeof((a)[0]) * (b))
@@ -1558,6 +1645,10 @@ static void allocate_lists(ParticleGroup *pg, int n)
       ALLOCATE(pg->pl.velocity, pg->list_length);
       ALLOCATE(pg->pl.time_info, pg->list_length);
       pg->pl.cell = NULL;
+      if (pg->render_type == PRT_TYPE6) {
+         ALLOCATE(pg->pl.nd_data4, pg->list_length);
+         ALLOCATE(pg->pl.nd_data1, pg->list_length);
+      }
    }
 }
 
@@ -1572,6 +1663,10 @@ static void grow_lists(ParticleGroup *pg, int new_len)
    REALLOC(pg->pl.location, pg->list_length);
    REALLOC(pg->pl.velocity, pg->list_length);
    REALLOC(pg->pl.time_info, pg->list_length);
+   if (pg->render_type == PRT_TYPE6) {
+      REALLOC(pg->pl.nd_data4, pg->list_length);
+      REALLOC(pg->pl.nd_data1, pg->list_length);
+   }
 }
 
 void setup_initial_particle_lists(ParticleGroup *pg)
@@ -1663,7 +1758,7 @@ void ParticleGroupUpdateModeStart(void)
 {
    num_alpha_colors = 0;
    free_old_tluc_tables();
-   if (!g_lgd3d) 
+   if (!g_lgd3d && !r3d_using_g2) 
    {
       if (grd_bm.type == BMT_FLAT8) {
          particle_tluc8 = Malloc(NUM_COLORS * NUM_ALPHA * 256);
@@ -1811,8 +1906,14 @@ BOOL ParticleGroupTranslucent(ObjID obj)
 {
    ParticleGroup *pg; 
    pg = ObjGetParticleGroup(obj);
+   if (!pg) return FALSE;
    if (pg->render_type == PRT_SINGLE_COLOR_DISK) return TRUE;
    if (pg->render_type == PRT_SCALED_BITMAP)     return TRUE;
+   if (pg->render_type == PRT_TYPE6)             return TRUE;
+   if (pg->render_type >= PRT_SINGLE_COLOR_PIXEL && pg->render_type <= PRT_VARIABLE_COLOR_PIXEL)
+      return g_bPixelPartsAsDisks;
+   if (pg->render_type >= PRT_SINGLE_COLOR_SQUARE && pg->render_type <= PRT_VARIABLE_COLOR_SQUARE)
+      return g_bSquarePartsAsDisks;
    return FALSE;
 }
 
@@ -1966,6 +2067,8 @@ EXTERN void ObjRel2WorldBBox(ObjID obj,mxs_vector *bmin,mxs_vector *bmax);
 float GetParticleRadius(ObjID objID, int idx)
 {
    ParticleGroup *pg = ObjGetParticleGroup(objID);
+   if (!pg)
+      return 0;
    if (USE_SCALE(pg))
       return pg->radius * pg->cur_scale;
    else

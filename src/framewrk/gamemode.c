@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/gamemode.c,v 2.119 2000/02/19 13:16:16 toml Exp $
 
 #include <lg.h>
@@ -573,7 +572,7 @@ static eLoopMessageResult LGAPI _LoopFunc(void* data, eLoopMessage msg, tLoopMes
 
          root = GetRootRegion();
          HotkeyContext = HK_GAME_MODE; 
-         InstallIBHandler (HK_GAME_MODE, UI_EVENT_KBD_RAW | UI_EVENT_MOUSE | UI_EVENT_MOUSE_MOVE | UI_EVENT_JOY, TRUE);
+         InstallIBHandler (HK_GAME_MODE, UI_EVENT_KBD_RAW | UI_EVENT_MOUSE | UI_EVENT_MOUSE_MOVE | UI_EVENT_JOY | UI_EVENT_KBD_POLL, FALSE);
          MissionPalSet();
          resume_mode();
          // i love the fall through, i love the control, i love it all

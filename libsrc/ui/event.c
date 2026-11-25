@@ -158,7 +158,7 @@ errtype uiSetRegionHandlerMask(Region* r, int id, int evmask)
 // OPACITY
 // -------
 
-bool uiAllowOverlappingRegions = FALSE;
+BOOL uiAllowOverlappingRegions = FALSE;
 ulong uiDefaultRegionOpacity = 0;
 
 ulong uiGetRegionOpacity(Region* reg)
@@ -311,8 +311,8 @@ errtype uiReleaseFocus(Region* r, ulong evmask)
 uiEventRecordFunc ui_recording_func = NULL;
 ushort uiDoubleClickTime = DEFAULT_DBLCLICKTIME;
 ushort uiDoubleClickDelay = DEFAULT_DBLCLICKDELAY;
-bool   uiDoubleClicksOn[NUM_MOUSE_BTNS] = { FALSE, FALSE, FALSE } ;
-bool   uiAltDoubleClick = FALSE;
+BOOL   uiDoubleClicksOn[NUM_MOUSE_BTNS] = { FALSE, FALSE, FALSE } ;
+BOOL   uiAltDoubleClick = FALSE;
 ushort uiDoubleClickTolerance = 5;
 static bool   poll_mouse_motion = FALSE;
 static uiMouseEvent last_down_events[NUM_MOUSE_BTNS];

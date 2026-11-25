@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgmerge.c,v 1.9 2000/02/19 12:55:02 toml Exp $
 
 #include <lg.h>
@@ -16,9 +15,12 @@
 #include <csgcheck.h>
 #include <bsppinfo.h>
 #include <csgalloc.h>
+#include <string.h>
+#include <stdio.h>
 #include <mprintf.h>
 #include <csgutil.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 //  Given two cells, create a new single cell out of both
@@ -27,6 +29,41 @@
 //  without generating boundary portals, and then merges.
 
 extern int stat_edge_merge, stat_poly_merge;
+extern int cur_brush;
+
+static char csg_loc_buf[256];
+
+static char *edge_loc(PortalEdge *e)
+{
+   csg_loc_buf[0] = 0;
+   if (e)
+      sprintf(csg_loc_buf, " (edge ctr @ %g, %g, %g)",
+              (float) ((e->start.x + e->end.x) * 0.5),
+              (float) ((e->start.y + e->end.y) * 0.5),
+              (float) ((e->start.z + e->end.z) * 0.5));
+   return csg_loc_buf;
+}
+
+static char *poly_edge_loc(PortalPolyEdge *e)
+{
+   csg_loc_buf[0] = 0;
+   if (e && e->data)
+      edge_loc(e->data);
+   if (cur_brush)
+      sprintf(csg_loc_buf + strlen(csg_loc_buf), " (cur br %d)", cur_brush);
+   return csg_loc_buf;
+}
+
+static char *poly_loc(PortalPolygon *p)
+{
+   csg_loc_buf[0] = 0;
+   if (p && p->edge && p->edge->data)
+      sprintf(csg_loc_buf, " (possibly near %g, %g, %g)",
+              (float) p->edge->data->start.x,
+              (float) p->edge->data->start.y,
+              (float) p->edge->data->start.z);
+   return csg_loc_buf;
+}
 
 void PortalMergeCells(PortalPolyhedron *ph, PortalPolyhedron *ph2)
 {
@@ -39,16 +76,16 @@ void PortalMergeCells(PortalPolyhedron *ph, PortalPolyhedron *ph2)
    do {
       if (p->ph[0] == ph2) {
          if (p->ph[1] == ph)
-            Error(1, "PortalMergeCells: Found boundary polygon.\n");
+            CsgError("PortalMergeCells: Found boundary polygon.%s\n", poly_loc(p));
          p->ph[0] = ph;
          p = p->ph_next[0];
       } else if (p->ph[1] == ph2) {
          if (p->ph[0] == ph)
-            Error(1, "PortalMergeCells: Found boundary polygon.\n");
+            CsgError("PortalMergeCells: Found boundary polygon.%s\n", poly_loc(p));
          p->ph[1] = ph;
          p = p->ph_next[1];
       } else
-         Error(1, "PortalMergeCells: Poly didn't belong to cell.\n");
+         CsgError("PortalMergeCells: Poly didn't belong to cell.%s\n", poly_loc(p));
 //mprintf("a");
    } while (p != first);
 
@@ -155,7 +192,7 @@ static void PortalUpdateEdge(PortalPolygon *dest, PortalPolygon *src,
       // delete this edge from src and dest.
       // src is going away anyway
       if (!p)
-         Error(1, "PortalUpdateEdge: p was NULL");
+         CsgError("PortalUpdateEdge: p was NULL.%s\n", edge_loc(e->data));
 
       // delete dest's copy of edge from shared edge list
       //    currently p->edge_next = e
@@ -291,7 +328,7 @@ static PortalEdge *MakeJoinedEdge(PortalEdge *e1, PortalEdge *e2)
          if (!VERTEX_COMPARE(*v[i], *v[j]))
             goto match;
 
-   Error(1, "MakeJoinedEdge: No shared vertex!\n");
+   CsgError("MakeJoinedEdge: No shared vertex!%s\n", edge_loc(e1));
 
   match:
 
@@ -328,7 +365,7 @@ void remove_poly_edge(PortalPolygon *p, PortalPolyEdge *e)
 
    if (a == e) {
       if (e->edge_next != e)
-         Error(1, "remove_poly_edge: input constraint not met.\n");
+         CsgError("remove_poly_edge: input constraint not met.%s\n", poly_edge_loc(e));
       p->edge = NULL;
    } else {
       while (a->poly_next != e) {
@@ -547,7 +584,7 @@ static int compute_winding(PortalPolygon *p, BspVertex *wind)
    } while (e != p->edge);
 
    if (n > 128)
-      Error(1, "compute_winding: Winding too large.\n");
+      CsgError("compute_winding: Winding too large.%s\n", poly_loc(p));
    w = wind;
 
    // initialize first two points

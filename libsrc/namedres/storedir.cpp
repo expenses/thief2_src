@@ -35,9 +35,9 @@ cDirectoryStorage::cDirectoryStorage(const char* pRawName)
 	{
 		char* pName;
 		GetNormalizedPath(pRawName, &pName);
-		m_pName = (char*)Malloc(strlen(pName) + 1);
+		m_pName = (char*)operator new(strlen(pName) + 1);
 		strcpy(m_pName, pName);
-		Free(pName);
+		operator delete(pName);
 	}
 	m_pSubstorageTable = new cStorageHashByName();
 	m_pStreamTable = new cStreamHashByName();
@@ -49,7 +49,7 @@ cDirectoryStorage::~cDirectoryStorage()
 {
 	if (m_pName)
 	{
-		Free(m_pName);
+		operator delete(m_pName);
 		m_pName = NULL;
 	}
 
@@ -449,7 +449,7 @@ void* cDirectoryStorage::BeginContents(const char* pPattern, uint fFlags)
 
 	if (pPattern)
 	{
-		pState->pPattern = static_cast<char*>(Malloc(strlen(pPattern) + 1));
+		pState->pPattern = static_cast<char*>(operator new(strlen(pPattern) + 1));
 		strcpy(pState->pPattern, pPattern);
 	} else pState->pPattern = NULL;
 
@@ -503,7 +503,7 @@ void cDirectoryStorage::EndContents(void* pCookie)
 {
 	sDirState* pState = ((sDirState*)(pCookie));
 	if (pState->pPattern)
-		Free(pState->pPattern);
+		operator delete(pState->pPattern);
 
 	delete pState;
 }

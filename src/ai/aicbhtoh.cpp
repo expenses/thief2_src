@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aicbhtoh.cpp,v 1.105 2000/03/06 22:36:26 bfarquha Exp $
 //
@@ -874,7 +873,7 @@ void cAIHtoHSubcombat::PlayCombatSound(eAISoundConcept CombatSound, BOOL always)
    // get Friends - for now, lets skip this
 
    // actually do the sound
-   if (m_pAI->AccessSoundEnactor()->RequestConcept(CombatSound,&CombatStateTags))
+   if (SUCCEEDED(m_pAI->AccessSoundEnactor()->RequestConcept(CombatSound,&CombatStateTags)))
    {
       if (CombatSound == kAISC_ReactCharge)
          SetPlayedReactCharge();

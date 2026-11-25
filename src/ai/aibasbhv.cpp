@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aibasbhv.cpp,v 1.56 2000/01/24 20:14:22 adurant Exp $
 //
@@ -37,7 +36,7 @@
 #include <aiactjs.h>
 #include <aiactjsc.h>
 #include <aicbhtoh.h>
-//#include <aicbrngd.h>
+#include <aicbrngd.h>
 #include <aicbrnew.h>
 #include <aicombat.h>
 #include <aidbgcmp.h>
@@ -76,6 +75,7 @@
 #include <aiproxy.h>
 
 // Must be last header
+#include <aiman.h>
 #include <dbmem.h>
 
 //#define TEST_ABILITY 1
@@ -97,7 +97,7 @@ struct sAIGestureMotionEntry
 
 ////////////////////////////////////
 
-#define GESTMOT(e, string) { sAIGestureMotionEntry(e, #e, string) }
+#define GESTMOT(e, string) sAIGestureMotionEntry(e, #e, string)
 
 static sAIGestureMotionEntry g_AIGestureMotionTable[] =
 {
@@ -612,8 +612,10 @@ STDMETHODIMP_(const char *) cAIRangedBehaviorSet::GetName()
 
 void cAIRangedBehaviorSet::CreateCombatAbilities(cAIComponentPtrs * pComponents)
 {
-//   pComponents->Append(new cAICombatRanged);
-   pComponents->Append(new cAICombatNewRanged);
+   if (g_bAILegacyRangedCombat)
+      pComponents->Append(new cAICombatRanged);
+   else
+      pComponents->Append(new cAICombatNewRanged);
 }
 
 

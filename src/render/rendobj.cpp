@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/rendobj.cpp,v 1.5 2000/02/28 16:50:59 MAT Exp $
 
 // Render an object
@@ -2214,7 +2213,7 @@ void RenderBitmapWorldspace(Position *pos, int idx, int frame, ObjID obj,
       // tiles/second = tiles/object * objects/second
       float fTilesPerSecond = fXTilesPerObject * fObjectsPerSecond;
       float fTimeSec = GetSimTime() * (1.0 / SIM_TIME_SECOND);
-      pt[0].grp.u = pt[3].grp.u = -fmod(fTimeSec * fTilesPerSecond, 1.0);
+      pt[0].grp.u = pt[3].grp.u = -fmod((double)(fTimeSec * fTilesPerSecond), 1.0);
       pt[1].grp.u = pt[2].grp.u = pt[0].grp.u + fXTilesPerObject;
    } else {
       pt[0].grp.u = pt[3].grp.u = 0;

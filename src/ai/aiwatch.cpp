@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiwatch.cpp,v 1.21 2000/02/26 15:35:57 toml Exp $
 //
@@ -156,6 +155,16 @@ static sFieldDesc _g_AIWatchPointFieldDesc[] =
    WATCH_RESPONSE_FIELDS(4),
    WATCH_RESPONSE_FIELDS(5),
    WATCH_RESPONSE_FIELDS(6),
+   WATCH_RESPONSE_FIELDS(7),
+   WATCH_RESPONSE_FIELDS(8),
+   WATCH_RESPONSE_FIELDS(9),
+   WATCH_RESPONSE_FIELDS(10),
+   WATCH_RESPONSE_FIELDS(11),
+   WATCH_RESPONSE_FIELDS(12),
+   WATCH_RESPONSE_FIELDS(13),
+   WATCH_RESPONSE_FIELDS(14),
+   WATCH_RESPONSE_FIELDS(15),
+   WATCH_RESPONSE_FIELDS(16),
    WATCH_RESPONSE_FIELDS(7),
 };
 

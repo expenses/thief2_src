@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/strprop_.h,v 1.5 1998/08/24 20:57:59 mahk Exp $
 #pragma once  
 #ifndef __STRPROP__H

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/relation.cpp,v 1.45 1999/08/31 14:40:15 Justin Exp $
 
 #include <relatio_.h>
@@ -368,6 +367,35 @@ STDMETHODIMP_(LinkID) cStandardRelation::AddFull(ObjID source, ObjID dest, void*
 
    CallListeners(msg,id,&link);
    return id;
+}
+
+STDMETHODIMP cStandardRelation::AddFullAtID(LinkID id, ObjID source, ObjID dest, void* data)
+{
+   if (source == OBJ_NULL || dest == OBJ_NULL)
+      return E_FAIL; 
+
+   sLink link = { source, dest, ID}; 
+   if (FAILED(Store->AddAtID(id,&link)))
+      return E_FAIL; 
+   eRelationListenMsg msg = kListenLinkBirth;
+
+   DataStore->Add(id);
+
+   if (data != NULL)
+   {
+      DataStore->Set(id,data);
+      msg |= kListenLinkModify;
+   }
+
+   for (int i = 0; i < DB.Size(); i++)
+   {
+      DB[i]->Add(id,&link);
+   }
+
+   LinkMan()->LinkBirth(id);
+
+   CallListeners(msg,id,&link);
+   return S_OK;
 }
 
 STDMETHODIMP cStandardRelation::Remove(LinkID id)

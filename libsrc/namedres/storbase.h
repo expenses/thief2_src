@@ -17,7 +17,9 @@ public:
 	STDMETHODIMP QueryInterface(REFIID id, void **ppI);
 
 private:
-	ULONG m_ulRefs;
+	LONG m_ulRefs;
+protected:
+	void* m_pNDBase;
 };
 
 class cZipSubstorage;

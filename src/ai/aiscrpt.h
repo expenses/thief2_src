@@ -40,6 +40,14 @@ DECLARE_SCRIPT_SERVICE(AI, 0xe5)
    STDMETHOD_(void, ClearAlertness)(ObjID objIdAI) PURE;
    STDMETHOD_(void, Signal)(ObjID objIdAI, const string ref signal) PURE;
    STDMETHOD_(boolean, StartConversation)(ObjID conversationID) PURE;
+
+   STDMETHOD_(BOOL, Stun)(object who, const string ref startTags, const string ref loopTags, float sec) PURE;
+   STDMETHOD_(BOOL, IsStunned)(object who) PURE;
+   STDMETHOD_(BOOL, UnStun)(object who) PURE;
+
+   STDMETHOD_(BOOL, Freeze)(object who, float sec) PURE;
+   STDMETHOD_(BOOL, IsFrozen)(object who) PURE;
+   STDMETHOD_(BOOL, UnFreeze)(object who) PURE;
 };
 
 

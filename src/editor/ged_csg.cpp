@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/ged_csg.cpp,v 1.53 2000/02/19 13:10:43 toml Exp $
 // layout: interface to brushes during csg, then support calls, then portalization calls themselves
 
@@ -23,6 +22,7 @@
 #include <brrend.h>
 
 #include <csg.h>
+#include <csgerr.h>
 #include <portal.h>
 #include <media.h>
 #include <mediaop.h>
@@ -50,6 +50,8 @@
 #include <textarch.h>
 #include <rendprop.h>
 #include <status.h>
+#include <wrbsp.h>
+#include <brestore.h>
 #include <command.h>
 #include <appsfx.h>
 #include <undoredo.h>
@@ -283,9 +285,10 @@ EXTERN void write_cell(FILE *f, PortalCell *p);
 BOOL gedcsg_save_world_rep(char *fname)
 {
    FILE *f = fopen(fname, "wb");
-   int i;
+   int i, tag = -1;
    if (!f) return FALSE;
 
+   fwrite(&tag, sizeof(tag), 1, f);
    fwrite(&wr_num_cells, sizeof(wr_num_cells), 1, f);
    for (i=0; i < wr_num_cells; ++i)
       write_cell(f, WR_CELL(i));
@@ -298,7 +301,9 @@ BOOL gedcsg_save_world_rep(char *fname)
 
 // first, some externs which should be in a header file somewhere
 EXTERN bool merge_nodes;
-EXTERN bool optimize_bsp;
+EXTERN BOOL optimize_bsp;
+EXTERN BOOL bsp_binary;
+EXTERN int csgmerge(double eps);
 EXTERN void portal_shine_omni_light(int light_index, Location *loc, uchar dynamic);
 #ifdef RGB_LIGHTING
 EXTERN void portal_set_normalized_color(int rm, int gm, int bm);
@@ -306,7 +311,7 @@ EXTERN void portal_set_normalized_color(int rm, int gm, int bm);
 
 BOOL gedcsg_light_objcast = FALSE;
 BOOL gedcsg_light_raycast = FALSE;
-BOOL gedcsg_light_quad; // controls all terrain lights, but not object lights
+int gedcsg_light_quad; // controls all terrain lights, but not object lights
 
 // publicly visible state of the database
 BOOL gedcsg_level_valid=TRUE, gedcsg_lighting_ok=FALSE;
@@ -504,15 +509,32 @@ void gedcsg_relight_level(void)
    }
 }
 
-EXTERN bool optimize_bsp;
+EXTERN BOOL optimize_bsp;
 EXTERN void cid_register_brush_planes(void *);
    
-void register_brush_planes(void)
+BOOL g_bCsgExceptionHandlerActive;
+jmp_buf g_CsgJmpBuf;
+static BOOL gedcsg_build_failed;
+static void gedcsg_portalize_failed(const char *where);
+
+BOOL register_brush_planes(void)
 {
    editBrush *us;
    void *phedra;
    int hIter;
+   char where[64];
 
+   AssertMsg(!g_bCsgExceptionHandlerActive, "!g_bCsgExceptionHandlerActive");
+   g_bCsgExceptionHandlerActive = TRUE;
+   if (setjmp(g_CsgJmpBuf)) {
+      g_bCsgExceptionHandlerActive = FALSE;
+      gedcsg_build_failed = TRUE;
+      blistIterDone(hIter);
+      brushConvertEnd();
+      sprintf(where, " (while preparing brush %d)", us ? us->br_id : -1);
+      gedcsg_portalize_failed(where);
+      return FALSE;
+   }
    brushConvertStart();
    us=blistIterStart(&hIter);
    while (us!=NULL)
@@ -522,6 +544,8 @@ void register_brush_planes(void)
       us=blistIterNext(hIter);
    }
    brushConvertEnd();
+   g_bCsgExceptionHandlerActive = FALSE;
+   return TRUE;
 }
 
 bool cow_autosaves=TRUE;
@@ -533,12 +557,50 @@ BOOL doing_opt_pass1=FALSE;
 
 static editBrush hotregion_hack_brush;
 
+
+EXTERN void quiet_portalize_mem_reset(void);
+EXTERN void csg_memory_init(void);
+EXTERN void csg_memory_reset(void);
+EXTERN void reset_dynamic_lm(void);
+
+EXTERN int cur_brush;
+EXTERN void clear_brush_faces(void);
+
+static void gedcsg_portalize_failed(const char *where)
+{
+   quiet_portalize_mem_reset();
+   cur_brush = 0;
+   csg_memory_init();
+   clear_surface_cache();
+   reset_dynamic_lm();
+   FreeWR();
+   wrBspTreeDeallocate();
+   wrBspTreeClearPostSplits();
+   clear_brush_faces();
+   csg_num_brushes = 0;
+   memset(csg_brush,0,sizeof(struct _editBrush *)*MAX_CSG_BRUSHES);
+   gedcsg_level_valid = FALSE;
+   gedcsg_lighting_ok = FALSE;
+   gedit_editted = TRUE;
+   StatusField(SF_FILESTATE,"*");
+   DrBlkDestroyBrushes();
+   editobjFullReref();
+   RestoreBrushSelection();
+   mprintf("\n");
+   mprintf("ERROR: portalization failed%s, no WR was generated "
+           "(try to locate and tweak problematic location or brush)\n\n", where);
+   Status("Portalization failed");
+}
+
 void build_level(void)
 {
    char portal_snd[64];
+   char where[128];
    int i=1, hIter;
    editBrush *us;
    void *ph;
+
+   gedcsg_build_failed = FALSE;
 
    if (!doing_opt)
       gedcsgClrHilights();
@@ -565,8 +627,8 @@ void build_level(void)
    cid_register_start();
    // if optimizing, supply CSG with all the brush planes up front,
    // so it can match up the bsp planes from the optimizer
-   if (optimize_bsp)
-      register_brush_planes();
+   if (optimize_bsp && !register_brush_planes())
+      return;
 
    init_csg_internal_database();
    csg_num_brushes=0;
@@ -575,6 +637,17 @@ void build_level(void)
    DrBlkGenerateBrushes();
    brushConvertStart();
    us=blistIterStart(&hIter);
+   AssertMsg(!g_bCsgExceptionHandlerActive, "!g_bCsgExceptionHandlerActive");
+   g_bCsgExceptionHandlerActive = TRUE;
+   if (setjmp(g_CsgJmpBuf)) {
+      g_bCsgExceptionHandlerActive = FALSE;
+      gedcsg_build_failed = TRUE;
+      blistIterDone(hIter);
+      brushConvertEnd();
+      sprintf(where, " (while inserting brush %d)", us ? us->br_id : -1);
+      gedcsg_portalize_failed(where);
+      return;
+   }
    while (us!=NULL)
    {
       if ((ph=brushConvertPortal(us))!=NULL)
@@ -590,11 +663,22 @@ void build_level(void)
       }
       us=blistIterNext(hIter);      
    }
+   g_bCsgExceptionHandlerActive = FALSE;
    brushConvertEnd();
    mprintf("Setup %d brush level (%d brushes total)...\n",i,blistCount());
    csg_num_brushes++;         // it is now max brush id + 1, for looping in csg
    Status("Portalizing....");
+   AssertMsg(!g_bCsgExceptionHandlerActive, "!g_bCsgExceptionHandlerActive");
+   g_bCsgExceptionHandlerActive = TRUE;
+   if (setjmp(g_CsgJmpBuf)) {
+      g_bCsgExceptionHandlerActive = FALSE;
+      gedcsg_build_failed = TRUE;
+      csg_memory_reset();
+      gedcsg_portalize_failed("");
+      return;
+   }
    portalize_csg_internal_database();
+   g_bCsgExceptionHandlerActive = FALSE;
    if (optimize_bsp && fixup_tjoints) {
       Status("Tjoint Fix....");
       fix_tjoints();
@@ -624,13 +708,13 @@ void build_level(void)
       gedcsgCheckHilights();
 }
 
-EXTERN bool coplanar;
-EXTERN float REAL_EPSILON;
+EXTERN BOOL coplanar;
+EXTERN double REAL_EPSILON;
 
 void optimize_level(void)
 {
    bool old_merge = merge_nodes;
-   bool old_coplanar = coplanar;
+   BOOL old_coplanar = coplanar;
    bool old_raycast = gedcsg_light_raycast;
 
    gedcsgClrHilights();
@@ -644,14 +728,47 @@ void optimize_level(void)
    doing_opt_pass1 = TRUE;
    build_level();
    doing_opt_pass1 = FALSE;
+   if (gedcsg_build_failed) {
+      merge_nodes = old_merge;
+      coplanar = old_coplanar;
+      gedcsg_light_raycast = old_raycast;
+      gedcsgCheckHilights();
+      doing_opt=FALSE;
+      return;
+   }
+   bsp_binary = FALSE;
+
+   if (wr_num_cells == 0) {
+      merge_nodes = old_merge;
+      coplanar = old_coplanar;
+      gedcsg_light_raycast = old_raycast;
+      mprintf("No cells found, skipping optimization.\n");
+      gedcsgCheckHilights();
+      doing_opt=FALSE;
+      return;
+   }
 
    // save world rep to temp file
    gedcsg_save_world_rep("temp.wr");
 
    mprintf("Computing optimized BSP... this may take a while.\n");
+   remove("bsp.out");
+   remove("bsp.bin");
+   Status("Optimizing...");
 
-   // shell to csgmerge
-   {
+   if (!config_is_defined("use_external_csgmerge")) {
+      bsp_binary = TRUE;
+      if (csgmerge(REAL_EPSILON) != 0) {
+         merge_nodes = old_merge;
+         coplanar = old_coplanar;
+         gedcsg_light_raycast = old_raycast;
+         mprintf("WARNING: Optimization failed, level remains unoptimized!\n");
+         Status("Optimize failed!");
+         gedcsgCheckHilights();
+         doing_opt=FALSE;
+         return;
+      }
+   } else {
       char buf[64];
       sprintf(buf, "csgmerge -e%lg temp.wr", REAL_EPSILON);
       system(buf);
@@ -665,12 +782,45 @@ void optimize_level(void)
 
    build_level();
 
-   mprintf("All future level builds will be \"optimized\", "
-        "until you disable 'optimize_bsp'\n");
-   mprintf("Rerun 'optimize' for a fully optimized one.\n");
+   if (!gedcsg_build_failed) {
+      mprintf("All future level builds will be \"optimized\", "
+           "until you disable 'optimize_bsp'\n");
+      mprintf("Continue to use 'optimize' for fully optimized builds.\n");
+   }
 
    gedcsgCheckHilights();
    doing_opt=FALSE;
+}
+
+#define MAX_LIGHT_QUAD 7
+
+EXTERN void portal_set_sunlight_quality(void);
+EXTERN void portal_set_sunlight_center_weight(double weight);
+
+static void set_quad_lighting(char *arg)
+{
+   int quad;
+
+   if (arg && *arg) {
+      int level = atoi(arg);
+      if (level < 0)
+         level = 0;
+      else if (level > MAX_LIGHT_QUAD)
+         level = MAX_LIGHT_QUAD;
+      quad = level;
+   } else
+      quad = !gedcsg_light_quad;
+   gedcsg_light_quad = quad;
+   portal_set_sunlight_quality();
+   mprintf("gedcsg_light_quad=%d\n", quad);
+}
+
+static void set_csg_epsilon(char *arg)
+{
+   if (*arg)
+      REAL_EPSILON = atof(arg);
+   else
+      mprintf("csg_epsilon=%g\n", REAL_EPSILON);
 }
 
 extern "C" void UpdateMenuCheckmarks (void);
@@ -735,13 +885,14 @@ Command gedcsg_keys[] =
    { "merge_node", TOGGLE_BOOL, &merge_nodes, "build faster imperfect level" },
    { "optimize_bsp", TOGGLE_BOOL, &optimize_bsp },
    { "set_lighting_mode", FUNC_INT, set_lighting_mode, "Set lighting mode (0, 1, 2)", },
-   { "quad_lighting", TOGGLE_BOOL, &gedcsg_light_quad, "oversampled raycast lighting" },
+   { "quad_lighting", FUNC_STRING, set_quad_lighting, "oversampled raycast lighting mode, 0 - 7" },
+   { "quad_lighting_cweight", FUNC_DOUBLE, portal_set_sunlight_center_weight, "center sample weight used in quad_lighting modes 2, 3, 5 and 6" },
    { "auto_hilight", TOGGLE_BOOL, &csg_auto_hilight, "automatically hilight any bad brushes after portalization" },
    { "split_polys", TOGGLE_BOOL, &split_polys, "force coplanar poly splits" },
    { "merge_polys", TOGGLE_BOOL, &merge_polys, "merge coplanar polys" },
 //   { "decal_hack", TOGGLE_BOOL, &decal_hack },
    { "coplanar", TOGGLE_BOOL, &coplanar, "correctly handle coplanar polys" },
-   { "csg_epsilon", VAR_FLOAT, &REAL_EPSILON, "set voodoo epsilon value" },
+   { "csg_epsilon", FUNC_STRING, set_csg_epsilon, "set voodoo epsilon value" },
    { "show_debug", VAR_INT, &show_debug, "set split# to debug, -1 for all #s" },
    { "tex_scale_override", VAR_FLOAT, &tex_scale_override, "set texture scale override factor" },
    { "profile", FUNC_STRING, writeProfile, "write out sProf profile" },

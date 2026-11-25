@@ -50,5 +50,7 @@ EXTERN char* FileDialog(eFileMenuMode mode, sFileMenuFilter* pFilters, const cha
 
 EXTERN void FileMenu(void);
 
+EXTERN BOOL PickColor(int *pR, int *pG, int *pB);
+
 
 #endif // __FILEMENU_H

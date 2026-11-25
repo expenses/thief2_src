@@ -47,6 +47,7 @@ public:
    STDMETHOD(Listen)(RelationListenMsgSet interests, RelationListenFunc func, RelationListenerData data);   
    STDMETHOD_(LinkID, GetSingleLink)(ObjID source, ObjID dest);
    STDMETHOD_(BOOL,AnyLinks)(ObjID source, ObjID dest);
+   STDMETHOD(AddFullAtID)(LinkID id, ObjID source, ObjID dest, void* data);
    
 };
 

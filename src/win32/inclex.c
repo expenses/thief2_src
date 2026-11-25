@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /* n:\bin\lex -p inc -l -o r:\prj\cam\src\win32\inclex.c r:\prj\cam\src\inclex.lex */
 #define YYNEWLINE 10
 #define INITIAL 0
@@ -269,8 +268,8 @@ static char * local_strdup(const char * s)
 #endif
 
 /* stdin and stdout may not neccessarily be constants */
-YY_DECL	FILE   *incin = stdin;
-YY_DECL	FILE   *incout = stdout;
+YY_DECL	FILE   *incin = NULL;
+YY_DECL	FILE   *incout = NULL;
 YY_DECL	int	inclineno = 1;		/* line number */
 
 /*

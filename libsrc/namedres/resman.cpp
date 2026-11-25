@@ -45,7 +45,9 @@ cResMan::cResMan(IUnknown* pOuter)
 	m_ppResFactories(NULL),
 	m_nResFactories(0),
 	m_FreshStamp(1),
+#ifndef SHIP
 	m_pResStats(NULL),
+#endif
 	m_fDidInit(0),
 	m_DefResMem()
 {
@@ -119,7 +121,6 @@ HRESULT cResMan::Init()
 
 	ResStat(m_pResStats = new cResStats());
 	m_fDidInit = true;
-	m_ResManARQ.Init(this);
 
 	return S_OK;
 }
@@ -172,7 +173,6 @@ HRESULT cResMan::End()
 
 	SafeRelease(m_pSharedCache);
 
-	m_ResManARQ.Term();
 	CleanResources();
 
 #ifndef SHIP
@@ -192,8 +192,8 @@ HRESULT cResMan::End()
 		for (int i = 0; i < m_nResFactories; ++i)
 			m_ppResFactories[i]->Release();
 		Free(m_ppResFactories);
+		m_ppResFactories = NULL;
 	}
-	m_ppResFactories = NULL;
 
 	m_nResFactories = 0;
 
@@ -356,16 +356,14 @@ void cResMan::UnregisterResType(IResType* pType)
 
 IStore* cResMan::GetStore(const char* pPathName)
 {
-	cAutoResThreadLock lock;
-
 	if (pPathName == NULL)
 	{
 		return NULL;
 	}
-	else
-	{
-		return m_pStoreMan->GetStore(pPathName, 0);
-	}
+
+	cAutoResThreadLock lock;
+
+	return m_pStoreMan->GetStore(pPathName, 0);
 }
 
 ///////////////////////////////////////
@@ -653,18 +651,19 @@ IRes* STDMETHODCALLTYPE cResMan::Retype(IRes* pOldRes, const char* pTypeName, co
 
 	char* pStreamName;
 	pOldRes->GetStreamName(0, &pStreamName);
-	if (!pStreamName)
-		return NULL;
+	if (pStreamName)
+	{
+		IStore* pCanonStore = NULL;
+		pCanonStore = pOldRes->GetCanonStore();
+		IRes* pNewRes = BindSpecific(pStreamName, pTypeName, pStore, pCanonStore, fBindFlags);
 
-	IStore* pCanonStore = NULL;
-	pCanonStore = pOldRes->GetCanonStore();
-	IRes* pNewRes = BindSpecific(pStreamName, pTypeName, pStore, pCanonStore, fBindFlags);
+		pCanonStore->Release();
+		operator delete(pStreamName);
+		pStore->Release();
 
-	pCanonStore->Release();
-	Free(pStreamName);
-	pStore->Release();
-
-	return pNewRes;
+		return pNewRes;
+	}
+	return NULL;
 }
 
 ///////////////////////////////////////
@@ -686,11 +685,11 @@ IRes* cResMan::WalkNameChain(cResourceData* pData, const char*, const char* pTyp
 				if (strcmpi(pCanonPath, pResCanonPath) == 0)
 				{
 					pTypeData->m_pRes->AddRef();
-					Free(pResCanonPath);
+					operator delete(pResCanonPath);
 					return pTypeData->m_pRes;
 				}
 
-				Free(pResCanonPath);
+				operator delete(pResCanonPath);
 			}
 			else
 			{
@@ -742,7 +741,7 @@ IRes* cResMan::DoLookup(const char* pName, const char* pTypeName, const char* pR
 				if (pRes)
 				{
 					if (pCanonPath)
-						Free(pCanonPath);
+						operator delete(pCanonPath);
 					return pRes;
 				}
 			}
@@ -751,14 +750,14 @@ IRes* cResMan::DoLookup(const char* pName, const char* pTypeName, const char* pR
 		}
 
 		if (pCanonPath)
-			Free(pCanonPath);
+			operator delete(pCanonPath);
 		return NULL;
 	}
 	else
 	{
 		pRes = WalkNameChain(pNameData->m_pFirstStream, pName, pTypeName, pCanonPath);
 		if (pCanonPath)
-			Free(pCanonPath);
+			operator delete(pCanonPath);
 		return pRes;
 	}
 }
@@ -1160,10 +1159,10 @@ int cResMan::DropResource(IRes* pResource)
 
 long cResMan::GetResourceSize(IRes* pRes)
 {
-	cAutoResThreadLock lock;
-
 	if (!pRes)
 		return 0;
+
+	cAutoResThreadLock lock;
 
 	cResourceTypeData* pData = GetResourceTypeData(pRes);
 	if (pData->m_nSize)
@@ -1329,7 +1328,7 @@ void cResMan::DoDumpSnapshot(FILE* fp)
 					else
 						mprintf("%s%s\t%ld\t%d\t%d\t%d\n", padded_name, pResEntry->m_pType->GetName(), pResEntry->m_nSize, pResEntry->m_nUserLockCount, pResEntry->m_nInternalLockCount, refcnt);
 
-					Free(pCanonPathName);
+					operator delete(pCanonPathName);
 				}
 			}
 		}
@@ -1346,4 +1345,72 @@ tResult LGAPI _Res2Create(REFIID, IResMan** ppResMan, IUnknown* pOuter)
 		*ppResMan = pResMan;
 
 	return pResMan != NULL ? S_OK : E_FAIL;
+}
+
+IStoreStream *ResOpenStoreStream(IStore *pStore, const char *pName)
+{
+	if (!pStore || !pStore->Exists())
+		return NULL;
+	cAutoResThreadLock lock;
+	return pStore->OpenStream(pName, 0);
+}
+
+void ResRefreshStorage()
+{
+	AutoAppIPtr(ResMan);
+	cStorageManager *pStoreMan = (cStorageManager *)((cResMan *)(IResMan *)pResMan)->m_pStoreMan;
+	if (pStoreMan->m_pRootStore)
+		pStoreMan->m_pRootStore->Refresh(2);
+}
+
+IStoreStream *ResFindStoreStream(const char *pName, const char *pRelPath, IStore **ppStore)
+{
+	if (!*pName)
+		return NULL;
+
+	ISearchPath *pPath;
+	{
+		AutoAppIPtr(ResMan);
+		pPath = ((cResMan *)(IResMan *)pResMan)->m_pDefSearchPath;
+	}
+	if (!pPath)
+		return NULL;
+
+	IStore *pCanonStore = NULL;
+	IStore *pStore = pPath->Find(pName, 0, &pCanonStore, pRelPath);
+	if (!pStore)
+		return NULL;
+
+	IStoreStream *pStream = NULL;
+	if (pStore->Exists())
+	{
+		cAutoResThreadLock lock;
+		pStream = pStore->OpenStream(pName, 0);
+		if (pStream && ppStore)
+		{
+			*ppStore = pStore;
+			pStore->AddRef();
+		}
+	}
+	SafeRelease(pCanonStore);
+	pStore->Release();
+	return pStream;
+}
+
+IStoreStream *ResOpenConfigFile(const char *pPathName, const char *pRelPath, IStore **ppStore)
+{
+	if (!pPathName)
+		return NULL;
+
+	char temp[1024];
+	char *pRel;
+	char *pName;
+	char OldSlash;
+	int bCombined;
+	strncpy(temp, pPathName, sizeof(temp) - 1);
+	temp[sizeof(temp) - 1] = '\0';
+	cResMan::MungePaths(temp, pRelPath, &pRel, &pName, &OldSlash, &bCombined);
+	IStoreStream *pStream = pName ? ResFindStoreStream(pName, pRel, ppStore) : NULL;
+	cResMan::RestorePath(pRel, pName, OldSlash, bCombined);
+	return pStream;
 }

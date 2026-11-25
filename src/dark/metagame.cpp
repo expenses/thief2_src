@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/metagame.cpp,v 1.21 1998/11/03 06:36:09 mahk Exp $
 #include <appagg.h>
 
@@ -42,6 +41,7 @@
 
 #include <command.h>
 #include <config.h>
+#include <mprintf.h>
 #include <ctype.h>
 
 #include <simman.h>
@@ -391,10 +391,14 @@ void EndgameImagePanel(const char* respath, const char* image)
 static void do_endgame(char* arg)
 {
    if (config_is_defined("no_endgame"))
+   {
+      mprintf("\n");
+      mprintf("INFO: 'endgame' command invoked (but not executed due to no_endgame)\n");
       return ;
+   }
    // chomp trailing whitespace
    char *s = arg+strlen(arg) - 1; 
-   while (s > arg && isspace(*s)) 
+   while (s > arg && isspace((uchar)*s)) 
       *s-- = '\0'; 
    EndgameImagePanel("books\\",arg); 
 }

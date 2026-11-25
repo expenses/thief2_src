@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/areapnp.c,v 1.25 2000/02/19 12:27:39 toml Exp $
 // HotRegion/Time Filter ("Area") PnP gadget
 
@@ -161,7 +160,9 @@ static void areaPnP_Names(int which)
             strcpy(def,val);
             inited=TRUE;
          }
-         val=prompt_string(def,buf);
+         val=prompt_string(def,buf,NULL);
+         if (!val)
+            val=def;
          if (inited)
             NamenumClearByTag(pNN_HotRegions,areaPnP_br->br_id);
          hnd=NamenumStore(pNN_HotRegions,val,areaPnP_br->br_id);

@@ -16,6 +16,8 @@
 
 #define PAL_RES_SUBDIR "pal"
 
+#define MISSION_AMBIENT_ZONES 8
+
 struct sMissionRenderParams
 {
    char pal_res[16];    // palette resource
@@ -28,6 +30,9 @@ struct sMissionRenderParams
    float sun_b;
    mxs_vector sun_scaled_rgb;
    mxs_vector sun_rgb;  // updated when filevar changes
+   float view_dist;
+   mxs_vector ambient_zone[MISSION_AMBIENT_ZONES + 1];
+   float ai_vis_bias[MISSION_AMBIENT_ZONES + 1];
 };
 
 typedef struct sMissionRenderParams sMissionRenderParams; 

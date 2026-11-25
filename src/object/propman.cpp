@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/propman.cpp,v 1.26 1999/06/16 18:35:17 mahk Exp $
 
 #include <propbase.h>
@@ -330,7 +329,7 @@ class ConstrainedPropertySorter : public cPropertyManagerKnower
 
    ~ConstrainedPropertySorter()
    {
-      delete Seen;
+      delete [] Seen;
    }
 
 public:

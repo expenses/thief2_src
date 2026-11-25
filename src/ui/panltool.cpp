@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/ui/panltool.cpp,v 1.16 2000/03/07 19:05:32 adurant Exp $
 
 #include <appagg.h>
@@ -232,6 +231,9 @@ BOOL MoviePanel(const char* fn)
    if (config_is_defined("no_movies"))
       return FALSE; 
 
+   if (MovieInConfigList(fn, "movie_disable") || MovieInConfigList(fn, "fm_movie_disable"))
+      return FALSE;
+
    // Look in the movie path
    char filename[256];
    if (!find_file_in_config_path(filename,(char*)fn,"movie_path"))
@@ -284,9 +286,11 @@ static void do_book(char* arg)
 
 static void do_movie(char* arg)
 {
+   if (!arg)
+      return;
    // chomp trailing whitespace
    char *s = arg+strlen(arg) - 1; 
-   while (s > arg && isspace(*s)) 
+   while (s > arg && isspace((uchar)*s)) 
       *s-- = '\0'; 
 
    

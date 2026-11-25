@@ -35,6 +35,28 @@ float r3d_x_clip, r3d_y_clip, r3d_near, r3d_fast_z=0.5;
 // ctxtguts with any real calculation or information
 // Note this is only called once from ctxtguts
 
+static void *_r3d_trans_pool;
+
+static r3s_trans *_r3_trans_stack_alloc(int size)
+{
+   void **p = (void **)_r3d_trans_pool;
+   if (p) {
+      _r3d_trans_pool = *p;
+      return (r3s_trans *)(p+1);
+   }
+   p = (void **)Malloc(sizeof(void *) + R3_TRANS_POOL_SIZE);
+   return (r3s_trans *)(p+1);
+}
+
+void _r3_trans_term(void)
+{
+   while (_r3d_trans_pool) {
+      void **p = (void **)_r3d_trans_pool;
+      _r3d_trans_pool = *p;
+      Free(p);
+   }
+}
+
 void _r3_trans_alloc(r3s_xform_context *trans)
 {
    // set from the defaults
@@ -43,7 +65,7 @@ void _r3_trans_alloc(r3s_xform_context *trans)
 
    // create the object space xform stack
    trans->stack_max = r3d_state.trans_depth;
-   trans->stack_base = Malloc(sizeof(r3s_trans)*trans->stack_max);
+   trans->stack_base = _r3_trans_stack_alloc(sizeof(r3s_trans)*trans->stack_max);
 
    // set stack base and current, and set view
    trans->stack_cur = trans->stack_base;
@@ -73,7 +95,11 @@ void _r3_trans_alloc(r3s_xform_context *trans)
 
 void _r3_trans_free(r3s_xform_context *trans)
 {
-   Free(trans->stack_base);
+   if (trans->stack_base) {
+      void **p = ((void **)trans->stack_base)-1;
+      *p = _r3d_trans_pool;
+      _r3d_trans_pool = p;
+   }
 }
 
 // need to recalculate anytime the center changes in world

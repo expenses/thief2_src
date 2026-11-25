@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // Main Deep Cover (in-game) interface code
 
 #include <2d.h>

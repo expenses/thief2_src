@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/dbasemsg.h,v 1.9 2000/01/29 13:20:33 adurant Exp $
 #pragma once
 
@@ -45,6 +44,7 @@ enum edbPartition // database partitions
    kDBMission  = 1 << (0 + DB_PARTITION_SHF),
    kDBMap      = 1 << (1 + DB_PARTITION_SHF),
    kDBGameSys  = 1 << (2 + DB_PARTITION_SHF),
+   kDBSaveGame = 1 << (12 + DB_PARTITION_SHF),
 
 };
 

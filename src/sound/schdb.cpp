@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/schdb.cpp,v 1.31 1998/10/14 03:14:07 dc Exp $
 
 #include <cfgdbg.h>

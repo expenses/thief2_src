@@ -23,13 +23,17 @@ static void push_stack(void)
    // need to realloc, if already full
    if (cx.stack_size == cx.stack_max) {
       r3s_trans *n;
+      int size;
 
       #ifdef DBG_ON
       Warning(("r3d: push_stack: needs to realloc, may want to increase xform stack\n"));
       #endif
 
       cx.stack_max *= 2;
-      n = (r3s_trans *)Realloc(cx.stack_base,cx.stack_max * sizeof(r3s_trans));
+      size = cx.stack_max * sizeof(r3s_trans);
+      n = cx.stack_base;
+      if (n && size > R3_TRANS_POOL_SIZE)
+         n = (r3s_trans *)(((void **)Realloc(((void **)n)-1, size+sizeof(void *)))+1);
  
       #ifdef DBG_ON
       if (cx.stack_base == NULL) {

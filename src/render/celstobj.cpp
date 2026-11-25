@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/celstobj.cpp,v 1.10 2000/03/20 16:11:02 bfarquha Exp $
 
 //
@@ -289,7 +288,7 @@ void cCelestialObject::Init()
 
    // Create Res interface.
    IResMan *pResMan = AppGetObj(IResMan);
-   pCelestRes = IResMan_Bind(pResMan, pCelestialObj->TextureName, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", 0);
+   pCelestRes = IResMan_Bind(pResMan, pCelestialObj->TextureName, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", RES_BIND_IMAGE_FLAGS);
    if (!pCelestRes)
       return;
 

@@ -124,6 +124,35 @@ LightmapEntry rgb_sub_clamp(LightmapEntry cur, int add)
 
 #endif
 
+extern int hack_red;
+extern int hack_green;
+extern int hack_blue;
+
+int portal_lightmap_32bit;
+int portal_lightmap_shift;
+
+static LightmapEntry32 rgb_add_clamp_32(LightmapEntry32 cur, int add)
+{
+   int c;
+
+   c = cur.A[0] + ((add * hack_red) >> 8);
+   if (c > 255)
+      c = 255;
+   cur.A[0] = c;
+
+   c = cur.A[1] + ((add * hack_green) >> 8);
+   if (c > 255)
+      c = 255;
+   cur.A[1] = c;
+
+   c = cur.A[2] + ((add * hack_blue) >> 8);
+   if (c > 255)
+      c = 255;
+   cur.A[2] = c;
+
+   return cur;
+}
+
 ////////////////////////////////////////
 //
 // dynamic light map lighting system
@@ -607,6 +636,266 @@ float portal_evaluate_spotlight(mxs_vector *loc,
    return (dot-outer)/(inner-outer);
 }
 
+static void add_lightmap_lux(LightmapEntry *bits, int pixel_row,
+                             int i, int j, int lux)
+{
+   int index = j * pixel_row + i;
+
+   if (portal_lightmap_32bit) {
+      LightmapEntry32 *light_point = &((LightmapEntry32 *)bits)[index];
+      lux >>= portal_lightmap_shift;
+      if (lux > 255)
+         lux = 255;
+      else if (lux < 0)
+         lux = 0;
+      *light_point = rgb_add_clamp_32(*light_point, lux);
+   } else {
+      LightmapEntry *light_point = &bits[index];
+      if (lux > 255)
+         lux = 255;
+      else if (lux < 0)
+         lux = 0;
+      *light_point = rgb_add_clamp(*light_point, lux);
+   }
+}
+
+#define MAX_SUNLIGHT_SAMPLES  12692
+
+int portal_sunlight_aa_mode;
+double portal_sunlight_sample_size = 0.25;
+double portal_sunlight_center_weight = 0.2;
+double portal_sunlight_corner_weight = 0.8;
+
+#ifdef EDITOR
+extern int gedcsg_light_quad;
+
+void portal_set_sunlight_quality(void)
+{
+   if (gedcsg_light_quad == 3 || gedcsg_light_quad == 6)
+      portal_sunlight_aa_mode = 2;
+   else if (gedcsg_light_quad == 2 || gedcsg_light_quad == 5)
+      portal_sunlight_aa_mode = 1;
+   else
+      portal_sunlight_aa_mode = 0;
+
+   if (gedcsg_light_quad >= 4 && gedcsg_light_quad <= 6)
+      portal_sunlight_sample_size = LIGHT_MAP_SIZE / 2;
+   else if (gedcsg_light_quad == 7)
+      portal_sunlight_sample_size = LIGHT_MAP_SIZE / 4;
+   else
+      portal_sunlight_sample_size = LIGHT_MAP_SIZE;
+}
+
+void portal_set_sunlight_center_weight(double weight)
+{
+   if (weight <= 0)
+      weight = 0;
+   else if (weight > 1)
+      weight = 1;
+   portal_sunlight_center_weight = weight;
+   portal_sunlight_corner_weight = 1 - weight;
+}
+#endif
+
+static int sunlight_samples[MAX_SUNLIGHT_SAMPLES];
+
+static void portal_raycast_sunlight_poly_lightmap_aa(PortalCell *r, int s,
+                                                     int vc,
+                                                     LightmapEntry *bits,
+                                                     bool objcast)
+{
+   int i, j, w, h, lux;
+   int *sample;
+   float u, v;
+   Location dest, source;
+   mxs_vector where, src, step, corner;
+   mxs_vector *base = &r->vpool[r->vertex_list[vc]];
+   PortalLightMap *lm;
+
+   mx_scale_add_vec(&src, base,
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
+   mx_scale_addeq_vec(&src,
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
+   mx_scale_addeq_vec(&src, &r->plane_list[r->poly_list[s].planeid].normal,
+                      DIST_IN_FROM_POLYGON);
+
+   where = r->render_list[s].center;
+   mx_scale_addeq_vec(&where, &r->plane_list[r->poly_list[s].planeid].normal,
+                      DIST_IN_FROM_POLYGON);
+
+   MakeLocationFromVector(&source, &where);
+   source.cell = source.hint = cur_raycast_cell;
+
+   mx_scale_vec(&corner, &r->render_list[s].tex_u, -LIGHT_MAP_SIZE / 2);
+   mx_scale_addeq_vec(&corner, &r->render_list[s].tex_v, -LIGHT_MAP_SIZE / 2);
+
+   lm = &r->light_list[s];
+   h = lm->h + 1;
+   w = lm->w + 1;
+   u = lm->base_u * LIGHT_MAP_SIZE;
+   v = lm->base_v * LIGHT_MAP_SIZE;
+   mx_scale_vec(&step, &r->render_list[s].tex_u, LIGHT_MAP_SIZE);
+
+   sample = sunlight_samples;
+   for (j = 0; j < h - 1; ++j) {
+      mx_scale_add_vec(&where, &src, &r->render_list[s].tex_u, u);
+      mx_scale_addeq_vec(&where, &r->render_list[s].tex_v, v);
+
+      for (i = 0; i < w - 1; ++i) {
+         MakeLocationFromVector(&dest, &where);
+         dest.cell = dest.hint = cur_raycast_cell;
+         sample[1] = portal_illumination_from_sunlight(&dest, &source, r,
+                                                       s, objcast);
+         mx_add_vec(&dest.vec, &where, &corner);
+         sample[0] = portal_illumination_from_sunlight(&dest, &source, r,
+                                                       s, objcast);
+         sample += 2;
+         mx_addeq_vec(&where, &step);
+      }
+      MakeLocationFromVector(&dest, &where);
+      dest.cell = dest.hint = cur_raycast_cell;
+      mx_add_vec(&dest.vec, &where, &corner);
+      sample[0] = portal_illumination_from_sunlight(&dest, &source, r,
+                                                    s, objcast);
+      sample += 2;
+      v += LIGHT_MAP_SIZE;
+   }
+
+   mx_scale_add_vec(&where, &src, &r->render_list[s].tex_u, u);
+   mx_scale_addeq_vec(&where, &r->render_list[s].tex_v, v);
+   for (i = 0; i < w; ++i) {
+      MakeLocationFromVector(&dest, &where);
+      dest.cell = dest.hint = cur_raycast_cell;
+      mx_add_vec(&dest.vec, &where, &corner);
+      sample[0] = portal_illumination_from_sunlight(&dest, &source, r,
+                                                    s, objcast);
+      sample += 2;
+      mx_addeq_vec(&where, &step);
+   }
+
+   sample = sunlight_samples;
+   for (j = 0; j < r->light_list[s].h; ++j) {
+      for (i = 0; i < r->light_list[s].w; ++i) {
+         int corners = sample[2*i] + sample[2*i + 2]
+                     + sample[2*(i + w) + 2] + sample[2*(i + w)];
+         lux = corners * (portal_sunlight_corner_weight * 0.25)
+             + sample[2*i + 1] * portal_sunlight_center_weight;
+         add_lightmap_lux(bits, r->light_list[s].pixel_row, i, j, lux);
+      }
+      sample += 2 * w;
+   }
+}
+
+static void portal_raycast_sunlight_poly_lightmap_grid(PortalCell *r, int s,
+                                                       int vc,
+                                                       LightmapEntry *bits,
+                                                       bool objcast, int mode)
+{
+   int i, j, w, h, lux, cols, spacing, pixel_step;
+   int *sample;
+   float u, v;
+   double step_size = LIGHT_MAP_SIZE;
+   Location dest, source;
+   mxs_vector where, src, start, step, offset;
+   mxs_vector *base = &r->vpool[r->vertex_list[vc]];
+
+   mx_scale_add_vec(&src, base,
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
+   mx_scale_addeq_vec(&src,
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
+   mx_scale_addeq_vec(&src, &r->plane_list[r->poly_list[s].planeid].normal,
+                      DIST_IN_FROM_POLYGON);
+
+   where = r->render_list[s].center;
+   mx_scale_addeq_vec(&where, &r->plane_list[r->poly_list[s].planeid].normal,
+                      DIST_IN_FROM_POLYGON);
+
+   MakeLocationFromVector(&source, &where);
+   source.cell = source.hint = cur_raycast_cell;
+
+   pixel_step = 1;
+   w = r->light_list[s].w;
+   h = r->light_list[s].h;
+   if (LIGHT_MAP_SIZE == portal_sunlight_sample_size) {
+      cols = w + 2;
+      h += 2;
+      spacing = 2;
+      mx_scale_vec(&offset, &r->render_list[s].tex_u, -LIGHT_MAP_SIZE);
+      mx_scale_addeq_vec(&offset, &r->render_list[s].tex_v, -LIGHT_MAP_SIZE);
+   } else if (mode == 2) {
+      cols = 2 * w + 1;
+      h = 2 * h + 1;
+      spacing = 2;
+      pixel_step = 2;
+      step_size = LIGHT_MAP_SIZE / 2;
+      mx_scale_vec(&offset, &r->render_list[s].tex_u, -LIGHT_MAP_SIZE / 2);
+      mx_scale_addeq_vec(&offset, &r->render_list[s].tex_v, -LIGHT_MAP_SIZE / 2);
+   } else {
+      cols = w + 1;
+      h += 1;
+      spacing = 1;
+      mx_scale_vec(&offset, &r->render_list[s].tex_u, -LIGHT_MAP_SIZE / 2);
+      mx_scale_addeq_vec(&offset, &r->render_list[s].tex_v, -LIGHT_MAP_SIZE / 2);
+   }
+
+   mx_add_vec(&start, &src, &offset);
+   u = r->light_list[s].base_u * step_size;
+   v = r->light_list[s].base_v * step_size;
+   mx_scale_vec(&step, &r->render_list[s].tex_u, step_size);
+
+   sample = sunlight_samples;
+   for (j = 0; j < h; ++j) {
+      mx_scale_add_vec(&where, &start, &r->render_list[s].tex_u, u);
+      mx_scale_addeq_vec(&where, &r->render_list[s].tex_v, v);
+
+      for (i = 0; i < cols; ++i) {
+         MakeLocationFromVector(&dest, &where);
+         dest.cell = dest.hint = cur_raycast_cell;
+         *sample++ = portal_illumination_from_sunlight(&dest, &source, r,
+                                                       s, objcast);
+         mx_addeq_vec(&where, &step);
+      }
+      v += step_size;
+   }
+
+   sample = sunlight_samples;
+   if (mode == 0) {
+      for (j = 0; j < r->light_list[s].h; ++j) {
+         for (i = 0; i < r->light_list[s].w; ++i) {
+            int *p = &sample[i];
+            lux = (p[0] + p[spacing] + p[spacing * cols]
+                   + p[spacing * cols + spacing]) / 4;
+            add_lightmap_lux(bits, r->light_list[s].pixel_row, i, j, lux);
+         }
+         sample += cols;
+      }
+   } else if (mode == 1) {
+      for (j = 0; j < r->light_list[s].h; ++j) {
+         for (i = 0; i < r->light_list[s].w; ++i) {
+            int *p = &sample[i];
+            int corners = p[0] + p[spacing] + p[spacing * cols]
+                        + p[spacing * cols + spacing];
+            lux = corners * (portal_sunlight_corner_weight * 0.25)
+                + p[cols + 1] * portal_sunlight_center_weight;
+            add_lightmap_lux(bits, r->light_list[s].pixel_row, i, j, lux);
+         }
+         sample += cols;
+      }
+   } else {
+      for (j = 0; j < r->light_list[s].h; ++j) {
+         for (i = 0; i < r->light_list[s].w; ++i) {
+            int *p = &sample[i * pixel_step];
+            int edges = p[0] + p[1] + p[2] + p[cols] + p[cols + 2]
+                      + p[2 * cols] + p[2 * cols + 1] + p[2 * cols + 2];
+            lux = edges * (portal_sunlight_corner_weight * 0.125)
+                + p[cols + 1] * portal_sunlight_center_weight;
+            add_lightmap_lux(bits, r->light_list[s].pixel_row, i, j, lux);
+         }
+         sample += cols * pixel_step;
+      }
+   }
+}
+
 void portal_raycast_light_poly_lightmap(PortalCell *r, int s, int vc,
                                         Location *lt, LightmapEntry *bits,
                                         bool quadruple_lighting, bool objcast)
@@ -625,9 +914,9 @@ void portal_raycast_light_poly_lightmap(PortalCell *r, int s, int vc,
    // we want base to be at (0,0)
 
    mx_scale_add_vec(&src, base,
-      &r->render_list[s].tex_u, -r->render_list[s].u_base / (16*256.0));
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
    mx_scale_addeq_vec(&src,
-      &r->render_list[s].tex_v, -r->render_list[s].v_base / (16*256.0));
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
    mx_scale_addeq_vec(&src,
                       &r->plane_list[r->poly_list[s].planeid].normal,
                       DIST_IN_FROM_POLYGON);
@@ -729,13 +1018,35 @@ void portal_raycast_sunlight_poly_lightmap(PortalCell *r, int s, int vc,
    mxs_vector quarter_offset_minus;     // offset to upper-left quadrant
    mxs_vector *base = &r->vpool[r->vertex_list[vc]];
 
+   if (quad_lighting) {
+      if (portal_sunlight_aa_mode == 2) {
+         portal_raycast_sunlight_poly_lightmap_grid(r, s, vc, bits, objcast,
+                                                    portal_sunlight_aa_mode);
+         return;
+      }
+      if (portal_sunlight_aa_mode) {
+         if (LIGHT_MAP_SIZE == portal_sunlight_sample_size)
+            portal_raycast_sunlight_poly_lightmap_grid(r, s, vc, bits,
+                                                       objcast, 1);
+         else
+            portal_raycast_sunlight_poly_lightmap_aa(r, s, vc, bits, objcast);
+         return;
+      }
+      if (LIGHT_MAP_SIZE == portal_sunlight_sample_size
+       || portal_sunlight_sample_size == LIGHT_MAP_SIZE / 2) {
+         portal_raycast_sunlight_poly_lightmap_grid(r, s, vc, bits, objcast,
+                                                    0);
+         return;
+      }
+   }
+
    // currently base is at texture coordinate (base_u, base_v)
    // we want base to be at (0,0)
 
    mx_scale_add_vec(&src, base,
-      &r->render_list[s].tex_u, -r->render_list[s].u_base / (16*256.0));
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
    mx_scale_addeq_vec(&src,
-      &r->render_list[s].tex_v, -r->render_list[s].v_base / (16*256.0));
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
    mx_scale_addeq_vec(&src, &r->plane_list[r->poly_list[s].planeid].normal,
                       DIST_IN_FROM_POLYGON);
 
@@ -829,9 +1140,9 @@ void portal_light_poly_lightmap(PortalCell *r, int s, int vc, Location *lt,
    // we want base to be at (0,0)
 
    mx_scale_add_vec(&src, base,
-      &r->render_list[s].tex_u, -r->render_list[s].u_base / (16*256.0));
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
    mx_scale_addeq_vec(&src,
-      &r->render_list[s].tex_v, -r->render_list[s].v_base / (16*256.0));
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
 
    dist = fast_precompute_light(&src,
         &r->plane_list[r->poly_list[s].planeid].normal, &lt->vec);
@@ -895,9 +1206,9 @@ void portal_dynamic_light_lightmap(PortalCell *r, int s, int vc, Location *lt,
    // we want base to be at (0,0)
 
    mx_scale_add_vec(&src, base,
-      &r->render_list[s].tex_u, -r->render_list[s].u_base / (16*256.0));
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
    mx_scale_addeq_vec(&src,
-      &r->render_list[s].tex_v, -r->render_list[s].v_base / (16*256.0));
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
 
    dist = fast_precompute_light(&src,
         &r->plane_list[r->poly_list[s].planeid].normal, &lt->vec);
@@ -974,9 +1285,9 @@ void portal_dynamic_dark_lightmap(PortalCell *r, int s, int vc, Location *lt,
    // we want base to be at (0,0)
 
    mx_scale_add_vec(&src, base,
-      &r->render_list[s].tex_u, -r->render_list[s].u_base / (16*256.0));
+      &r->render_list[s].tex_u, -r->render_list[s].u_base);
    mx_scale_addeq_vec(&src,
-      &r->render_list[s].tex_v, -r->render_list[s].v_base / (16*256.0));
+      &r->render_list[s].tex_v, -r->render_list[s].v_base);
 
    dist = fast_precompute_light(&src,
         &r->plane_list[r->poly_list[s].planeid].normal, &lt->vec);

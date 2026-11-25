@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/filevar.h,v 1.4 1998/08/07 14:53:28 mahk Exp $
 #pragma once  
 #ifndef __FILEVAR_H
@@ -109,12 +108,17 @@ public:
 
    virtual void Reset();  // clear to default value
    virtual void Update() {}; // we got loaded/edited 
+   virtual long Read(ITagFile* file, char* block, int size, const TagVersion* ver) { return file->Read(block,size); }
+   virtual long Write(ITagFile* file, char* block, int size) { return file->Write(block,size); }
+   virtual BOOL SetField(const struct sFieldDesc *field, const char *value, const TagVersion *ver,
+                         struct IStructDescTools *tools);
 
    static cFileVarList* AllFileVars(); 
 
 protected:
    
    BOOL SetupFile(ITagFile* file);
+   BOOL SetupFile(ITagFile* file, TagVersion* ver);
    void CleanupFile(ITagFile* file); 
 
 public:

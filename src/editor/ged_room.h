@@ -56,6 +56,8 @@ EXTERN void ged_room_init(void);
 // post-load rooms (also do this on build default) 
 EXTERN void ged_room_postload(void);
 
+EXTERN void ConvertRGBToHSB(float *pHue, float *pSat, float *pBright, double r, double g, double b);
+
 
 #endif  // __GED_ROOM_H
 

@@ -16,8 +16,8 @@ int AdjustWindow(HWND hwnd, int displayWidth, int displayHeight, BOOL fToDisplay
 
     if (fToDisplay)
     {
-        const int xOrigin = GetPrivateProfileInt("WinShell", "GDIOriginX", (GetSystemMetrics(SM_CXSCREEN) - displayWidth) / 2, "lg.ini");
-        const int yOrigin = GetPrivateProfileInt("WinShell", "GDIOriginY", (GetSystemMetrics(SM_CYSCREEN) - displayHeight) / 2, "lg.ini");
+        const int xOrigin = GetPrivateProfileInt("WinShell", "GDIOriginX", (GetSystemMetrics(SM_CXSCREEN) - displayWidth) / 2, ".\\lg.ini");
+        const int yOrigin = GetPrivateProfileInt("WinShell", "GDIOriginY", (GetSystemMetrics(SM_CYSCREEN) - displayHeight) / 2, ".\\lg.ini");
 
         rect.left   = xOrigin;
         rect.top    = yOrigin;

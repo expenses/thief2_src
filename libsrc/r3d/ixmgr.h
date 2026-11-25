@@ -8,7 +8,7 @@ EXTERN void r3_start_indexed_block(void);
 EXTERN void r3_end_indexed_block(void);
 EXTERN int r3_alloc_indexed(int start, int n);
 EXTERN void r3_free_indexed_range(int start, int n);
-EXTERN int r3_transform_block_indexed(int start, int n, mxs_vector *verts);
+EXTERN void r3_transform_block_indexed(int start, int n, mxs_vector *verts);
 EXTERN void r3_set_strided_uvs_indexed(int start, int n, float *uvs, int uv_stride);
 EXTERN void r3_set_strided_is_indexed(int start, int n, float *is, int i_stride);
 EXTERN void r3_set_strided_rgbs_indexed(int start, int n, float *rgbs, int rgb_stride);

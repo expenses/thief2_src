@@ -14,7 +14,11 @@ extern "C" int md_sizeof_mipmap_bits(grs_bitmap* mmap);
 #include <gif.h>
 #include <pcx.h>
 #include <tga.h>
+#include <imgpng.h>
+#include <imgdds.h>
 #include <bitmap.h>
+#include <resmtl.h>
+#include <mprintf.h>
 
 extern ulong gResImageFlat16Format;
 extern ushort gResImageChromaKey;
@@ -24,29 +28,19 @@ void ImageHackAutoSetTransparency(grs_bitmap* pBm, uint8 mip);
 void FlagsXorMip(grs_bitmap* pBm, int flag);
 void FlagsOrMip(grs_bitmap* pBm, int16 flag);
 
+int g_ResDXTMode;
+int g_bForce32BitTextures;
+sMaterial *g_pResImageMaterial;
+
 cImageResource::cImageResource(IStore* pStore, const char* pName, IResType* pType, eImgKind kind)
-	: cResourceBase<IRes, &IID_IRes>(pStore, pName, pType), m_Kind(kind)
+	: cResourceBase<IRes, &IID_IRes>(pStore, pName, pType), m_Kind(kind), m_pMaterial(NULL)
 {
 }
 
-void* cImageResource::LoadData(ulong* pSize, ulong* pTimestamp, IResMemOverride* pResMem)
+grs_bitmap* ResReadImage(eImgKind kind, IStoreStream* pStream, IResMemOverride* pResMem)
 {
-	if (!pResMem)
-		return NULL;
-
-	cAutoResThreadLock lock;
-
 	grs_bitmap* bm = NULL;
-	IStoreStream* pStream = OpenStream();
-	if (!pStream)
-	{
-#ifndef SHIP
-		CriticalMsg1("Unable to open stream: %s", GetName());
-#endif
-		return NULL;
-	}
-
-	switch (m_Kind)
+	switch (kind)
 	{
 	case kImgBMP:
 		bm = ResBmpReadImage(pStream, pResMem);
@@ -63,9 +57,38 @@ void* cImageResource::LoadData(ulong* pSize, ulong* pTimestamp, IResMemOverride*
 	case kImgTGA:
 		bm = ResTgaReadImage(pStream, pResMem);
 		break;
-	default:
+	case kImgPNG:
+		bm = ResPngReadImage(pStream, pResMem);
 		break;
+	case kImgDDS:
+		bm = ResDdsReadImage(pStream, pResMem);
+		break;
+	default:
+		return NULL;
 	}
+	if (bm && (bm->type == BMT_FLAT8 || !(bm->flags & BMF_RGB_MASK)))
+		bm->flags |= BMF_MIPMAP;
+	return bm;
+}
+
+void* cImageResource::LoadData(ulong* pSize, ulong* pTimestamp, IResMemOverride* pResMem)
+{
+	if (!pResMem)
+		return NULL;
+
+	cAutoResThreadLock lock;
+
+	grs_bitmap* bm = NULL;
+	IStoreStream* pStream = OpenStream();
+	if (!pStream)
+		return NULL;
+
+	if (g_bMaterialsEnabled && !m_pMaterial)
+		m_pMaterial = MtlLoadForRes(this);
+
+	g_pResImageMaterial = m_pMaterial;
+	bm = ResReadImage(m_Kind, pStream, pResMem);
+	g_pResImageMaterial = NULL;
 
 	if (pTimestamp)
 		*pTimestamp = pStream->LastModified();
@@ -75,14 +98,63 @@ void* cImageResource::LoadData(ulong* pSize, ulong* pTimestamp, IResMemOverride*
 	if (!bm)
 		return NULL;
 
-	ImageHackRemap16Bit(bm, 0);
-	ImageHackAutoSetTransparency(bm, 0);
+	sTexBitmap *pTex = (sTexBitmap *)bm;
+	sMaterial *pMtl = m_pMaterial;
+	if (pMtl)
+	{
+		pTex->pMtl = pMtl;
+		pMtl->pBitmap = bm;
+		if (abs(pMtl->tileFactor[0]) > 1 || abs(pMtl->tileFactor[1]) > 1)
+		{
+			if (!(pMtl->flags & kMtlTerrainScale))
+			{
+				pMtl->flags |= kMtlTerrainScale;
+				pMtl->terrainScale[0] = pTex->scaleW;
+				pMtl->terrainScale[1] = pTex->scaleH;
+			}
+			for (int i = 0; i < 2; i++)
+			{
+				if (pMtl->tileFactor[i] < 1)
+					pMtl->terrainScale[i] = -(pMtl->terrainScale[i] / pMtl->tileFactor[i]);
+				else
+					pMtl->terrainScale[i] *= pMtl->tileFactor[i];
+				if (pMtl->terrainScale[i] == 0)
+					pMtl->terrainScale[i] = 1;
+			}
+			if (pMtl->terrainScale[0] > 4096 || pMtl->terrainScale[1] > 4096)
+			{
+				mprintf("WARNING: material for texture '%s' has a tile_factor that results in terrain scale %dx%d (max is 4096x4096)\n",
+				        GetName(), pMtl->terrainScale[0], pMtl->terrainScale[1]);
+				if (pMtl->terrainScale[0] > 4096)
+					pMtl->terrainScale[0] = 4096;
+				if (pMtl->terrainScale[1] > 4096)
+					pMtl->terrainScale[1] = 4096;
+			}
+			pMtl->flags |= 0x10000;
+			for (int j = 0; j < 2; j++)
+				pMtl->tileScale[j] = (pMtl->tileFactor[j] < 1) ? (float)-pMtl->tileFactor[j] : 1.0f / pMtl->tileFactor[j];
+		}
+		if (pMtl->flags & kMtlTerrainScale)
+		{
+			pTex->scaleW = (short)pMtl->terrainScale[0];
+			pTex->scaleH = (short)pMtl->terrainScale[1];
+			pTex->scaleHLog = 0;
+			pTex->scaleWLog = 0;
+			for (int n = 2; n <= pMtl->terrainScale[0]; n *= 2)
+				pTex->scaleWLog++;
+			for (int m = 2; m <= pMtl->terrainScale[1]; m *= 2)
+				pTex->scaleHLog++;
+		}
+	}
+
+	ImageHackRemap16Bit(bm, pTex->bTerrain != 0);
+	ImageHackAutoSetTransparency(bm, pTex->bTerrain != 0);
+	MtlTexEdgePad(pTex);
 	if (pSize)
 		*pSize = pResMem->GetSize(bm);
 
 	return bm;
 }
-
 BOOL cImageResource::FreeData(void* pUntypedData, ulong nSize, IResMemOverride* pResMem)
 {
 	cAutoResThreadLock lock;
@@ -90,8 +162,18 @@ BOOL cImageResource::FreeData(void* pUntypedData, ulong nSize, IResMemOverride* 
 #line 145
 	AssertMsg(pData, "FreeData: nothing to free!");
 
-	if (!m_pAssignedData && (pData->flags & BMF_LOADED) && g_tmgr)
-		g_tmgr->unload_texture(pData);
+	if (m_pMaterial)
+	{
+		MtlMaterialFree(m_pMaterial);
+		delete m_pMaterial;
+		m_pMaterial = NULL;
+	}
+	if (!m_pAssignedData)
+	{
+		if ((pData->flags & BMF_LOADED) && g_tmgr)
+			g_tmgr->unload_texture(pData);
+		gr_close_bitmap(pData);
+	}
 
 	pResMem->ResFree(pData);
 

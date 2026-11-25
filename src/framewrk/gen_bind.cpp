@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/gen_bind.cpp,v 1.30 2000/03/09 22:58:23 adurant Exp $
 
 //general binds processing
@@ -32,12 +31,13 @@
 #include <drk_bind.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header! 
+#include <lg_file.h>
 
 IInputBinder *g_pInputBinder;
 void (*gInitGameIBVars)();
 
 Region *g_root;
-int g_cookie;
+int g_cookie = -1;
 
 // These are for player paralyzing and/or view locking
 EXTERN BOOL gNoMoveKeys, gNoLookAround; 
@@ -69,7 +69,12 @@ void InstallIBHandler (ulong context, ulong events, BOOL poll)
    uiGetCurrentSlab(&slabptr);
    g_root = slabptr->creg;
    
-   uiInstallRegionHandler (g_root, events, inpbnd_handler, NULL, &g_cookie);
+   if (uiInstallRegionHandler (g_root, events, inpbnd_handler, NULL, &g_cookie) != OK)
+   {
+      g_root = NULL;
+      g_cookie = -1;
+      return;
+   }
    g_pInputBinder->SetContext (context,poll);
    // we need to poll here because SetContext can early exit with polling
    // this is to prevent stuck keys
@@ -80,6 +85,8 @@ void InstallIBHandler (ulong context, ulong events, BOOL poll)
 void RemoveIBHandler ()
 {
    uiRemoveRegionHandler (g_root, g_cookie);
+   g_root = NULL;
+   g_cookie = -1;
 }
 
 
@@ -425,6 +432,7 @@ static char *MLookProc (char *, char *val, BOOL)
    {
       double dval = atof (val);
       double sens = atof (g_pInputBinder->ProcessCmd ("echo $mouse_sensitivity"));
+      sens *= atof (g_pInputBinder->ProcessCmd ("echo $mouse_sensitivity_y_scale"));
 
       char *inverted = g_pInputBinder->ProcessCmd ("echo $mouse_invert");
       if (atof (inverted) == 0.0)
@@ -1120,10 +1128,10 @@ void InitIBVars ()
    g_pInputBinder->LoadBndFile ("user.bnd", HK_BRUSH_EDIT, "edit");
 #endif //EDITOR
    // if user.bnd exists, load it, else load the game specific bnd file
-   FILE *pFile = fopen( "user.bnd", "r" );
+   LGFILE *pFile = lg_fopen( "user.bnd", "r" );
    if ( pFile ) {
       //user's local version
-      fclose( pFile );
+      lg_fclose( pFile );
       g_pInputBinder->LoadBndFile ("user.bnd", HK_GAME_MODE, NULL);
       g_pInputBinder->LoadBndFile ("user2.bnd", HK_GAME2_MODE, NULL);
    } else {

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/objpos.cpp,v 1.24 2000/02/24 23:43:12 mahk Exp $
 
 #include <float.h>
@@ -379,7 +378,7 @@ static sFieldDesc pos_fields[] =
    { "Pitch", kFieldTypeInt,FieldLocation(Position,fac.ty), kFieldFlagUnsigned|kFieldFlagHex }, 
    { "Bank", kFieldTypeInt,FieldLocation(Position,fac.tx), kFieldFlagUnsigned|kFieldFlagHex }, 
    { "Cell", kFieldTypeInt, FieldLocation(Position,loc.cell), kFieldFlagNotEdit }, 
-   { "Hint", kFieldTypeInt, FieldLocation(Position,loc.cell), kFieldFlagNotEdit }, 
+   { "Hint", kFieldTypeInt, FieldLocation(Position,loc.hint), kFieldFlagNotEdit }, 
 
 }; 
 

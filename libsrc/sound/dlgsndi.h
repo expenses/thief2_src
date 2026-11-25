@@ -70,15 +70,15 @@ public:
     STDMETHOD_(BOOL,     Get3DReverbSettings)(THIS_ ReverbSettings *pReverbSettings);
     STDMETHOD_(BOOL,     Have3DOcclusion)(THIS);
     STDMETHOD_(int32,    Kludge)(THIS_ int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct);
-    virtual BOOL EAXLevelSupported(void);
+    BOOL EAXLevelSupported(void);
 
 	cDSndDevice * GetDevice();
    void SetA3d( BOOL useA3d );
    void UsePanVol( void );
 
 private:
-   BOOL EAXInit(void);
-   void EAXRelease(void);
+   STDMETHOD_(BOOL, EAXInit)(void);
+   STDMETHOD_(void, EAXRelease)(void);
 
    BOOL                    mbUseA3d;
 	cDSndDevice             *mSoundDevice;                // the device

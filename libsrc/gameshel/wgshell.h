@@ -83,7 +83,7 @@ protected:
     STDMETHOD_(void, DisplayFlush)();
 
     // Get the present tick count, in msec since initialization or timer restart
-    STDMETHOD_(unsigned long, GetTimerTick)();
+    STDMETHOD_(unsigned __int64, GetTimerTick)();
 
     // Reset the timer (by default, starts at zero from initialization)
     STDMETHOD_(void , SetTimer)(unsigned long);
@@ -218,7 +218,11 @@ private:
     int                 m_fCreateFlags;
 
     unsigned long       m_ulStartTime;
-    unsigned long       m_ulTimeOffset;
+    BOOL                m_fLegacyTimer;
+    __int64             m_ulTimeOffset;
+    LARGE_INTEGER       m_PerfStart;
+    LARGE_INTEGER       m_PerfFreq;
+    unsigned __int64    m_PerfElapsed;
 
     enum
     {
@@ -269,8 +273,8 @@ inline void cWinGameShell::ClientToGamePoint(int & x, int & y)
 
     if (rect.right && rect.bottom)
     {
-        x = (x * nDisplayWidth) / rect.right;
-        y = (y * nDisplayHeight) / rect.bottom;
+        x = (x * (int)nDisplayWidth) / rect.right;
+        y = (y * (int)nDisplayHeight) / rect.bottom;
     }
 }
 
@@ -289,8 +293,8 @@ inline void cWinGameShell::GameToClientPoint(int & x, int & y)
 
     if (nDisplayWidth && nDisplayHeight)
     {
-        x = (x * rect.right) / nDisplayWidth;
-        y = (y * rect.bottom) / nDisplayHeight;
+        x = (x * rect.right) / (int)nDisplayWidth;
+        y = (y * rect.bottom) / (int)nDisplayHeight;
     }
 }
 
@@ -298,7 +302,9 @@ inline void cWinGameShell::GameToClientPoint(int & x, int & y)
 
 inline unsigned long cWinGameShell::WindowsTimeToGameTime(unsigned long ulWindowsTime) const
 {
-    return (ulWindowsTime - m_ulStartTime) + m_ulTimeOffset;
+    if (m_fLegacyTimer)
+        return (ulWindowsTime - m_ulStartTime) + m_ulTimeOffset;
+    return ulWindowsTime;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

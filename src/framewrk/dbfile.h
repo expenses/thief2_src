@@ -65,6 +65,10 @@ EXTERN void dbBuildDefault(void);
 
 EXTERN void dbfile_setup_commands(void);
 
+#ifdef __cplusplus
+void dbPatchRequestScripts(void);
+#endif
+
 
 #endif // __DBFILE_H
 

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/disploop.cpp,v 1.12 1998/10/05 17:22:57 mahk Exp $
 
 #include <lg.h>

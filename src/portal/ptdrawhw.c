@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/portal/ptdrawhw.c,v 1.17 2000/02/19 13:18:43 toml Exp $
 
 #include <math.h>
@@ -486,7 +485,7 @@ void draw_surface_lgd3d(PortalPolygonCore *poly, PortalPolygonRenderInfo *render
 
       p_uvec = &render->tex_u;
       p_vvec = &render->tex_v;
-      anchor = &(cur_pool[r_vertex_list[voff + render->texture_anchor]]);
+      anchor = &(cur_pool[r_vertex_list[voff]]);
       uv = mx_dot_vec(p_uvec, p_vvec);
 
       u_base = render->u_base * u_scale / (16.0*256.0); // u translation
@@ -624,7 +623,7 @@ void draw_surface_lgd3d(PortalPolygonCore *poly, PortalPolygonRenderInfo *render
       mxs_vector u_vec, v_vec, pt;
       if (motion) {
          portal_position_portal_texture(&u_vec, &v_vec, &pt,
-               &(cur_pool[r_vertex_list[voff + render->texture_anchor]]),
+               &(cur_pool[r_vertex_list[voff]]),
                render, &cur_cell->plane_list[poly->planeid],
                &portal_cell_motion[poly->motion_index]);
 
@@ -636,7 +635,7 @@ void draw_surface_lgd3d(PortalPolygonCore *poly, PortalPolygonRenderInfo *render
 
          get_cached_vector(&u_vec, &render->tex_u);
          get_cached_vector(&v_vec, &render->tex_v);
-         mx_scale_add_vec(&pt, &(vlist[render->texture_anchor]->p), &u_vec, -usc);
+         mx_scale_add_vec(&pt, &(vlist[0]->p), &u_vec, -usc);
          mx_scale_add_vec(&pt, &pt, &v_vec, -vsc);
 
          // This gives us our 3x3 texture perspective correction matrix.
@@ -826,7 +825,7 @@ void draw_surface_multitexture(PortalPolygonCore *poly, PortalPolygonRenderInfo 
 
       p_uvec = &render->tex_u;
       p_vvec = &render->tex_v;
-      anchor = &(cur_pool[r_vertex_list[voff + render->texture_anchor]]);
+      anchor = &(cur_pool[r_vertex_list[voff]]);
       uv = mx_dot_vec(p_uvec, p_vvec);
 
       u_base = render->u_base * u_scale / (16.0*256.0); // u translation
@@ -963,7 +962,7 @@ void draw_surface_multitexture(PortalPolygonCore *poly, PortalPolygonRenderInfo 
       mxs_vector u_vec, v_vec, pt;
       if (motion) {
          portal_position_portal_texture(&u_vec, &v_vec, &pt,
-               &(cur_pool[r_vertex_list[voff + render->texture_anchor]]),
+               &(cur_pool[r_vertex_list[voff]]),
                render, &cur_cell->plane_list[poly->planeid],
                &portal_cell_motion[poly->motion_index]);
 
@@ -975,7 +974,7 @@ void draw_surface_multitexture(PortalPolygonCore *poly, PortalPolygonRenderInfo 
 
          get_cached_vector(&u_vec, &render->tex_u);
          get_cached_vector(&v_vec, &render->tex_v);
-         mx_scale_add_vec(&pt, &(vlist[render->texture_anchor]->p), &u_vec, -usc);
+         mx_scale_add_vec(&pt, &(vlist[0]->p), &u_vec, -usc);
          mx_scale_add_vec(&pt, &pt, &v_vec, -vsc);
 
          // This gives us our 3x3 texture perspective correction matrix.
@@ -1120,7 +1119,7 @@ void draw_surface_texture_only(PortalPolygonCore *poly, PortalPolygonRenderInfo 
 
       p_uvec = &render->tex_u;
       p_vvec = &render->tex_v;
-      anchor = &(cur_pool[r_vertex_list[voff + render->texture_anchor]]);
+      anchor = &(cur_pool[r_vertex_list[voff]]);
       uv = mx_dot_vec(p_uvec, p_vvec);
 
       u_base = render->u_base * u_scale / (16.0*256.0); // u translation
@@ -1248,7 +1247,7 @@ void draw_surface_texture_only(PortalPolygonCore *poly, PortalPolygonRenderInfo 
       mxs_vector u_vec, v_vec, pt;
       if (motion) {
          portal_position_portal_texture(&u_vec, &v_vec, &pt,
-               &(cur_pool[r_vertex_list[voff + render->texture_anchor]]),
+               &(cur_pool[r_vertex_list[voff]]),
                render, &cur_cell->plane_list[poly->planeid],
                &portal_cell_motion[poly->motion_index]);
 
@@ -1260,7 +1259,7 @@ void draw_surface_texture_only(PortalPolygonCore *poly, PortalPolygonRenderInfo 
 
          get_cached_vector(&u_vec, &render->tex_u);
          get_cached_vector(&v_vec, &render->tex_v);
-         mx_scale_add_vec(&pt, &(vlist[render->texture_anchor]->p), &u_vec, -usc);
+         mx_scale_add_vec(&pt, &(vlist[0]->p), &u_vec, -usc);
          mx_scale_add_vec(&pt, &pt, &v_vec, -vsc);
 
          // This gives us our 3x3 texture perspective correction matrix.
@@ -1360,7 +1359,7 @@ void draw_surface_lightmap_only(PortalPolygonCore *poly, PortalPolygonRenderInfo
 
       p_uvec = &render->tex_u;
       p_vvec = &render->tex_v;
-      anchor = &(cur_pool[r_vertex_list[voff + render->texture_anchor]]);
+      anchor = &(cur_pool[r_vertex_list[voff]]);
       uv = mx_dot_vec(p_uvec, p_vvec);
 
 // This is necessary because wlog is actually log2(row), _not_ log2(w)
@@ -1474,3 +1473,87 @@ void do_poly_linear(r3s_texture tex, int n, r3s_phandle *vpl, fix u_offset, fix 
    }
 }
 
+
+void zfill_surface(PortalPolygonCore *poly, int voff)
+{
+   r3s_phandle vlist[MAX_VERT];
+   int i, n = poly->num_vertices;
+
+   AssertMsg(n <= MAX_VERT, "zfill_surface: too many vertices.");
+   AssertMsg(n >= 3, "zfill_surface: too few vertices.");
+   if (n > MAX_VERT)
+      n = MAX_VERT;
+
+   for (i = 0; i < n; i++)
+      vlist[i] = &cur_ph[r_vertex_list[voff + i]];
+
+   r3_set_polygon_context(R3_PL_POLYGON | R3_PL_UNLIT);
+   r3_set_color(0);
+   r3_draw_poly(n, vlist);
+   r3d_do_setup = TRUE;
+   stat_num_poly_considered++;
+   stat_num_poly_drawn++;
+}
+
+void hw_water_wrap_uv(r3s_phandle *vlist, int n)
+{
+   int i;
+   float uBase, vBase;
+
+   vlist[0]->grp.u *= hw_water_tex_scale;
+   vlist[0]->grp.v *= hw_water_tex_scale;
+   uBase = (float)floor(vlist[0]->grp.u);
+   vBase = (float)floor(vlist[0]->grp.v);
+   vlist[0]->grp.u -= uBase;
+   vlist[0]->grp.v -= vBase;
+   for (i = 1; i < n; i++)
+   {
+      vlist[i]->grp.u = vlist[i]->grp.u * hw_water_tex_scale - uBase;
+      vlist[i]->grp.v = vlist[i]->grp.v * hw_water_tex_scale - vBase;
+   }
+}
+
+void draw_hw_poly(int n, r3s_point *pPoints, r3s_texture tex, r3s_texture lm)
+{
+   r3s_phandle vlist[MAX_VERT];
+   int i;
+
+   for (i = 0; i < n; i++)
+      vlist[i] = pPoints + i;
+
+   r3_set_texture(tex);
+   if (lm)
+      lgd3d_set_texture_level(1);
+   r3_draw_poly(n, vlist);
+   if (lm)
+      lgd3d_set_texture_level(0);
+   r3d_do_setup = TRUE;
+}
+
+void draw_surface_simple(PortalPolygonCore *poly, PortalPolygonRenderInfo *render, int voff)
+{
+   r3s_phandle vlist[MAX_VERT];
+   scale_info info;
+   r3s_texture tex;
+   int i, n = poly->num_vertices;
+
+   AssertMsg(n <= MAX_VERT, "draw_surface: too many vertices.");
+   AssertMsg(n >= 3, "draw_surface: too few vertices.");
+   if (n > MAX_VERT)
+      n = MAX_VERT;
+
+   tex = portal_get_texture(render->texture_id);
+   if (!tex)
+      return;
+
+   for (i = 0; i < n; i++)
+      vlist[i] = &cur_ph[r_vertex_list[voff + i]];
+
+   info.scale_u = two_to_n(6 - tex->wlog);
+   info.scale_v = two_to_n(6 - tex->hlog);
+   info.u0 = info.v0 = 0.0;
+   ptlgd3d_calc_uv(n, vlist, &info);
+
+   r3_set_texture(tex);
+   r3_draw_poly(n, vlist);
+}

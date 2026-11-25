@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aipathdb.cpp,v 1.97 2000/03/08 22:11:02 toml Exp $
 //
@@ -2206,8 +2205,6 @@ static void PostProcessModifiedOkBits()
    for (cell1 = 1; cell1 <= g_AIPathDB.m_nCells; cell1++)
    {
       iFirstCell1 = g_AIPathDB.m_Cells[cell1].firstCell;
-      if (g_AIPathDB.m_Cells[cell1].wrapFlags & IDWRAP_Cell2Cell)
-         iFirstCell1 += MAX_CELL2CELL_LINKS;
 
       iCellLimit1 = iFirstCell1 + g_AIPathDB.m_Cells[cell1].cellCount;
       pCell1To2Link = 0;
@@ -2680,10 +2677,9 @@ static BOOL __fastcall AddSplitCell(tAIPathCellID origCell, sAIPathCell2VertexLi
    g_AIPathDB.m_nCells++;
 
    g_AIPathDB.m_Cells[g_AIPathDB.m_nCells].firstVertex   = (tAIPathVertexIDPacked) (g_AIPathDB.m_nCellVertices+1);
-   g_AIPathDB.m_Cells[g_AIPathDB.m_nCells].vertexCount   = (uchar) nVerts;
+   g_AIPathDB.m_Cells[g_AIPathDB.m_nCells].vertexCount   = (ushort) nVerts;
    g_AIPathDB.m_Cells[g_AIPathDB.m_nCells].plane         = g_AIPathDB.m_Cells[origCell].plane;
    g_AIPathDB.m_Cells[g_AIPathDB.m_nCells].pathFlags     = 0;
-   g_AIPathDB.m_Cells[g_AIPathDB.m_nCells].wrapFlags     = 0;
 
    g_AIPathDB.m_nCellVertices += nVerts;
 
@@ -4201,9 +4197,6 @@ void PostProcessNarrow()
 
       i = g_AIPathDB.m_Cells[cell].firstCell;
 
-      if (g_AIPathDB.m_Cells[cell].wrapFlags & IDWRAP_Cell2Cell)
-         i += MAX_CELL2CELL_LINKS;
-
       int                iLimit = i + g_AIPathDB.m_Cells[cell].cellCount;
       sAIPathCellLink *  pLink;
       mxs_vector         endA, endB;
@@ -4603,7 +4596,6 @@ static void ShrinkLinks()
    tAIPathCellID pci_1;
    int nLinkIx;
    int nNumRemovedLinks = 0;
-   BOOL bDidWrappedLink = FALSE;
 
 
 #ifdef EDITOR
@@ -4639,32 +4631,18 @@ static void ShrinkLinks()
                continue;
 
             nLinkIx = g_AIPathDB.m_Cells[pci_1].firstCell;
-            if (g_AIPathDB.m_Cells[pci_1].wrapFlags & IDWRAP_Cell2Cell)
-            {
-               bDidWrappedLink = TRUE;
-               nLinkIx += MAX_CELL2CELL_LINKS;
-            }
 
             if ((i >= nLinkIx) && (i < (nLinkIx+g_AIPathDB.m_Cells[pci_1].cellCount))) // deleted link is within range.
                g_AIPathDB.m_Cells[pci_1].cellCount--;
             else if (i < nLinkIx) // deleted link is before this one, so just decrement firstCell
             {
                g_AIPathDB.m_Cells[pci_1].firstCell--;
-               if (g_AIPathDB.m_Cells[pci_1].firstCell >= MAX_CELL2CELL_LINKS)
-               {
-                  g_AIPathDB.m_Cells[pci_1].wrapFlags |= IDWRAP_Cell2Cell; // Redundant, yes.
-                  mprintf("Resetting wrapped link @%d\n", pci_1);
-                  g_AIPathDB.m_Cells[pci_1].firstCell -= MAX_CELL2CELL_LINKS;
-               }
             }
          }
 
          i--; // compensate for loop-end autoincrement.
       }
    }
-
-   if (bDidWrappedLink)
-      mprintf("Encountered Wrapped Links!\n");
 
    mprintf("\n   ... Removed %d links\n", nNumRemovedLinks);
 
@@ -5110,16 +5088,8 @@ BOOL AIPathFindDBBuild()
             TIMER_Clear(PathLinks);
             goto done_links_error;
          }
-         else if ((g_AIPathDB.m_nLinks + 1) >= MAX_CELL2CELL_LINKS)
-         {
-            g_AIPathDB.m_Cells[pci_1].firstCell
-               = (tAIPathCell2CellLinkIDPacked)((g_AIPathDB.m_nLinks + 1)-MAX_CELL2CELL_LINKS);
-            g_AIPathDB.m_Cells[pci_1].wrapFlags |= IDWRAP_Cell2Cell;
-            mprintf("Setting wrapped link! Cell=%d\n", pci_1);
-         }
          else
          {
-            g_AIPathDB.m_Cells[pci_1].wrapFlags &= ~IDWRAP_Cell2Cell;
             g_AIPathDB.m_Cells[pci_1].firstCell
                = (tAIPathCell2CellLinkIDPacked)(g_AIPathDB.m_nLinks + 1);
          }

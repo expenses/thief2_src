@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/motset.cpp,v 1.19 1999/12/27 15:26:01 BODISAFA Exp $
 
 #include <motset.h>
@@ -749,7 +748,7 @@ static void MotCompXlatCallback(multiped *mp, mps_motion_info *mi,mps_comp_motio
    // @TBD (justin 6-26-98): DataPeek is an evil hack, and should be
    // replaced by a proper Lock by someone who understands this code
    // well...
-   cTable=(MotDataCTable *) pRes->DataPeek();
+   cTable=(MotDataCTable *) MotDmngeData(mi->mot_num);
    if(!cTable)
    {
       Warning(("MotCompXlatCallback: cannot get data from handle\n"));
@@ -843,7 +842,7 @@ void MotCompRotCallback(mps_motion_info *mi,mps_comp_motion *cm,float frame, qua
    }
    // @TBD (justin 6-26-98): This DataPeek should be replaced by a proper
    // Lock...
-   cTable=(MotDataCTable *) pRes->DataPeek();
+   cTable=(MotDataCTable *) MotDmngeData(mi->mot_num);
    if(!cTable)
    {
       Warning(("MotCompRotCallback: cannot get data from handle\n"));

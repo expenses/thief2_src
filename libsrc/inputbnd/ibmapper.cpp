@@ -12,6 +12,8 @@
 #include "ibmapper.h"
 #include <keydefs.h>
 #include <ibvarman.h>
+#include <lg_file.h>
+#include <config.h>
 
 extern cIBVariableManager* g_IB_variable_manager;
 static void _RemoveCmdCtrlNode(cAnsiStrList* pList, char* pszCtrl);
@@ -33,47 +35,6 @@ static aatree<char> g_input_controls[3];
 static aatree<unsigned char> g_input_down;
 static cControlDownList g_ctrldown_list;
 
-class cCmdCtrlHash : public cStrIHashSet<sCmdCtrlEntry*>
-{
-	tHashSetKey GetKey(tHashSetNode pItem) const
-	{
-		return (tHashSetKey)(reinterpret_cast<sCmdCtrlEntry*>(pItem)->cmd.operator const char*());
-	}
-
-	void DestroyAll()
-	{
-		if (!m_nItems)
-			return;
-
-		for (uint i = 0; i < m_nPts; i++)
-		{
-			sHashSetChunk* pNext;
-			for (sHashSetChunk* p = m_Table[i]; p; p = pNext)
-			{
-				pNext = p->pNext;
-				sCmdCtrlEntry* pEntry = reinterpret_cast<sCmdCtrlEntry*>(p->node);
-				cAnsiStrList& pList = pEntry->ctrlList;
-				cAnsiStrNode* pListNode;
-				while (pListNode = pList.GetFirst(), pListNode != NULL)
-				{
-					delete pListNode;
-				}
-				delete pEntry;
-				delete p;
-			}
-
-			m_Table[i] = 0;
-		}
-
-		m_nItems = 0;
-	}
-
-public:
-	cCmdCtrlHash()
-		: cStrIHashSet<sCmdCtrlEntry*>(101) {}
-};
-
-static cCmdCtrlHash g_CmdCtrlHash;
 
 static int g_id;
 static short g_prev_mousex;
@@ -241,22 +202,15 @@ input_code g_valid_input_controls[202] = {
 	{"shift", -1},
 	{"lalt", -1},
 	{"lctrl", -1},
-	{"lshift", -1},
+	{"rshift", -1},
 	{"ralt", -1},
 	{"rctrl", -1},
 	{"rshift", -1},
 	{"mouse1", MOUSE_LDOWN},
 	{"mouse2", MOUSE_RDOWN},
 	{"mouse3", MOUSE_CDOWN},
-	{"mouse4", -1},
-	{"mousesingle1", UI_MOUSE_LTIMEOUT},
-	{"mousesingle2", UI_MOUSE_RTIMEOUT},
-	{"mousesingle3", UI_MOUSE_CTIMEOUT},
-	{"mousesingle4", -1},
-	{"mousedouble1", UI_MOUSE_LDOUBLE},
-	{"mousedouble2", UI_MOUSE_RDOUBLE},
-	{"mousedouble3", UI_MOUSE_CDOUBLE},
-	{"mousedouble4", -1},
+	{"mouse4", MOUSE_X1DOWN},
+	{"mouse5", MOUSE_X2DOWN},
 	{"mouse_axisx", -1},
 	{"mouse_axisy", -1},
 	{"mouse_axisz", -1},
@@ -326,6 +280,42 @@ char g_mods[3][3][8] = {
 
 static double m = 2.0 / 65535.0;
 
+#define kMaxMouseSmoothFrames 30
+
+struct sMouseSmoothBuffer
+{
+	int cur;
+	double samples[kMaxMouseSmoothFrames];
+};
+
+static sMouseSmoothBuffer g_MouseSmoothX;
+static sMouseSmoothBuffer g_MouseSmoothY;
+static int g_nMouseSmoothFrames;
+static double g_MouseSmoothWeight = 0.5;
+
+extern float g_fD8ScreenScaleX;
+extern float g_fD8ScreenScaleY;
+
+static double MouseSmooth(sMouseSmoothBuffer* buf, double val)
+{
+	if (g_nMouseSmoothFrames <= 1)
+		return val;
+
+	buf->cur = (buf->cur + 1) % g_nMouseSmoothFrames;
+	buf->samples[buf->cur] = val;
+
+	double sum = 0.0;
+	double weights = 0.0;
+	double weight = 1.0;
+	for (int i = 0; i < g_nMouseSmoothFrames; ++i)
+	{
+		sum += buf->samples[(buf->cur + g_nMouseSmoothFrames - 1 - i) % g_nMouseSmoothFrames] * weight;
+		weights += weight;
+		weight *= g_MouseSmoothWeight;
+	}
+	return sum / weights;
+}
+
 cIBInputMapper::cIBInputMapper()
 	: m_control_binds()
 {
@@ -334,6 +324,30 @@ cIBInputMapper::cIBInputMapper()
 	m_valid_events = UINT_MAX;
 	m_pCtrlIterNode = NULL;
 	m_joyproc = NULL;
+
+	memset(&g_MouseSmoothX, 0, sizeof(g_MouseSmoothX));
+	memset(&g_MouseSmoothY, 0, sizeof(g_MouseSmoothY));
+	g_nMouseSmoothFrames = 0;
+	if (config_get_int("mouse_smoothing", &g_nMouseSmoothFrames))
+	{
+		if (g_nMouseSmoothFrames <= 1)
+			g_nMouseSmoothFrames = 0;
+		else if (g_nMouseSmoothFrames > kMaxMouseSmoothFrames)
+			g_nMouseSmoothFrames = kMaxMouseSmoothFrames;
+
+		if (g_nMouseSmoothFrames)
+		{
+			float weight = 0.5;
+			if (config_get_float("mouse_smoothing_weight", &weight))
+			{
+				if (weight < 0.0)
+					weight = 0.0;
+				else if (weight > 1.0)
+					weight = 1.0;
+			}
+			g_MouseSmoothWeight = weight;
+		}
+	}
 
 	uiSetMouseMotionPolling(true);
 
@@ -420,12 +434,12 @@ char* cIBInputMapper::Bind(char** tokens)
 	}
 
 	cmd = tokens[1];
-	sCmdCtrlEntry* pCmdCtrlEntry = g_CmdCtrlHash.Search(cmd);
+	sCmdCtrlEntry* pCmdCtrlEntry = m_CmdCtrlHash.Search(cmd);
 	if (!pCmdCtrlEntry)
 	{
 		pCmdCtrlEntry = new sCmdCtrlEntry();
 		pCmdCtrlEntry->cmd = cmd;
-		g_CmdCtrlHash.Insert(pCmdCtrlEntry);
+		m_CmdCtrlHash.Insert(pCmdCtrlEntry);
 	}
 	_RemoveCmdCtrlNode(&pCmdCtrlEntry->ctrlList, m_misc_str);
 
@@ -478,7 +492,7 @@ char* cIBInputMapper::Unbind(char* control, char** var_name)
 	{
 		*pStr = '\0';
 
-		sCmdCtrlEntry* pCmdCtrlEntry = g_CmdCtrlHash.Search(pszCmd);
+		sCmdCtrlEntry* pCmdCtrlEntry = m_CmdCtrlHash.Search(pszCmd);
 		if (pCmdCtrlEntry)
 			_RemoveCmdCtrlNode(&pCmdCtrlEntry->ctrlList, m_misc_str);
 
@@ -619,11 +633,22 @@ bool cIBInputMapper::TrapHandler(uiEvent* p_event)
 	case UI_EVENT_MOUSE: {
 		uiMouseEvent* mouse_event = reinterpret_cast<uiMouseEvent*>(p_event);
 		short action = p_event->subtype & 0xFF;
-		if (action)
+		if (action || mouse_event->wheel)
 		{
-			if (mouse_event->wheel && action == 128)
+			if (mouse_event->wheel && !action)
 			{
-				strcpy(bind_control, "mouse_wheel");
+				if (config_is_defined("analog_mwheel_bind"))
+				{
+					strcpy(bind_control, "mouse_wheel");
+					break;
+				}
+				strcpy(bind_control, (mouse_event->wheel > 0) ? "mouse_wheel_up" : "mouse_wheel_down");
+				if ((m_mod_states & MASK_LALT) != 0)
+					strcat(bind_control, "+alt");
+				if ((m_mod_states & MASK_LCTRL) != 0)
+					strcat(bind_control, "+ctrl");
+				if ((m_mod_states & MASK_LSHIFT) != 0)
+					strcat(bind_control, "+shift");
 				break;
 			}
 			char butt_str[32];
@@ -732,7 +757,7 @@ char* cIBInputMapper::GetControlFromCmdStart(char* pszCmd, char* pszCtrlBuf)
 {
 	pszCtrlBuf[0] = '\0';
 
-	sCmdCtrlEntry* pCmdCtrlEntry = g_CmdCtrlHash.Search(pszCmd);
+	sCmdCtrlEntry* pCmdCtrlEntry = m_CmdCtrlHash.Search(pszCmd);
 	if (pCmdCtrlEntry)
 	{
 		m_pCtrlIterNode = pCmdCtrlEntry->ctrlList.GetFirst();
@@ -761,17 +786,17 @@ char* cIBInputMapper::GetControlFromCmdNext(char* pszCtrlBuf)
 
 char* cIBInputMapper::SaveBnd(char* filename, char* header)
 {
-	FILE* fp;
+	LGFILE* fp;
 	char** tokens;
 	char control_name[64];
 	long num_tokens;
 
-	fp = fopen(filename, "wt");
+	fp = lg_fopen(filename, "wt");
 	if (!fp)
 		return g_err_msg[4];
 
 	if (header)
-		fprintf(fp, "%s\n\n", header);
+		lg_fprintf(fp, "%s\n\n", header);
 
 	m_control_binds.ResetVisited(NULL);
 	while (true)
@@ -786,13 +811,13 @@ char* cIBInputMapper::SaveBnd(char* filename, char* header)
 			tokens = g_IB_variable_manager->Tokenize(m_misc_str, &num_tokens, 0);
 			g_IB_variable_manager->FreeTokens(tokens, num_tokens);
 			if (num_tokens > 1)
-				fprintf(fp, "bind %s \"%s\"\r\n", control_name, m_misc_str);
+				lg_fprintf(fp, "bind %s \"%s\"\r\n", control_name, m_misc_str);
 			else
-				fprintf(fp, "bind %s %s\r\n", control_name, m_misc_str);
+				lg_fprintf(fp, "bind %s %s\r\n", control_name, m_misc_str);
 		}
 	}
 
-	fclose(fp);
+	lg_fclose(fp);
 
 	return NULL;
 }
@@ -1287,51 +1312,45 @@ int cIBInputMapper::ProcessCookedKey(short code)
 int cIBInputMapper::ProcessMouseButton(uiMouseEvent* event)
 {
 	short action = event->action;
-	if (!action)
+	if (!action && !event->wheel)
 		return 0;
 
 	char butt_str[32];
-	char* control;
+	char final[128];
 	int isMouseWheel = FALSE;
-	int down = TRUE;
-
-	if (event->wheel && (action & 0x80))
-	{
-		action &= ~0x80;
+	if (event->wheel && !action)
 		isMouseWheel = TRUE;
-	}
 
 	for (int i = 0; i < 16; ++i)
 	{
 		int action_bit = 1 << i;
 		if (action & action_bit)
 		{
+			int ret;
 			sprintf(butt_str, "%d", action_bit);
-			control = g_input_controls[1].Find(butt_str);
-			if (!control)
-			{
-				down = FALSE;
-				sprintf(butt_str, "%d", action_bit >> 1);
-				control = g_input_controls[1].Find(butt_str);
-				if (control && SendButtonCmd(control, FALSE, 0))
-					return 1;
-			}
+			char* control = g_input_controls[1].Find(butt_str);
+			if (control)
+				ret = SendButtonCmd(control, TRUE, 0);
 			else
 			{
-				down = TRUE;
-				if (SendButtonCmd(control, TRUE, 0))
-					return 1;
+				sprintf(butt_str, "%d", action_bit >> 1);
+				control = g_input_controls[1].Find(butt_str);
+				if (!control)
+					continue;
+				ret = SendButtonCmd(control, FALSE, 0);
 			}
+			if (ret)
+				return ret;
 		}
 	}
 
-	if (isMouseWheel)
-	{
-		char* cmd = m_control_binds.Find("mouse_wheel");
-		if (cmd == NULL)
-			return 0;
+	if (!isMouseWheel)
+		return 0;
 
-		char final[64];
+	char* cmd = m_control_binds.Find("mouse_wheel");
+	if (cmd)
+	{
+		final[0] = '\0';
 		StripControl(final, cmd);
 		sprintf(butt_str, " %d", event->wheel);
 		strcat(final, butt_str);
@@ -1339,56 +1358,74 @@ int cIBInputMapper::ProcessMouseButton(uiMouseEvent* event)
 		return 1;
 	}
 
-	if (control)
-		return SendButtonCmd(control, down, 0);
+	char* wheel_control = (event->wheel > 0) ? "mouse_wheel_up" : "mouse_wheel_down";
+	if (!m_control_binds.Find(wheel_control))
+		return 0;
 
-	return 0;
+	int deadzone = 0;
+	if (!g_IB_variable_manager->GetVarVal(final, "mwheel_deadzone"))
+		deadzone = abs(atoi(final));
+	if (abs(event->wheel) < deadzone)
+		return 0;
+
+	strcpy(final, wheel_control);
+	if (m_mod_states & (MASK_LALT | MASK_LCTRL | MASK_LSHIFT))
+	{
+		if (m_mod_states & MASK_LALT)
+			strcat(final, "+alt");
+		if (m_mod_states & MASK_LCTRL)
+			strcat(final, "+ctrl");
+		if (m_mod_states & MASK_LSHIFT)
+			strcat(final, "+shift");
+		if (!m_control_binds.Find(final))
+			strcpy(final, wheel_control);
+	}
+	SendButtonCmd(final, TRUE, 0);
+	SendButtonCmd(final, FALSE, 0);
+	return 1;
 }
 
 int cIBInputMapper::ProcessMouseMove(uiMouseEvent* event)
 {
 	static char str[64];
-	static char final[64];
+	char final[64];
+	char* cmd;
+	float rel;
 
-	short res_y = grd_canvas->bm.h;
-	short res_x = grd_canvas->bm.w;
-	short half_x = res_x >> 1;
-	short half_y = res_y >> 1;
-
-	uint8 old_mouse_mask = mouseMask;
 	mouseMask &= 254;
-	mouse_put_xy(half_x, half_y);
-	mouseMask = old_mouse_mask;
+	mouse_put_xy(grd_canvas->bm.w >> 1, grd_canvas->bm.h >> 1);
 
-	short x = event->pos.x;
-	short y = event->pos.y;
+	if (event->pos.x < 0)
+		event->pos.x = 0;
+	else if (event->pos.x > grd_canvas->bm.w)
+		event->pos.x = grd_canvas->bm.w;
+	if (event->pos.y < 0)
+		event->pos.y = 0;
+	else if (event->pos.y > grd_canvas->bm.h)
+		event->pos.y = grd_canvas->bm.h;
 
-	if (x < 0)
-		x = 0;
-	else if (x > res_x)
-		x = res_x;
-	if (y < 0)
-		y = 0;
-	else if (y > res_y)
-		y = res_y;
-
-	float rel_x = x - half_x;
-	float rel_y = y - half_y;
-
-	char* cmd = m_control_binds.Find("mouse_axisx");
+	cmd = g_IB_input_mapper->m_control_binds.Find("mouse_axisx");
 	if (cmd)
 	{
+		final[0] = '\0';
 		StripControl(final, cmd);
-		sprintf(str, " %8.8f", rel_x);
+		rel = event->pos.x - (grd_canvas->bm.w >> 1);
+		rel *= g_fD8ScreenScaleX;
+		rel = MouseSmooth(&g_MouseSmoothX, rel);
+		sprintf(str, " %8.8f", rel);
 		strcat(final, str);
 		g_IB_variable_manager->Cmd(final, 0);
 	}
 
-	cmd = m_control_binds.Find("mouse_axisy");
+	cmd = g_IB_input_mapper->m_control_binds.Find("mouse_axisy");
 	if (cmd)
 	{
+		final[0] = '\0';
 		StripControl(final, cmd);
-		sprintf(str, " %8.8f", -rel_y);
+		rel = event->pos.y - (grd_canvas->bm.h >> 1);
+		rel *= g_fD8ScreenScaleY;
+		rel = MouseSmooth(&g_MouseSmoothY, rel);
+		sprintf(str, " %8.8f", -rel);
 		strcat(final, str);
 		g_IB_variable_manager->Cmd(final, 0);
 	}
@@ -1582,7 +1619,7 @@ void cIBInputMapper::RecomposeControl(char* control_str, char controls[][32], lo
 	control_str[0] = '\0';
 	for (int i = 0; i < num_controls; i++)
 	{
-		if (i != 0)
+		if (i > 0)
 			strcat(control_str, "+");
 		strcat(control_str, controls[i]);
 	}

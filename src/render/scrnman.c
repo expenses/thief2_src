@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 
 /*
  * $Source: r:/t2repos/thief2/src/render/scrnman.c,v $
@@ -469,6 +468,10 @@ BOOL ScrnInit3d(void)
 #else # !USE_HARDWARE3D
 BOOL ScrnInit3d(void)
 {
+   portal_multitexture = FALSE;
+   g_zbuffer = FALSE;
+   g_table_fog = TRUE;
+
    if (g_lgd3d)
    {
       int num_devices = lgd3d_enumerate_devices();
@@ -480,7 +483,7 @@ BOOL ScrnInit3d(void)
       }
 
       if ((g_lgd3d_device_index > num_devices)||(g_lgd3d_device_index < 0))
-         g_lgd3d_device_index = num_devices-1;
+         g_lgd3d_device_index = 0;
 
       info = lgd3d_get_device_info(g_lgd3d_device_index);
 
@@ -493,6 +496,9 @@ BOOL ScrnInit3d(void)
       // check our lightmap method.
       info->flags |= LGD3DF_MULTITEXTURE_COLOR;
 
+      if (config_is_defined("disable_table_fog"))
+         g_table_fog_toggle = FALSE;
+
       // try to do zbuffering if the user turned it on
       if (g_zbuffer_toggle)
          info->flags |= LGD3DF_ZBUFFER;
@@ -504,38 +510,13 @@ BOOL ScrnInit3d(void)
       else
         info->flags &= ~LGD3DF_TABLE_FOG;
 
-#ifndef SHIP
-      {
-         int spew = 0;
-         config_get_int("lgd3d_spew", &spew);
-
-         if (spew)
-            info->flags |= LGD3DF_SPEW;
-         else
-            info->flags &= ~LGD3DF_SPEW;
-
-      }
-
-      if (config_is_defined("fail_lgd3d_init"))
-         return FALSE;
-
-      if( config_is_defined("force_two_passes") )
-         info->flags &= ~LGD3DF_MULTI_TEXTURING;
-#endif
-
       info->flags |= LGD3DF_DITHER | LGD3DF_MODULATEALPHA; //zb :
 
-
-
-
-
+      if (config_is_nonzero("disable_d3d_dither"))
+         info->flags &= ~LGD3DF_DITHER;
 
       //zb SS2 patch only!
       b_SS2_UseSageTexManager = (config_is_defined("safe_texture_manager"));
-
-      
-
-
 
       // note that flags may be changed during this call, so we check afterwards
       if (lgd3d_init(info) == FALSE)
@@ -563,14 +544,17 @@ BOOL ScrnInit3d(void)
 
       g_table_fog = (info->flags & LGD3DF_TABLE_FOG) != 0;
 
+      lgd3d_use_linear_table_fog(!config_is_defined("fog_mode_exp"));
+
       if (!g_null_raster)
          r3_use_lgd3d();
    }
+   else
+      r3_use_g2();
 #ifdef RGB_LIGHTING
    portal_setup_light_masks();
 #endif
    return TRUE;
-
 }
 #endif
 

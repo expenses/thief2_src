@@ -60,7 +60,7 @@ void mx_sincos(mxs_ang ang,mxs_real *s, mxs_real *c)
 /////////////////////////////////
 // octant symmetric sin/cos calls
 
-#define do_ang_convert(ang) ((float)ang*MX_REAL_2PI/65536.0)
+#define do_ang_convert(ang) ((float)((short)(ang)*(MX_REAL_2PI/65536.0)))
 
 #define OCT_USE_SELF 1
 #define OCT_FLIP_SIN 2
@@ -130,13 +130,25 @@ void mx_sym_sincos(mxs_ang ang,mxs_real *s, mxs_real *c)
 
    if (oct_code&OCT_USE_SELF)
    {
-      *s = sin(rang);
-     	*c = cos(rang);
+      __asm {
+         fld rang
+         mov eax, c
+         mov ecx, s
+         fsincos
+         fstp dword ptr [eax]
+         fstp dword ptr [ecx]
+      }
    }
    else
    {
-      *c = sin(rang);
-     	*s = cos(rang);
+      __asm {
+         fld rang
+         mov eax, s
+         mov ecx, c
+         fsincos
+         fstp dword ptr [eax]
+         fstp dword ptr [ecx]
+      }
    }
    if (oct_code&OCT_FLIP_SIN)
       *s=-*s;
@@ -295,11 +307,27 @@ void mx_rot_z_mat(mxs_matrix *dest,const mxs_matrix *m,mxs_ang ang)
 // a.x is bank, a.y is pitch, a.z is heading
 void mx_ang2mat(mxs_matrix *dest,const mxs_angvec *a)
 {
-   mxs_matrix m1,m2;
+   mxs_real sx,cx,sy,cy,sz,cz;
+   double sxsy;
+   double cxsy;
 
-   mx_mk_rot_z_mat(&m1,a->tz);
-   mx_rot_y_mat(&m2,&m1,a->ty);
-   mx_rot_x_mat(dest,&m2,a->tx);
+   mx_sym_sincos(a->tz,&sz,&cz);
+   mx_sym_sincos(a->ty,&sy,&cy);
+   mx_sym_sincos(a->tx,&sx,&cx);
+
+   dest->m0 = cy*cz;
+   dest->m1 = cy*sz;
+   dest->m2 = -sy;
+
+   sxsy = sy*sx;
+   dest->m3 = sxsy*cz - cx*sz;
+   dest->m4 = cx*cz + sz*sxsy;
+   dest->m5 = sx*cy;
+
+   cxsy = cx*sy;
+   dest->m6 = sx*sz + cz*cxsy;
+   dest->m7 = sz*cxsy - cz*sx;
+   dest->m8 = cy*cx;
 }
 
 

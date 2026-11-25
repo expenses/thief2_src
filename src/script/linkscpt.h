@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/linkscpt.h,v 1.10 1998/08/04 19:00:17 TOML Exp $
 #pragma once  
 #ifndef __LINKSCPT_H

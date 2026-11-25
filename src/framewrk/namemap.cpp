@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/namemap.cpp,v 1.4 1998/04/20 17:16:55 kate Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
@@ -134,7 +133,7 @@ void cNameMap::AddNameAtIndex(const Label *pName, int iNewApparent)
 Label *cNameMap::NameFromID(int iApparentIndex)
 {
    if (iApparentIndex < m_iLowerBound
-    || iApparentIndex > m_iUpperBound)
+    || RealIndex(iApparentIndex) >= Size())
       return kNameMapNameNotFound;
    else
       return &m_IntToName[RealIndex(iApparentIndex)]->m_Name;

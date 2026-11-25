@@ -101,6 +101,8 @@ void r3_use_lgd3d(void)
    r3_setup_prim_funcs(poly_lgd3d_setup_funcs, lgd3d_convert,
       lgd3d_convert_indexed,
       lgd3d_line, lgd3d_draw_point);
+   r3d_using_lgd3d = TRUE;
+   r3d_using_g2 = FALSE;
    r3_set_prim();
 
    // this is a really gruesome hack

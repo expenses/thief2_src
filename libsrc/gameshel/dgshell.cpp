@@ -116,10 +116,10 @@ STDMETHODIMP_(void) cDosGameShell::DisplayFlush()
 // Get the present tick count, in msec since initialization or timer restart
 //
 
-STDMETHODIMP_(unsigned long) cDosGameShell::GetTimerTick()
+STDMETHODIMP_(unsigned __int64) cDosGameShell::GetTimerTick()
 {
 // @Note (toml 10-21-96): This is a totally fake time, stuck on ticks. Gotta fix
-    return clock() / CLOCKS_PER_SEC;
+    return (unsigned __int64)(clock() / CLOCKS_PER_SEC) * 1000;
 }
 
 ///////////////////////////////////////

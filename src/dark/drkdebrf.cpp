@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkdebrf.cpp,v 1.22 2000/03/23 21:33:06 adurant Exp $
 #include <appagg.h>
 #include <drkdebrf.h>
@@ -35,6 +34,8 @@
 #include <playrobj.h>
 #include <buttpanl.h>
 #include <guistyle.h>
+#include <keydefs.h>
+#include <metasnd.h>
 #include <uigame.h>
 #include <drkgoalr.h>
 #include <drkgoalt.h>
@@ -743,6 +744,7 @@ public:
 
 protected:
    void OnButtonList(ushort action, int button);
+   BOOL OnKey(uiEvent* ev);
 
 
 };
@@ -765,6 +767,25 @@ sDarkPanelDesc cObjectives::vars =
    cObjectives::kNumButts, 
    objectives_button_names,
 }; 
+
+BOOL cObjectives::OnKey(uiEvent* ev)
+{
+   int code = ((uiCookedKeyEvent*)ev)->code; 
+   if (!(code & KB_FLAG_DOWN))
+      return FALSE; 
+
+   switch (code & ~KB_FLAG_DOWN)
+   {
+      case KEY_SPACE:
+         OnButtonList(BUTTONGADG_LCLICK, kQuit); 
+         return TRUE; 
+      case KEY_ENTER:
+         metaSndPlayGUICallback(StyleSoundSelect); 
+         OnButtonList(BUTTONGADG_LCLICK, kMap); 
+         return TRUE; 
+   }
+   return FALSE; 
+}
 
 void cObjectives::OnButtonList(ushort action, int button)
 {
@@ -1035,7 +1056,7 @@ protected:
    {
       GUIcompose c; 
 
-      if (image >= kNumDialImages)
+      if ((unsigned)image >= kNumDialImages)
          image = kNumDialImages - 1; 
       Rect& area = mRects[dial]; 
       IDataSource* img = mpDialImages[dial-kFirstDial][image]; 

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/quesedit.cpp,v 1.2 2000/02/19 13:11:19 toml Exp $
 
 #include <appagg.h>
@@ -22,6 +21,7 @@
 #include <isdescst.h>
 
 #include <questapi.h>
+#include <quesbin.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header! 
 
@@ -34,7 +34,7 @@ void QuestSet(char* pArg, eQuestDataType type)
    char* pDelim;
    char save;
    
-   while (*pArg && isspace(*pArg)) 
+   while (*pArg && isspace((uchar)*pArg)) 
       pArg++;
    
    // get first delimeter
@@ -69,7 +69,7 @@ void QuestSetMisCmd(char *pArg)
 
 void QuestGetCmd(char* pArg)
 {
-   while (*pArg && isspace(*pArg)) 
+   while (*pArg && isspace((uchar)*pArg)) 
       pArg++;
 
    AutoAppIPtr(QuestData);
@@ -79,7 +79,7 @@ void QuestGetCmd(char* pArg)
 
 void QuestDeleteCmd(char* pArg)
 {
-   while (*pArg && isspace(*pArg)) 
+   while (*pArg && isspace((uchar)*pArg)) 
       pArg++;
 
    AutoAppIPtr(QuestData);
@@ -102,7 +102,7 @@ void QuestSubscribeCmd(char* pArg)
    char save;
    ObjID objID;
    
-   while (*pArg && isspace(*pArg)) 
+   while (*pArg && isspace((uchar)*pArg)) 
       pArg++;
    
    // get first delimeter
@@ -128,7 +128,7 @@ void QuestUnsubscribeCmd(char* pArg)
    char save;
    ObjID objID;
    
-   while (*pArg && isspace(*pArg)) 
+   while (*pArg && isspace((uchar)*pArg)) 
       pArg++;
    
    // get first delimeter
@@ -217,6 +217,13 @@ void QuestEditMisCmd(void)
    QuestEdit(kQuestDataMission);
 }
 
+#ifndef SHIP
+void QuestBinDumpCmd(void)
+{
+   QuestBinDataDump();
+}
+#endif
+
 static Command g_QuestCommands[] = 
 {
    {"quest_create", FUNC_STRING, QuestSetCampCmd, "quest_set <name>,<value>", HK_EDITOR},
@@ -228,6 +235,9 @@ static Command g_QuestCommands[] =
    {"quest_unsub", FUNC_STRING, QuestUnsubscribeCmd, "quest_unsub <objID>,<name>", HK_EDITOR},
    {"quest_edit", FUNC_VOID, QuestEditCampCmd, "quest_edit", HK_EDITOR},
    {"quest_edit_mis", FUNC_VOID, QuestEditMisCmd, "quest_edit_mis", HK_EDITOR},
+#ifndef SHIP
+   {"dump_binquest", FUNC_VOID, QuestBinDumpCmd, "dump_binquest", HK_EDITOR},
+#endif
 };
 
 void QuestEditInit(void)

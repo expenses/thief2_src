@@ -75,7 +75,7 @@ void GetNormalizedPath(const char* pOldPath, char** ppNewPath)
 		needSlash = TRUE;
 	}
 
-	*ppNewPath = (char*)Malloc(nameLen + 1);
+	*ppNewPath = (char*)operator new(nameLen + 1);
 	char* pNewPath = *ppNewPath;
 
 	for (const char* p = pOldPath; *p != '\0'; ++p, ++pNewPath)

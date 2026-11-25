@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkoptmn.cpp,v 1.75 2000/03/22 18:19:55 patmac Exp $
 #include <string.h>
 #include <dev2d.h>
@@ -56,6 +55,7 @@
 #include <schbase.h>
 
 #include <dbmem.h>
+#include <lg_file.h>
 
 const int kVolumeSliderNotches = 25;
 // allow 16 notches above and below neutral setting
@@ -115,6 +115,7 @@ extern int sfx_use_channels;
 #define BINDDN_BMPRES 2
 
 #define NUM_LIST 13
+#define MAX_LIST_STRS 64
 #define FILL_SUBPANEL 666
 
 #define LRMOD(x) (!strcmp (x, "lalt") || !strcmp (x, "ralt") || \
@@ -139,8 +140,8 @@ short soft_modes[] = {
 
 
       //#define CanChangeEAX() (CanChangeDifficultyNow() && SFX_Is_EAX_Available())
-//#define CanChangeEAX() (SFX_Is_EAX_Available())
-#define CanChangeEAX() (SFX_Is_EAX_Available() && (SFX_GetSoundDevice () == SFXDEVICE_A3D))
+#define CanChangeEAX() (SFX_Is_EAX_Available())
+//#define CanChangeEAX() (SFX_Is_EAX_Available() && (SFX_GetSoundDevice () == SFXDEVICE_A3D))
 
 // this is REALLY REALLY NOT THE RIGHT THING... HOW DID THIS END UP THIS WAY
 #define CanChangeSoundDeviceNow() CanChangeDifficultyNow()
@@ -363,12 +364,13 @@ protected:
    LGadButtonList mListButtons;
    LGadButtonListDesc mListButtonDesc;
    DrawElement mListButtonElems[NUM_LIST];
-   cStr mListButtonStrs[NUM_LIST];
+   cStr mListButtonStrs[MAX_LIST_STRS];
 
    //video-related data
    BOOL mNumVidDevices;
    int mSelectedRes;
    int m3dDriver;
+   int mPrev3dDriver;
 
    //binding-related data
    int mTopBind;
@@ -498,6 +500,7 @@ protected:
       m3dDriver = 0;
       if (config_is_defined("d3d_driver_index"))
          config_get_int("d3d_driver_index", &m3dDriver);
+      mPrev3dDriver = m3dDriver;
 
       //initialize our subpanels
       mSwap = mCurSub;
@@ -610,6 +613,8 @@ protected:
          }
 
          LGadDestroyButtonList (&mListButtons);
+         if (reslist)
+            LGadDestroyButtonList (&mBindScrollers);
       }
    }
 
@@ -617,7 +622,7 @@ protected:
 
    void OnLoopMsg (eLoopMessage msg, tLoopMessageData msg_data)
    {  
-      if (SFX_GetSoundDevice () == SFXDEVICE_A3D) {
+      if (SFX_GetSoundDevice () == SFXDEVICE_A3D || SFX_GetSoundDevice () == SFXDEVICE_OPENAL) {
          mxs_vector origin = {0.0, 0.0, 0.0};
          SFX_Frame (&origin, (mxs_angvec *)&origin);
       }
@@ -639,7 +644,7 @@ protected:
       }
       //sens
       else if (mCurSub == kSubControls) {
-         char buf[32];
+         char buf[64];
          sprintf (buf, "mouse_sensitivity %8.8f", ((double)m_sens / 2.0) + 0.5);//slide goes from 0.5 (slow) to 10.5 (fast)
          g_pInputBinder->ProcessCmd (buf);
       }
@@ -695,25 +700,26 @@ protected:
 
    void BndAppendControls ()
    {
-      FILE *fp = fopen ("user.bnd", "at");
+      LGFILE *fp = lg_fopen("user.bnd", "at");
       if (fp)
       {
-         fprintf (fp, "\n");
+         lg_fprintf(fp, "\n");
 
          char *controls[] = { "bow_zoom", "joystick_enable", "mouse_invert", "lookspring",
-                              "freelook", "mouse_sensitivity", "joy_rotate", "joystick_sensitivity",
-                              "joystick_deadzone", "rudder_sensitivity", "rudder_deadzone",
+                              "freelook", "mouse_sensitivity", "mouse_sensitivity_y_scale",
+                              "mouse_sensitivity_use_aspect", "crouch_unmount", "joy_rotate", "joystick_sensitivity",
+                              "joystick_deadzone", "rudder_sensitivity", "rudder_deadzone", "mwheel_deadzone",
                               "auto_equip", "auto_search", "goal_notify", "climb_touch", "\0"};
-         char str[32];
+         char str[64];
          char **p_control = controls;
 
          while (**p_control) {
             sprintf (str, "echo $%s", *p_control);
-            fprintf (fp, "%s %s\r\n", *p_control, g_pInputBinder->ProcessCmd (str));
+            lg_fprintf(fp, "%s %s\r\n", *p_control, g_pInputBinder->ProcessCmd (str));
             p_control++;
          }
 
-         fclose (fp);
+         lg_fclose(fp);
       }
    }
 
@@ -1327,7 +1333,7 @@ protected:
          DrawElement *elem = &draw_elem[i];
          memset(elem, 0, sizeof(DrawElement)); 
 
-         char buf[16];
+         char buf[32];
          sprintf(buf, "%s%d", prefix, i); 
          strs[i] = FetchUIString (panel_name, buf, mResPath); 
          elem->draw_type = DRAWTYPE_TEXT; 
@@ -1604,7 +1610,7 @@ protected:
 
       if (new_sub == kSubControls) {
          DrawSlider ((int)kMouseSensSlider, (int)kMouseSensSliderRect, FALSE);
-         CreateSlider ((int)kMouseSensSlider, (int)kMouseSensSliderRect, &m_sens, 20, 1);
+         CreateSlider ((int)kMouseSensSlider, (int)kMouseSensSliderRect, &m_sens, 30, 1);
       }
       else if (new_sub == kSubBasicVideo) {
          DrawSlider ((int)kGammaSlider, (int)kGammaSliderRect, FALSE);
@@ -1642,8 +1648,10 @@ protected:
          LGadBoxSetUserData (VB(&mListButtons), this);
          LGadBoxSetStyle (&mListButtons, &mBindStyle); 
 
-//         LGadCreateButtonListDesc (&mBindScrollers, LGadCurrentRoot (), &mBindScrollerDesc);
-//         LGadBoxSetUserData (VB(&mBindScrollers), this);
+         if (reslist) {
+            LGadCreateButtonListDesc (&mBindScrollers, LGadCurrentRoot (), &mBindScrollerDesc);
+            LGadBoxSetUserData (VB(&mBindScrollers), this);
+         }
 
          if (mListSub == kSubBasicVideo)
 		 {
@@ -1905,23 +1913,6 @@ protected:
                if (sfx_use_channels > AUDIO_CHANNEL_LIMIT)
                   sfx_use_channels = 4;
                config_set_int("sfx_channels", sfx_use_channels);
-
-               // evil hack - modify the caps on the different types of sounds
-               //   based on number of channels - patmc
-               extern int gSoundTypeCaps[];
-               for ( i = 0; i < kNumSchemaTypes; i++ ) {
-                  gSoundTypeCaps[i] = 4;
-               }
-               if ( sfx_use_channels > 8 ) {
-                  if ( sfx_use_channels > 12 ) {
-                     for ( i = 0; i < kNumSchemaTypes; i++ ) {
-                        gSoundTypeCaps[i] = 6;
-                     }
-                     gSoundTypeCaps[kSchemaTypeAmbient] = 10;
-                  } else {
-                     gSoundTypeCaps[kSchemaTypeAmbient] = 8;
-                  }
-               }
 
                SFXInit ();
                

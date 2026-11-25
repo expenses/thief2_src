@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/plyscrpt.cpp,v 1.1 1998/05/13 10:38:07 kate Exp $
 
 #include <lg.h>

@@ -133,26 +133,29 @@ void cHashSetBase::SetEmpty()
 //
 tHashSetNode cHashSetBase::ScanNext(tHashSetHandle & h) const
 {
-    if (h.pChunk)
+    if (h.pNext)
     {
         h.pPrev = h.pChunk;
-        h.pChunk = h.pChunk->pNext;
-        if (h.pChunk)
-            return h.pChunk->node;
+        h.pChunk = h.pNext;
+        h.pNext = h.pChunk->pNext;
+        return h.pChunk->node;
     }
 
     for (unsigned i = h.Index + 1; i < m_nPts; i++)
     {
         if (m_Table[i])
         {
-            h.pChunk = m_Table[i];
+            sHashSetChunk * p = m_Table[i];
             h.Index = i;
             h.pPrev = 0;
-            return h.pChunk->node;
+            h.pChunk = p;
+            h.pNext = p->pNext;
+            return p->node;
         }
     }
 
     h.pPrev = 0;
+    h.pNext = 0;
     h.pChunk = 0;
     h.Index = m_nPts;
     return 0;

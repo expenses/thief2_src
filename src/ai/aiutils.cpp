@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiutils.cpp,v 1.39 2000/03/19 13:35:54 adurant Exp $
 //
@@ -582,8 +581,10 @@ void AIUpdateDoors()
 
 BOOL AICanOpenDoor(ObjID ai, ObjID obj)
 {
-   if (!IsDoor(obj) || GetDoorStatus(obj) == kDoorOpen || GetDoorStatus(obj) == kDoorOpening ||
-                       GetDoorStatus(obj) == kDoorHalt)
+   if (!IsDoor(obj))
+      return TRUE;
+   int status = GetDoorStatus(obj);
+   if (status == kDoorOpen || status == kDoorOpening || status == kDoorHalt)
       return TRUE;
 
    sObjAccess accesses[MAX_OBJ_ACCESS];
@@ -662,8 +663,9 @@ void AICloseDoor(ObjID ai, ObjID obj, BOOL all)
    if (!IsDoor(obj))
       return;
 
-   if ((GetDoorStatus(obj) == kDoorClosed) ||
-       (GetDoorStatus(obj) == kDoorClosing))
+   int status = GetDoorStatus(obj);
+   if ((status == kDoorClosed) ||
+       (status == kDoorClosing))
       return;
 
    if (!AIUseDoorControllers(ai,obj,all)) //all defaults to TRUE, old behaviour.

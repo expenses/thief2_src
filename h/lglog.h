@@ -63,7 +63,7 @@ EXTERN const char * __cdecl _LogFmt(const char *, ...);
 //
 
 // High-level log functions
-#define LogMsg(Msg)                                 _LogWriteMsgFileLine(Msg, __FILE__, __LINE__)
+#define LogMsg(Msg)                                 _LogWriteMsg(Msg)
 #define LogMsg1(Msg, p1)                            LogMsg(_LogFmt(Msg, p1))
 #define LogMsg2(Msg, p1, p2)                        LogMsg(_LogFmt(Msg, p1, p2))
 #define LogMsg3(Msg, p1, p2, p3)                    LogMsg(_LogFmt(Msg, p1, p2, p3))
@@ -71,6 +71,9 @@ EXTERN const char * __cdecl _LogFmt(const char *, ...);
 #define LogMsg5(Msg, p1, p2, p3, p4, p5)            LogMsg(_LogFmt(Msg, p1, p2, p3, p4, p5))
 #define LogMsg6(Msg, p1, p2, p3, p4, p5, p6)        LogMsg(_LogFmt(Msg, p1, p2, p3, p4, p5, p6))
 #define LogMsg7(Msg, p1, p2, p3, p4, p5, p6, p7)    LogMsg(_LogFmt(Msg, p1, p2, p3, p4, p5, p6, p7))
+#define LogMsg8(Msg, p1, p2, p3, p4, p5, p6, p7, p8) LogMsg(_LogFmt(Msg, p1, p2, p3, p4, p5, p6, p7, p8))
+#define LogMsg9(Msg, p1, p2, p3, p4, p5, p6, p7, p8, p9) LogMsg(_LogFmt(Msg, p1, p2, p3, p4, p5, p6, p7, p8, p9))
+#define LogMsg10(Msg, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) LogMsg(_LogFmt(Msg, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10))
 #define LogStr(Msg)                                 LogMsg(Msg)
 
 #if 0
@@ -89,7 +92,7 @@ EXTERN void LGAPI LogStackTrace(const char * pszTitle);
 
 // Debug log write function
 EXTERN void LGAPI _LogWriteMsgFileLine(const char *, const char *, unsigned);
-EXTERN int  LGAPI _LogWriteMsg(const char *);
+EXTERN void LGAPI _LogWriteMsg(const char *);
 EXTERN int  __cdecl _LogWriteFmtMsg(const char *, ...);
 
 // Primal control of logging (not generally used directly)

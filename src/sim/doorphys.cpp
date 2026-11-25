@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/doorphys.cpp,v 1.53 2000/03/20 09:48:02 adurant Exp $
 // door system
 
@@ -609,6 +608,8 @@ BOOL DoorPhysActivate(int o_id, int what_to_do)
 
    AssertMsg(IsDoor(o_id), "Attempt to activate door of non-door object");
    pDoorProp = GetDoorProperty(o_id);
+   if (pDoorProp == NULL)
+      return FALSE;
 
    pModel = g_PhysModels.GetActive(o_id);
    AssertMsg2(pModel, 
@@ -704,8 +705,10 @@ int GetDoorStatus(int o_id)
 
    AssertMsg1(IsDoor(o_id), "Attempt to get door status of non-door object %d",o_id);
    pDoorProp = GetDoorProperty(o_id);
+   if (pDoorProp != NULL)
+      return pDoorProp->status;
 
-   return pDoorProp->status;
+   return kDoorNoDoor;
 }
 
 // update the door property from the brush
@@ -1120,6 +1123,8 @@ void RemoveDoorBlocking(int o_id)
    Assert_(IsDoor(o_id));
 
    sDoorProp *pDoorProp = GetDoorProperty(o_id);
+   if (pDoorProp == NULL)
+      return;
 
    RemoveDoorSoundBlocking( o_id );
 
@@ -1149,6 +1154,8 @@ void RemoveDoorSoundBlocking(int o_id)
    Assert_(IsDoor(o_id));
 
    sDoorProp *pDoorProp = GetDoorProperty(o_id);
+   if (pDoorProp == NULL)
+      return;
 
    if ((pDoorProp->room1 != pDoorProp->room2) && 
        (pDoorProp->room1 != -1) && (pDoorProp->room2 != -1) &&
@@ -1167,6 +1174,8 @@ void AddDoorBlocking(int o_id)
    Assert_(IsDoor(o_id));
 
    sDoorProp *pDoorProp = GetDoorProperty(o_id);
+   if (pDoorProp == NULL)
+      return;
 
    AddDoorSoundBlocking( o_id );
 

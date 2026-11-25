@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/motmngr.cpp,v 1.20 1999/05/27 13:59:23 JON Exp $
 
 #ifndef SHIP
@@ -24,6 +23,9 @@
 #include <objquery.h>
 #include <cfgtool.h>
 #include <timings.h>
+#include <datapath.h>
+#include <lg_file.h>
+#include <stdio.h>
 
 #include <dbmem.h> // must be last included header
 
@@ -98,19 +100,39 @@ void MotionManagerReset()
    g_pMotionDatabase->Clear();
 }
 
+static const char *FindMotionDatabase()
+{
+   static char fullname[MAX_PATH];
+   Datapath *pMods = g_pModDatapath;
+   struct _stat64i32 st;
+
+   if (pMods && pMods->numDatapaths > 0)
+   {
+      for (int i = 0; i < pMods->numDatapaths; i++)
+      {
+         sprintf(fullname, "%smotiondb.bin", pMods->datapath[i]);
+         if (lg_stat(fullname, &st) == 0)
+            return fullname;
+         sprintf(fullname, "%smschema\\motiondb.bin", pMods->datapath[i]);
+         if (lg_stat(fullname, &st) == 0)
+            return fullname;
+      }
+   }
+   return "motiondb.bin";
+}
+
 void MotionManagerLoad()
 {
    AUTO_TIMER(MOTMNGR_PF_LOAD);
    AutoAppIPtr(AIManager);
 
-   // first check current directory
-   ITagFile *pFile=TagFileOpen("motiondb.bin",kTagOpenRead);
+   ITagFile *pFile=TagFileOpen(FindMotionDatabase(),kTagOpenRead);
 
    if(!pFile) // try resname path
    {
       char fullname[80];
 
-      if(!find_file_in_config_path(fullname,"mschema/motiondb.bin","resname_base"))
+      if(!find_file_in_config_path(fullname,"mschema\\motiondb.bin","resname_base"))
       {
          Warning(("Unable to load motion database\n"));
          return;

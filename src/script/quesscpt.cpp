@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/script/quesscpt.cpp,v 1.7 2000/01/04 18:52:44 BFarquha Exp $
 //
@@ -16,6 +15,7 @@
 
 #include <quesscpt.h>
 #include <questapi.h>
+#include <quesbin.h>
 
 #include <appagg.h>
 
@@ -72,6 +72,28 @@ public:
    {
       AutoAppIPtr(QuestData);
       return pQuestData->Delete(pName);
+   }
+
+   STDMETHOD(BinSet)(THIS_ const char *pName, const void *pData, int iLen)
+   {
+      if (g_pQuestBinData->Exists(pName))
+         return g_pQuestBinData->Set(pName, pData, iLen);
+      return g_pQuestBinData->Create(pName, pData, iLen);
+   }
+
+   STDMETHOD_(const void*,BinGet)(THIS_ const char *pName, int ref iLen)
+   {
+      return g_pQuestBinData->Get(pName, &iLen);
+   }
+
+   STDMETHOD_(BOOL,BinExists)(THIS_ const char* pName)
+   {
+      return g_pQuestBinData->Exists(pName);
+   }
+
+   STDMETHOD_(BOOL, BinDelete)(THIS_ const char *pName)
+   {
+      return g_pQuestBinData->Delete(pName);
    }
 
 };

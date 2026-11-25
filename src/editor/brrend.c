@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/brrend.c,v 1.29 2000/02/19 12:27:47 toml Exp $
 
 // actual brush renderer, picker, so on
@@ -1445,4 +1444,66 @@ void *brushConvertPortal(editBrush *eb)
    }
    
    return ph;
+}
+
+#include <texmem.h>
+
+void brush_uvmap_cylinder(editBrush *br, float uScale, float vScale, int uOff, int vOff, BOOL bRotate, int nFaces)
+{
+   short tx = br->txs[br->cur_face].tx_id;
+   int nSides, i, cnt;
+   grs_bitmap *bm;
+   int texW, texH, uTexels, vTexels;
+   fixang rot = 0;
+   float fAccum = 0.0;
+
+   if (tx < 0)
+      tx = br->tx_id;
+   AssertMsg(tx >= 0, "tx_id >= 0");
+   bm = texmemGetTexture(tx);
+   AssertMsg(bm != NULL, "bm != NULL");
+   texW = bm->w;
+   texH = bm->h;
+
+   r3_start_frame();
+   fastRender = FALSE;
+   brushTerrSetup(br);
+   _brushTransformToWorld(br);
+   _brushCleanandFinish();
+   r3_end_frame();
+
+   nSides = primalID_GetSides(br->primal_id);
+   if (bRotate)
+   {
+      if (brushGetType(br) == brType_TERRAIN)
+         rot = 0x4000;
+      else
+         rot = 0xC000;
+   }
+   if (nFaces > nSides)
+      nFaces = nSides;
+
+   uTexels = bRotate ? texH : texW;
+   vTexels = bRotate ? texW : texH;
+   uOff %= uTexels;
+   vOff %= vTexels;
+   if (uOff < 0)
+      uOff += uTexels;
+   if (vOff < 0)
+      vOff += vTexels;
+
+   for (i = 0; i < nFaces; i++)
+   {
+      int face = (br->cur_face + i) % nSides;
+      int *pts = primalBr_FacePts(br->primal_id, face, &cnt);
+      mxs_vector edge;
+      TexInfo *pTex = &br->txs[face];
+
+      mx_sub_vec(&edge, &world_pts[pts[1]], &world_pts[pts[0]]);
+      pTex->tx_id = tx;
+      pTex->tx_rot = rot;
+      pTex->tx_x = (ushort)(((int)(fAccum * uScale * 16.0) + uOff) % uTexels);
+      pTex->tx_y = (ushort)vOff;
+      fAccum += mx_mag_vec(&edge);
+   }
 }

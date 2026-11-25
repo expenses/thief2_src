@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/objremap.cpp,v 1.11 1999/10/06 15:59:44 BFarquha Exp $
 
 #include <appagg.h>
@@ -186,7 +185,7 @@ void AddObjMappingToTable(ObjID targ, ObjID src)
 ObjID ObjRemapOnLoad(ObjID obj)
 {
    ObjID result = obj; // default to identity mapping
-   if (pObjMap != NULL)
+   if (pObjMap != NULL && obj != OBJ_NULL)
       pObjMap->Lookup(obj,&result);
    return result;
 }

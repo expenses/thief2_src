@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/weather.cpp,v 1.17 2000/03/02 15:25:09 MAT Exp $
 
 /* --<<= -+-/-/-/=/=/\/- <<< ((( ((( / \ ))) ))) >>> -\/\=\=\-\-\-+- =>>-- *\
@@ -406,6 +405,8 @@ static inline void SetNumCells()
 // Are there any weather to speak of?
 static void CheckForWeatherCells()
 {
+   if (!g_pWeatherPerCell)
+      return;
    g_bAnyWeatherCells = FALSE;
    for (int i = 0; i < wr_num_cells; ++i)
       if (g_pWeatherPerCell[i]) {

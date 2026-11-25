@@ -147,16 +147,16 @@ public:
    void CheckTimer( void );
    void StartTimer( void );
 
-   virtual BOOL  AllocChannel( cSndSample *pSample, uint32 flags, eSnd3DMethod method );
-   virtual void  FreeChannel( cSndSample *pSample );
+   BOOL  AllocChannel( cSndSample *pSample, uint32 flags, eSnd3DMethod method );
+   void  FreeChannel( cSndSample *pSample );
 
    // allow cSndSample to wank on our sample lists
    cSndSample ** AudibleHead( void );
    cSndSample ** InaudibleHead( void );
 
    cThreadMutex & MutexRef( void );
-	virtual BOOL CheckStreams(void);
-   virtual BOOL EAXLevelSupported(void);
+	BOOL CheckStreams(void);
+   BOOL EAXLevelSupported(void);
 
    void DoFreeChannelCB(void);
 
@@ -212,7 +212,6 @@ protected:
    void                    *mpPriorityCBData;
    SndFreeChannelCallback  fnFreeChannelCB;
    void                    *mpFreeChannelCBData;
-   BOOL                    mInPriorityCB;
    SndTraceCallback        fnTraceCB;
 
    eSndTimerState          mTimerState;
@@ -229,7 +228,6 @@ protected:
    eSnd3DMethod            m3DMixMethod;
    uint32                  m3DMethodCapabilities;
    uint32                  m3DDeferFlag;
-   ReverbSettings          mReverbSettings;
 };
 
 inline int32 cSndMixer::Init3DReverb()

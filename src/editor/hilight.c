@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/hilight.c,v 1.17 2000/03/24 14:33:19 adurant Exp $
 // brush highlighting system
 
@@ -491,7 +490,7 @@ Command hilight_keys[] =
    { "hilight_add_prop", FUNC_STRING, propertize_the_highlight, "Add a named property to all hilit objects"},
    { "hilight_rem_prop", FUNC_STRING, unpropertize_the_highlight, "Add a named property to all hilit objects"},
 
-   { "hilight_render", TOGGLE_BOOL, &renderHilightOnly },
+   { "hilight_render", TOGGLE_BOOL, &renderHilightOnly, NULL, 0, 1},
    { "hilight_reinstantiate", FUNC_STRING, reinstantiate_and_highlight, "Hilight all objects with property, then remove and readd property"},
 }; // all take bitfields since while ugly it is consistent
 

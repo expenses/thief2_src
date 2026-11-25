@@ -20,7 +20,7 @@
 tResult LGAPI _GameShellCreate(REFIID, IGameShell ** /*ppGameShell*/, IUnknown * pOuterUnknown, int fFlags, int /*msecBlockSignal*/)
 {
     // Create the game shell.  Instance adds self to pOuterUnknown
-    if (GetPrivateProfileInt("Threading", "Enabled", TRUE, "lg.ini") && ((fFlags & kMultithreadedShell) || GetPrivateProfileInt("WinShell", "MT", FALSE, "lg.ini")))
+    if (GetPrivateProfileInt("Threading", "Enabled", TRUE, ".\\lg.ini") && ((fFlags & kMultithreadedShell) || GetPrivateProfileInt("WinShell", "MT", FALSE, ".\\lg.ini")))
         return (new cMTWinGameShell(fFlags, pOuterUnknown) != 0) ? S_OK : E_FAIL;
     else
         return (new cWinGameShell(fFlags, pOuterUnknown) != 0) ? S_OK : E_FAIL;

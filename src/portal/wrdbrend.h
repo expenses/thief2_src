@@ -26,17 +26,21 @@ typedef ushort LightmapEntry;
 typedef uchar LightmapEntry;
 #endif
 
+typedef union LightmapEntry32 {
+   uint I;
+   uchar A[4];
+} LightmapEntry32;
+
 struct st_PortalPolygonRenderInfo
 {
    mxs_vector tex_u, tex_v;
-   ushort u_base,v_base;    // SFIX u&v values at the anchor vertex
-   uchar texture_id;        // which texture to paint
-   uchar texture_anchor;    // which vertex to anchor the texture to
-   short cached_surface;
+   float u_base,v_base;
+   ushort texture_id;
+   ushort cached_surface;
 
-   mxs_real texture_mag;    // used in finding MIP level
-   mxs_vector center;       // also used in finding MIP level
-};  // 48 bytes
+   mxs_real texture_mag;
+   mxs_vector center;
+};
 
 struct st_PortalLightMap {
    short base_u, base_v; // these can be negative, they indicate top

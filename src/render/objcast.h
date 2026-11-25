@@ -38,6 +38,10 @@ typedef enum eObjCastResult
 // to test all objects along our ray, rather than a given list
 #define kObjCastAllObjs -1
 
+#define kObjCastStopAtFirstObj  1
+#define kObjCastStopAtAnyHit    2
+#define kObjCastNoMesh          0x10000
+
 struct IBoolProperty;
 
 #ifdef __cplusplus

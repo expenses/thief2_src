@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aifreeze.cpp,v 1.10 1999/06/09 21:37:23 JON Exp $
 //
@@ -55,7 +54,7 @@
 struct sAIFrozen
 {
    tSimTime m_startTime;
-   tSimTime m_duration;
+   int m_duration;
 };
 
 ///////////////////////////////////////

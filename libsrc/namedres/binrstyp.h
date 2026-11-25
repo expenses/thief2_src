@@ -19,6 +19,7 @@
 #include <comtools.h>
 
 #define RESTYPE_BINARY "Binary"
+#define RESTYPE_RAWTEXT "RawText"
 
 F_DECLARE_INTERFACE(IResType);
 

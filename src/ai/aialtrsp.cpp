@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aialtrsp.cpp,v 1.4 1999/11/22 17:50:00 henrys Exp $
 //
@@ -100,6 +99,16 @@ static sFieldDesc _g_AIAlertResponseFieldDesc[] =
    ALERT_RESPONSE_FIELDS(4),
    ALERT_RESPONSE_FIELDS(5),
    ALERT_RESPONSE_FIELDS(6),
+   ALERT_RESPONSE_FIELDS(7),
+   ALERT_RESPONSE_FIELDS(8),
+   ALERT_RESPONSE_FIELDS(9),
+   ALERT_RESPONSE_FIELDS(10),
+   ALERT_RESPONSE_FIELDS(11),
+   ALERT_RESPONSE_FIELDS(12),
+   ALERT_RESPONSE_FIELDS(13),
+   ALERT_RESPONSE_FIELDS(14),
+   ALERT_RESPONSE_FIELDS(15),
+   ALERT_RESPONSE_FIELDS(16),
 };
 
 static sStructDesc _g_AIAlertResponseStructDesc = StructDescBuild(sAIAlertResponse, kStructFlagNone, _g_AIAlertResponseFieldDesc);

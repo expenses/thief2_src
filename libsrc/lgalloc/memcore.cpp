@@ -101,7 +101,7 @@ static const BOOL g_fUseMultiPool =
         "Allocator",
         "MultiPool",
         TRUE,
-        "lg.ini");
+        ".\\lg.ini");
 #else
     TRUE;
 #endif
@@ -141,7 +141,7 @@ public:
         CoreMutexInit();
         IAllocator * pNext = NULL;
 
-        if (GetPrivateProfileInt("Allocator", "UseExternal", FALSE, "lg.ini"))
+        if (GetPrivateProfileInt("Allocator", "UseExternal", FALSE, ".\\lg.ini"))
         {
             // First, load the primal allocator from lgalloc.dll...
 
@@ -188,13 +188,13 @@ public:
 
         ///////////////////////////////
 
-        if (GetPrivateProfileInt("Allocator", "Heap", TRUE, "lg.ini"))
+        if (GetPrivateProfileInt("Allocator", "Heap", TRUE, ".\\lg.ini"))
         {
             m_Heap.SetNext(pNext);
             pNext = &m_Heap;
         }
 
-        if (GetPrivateProfileInt("Allocator", "MultiPool", TRUE, "lg.ini"))
+        if (GetPrivateProfileInt("Allocator", "MultiPool", TRUE, ".\\lg.ini"))
         {
             m_MultiPool.SetNext(pNext);
             m_MultiPool.Init();
@@ -202,14 +202,14 @@ public:
         }
 
 #ifndef SHIP
-        if (GetPrivateProfileInt("Allocator", "Timings", FALSE, "lg.ini"))
+        if (GetPrivateProfileInt("Allocator", "Timings", FALSE, ".\\lg.ini"))
         {
             m_MemAllocTimer.SetNext(pNext);
             pNext = g_pMemAllocTimer = &m_MemAllocTimer;
         }
 
         BOOL fDebugAlloc;
-        fDebugAlloc = GetPrivateProfileInt("Allocator", "Debug", 2, "lg.ini");
+        fDebugAlloc = GetPrivateProfileInt("Allocator", "Debug", 2, ".\\lg.ini");
 
         if (fDebugAlloc == 2)
         {
@@ -222,7 +222,7 @@ public:
 
         if (fDebugAlloc)
         {
-            g_bAllocDumpLeaks = GetPrivateProfileInt("Allocator", "DumpUnfreed", FALSE, "lg.ini");
+            g_bAllocDumpLeaks = GetPrivateProfileInt("Allocator", "DumpUnfreed", FALSE, ".\\lg.ini");
             m_HeapDebug.SetNext(pNext);
             pNext = g_pHeapDebug = &m_HeapDebug;
         }
@@ -357,7 +357,7 @@ ulong LGAPI AllocPickAllocCap()
          ulong iniCap;
 
    targetCap = max(kMinCap, min(kMaxCap, targetCap));
-   iniCap = GetPrivateProfileInt("Allocator", "MemoryCap", 0, "lg.ini");
+   iniCap = GetPrivateProfileInt("Allocator", "MemoryCap", 0, ".\\lg.ini");
 
    if (iniCap)
       targetCap = iniCap;

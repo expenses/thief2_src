@@ -66,6 +66,9 @@ void SetExitMsg_(char *msg)
 
 void PrintExitMsg(void)
 {
+#ifdef _WIN32
+   ClipCursor(NULL);
+#endif
    if (pExitMsg && *pExitMsg)
 #ifdef _WIN32
       MessageBox(NULL, pExitMsg, NULL, MB_OK);

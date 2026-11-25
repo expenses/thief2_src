@@ -59,7 +59,7 @@ static int buff_attach_off;// transforms for attachments
 // other misc globals
 static BOOL use_debug=FALSE;
 bool mmd_rgb_lighting;
-bool mmd_indexed = FALSE;
+BOOL mmd_indexed = FALSE;
 static ulong mm_version;
 
 // alpha stuff
@@ -69,7 +69,7 @@ int mm_bGlobalGlowUsed = FALSE;
 float mm_fGlobalGlowLevel = 0.0;
 static float mm_fMatGlowFactor = 1.0;
 static int mm_bMatGlowUsed = FALSE;
-static float mm_fMatGlowLevel = 0.0;
+float mm_fMatGlowLevel = 0.0;
 static float mm_fMatAlphaFactor;
 static int mm_bMatAlphaUsed;
 
@@ -839,7 +839,7 @@ void mm_render_pgon_block(mms_pgon *pgons, int num)
          continue;
     
       // set context if material has changed
-      if(p->smatr_id!=(ushort)current_smatr_id)
+      if(p->smatr_id!=current_smatr_id)
       {
          mm_setup_material(p->smatr_id);
       }
@@ -864,11 +864,7 @@ void mm_render_pgon_block(mms_pgon *pgons, int num)
       if (mm_bMatGlowUsed)
       {
          int j;
-#ifdef SHIP
-         float fGlow = mm_fMatGlowFactor * mm_fMatGlowLevel;
-#else
-         float fGlow = mm_fMatGlowLevel * mm_fMatGlowFactor;
-#endif
+         float fGlow = mm_fMatGlowLevel;
 
          memcpy(verta[2], mmd_buff_point(p->v[0]), MM_GLOW_PT_SIZE);
          memcpy(verta[1], mmd_buff_point(p->v[1]), MM_GLOW_PT_SIZE);

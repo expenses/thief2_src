@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/viewmgr.c,v 1.62 2000/02/19 13:13:51 toml Exp $
 
 // View management system
@@ -496,6 +495,18 @@ static int vm_get_3d_camera_to_use(void)
    return camera_to_use;
 }
 
+BOOL vm_get_view_camera_loc(mxs_vector **loc, mxs_angvec **ang)
+{
+   int n = synch_camera();
+   if (n == -1)
+      n = vm_get_3d_camera_to_use();
+   if (n == -1)
+      return FALSE;
+   *loc = &camera[n].loc.vec;
+   *ang = &camera[n].ang;
+   return TRUE;
+}
+
 void vm_cur_slew(mxs_vector *slew)
 {
    int camera_to_use=vm_get_3d_camera_to_use();
@@ -836,7 +847,8 @@ void vm_unset_camera_canvas(void)
    vm_unset_region_canvas();
 }
 
-bool vm_display_enable=TRUE, show_raycasts = FALSE;
+BOOL vm_display_enable=TRUE;
+bool show_raycasts = FALSE;
 extern void render_failures(void);
 
 BOOL vm_pick_camera(int c, int x, int y, int *brush, int *face)
@@ -1180,9 +1192,9 @@ static void vm_teleport_cam(char *new_coords)
 
 Command vm_commands[] =
 {
-   { "grid_3d", TOGGLE_BOOL, &vm_show_grid_3d, "toggle grid display in 3d" },
-   { "grid_2d", TOGGLE_BOOL, &vm_show_grid, "toggle grid display in 2d" },
-   { "grid_3d_axis", VAR_INT, &vm_3d_grid_axis, "3d grid normal axis #" },
+   { "grid_3d", TOGGLE_BOOL, &vm_show_grid_3d, "toggle grid display in 3d", 0, 1},
+   { "grid_2d", TOGGLE_BOOL, &vm_show_grid, "toggle grid display in 2d", 0, 1},
+   { "grid_3d_axis", VAR_INT, &vm_3d_grid_axis, "3d grid normal axis #", 0, 1},
    { "grid_move", FUNC_FLOAT, vm_move_grid, "translate 3d grid" },
    { "cycle_view", FUNC_BOOL, vm_cycle_camera, "change current camera" },
    { "toggle_3d", FUNC_VOID, vm_cur_toggle_3d, "change current 2d/3d mode" },
@@ -1198,7 +1210,7 @@ Command vm_commands[] =
    { "cam_warp", FUNC_VOID, vm_menu_warp_camera, "warp camera to mouse loc" },
    { "toggle_mode", FUNC_INT, vm_cur_toggle_mode, "toggle a display aspect" },
    { "solo_toggle", FUNC_VOID, vmToggleGUIFull, "toggle this view being soloed" },
-   { "redraw_always", TOGGLE_BOOL, &vmRenderAlways, "does the editor continually redraw" },
+   { "redraw_always", TOGGLE_BOOL, &vmRenderAlways, "does the editor continually redraw", 0, 1},
    { "vm_refresh", FUNC_VOID, vm_redraw, "redraw all views" },
    { "quick_resynch", FUNC_VOID, vm_resynch_oneshot, "synch; redraw; then desynch" },
    { "vm_win_mode", FUNC_INT, vmWinCfgSetMode, "wincfg set mode" },

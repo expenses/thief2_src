@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/meshtex.cpp,v 1.1 2000/01/14 10:40:19 MAT Exp $
 
 /* --<<= -+-/-/-/=/=/\/- <<< ((( ((( / \ ))) ))) >>> -\/\=\=\-\-\-+- =>>-- *\
@@ -382,7 +381,7 @@ grs_bitmap *MeshTexGetBitmap(char *pszName)
       if (!strcmp(g_Textures[i].m_aszName, pszName))
          return g_Textures[i].m_pBitmap;
 
-   IRes *pRes = g_pResMan->Bind(pszName, RESTYPE_IMAGE, MeshModelTexturesPath);
+   IRes *pRes = g_pResMan->Bind(pszName, RESTYPE_IMAGE, MeshModelTexturesPath, NULL, RES_BIND_IMAGE_FLAGS);
    if (!pRes)
       return 0;
 

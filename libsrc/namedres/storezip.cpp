@@ -73,9 +73,9 @@ cZipSubstorage::cZipSubstorage(IStore* pParent, const char* pRawName)
 	{
 		char* pName;
 		GetNormalizedPath(pRawName, &pName);
-		m_pName = (char*)Malloc(strlen(pName) + 1);
+		m_pName = (char*)operator new(strlen(pName) + 1);
 		strcpy(m_pName, pName);
-		Free(pName);
+		operator delete(pName);
 	}
 	m_pSubstorageTable = new cStorageHashByName();
 	m_pStreamTable = new cStreamHashByName();
@@ -89,7 +89,7 @@ cZipSubstorage::~cZipSubstorage()
 {
 	if (m_pName)
 	{
-		Free(m_pName);
+		operator delete(m_pName);
 		m_pName = NULL;
 	}
 
@@ -434,7 +434,7 @@ BOOL cZipSubstorage::StreamExists(const char* pName)
 #line 552
 	AssertMsg(pName, "cZipSubstorage::StreamExists -- null name!");
 
-	if (m_pStreamTable->Search(pName)) return TRUE; return FALSE;
+	return m_pStreamTable->Search(pName) != NULL;
 }
 
 ///////////////////////////////////////
@@ -477,13 +477,13 @@ IStoreStream* cZipSubstorage::OpenStream(const char* pName, uint)
 
 void* cZipSubstorage::BeginContents(const char* pPattern, uint fFlags)
 {
-	sZipState* pState = ((sZipState*)(Malloc(sizeof(sZipState))));
+	sZipState* pState = ((sZipState*)(operator new(sizeof(sZipState))));
 	pState->bStart = TRUE;
 	pState->fFlags = fFlags;
 
 	if (pPattern)
 	{
-		pState->pPattern = static_cast<char*>(Malloc(strlen(pPattern) + 1));
+		pState->pPattern = static_cast<char*>(operator new(strlen(pPattern) + 1));
 		strcpy(pState->pPattern, pPattern);
 	}
 	else
@@ -547,9 +547,9 @@ void cZipSubstorage::EndContents(void* pUntypedCookie)
 {
 	sZipState* pCookie = (sZipState*)(pUntypedCookie);
 	if (pCookie->pPattern)
-		Free(pCookie->pPattern);
+		operator delete(pCookie->pPattern);
 
-	Free(pCookie);
+	operator delete(pCookie);
 }
 
 ///////////////////////////////////////
@@ -577,7 +577,7 @@ void cZipSubstorage::GetCanonPath(char** ppCanonPath)
 	}
 	else
 	{
-		*ppCanonPath = static_cast<char*>(Malloc(1));
+		*ppCanonPath = static_cast<char*>(operator new(1));
 		**ppCanonPath = '\0';
 	}
 }
@@ -747,7 +747,7 @@ cZipStorage::cZipStorage(IStore* pParent, IStoreStream* pZipStream, const char* 
 #line 950
 		AssertMsg(dirRecord.Signature == 0x02014b50, "Zip directory record with bad signature!"); // Central directory file header signature
 
-		char* pFilename = static_cast<char*>(Malloc(dirRecord.FilenameLen + 1));
+		char* pFilename = static_cast<char*>(operator new(dirRecord.FilenameLen + 1));
 		m_pZipStream->Read(dirRecord.FilenameLen, pFilename);
 		pFilename[dirRecord.FilenameLen] = '\0';
 
@@ -781,7 +781,7 @@ cZipStorage::cZipStorage(IStore* pParent, IStoreStream* pZipStream, const char* 
 		}
 
 
-		Free(pFilename);
+		operator delete(pFilename);
 	}
 }
 

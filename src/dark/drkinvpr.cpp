@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkinvpr.cpp,v 1.6 2000/02/19 12:27:18 toml Exp $
 #include <drkinvpr.h>
 #include <sdestool.h>

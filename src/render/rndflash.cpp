@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/rndflash.cpp,v 1.6 1999/10/26 21:00:50 adurant Exp $
 
 #include <property.h>

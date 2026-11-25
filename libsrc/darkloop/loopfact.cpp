@@ -35,9 +35,7 @@ tLoopClientID** cLoopClientFactory::QuerySupport()
 
 BOOL cLoopClientFactory::DoesSupport(tLoopClientID* clientGuid)
 {
-	if (m_ClientDescs.Search(clientGuid))
-		return TRUE;
-	return FALSE;
+	return m_ClientDescs.Search(clientGuid) != NULL;
 }
 
 HRESULT cLoopClientFactory::GetClient(tLoopClientID* pID, tLoopClientData data, ILoopClient** ppResult)
@@ -90,7 +88,7 @@ HRESULT cLoopClientFactory::RemoveInnerFactory(ILoopClientFactory* pFactory)
 	{
 		if (m_InnerFactories[i] == pFactory)
 		{
-			pFactory->Release();
+			m_InnerFactories[i]->Release();
 			m_InnerFactories.FastDeleteItem(i);
 
 			return S_OK;
@@ -112,14 +110,10 @@ HRESULT cLoopClientFactory::AddClient(const sLoopClientDesc* pClientDesc)
 	AssertMsg(m_ClientDescs.Search(pClientDesc->pID) == NULL, "Double add of loop client");
 	m_ClientDescs.Insert(pClientDesc);
 
-	switch (pClientDesc->factoryType) {
-	case kLCF_Singleton:
+	if (pClientDesc->factoryType == kLCF_Singleton)
 		pClientDesc->pClient->AddRef();
-		break;
-	case kLCF_FactObj:
+	else if (pClientDesc->factoryType == kLCF_FactObj)
 		pClientDesc->pFactory->AddRef();
-		break;
-	}
 
 	return S_OK;
 }

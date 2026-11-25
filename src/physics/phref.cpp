@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phref.cpp,v 1.12 1999/06/28 18:56:12 ccarollo Exp $
 //
@@ -181,12 +180,10 @@ int PhysUpdateRefsCore(cPhysModel *pModel, ObjID objID)
    prism.zmin = minvec.el[2];
    prism.zmax = maxvec.el[2];
 
-   void *bins = new uchar[OBJ_BINS_SPACE];
+   uchar bins[OBJ_BINS_SPACE];
 
-   int num_bins = PhysBinComputeFunc(objID, &prism, bins);
+   int num_bins = (wr_num_cells != 0) ? PhysBinComputeFunc(objID, &prism, bins) : 0;
    PhysBinUpdateFunc(objID, PhysRefSystemID, bins, num_bins);
-
-   delete bins;
 
    return TRUE;
 }

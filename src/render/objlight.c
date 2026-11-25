@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/objlight.c,v 1.46 2000/02/24 23:42:46 mahk Exp $
 // code for multiple light source lighting
 

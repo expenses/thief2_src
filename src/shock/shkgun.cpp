@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkgun.cpp,v 1.51 1999/11/29 15:22:27 porges Exp $
 
 #include <gunapi.h>

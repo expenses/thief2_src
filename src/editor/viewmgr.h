@@ -54,6 +54,7 @@ void vm_end_3d(int c);
 // gets 3d camera location for the current started 3d
 // if you call this at a bad time, sad day for you
 void vm_get_3d_camera_loc(mxs_vector **pos, mxs_angvec **ang);
+BOOL vm_get_view_camera_loc(mxs_vector **loc, mxs_angvec **ang);
 
 // setups
 void vm_cur_scale(mxs_real scale);

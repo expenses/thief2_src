@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phmotion.cpp,v 1.5 1998/06/19 14:02:15 CCAROLLO Exp $
 //
@@ -25,6 +24,7 @@
 #include <phmodata.h>
 
 // Must be last header
+#include <config.h>
 #include <dbmem.h>
 
 
@@ -46,6 +46,15 @@ cPlayerMotion::cPlayerMotion()
 
    Activate(kMoNormal);
    SetRest(kMoNormal);
+
+   m_bobFactor = 1.0;
+   if (config_get_float("bob_factor", &m_bobFactor))
+   {
+      if (m_bobFactor < 0.0)
+         m_bobFactor = 0.0;
+      else if (m_bobFactor > 1.0)
+         m_bobFactor = 1.0;
+   }
 }
 
 ////////////////////////////////////////
@@ -78,7 +87,18 @@ void cPlayerMotion::Activate(ePlayerMotion motion)
    m_timeActive = 0.0;
 
    for (i=0; i<PlayerMotionTable[motion].numOffsets; i++)
+   {
       m_targOffset[PlayerMotionTable[motion].offset[i].submod] = PlayerMotionTable[motion].offset[i].vec;
+
+      if ((motion < kMoJumpLand) && (m_bobFactor != 1.0) && ((motion % 3) != 0))
+      {
+         const mxs_vector &rest = PlayerMotionTable[motion - (motion % 3)].offset[i].vec;
+         mxs_vector &targ = m_targOffset[PlayerMotionTable[motion].offset[i].submod];
+
+         targ.y = rest.y + (targ.y - rest.y) * m_bobFactor;
+         targ.z = rest.z + (targ.z - rest.z) * m_bobFactor;
+      }
+   }
 }
 
 ////////////////////////////////////////

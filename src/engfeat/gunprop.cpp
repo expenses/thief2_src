@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/gunprop.cpp,v 1.8 1999/12/10 14:28:03 BFarquha Exp $
 
 #include <gunprop.h>
@@ -196,7 +195,7 @@ static sFieldDesc AIGunDescFields[] =
    {"Start Lag", kFieldTypeInt, FieldLocation(sAIGunDesc, m_startTime),},
    {"Burst Lag", kFieldTypeInt, FieldLocation(sAIGunDesc, m_burstTime),},
    {"End Lag", kFieldTypeInt, FieldLocation(sAIGunDesc, m_endTime),},
-   {"Aim Error", kFieldTypeInt, FieldLocation(sAIGunDesc, m_aimError), kFieldFlagHex},
+   {"Aim Error", kFieldTypeAng, FieldLocation(sAIGunDesc, m_aimError)},
 };
 
 static sStructDesc AIGunDescStructDesc =
@@ -438,16 +437,16 @@ cGunKicks::cGunKicks(void)
 IGunKickProperty *g_pGunKickProperty;
 
 #define PLAYER_GUN_KICK_FIELD(i) \
-   {"Setting " #i ": Kickback Pitch", kFieldTypeInt, FieldLocation(cGunKicks, m_kick[i].m_kickPitch)}, \
-   {"Setting " #i ": Kickback Pitch Max", kFieldTypeInt, FieldLocation(cGunKicks, m_kick[i].m_kickPitchMax)}, \
-   {"Setting " #i ": Kick Angle Return", kFieldTypeInt, FieldLocation(cGunKicks, m_kick[i].m_kickAngularReturnRate)}, \
-   {"Setting " #i ": Kickback Heading", kFieldTypeInt, FieldLocation(cGunKicks, m_kick[i].m_kickHeading)}, \
+   {"Setting " #i ": Kickback Pitch", kFieldTypeAng, FieldLocation(cGunKicks, m_kick[i].m_kickPitch)}, \
+   {"Setting " #i ": Kickback Pitch Max", kFieldTypeAng, FieldLocation(cGunKicks, m_kick[i].m_kickPitchMax)}, \
+   {"Setting " #i ": Kick Angle Return", kFieldTypeAng, FieldLocation(cGunKicks, m_kick[i].m_kickAngularReturnRate)}, \
+   {"Setting " #i ": Kickback Heading", kFieldTypeAng, FieldLocation(cGunKicks, m_kick[i].m_kickHeading)}, \
    {"Setting " #i ": Kickback", kFieldTypeFloat, FieldLocation(cGunKicks, m_kick[i].m_kickBack),}, \
    {"Setting " #i ": Kickback Max", kFieldTypeFloat, FieldLocation(cGunKicks, m_kick[i].m_kickBackMax),}, \
    {"Setting " #i ": Kickback Return", kFieldTypeFloat, FieldLocation(cGunKicks, m_kick[i].m_kickBackReturnRate),}, \
    {"Setting " #i ": Pre-Shot Pct", kFieldTypeFloat, FieldLocation(cGunKicks, m_kick[i].m_preKickPct),}, \
-   {"Setting " #i ": Jolt Pitch", kFieldTypeInt, FieldLocation(cGunKicks, m_kick[i].m_joltPitch)}, \
-   {"Setting " #i ": Jolt Heading", kFieldTypeInt, FieldLocation(cGunKicks, m_kick[i].m_joltHeading)}, \
+   {"Setting " #i ": Jolt Pitch", kFieldTypeAng, FieldLocation(cGunKicks, m_kick[i].m_joltPitch)}, \
+   {"Setting " #i ": Jolt Heading", kFieldTypeAng, FieldLocation(cGunKicks, m_kick[i].m_joltHeading)}, \
    {"Setting " #i ": Jolt Back", kFieldTypeFloat, FieldLocation(cGunKicks, m_kick[i].m_joltBack),}
 
 static sFieldDesc GunKickFields[] =
@@ -663,7 +662,7 @@ int GunStateGetSetting(ObjID objID)
    sGunState *pGunState;
 
    if (g_pGunStateProperty->Get(objID, &pGunState))
-      return pGunState->m_setting;
+      return ((unsigned)pGunState->m_setting < kNumGunSettings) ? pGunState->m_setting : 0;
    return 0;
 }
 

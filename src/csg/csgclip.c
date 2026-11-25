@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgclip.c,v 1.9 2000/02/19 12:54:56 toml Exp $
 
 #include <lg.h>
@@ -20,6 +19,7 @@
 #include <csgbbox.h>
 #include <wrbsp.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 int debug_count, show_debug=0;
@@ -438,7 +438,7 @@ static void AddCoplanarPoint(BspVertex *v)
    }
 
    if (point_count == MAX_POINTIES)
-      Error(1, "Too many boundary points trying to cope with "
+      CsgError("Too many boundary points trying to cope with "
                "nearly coplanar edges.\n");
 
    points[point_count] = *v;
@@ -545,7 +545,7 @@ if (SHOW()) {
                // whichever point is in behind, use that
                if (code_1 == BEHIND) AddCoplanarPoint(&edge->data->start);
                else if (code_2 == BEHIND) AddCoplanarPoint(&edge->data->end);
-               else Error(1, "PortalClipPolygonByPlane: WTF???\n");
+               else CsgError("PortalClipPolygonByPlane: WTF???\n");
 
 if (SHOW()) {
    if (code_1 == BEHIND) mprintf("Adding boundary point %g %g %g from coplanar edge\n", edge->data->start.x, edge->data->start.y, edge->data->start.z);
@@ -732,7 +732,7 @@ if (SHOW()) {
 if (SHOW()) {
    mprintf("Deleting because it was duplicated.\n");
 }
-               Error(1, "Output border edge more than once.\n");
+               CsgError("Output border edge more than once.\n");
             }
 #endif
          }
@@ -860,7 +860,7 @@ if (SHOW()) mprintf("Behind\n");
             out_poly = AddPolyToList(out_poly, outer, out);
             break;
          default:
-            Error(1, "SplitPolyhedronByPlane: Invalid case %d.\n", code);
+            CsgError("SplitPolyhedronByPlane: Invalid case %d.\n", code);
       }
       poly = next;
    } while (poly != first_poly);

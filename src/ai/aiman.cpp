@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiman.cpp,v 1.85 2000/03/25 22:10:40 adurant Exp $
 //
@@ -74,6 +73,7 @@
 #include <aisgtcst.h>
 #include <aisndtyp.h>
 #include <aisuslnk.h>
+#include <aicbrmpr.h>
 #include <aireport.h>
 
 // for the link stuff
@@ -110,6 +110,13 @@ const cMxsVector kInvalidLoc(FLT_MAX, FLT_MAX, FLT_MAX);
 ///////////////////////////////////////
 
 cAIManager * g_pAIManager;
+
+EXTERN BOOL g_bDark1;
+
+BOOL g_bAIUseExDoors = TRUE;
+BOOL g_bAIEnhancedDetectTrace;
+BOOL g_bAILegacyRangedCombat;
+BOOL g_bAIDeathKeepPhys;
 const char * g_pszAIDefBehaviorSet;
 
 ///////////////////////////////////////
@@ -143,7 +150,7 @@ const char * AIGetSpeedName(eAISpeed speed)
 
 eAISpeed AIGetSpeedFromName(const char * pszSpeed)
 {
-   for (int i = 0; i < kAIP_Num; i++)
+   for (int i = 0; i < kAIS_Num; i++)
    {
       if (stricmp(pszSpeed, g_ppszAISpeed[i]) == 0)
          return (eAISpeed)i;
@@ -308,6 +315,11 @@ STDMETHODIMP_(IAI *) cAIManager::GetAI(ObjID objId)
 
 STDMETHODIMP_(BOOL) cAIManager::CreateAI(ObjID objId, const char * pszBehaviorSet)
 {
+   return CreateAIWithMode(objId, pszBehaviorSet, kAIM_Normal);
+}
+
+STDMETHODIMP_(BOOL) cAIManager::CreateAIWithMode(ObjID objId, const char * pszBehaviorSet, eAIMode mode)
+{
    cAI * pAI;
 
    if ((pAI = (cAI *) GetAI(objId)) != NULL)
@@ -335,7 +347,7 @@ STDMETHODIMP_(BOOL) cAIManager::CreateAI(ObjID objId, const char * pszBehaviorSe
       return FALSE;
 
    if (!g_pAIModeProperty->IsRelevant(objId))
-      g_pAIModeProperty->Set(objId, kAIM_Normal);
+      g_pAIModeProperty->Set(objId, mode);
 
    if (!g_pAIAlertnessProperty->IsRelevant(objId))
    {
@@ -656,6 +668,17 @@ STDMETHODIMP_(eLoopMessageResult) cAIManager::ReceiveMessage(eLoopMessage messag
 
       case kMsgAppInit:
       {
+         g_bAIUseExDoors = !config_is_nonzero("ai_disable_exdoor");
+         g_bAIEnhancedDetectTrace = config_is_nonzero("enhanced_aidetect_trace");
+         g_bAILegacyRangedCombat = config_is_nonzero("ai_legacy_ranged_combat");
+         if (g_bDark1)
+         {
+            g_defaultAIRangedApplicabilities.m_modeApplicability[kAIRC_VantageMode] = kAIRC_AppHigh;
+            g_bAIDeathKeepPhys = !config_is_zero("ai_death_keep_phys");
+         }
+         else
+            g_bAIDeathKeepPhys = config_is_nonzero("ai_death_keep_phys");
+
          AIInitCoreProps();
          AIInitAttrProps();
          AIInitAbilProps();
@@ -712,6 +735,7 @@ STDMETHODIMP_(eLoopMessageResult) cAIManager::ReceiveMessage(eLoopMessage messag
                AIDBResetUtilProps();
                AIDBResetStandardComponents();
                AIDBResetSightCast();
+               g_AIPathDB.Term();
                //AISoundReset();
                break;
 

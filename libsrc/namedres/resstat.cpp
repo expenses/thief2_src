@@ -11,7 +11,7 @@ cNamedStatsData::cNamedStatsData(const char* pName)
 	if (pName)
 	{
 #line 25
-		m_pObjName = static_cast<char*>(Malloc(strlen(pName) + 1));
+		m_pObjName = static_cast<char*>(operator new(strlen(pName) + 1));
 		strcpy(m_pObjName, pName);
 	}
 	else
@@ -25,7 +25,7 @@ cNamedStatsData::~cNamedStatsData()
 {
 	if (m_pObjName)
 	{
-		Free(m_pObjName);
+		operator delete(m_pObjName);
 		m_pObjName = NULL;
 	}
 }
@@ -283,7 +283,7 @@ void cResStats::LogStatRes(IRes* pRes, eResourceStats StatType)
 		pRes->GetCanonPath(&pCanonPath);
 		LogStatTable(pRes, m_pPathStats, pCanonPath, StatType);
 
-		Free(pCanonPath);
+		operator delete(pCanonPath);
 	}
 
 	if (m_StatMode[kResStatMode_Res] || m_StatMode[kResStatMode_TopHits])
@@ -291,6 +291,6 @@ void cResStats::LogStatRes(IRes* pRes, eResourceStats StatType)
 		char* pFullPathName;
 		pRes->GetStreamName(TRUE, &pFullPathName);
 		LogStatTable(pRes, m_pResStats, pFullPathName, StatType);
-		Free(pFullPathName);
+		operator delete(pFullPathName);
 	}
 }

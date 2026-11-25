@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/undoredo.c,v 1.5 1998/08/08 16:52:11 dc Exp $
 // undo system for brush/motion elements
 

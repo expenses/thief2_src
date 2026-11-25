@@ -112,6 +112,8 @@ public:
 
 	STDMETHOD_(BOOL, ParseFull)(const sStructDesc* sdesc, const char* string, void* struc)
 	{
+		if (!sdesc || !string || !struc)
+			return FALSE;
 		return StructFromFullString(struc, sdesc, string);
 	}
 	STDMETHOD_(BOOL, UnparseFull)(const sStructDesc* sdesc, const void* struc, char* out, int buflen)

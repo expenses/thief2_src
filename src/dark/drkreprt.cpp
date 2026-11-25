@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkreprt.cpp,v 1.21 2000/02/27 18:52:03 adurant Exp $
 // Misc Dark Specific report functions
 

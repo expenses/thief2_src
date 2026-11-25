@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /*
  * $Source: r:/t2repos/thief2/libsrc/gadget/uibutton.c,v $
  * $Revision: 1.17 $

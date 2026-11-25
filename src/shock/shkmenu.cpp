@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkmenu.cpp,v 1.27 2000/02/19 13:25:39 toml Exp $
 #include <shkmenu.h>
 #include <appagg.h>

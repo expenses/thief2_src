@@ -20,6 +20,7 @@
 #include <ctype.h>
 
 #include <lg.h>
+#include <lg_file.h>
 #include <filespec.h>
 #include <filepath.h>
 #include <fnamutil.h>
@@ -536,7 +537,7 @@ BOOL cFileSpec::FileExists() const
     // Previously used access(), but that doesn't distinguish between
     // a file and a directory:
     // int result = access(GetName(), 0);
-    int result = _stat(GetName(), &StatBuf);
+    int result = lg_stat(GetName(), &StatBuf);
     if (result == 0) {
        // Okay, it exists -- is it actually a file?
        if (S_ISDIR(StatBuf.st_mode)) {
@@ -581,19 +582,21 @@ ulong cFileSpec::GetModificationTime() const
     WORD time;
 
     #if defined(_WIN32)
-    WIN32_FIND_DATA find;
-    HANDLE FindHandle = FindFirstFile ((LPTSTR)GetName(), &find);
-    if (FindHandle == INVALID_HANDLE_VALUE)
+    struct _stat StatBuf;
+    if (lg_stat(GetName(), &StatBuf) != 0)
     {
-        DebugMsgEx(TIME, "INVALID_HANDLE_VALUE");
+        DebugMsgEx(TIME, "stat failed");
         return 0;
     }
 
-    FindClose (FindHandle);
+    ULARGE_INTEGER t;
+    t.QuadPart = (StatBuf.st_mtime + 11644473600) * 10000000;
 
-    FILETIME lft;
+    FILETIME ft, lft;
+    ft.dwLowDateTime = t.LowPart;
+    ft.dwHighDateTime = t.HighPart;
 
-    if (!FileTimeToLocalFileTime (&find.ftLastWriteTime, &lft))
+    if (!FileTimeToLocalFileTime (&ft, &lft))
     {
         DebugMsgEx(TIME, "Bad FileTimeToLocalFileTime");
         return 0;

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/physapi.h,v 1.56 2000/01/31 09:52:12 adurant Exp $
 //
@@ -106,6 +105,7 @@ EXTERN void PhysSetSubModRelLocation(ObjID objID, tPhysSubModId subModId, mxs_ve
 EXTERN void PhysGetModRotation(ObjID objID, mxs_angvec *ang);
 EXTERN void PhysSetModRotation(ObjID objID, mxs_angvec *ang);
 EXTERN void PhysGetSubModRotation(ObjID objID, tPhysSubModId subModId, mxs_angvec *ang);
+EXTERN void PhysGetSubModLocAndRot(ObjID objID, tPhysSubModId subModId, mxs_vector *loc, mxs_angvec *ang);
 EXTERN void PhysSetSubModRotation(ObjID objID, tPhysSubModId subModId, mxs_angvec *ang);
 
 

@@ -59,6 +59,7 @@ extern float portal_fog_dist;
   // This flags controls whether Portal is using fog.  It's for option
   // panels and config settings and such.
 extern BOOL portal_fog_on;
+extern BOOL portal_fog_config_on;
 
   // Like medium-haze clut, except per motion index.  Overrides 
   // medium haze if non-zero. 
@@ -166,7 +167,7 @@ extern void (*lightmap_callback)(PortalLightMap *lightmap);
 extern void clear_surface_cache(void);
 
   // clear all texture cache entries for a given texture id
-extern void clear_surfaces_for_texture(uchar texture_id);
+extern void clear_surfaces_for_texture(ushort texture_id);
 
   // This oversamples static lighting.  Dynamic lighting is not affected.
 extern bool portal_quadruple_lighting;
@@ -269,6 +270,10 @@ extern void porthw_end_frame(void);
   // The number of cell motion structures is fixed.
 #define MAX_CELL_MOTION 256
 extern PortalCellMotion portal_cell_motion[];
+#define DEFAULT_MOTION_PROJ_THRESH 0.005
+#define MIN_MOTION_PROJ_THRESH     0.000001
+#define MAX_MOTION_PROJ_THRESH     0.707
+extern float portal_motion_proj_thresh;
 extern void (*portal_anim_medium_callback)(long time_change_millisec);
 
 

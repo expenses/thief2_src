@@ -26,8 +26,7 @@ void push_stack()
     }
     else
     {
-        memcpy(stack.cur, &stack, sizeof(mxs_trans));
-        stack.cur = stack.cur + 1;
+        stack.cur = (mxs_trans *)memcpy(stack.cur, &stack.o2w, sizeof(mxs_trans)) + 1;
         ++stack.size;
     }
 }
@@ -49,7 +48,7 @@ void pop_stack()
 void stack_init()
 {
     stack.size = 0;
-    stack.cur = 0;
+    stack.cur = stack.base;
     mx_identity_trans(&stack.o2w);
 }
 
@@ -82,22 +81,28 @@ void stack_start_object_n(mxs_vector *v, unsigned short ang, int n)
 {
     mxs_vector vtmp;
 
+#ifdef DBG_ON
     if (n < 0 || n > 2)
     {
         Warning(("r3_start_object_n: angle arg outside of 0-2\n"));
+        return;
     }
-    else
-    {
-        push_stack();
-        mx_mat_mul_vec(&vtmp, &stack.o2w.mat, v);
-        mx_addeq_vec(&stack.o2w.vec, &vtmp);
-        rot_table[n](&stack.o2w.mat, &stack.cur[-1].mat, ang);
-    }
+#endif
+
+    push_stack();
+    mx_mat_mul_vec(&vtmp, &stack.o2w.mat, v);
+    mx_addeq_vec(&stack.o2w.vec, &vtmp);
+    rot_table[n](&stack.o2w.mat, &stack.cur[-1].mat, ang);
 }
 
 void stack_end_object()
 {
     pop_stack();
+}
+
+mxs_trans *stack_o2w()
+{
+    return &stack.o2w;
 }
 
 void stack_transform_o2w(mxs_vector *dst, mxs_vector *src)

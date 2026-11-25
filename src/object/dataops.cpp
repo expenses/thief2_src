@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/dataops.cpp,v 1.6 1999/01/07 21:45:46 JUSTIN Exp $
 
 #include <dataops_.h>
@@ -167,7 +166,7 @@ STDMETHODIMP cFixedSizeDataOps::Read(sDatum* pdat, IDataOpsFile* file, int versi
 
    int size = (mSize < version) ? mSize : version; 
    memcpy(pdat->value,buf,size); 
-   delete buf; 
+   delete [] buf; 
    return S_OK; 
 }
 

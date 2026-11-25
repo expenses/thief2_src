@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkplayr.cpp,v 1.118 1999/11/19 14:58:07 adurant Exp $
 
 #include <appagg.h>

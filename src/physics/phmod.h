@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/phmod.h,v 1.81 2000/01/29 13:32:51 adurant Exp $
 //
@@ -716,7 +715,7 @@ protected:
    void SetType(tPhysSubModId subModId, ePhysModelType type);
 
 private:
-   friend tHashSetKey cPhysModelTable::GetKey(tHashSetNode) const;
+   friend class cPhysModelTable;
    void UpdateDiskInfo();
 
    #define AssertSubModIdInRange(subModId) \
@@ -792,6 +791,8 @@ private:
    cDynClassArray<cPhysCtrlData> m_pControlData;     // one per submodel, if we're controllable
 
    BOOL bDiskCheck; // We need to set our bits first time we're asked for them
+   long             m_lastMantleTime;
+   mxs_vector       m_climbingDir;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1178,7 +1179,7 @@ inline void cPhysModel::SetRopeSegmentPct(mxs_real percent)
 
 inline BOOL cPhysModel::IsMantling() const
 {
-   return ((m_mantlingState > 0) && (m_mantlingState <= 4));
+   return ((m_mantlingState > 0) && ((m_mantlingState & 0xF) <= 4));
 }
 
 ///////////////////////////////////////

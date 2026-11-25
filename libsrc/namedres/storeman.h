@@ -42,6 +42,8 @@ public:
 
 	void InstallStorageType(const char* pExt, IStoreFactory* pFactory);
 
+	friend void ResRefreshStorage();
+	friend class cSearchPath;
 private:
 	IStore* m_pRootStore;
 	IStoreFactory* m_pDefStoreFactory;

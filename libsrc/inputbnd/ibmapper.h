@@ -24,6 +24,46 @@ struct sCmdCtrlEntry
 	cAnsiStrList ctrlList;
 };
 
+class cCmdCtrlHash : public cStrIHashSet<sCmdCtrlEntry*>
+{
+	tHashSetKey GetKey(tHashSetNode pItem) const
+	{
+		return (tHashSetKey)(reinterpret_cast<sCmdCtrlEntry*>(pItem)->cmd.operator const char*());
+	}
+
+	void DestroyAll()
+	{
+		if (!m_nItems)
+			return;
+
+		for (uint i = 0; i < m_nPts; i++)
+		{
+			sHashSetChunk* pNext;
+			for (sHashSetChunk* p = m_Table[i]; p; p = pNext)
+			{
+				pNext = p->pNext;
+				sCmdCtrlEntry* pEntry = reinterpret_cast<sCmdCtrlEntry*>(p->node);
+				cAnsiStrList& pList = pEntry->ctrlList;
+				cAnsiStrNode* pListNode;
+				while (pListNode = pList.GetFirst(), pListNode != NULL)
+				{
+					delete pListNode;
+				}
+				delete pEntry;
+				delete p;
+			}
+
+			m_Table[i] = 0;
+		}
+
+		m_nItems = 0;
+	}
+
+public:
+	cCmdCtrlHash()
+		: cStrIHashSet<sCmdCtrlEntry*>(101) {}
+};
+
 class cIBInputMapper
 {
 	friend class cInputBinder;
@@ -82,4 +122,5 @@ public:
 	void* m_filter_data;
 	cAnsiStrNode* m_pCtrlIterNode;
 	unsigned int m_valid_events;
+	cCmdCtrlHash m_CmdCtrlHash;
 };

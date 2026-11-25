@@ -1,9 +1,9 @@
+#line 2
 /*
 @Copyright Looking Glass Studios, Inc.
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/scrptnet.cpp,v 1.7 1999/06/10 20:22:34 Justin Exp $
 //
 // Basic Script Networking implementation
@@ -37,6 +37,7 @@ public:
    cScriptNetImpl(IUnknown *pOuter)
       : m_pNetMan(NULL),
         m_pObjNet(NULL),
+        m_pScriptMan(NULL),
         m_bNetworking(FALSE),
         m_pPostMsg(NULL)
    {

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/script/pgrpscpt.cpp,v 1.2 1998/09/21 23:17:29 CCAROLLO Exp $
 //
@@ -29,7 +28,16 @@ public:
       ParticleGroup *pg = ObjGetParticleGroup(PGroupObjID);
 
       if (pg != NULL)
-         pg->active = active;
+      {
+         if (active && !pg->active)
+         {
+            pg->active = active;
+            if (pg->anim_type == PAT_LAUNCH_CONTINUOUS)
+               pg->delete_count = 0;
+         }
+         else
+            pg->active = active;
+      }
 
       return TRUE;
    }

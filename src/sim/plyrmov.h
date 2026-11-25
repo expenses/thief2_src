@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/plyrmov.h,v 1.5 2000/01/31 10:00:25 adurant Exp $
 //
@@ -72,6 +71,11 @@ private:
    int m_SteppingMaxMs;
 
    float m_volume;
+
+   float m_LeaveGroundZ;
+   float m_MaxAirZ;
+public:
+   ulong m_LastMantleTime;
 };
 
 ////////////////////////////////////////

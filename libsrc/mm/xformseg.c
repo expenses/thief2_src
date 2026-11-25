@@ -9,7 +9,7 @@
 #include <g2.h>
 
 
-extern bool mmd_indexed;
+extern BOOL mmd_indexed;
 extern float mm_fGlobalGlowLevel;
 extern int mm_bGlobalGlowUsed;
 

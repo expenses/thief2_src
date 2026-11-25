@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
    portwatr.c
 
@@ -113,6 +112,13 @@ void portal_position_portal_texture(mxs_vector *dest_u, mxs_vector *dest_v,
       // got our x.  In 2d we can make v from u by rotating 90 degrees
       // using y2=z1, z2=-y1.
       case MEDIUM_AXIS_X:
+         if (fabs(plane->normal.x) < portal_motion_proj_thresh)
+         {
+            if (fabs(plane->normal.y) < portal_motion_proj_thresh)
+               goto project_z;
+            goto project_y;
+         }
+      project_x:
       {
          project_vector_x_onto_yz(&transformed_anchor, plane);
 
@@ -132,6 +138,13 @@ void portal_position_portal_texture(mxs_vector *dest_u, mxs_vector *dest_v,
       }
       // as above, but for the y plane
       case MEDIUM_AXIS_Y:
+         if (fabs(plane->normal.y) < portal_motion_proj_thresh)
+         {
+            if (fabs(plane->normal.x) < portal_motion_proj_thresh)
+               goto project_z;
+            goto project_x;
+         }
+      project_y:
       {
          project_vector_y_onto_zx(&transformed_anchor, plane);
 
@@ -151,6 +164,13 @@ void portal_position_portal_texture(mxs_vector *dest_u, mxs_vector *dest_v,
       }
       // and for that other plane
       case MEDIUM_AXIS_Z:
+         if (fabs(plane->normal.z) < portal_motion_proj_thresh)
+         {
+            if (fabs(plane->normal.x) < portal_motion_proj_thresh)
+               goto project_y;
+            goto project_x;
+         }
+      project_z:
       {
          project_vector_z_onto_xy(&transformed_anchor, plane);
 

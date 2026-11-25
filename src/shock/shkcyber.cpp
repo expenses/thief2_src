@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/shock/shkcyber.cpp,v 1.7 2000/02/19 13:20:10 toml Exp $
 
 #include <appagg.h>

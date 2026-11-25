@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkwbdy.cpp,v 1.5 1998/10/10 11:38:48 CCAROLLO Exp $
 
 #include <drkwbdy.h>
@@ -14,6 +13,11 @@
 #include <mprintf.h>
 #include <plycbllm.h>
 #include <plyrmode.h>
+#include <creature.h>
+#include <crjoint.h>
+#include <phclimb.h>
+#include <playrobj.h>
+#include <config.h>
 
 extern "C" {
 #include <invlimb.h>
@@ -69,12 +73,32 @@ BOOL cBodyCarryHandler::Equip(ObjID item)
    return TRUE;
 }
 
+void BodyCarryModeExitCallback(int mode, void *data);
+
 void cBodyCarryHandler::UnEquip(ObjID item)
 {
+   if (item)
+   {
+      cCreature *pCreature = CreatureFromObj(item);
+      if (pCreature)
+      {
+         int neck = GetCreatureJointID(item, kCJ_Neck);
+         if (neck < 0)
+            pCreature->GetHeadOrient() = pCreature->GetMultiped()->global_orient;
+         else
+            pCreature->GetHeadOrient() = pCreature->GetJointOrient(neck);
+      }
+   }
+
    // Tell the cerebellum to switch modes
    if ((PlayerGetMode() == kPlayerModeBodyCarry) &&
        ((PlayerGetNextMode() == kPlayerModeInvalid) || (PlayerGetNextMode() == kPlayerModeBodyCarry)))
       PlayerSwitchMode(kPlayerModeUnarmed);
+   else if ((PlayerGetMode() == kPlayerModeInvalid) && !config_is_defined("disable_bodycarry_savefix"))
+   {
+      PlayerSwitchMode(kPlayerModeUnarmed);
+      BodyCarryModeExitCallback(kPlayerModeUnarmed, NULL);
+   }
 }
 
 
@@ -86,12 +110,17 @@ void cBodyCarryHandler::UnEquip(ObjID item)
 void BodyCarryModeExitCallback(int mode, void *data)
 {
    if (g_pPlayerMode->GetMode() != kPM_Swim)
-      g_pPlayerMode->SetMode(kPM_Stand);
+   {
+      if (PhysObjIsClimbing(PlayerObject()))
+         g_pPlayerMode->SetMode(kPM_Climb);
+      else
+         g_pPlayerMode->SetMode(kPM_Stand);
+   }
 }
 
 void BodyCarryModeEnterCallback(int mode, void *data)
 {
-   if (g_pPlayerMode->GetMode() != kPM_Swim)
+   if (g_pPlayerMode->GetMode() == kPM_Stand)
       g_pPlayerMode->SetMode(kPM_BodyCarry);
 }
 

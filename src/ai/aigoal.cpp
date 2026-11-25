@@ -1,9 +1,9 @@
+#line 3
 /*
 @Copyright Looking Glass Studios, Inc.
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aigoal.cpp,v 1.11 1999/11/29 12:28:24 BFarquha Exp $
 //

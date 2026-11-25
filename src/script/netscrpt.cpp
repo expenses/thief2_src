@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/script/netscrpt.cpp,v 1.23 2000/02/19 12:36:16 toml Exp $
 
 #include <mprintf.h>
@@ -293,6 +292,41 @@ public:
       } else {
          return m_pObjNet->ObjHostPlayer(obj);
       }
+   }
+
+   STDMETHOD(CreateContentProxy)(const object ref player, const object ref content)
+   {
+      return E_FAIL;
+   }
+
+   STDMETHOD_(BOOL, AmHost)()
+   {
+      return TRUE;
+   }
+
+   STDMETHOD_(int, NumPlayers)(THIS)
+   {
+      return m_pNetMan->NumPlayers();
+   }
+
+   STDMETHOD_(int, MyPlayerNum)()
+   {
+      return m_pNetMan->MyPlayerNum();
+   }
+
+   STDMETHOD_(int, ObjToPlayerNum)(const object ref player)
+   {
+      return m_pNetMan->ObjToPlayerNum(ScriptObjID(player));
+   }
+
+   STDMETHOD_(ObjID, PlayerNumToObj)(int player)
+   {
+      return m_pNetMan->PlayerNumToObj(player);
+   }
+
+   STDMETHOD_(string, GetPlayerName)(const object ref player)
+   {
+      return m_pNetMan->GetPlayerName(ScriptObjID(player));
    }
 };
 

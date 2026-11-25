@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/filepanl.cpp,v 1.1 1999/02/22 13:06:01 mahk Exp $
 
 #include <appagg.h>

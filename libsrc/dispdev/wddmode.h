@@ -68,7 +68,7 @@ public:
                      IDirectDrawSurface4 ** ppSecondarySurface);
 
     ///////////////////////////////
-    void RestoreSurfaces()
+    virtual void RestoreSurfaces()
     {
         if (m_pPrimarySurface->IsLost())
             m_pPrimarySurface->Restore();
@@ -164,6 +164,7 @@ public:
     virtual BOOL StartMode(const sGrModeInfo &, int flags, sGrModeCap * pReturnModeInfo);
     virtual BOOL OnTaskSwitch(BOOL bActive);
     virtual BOOL DoStatVTrace();
+    virtual BOOL DoStatHTrace();
     virtual BOOL DoPageFlip();
     virtual BOOL DoLock(sGrModeCap *);
     virtual BOOL DoUnlock();
@@ -222,8 +223,101 @@ public:
     virtual void DoFlushRect(int x0, int y0, int x1, int y1);
     virtual BOOL DoLock(sGrModeCap *);
     virtual BOOL DoUnlock();
+    virtual BOOL DoSetFlip(int bFlip);
+
+private:
+    int                 m_nBackBuffers;
+    BOOL                m_bFlipOnFlush;
+    BOOL                m_bLocked;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cFixedDDModeOps
+//
+
+struct IDirect3D3;
+struct IDirect3DDevice3;
+struct IDirect3DViewport3;
+struct IDirect3DTexture2;
+F_DECLARE_INTERFACE(IGameShell);
+
+class cFixedDDModeOps : public cDDModeOpsBase
+{
+public:
+    cFixedDDModeOps(cWinDisplayDevice * pDisplayDevice, cDDProvider * pOuter, LPDIRECTDRAWPALETTE pPalette,
+                    const sGrModeInfo & desktopMode, int nScaleMode, BOOL bPersistent)
+      : cDDModeOpsBase(pDisplayDevice, pOuter, pPalette),
+        m_bOwnSecondary(FALSE),
+        m_pScaleSurface(NULL),
+        m_pOverlaySurface(NULL),
+        m_nReserved(0),
+        m_bLockBack(FALSE),
+        m_DesktopMode(desktopMode),
+        m_nScaleMode(nScaleMode),
+        m_bPersistent(bPersistent),
+        m_nFrameCapUs(0),
+        m_LastFrameUs(0),
+        m_pGameShell(NULL),
+        m_pBackBuffer(NULL),
+        m_pD3D(NULL),
+        m_pD3DDevice(NULL),
+        m_pViewport(NULL),
+        m_pTexSurface(NULL),
+        m_pTexture(NULL),
+        m_pRenderTarget(NULL),
+        m_fTexelAdjustX(0.5f),
+        m_fTexelAdjustY(0.5f)
+    {
+        m_bFlip = FALSE;
+    }
+    virtual ~cFixedDDModeOps();
+    virtual BOOL StartMode(const sGrModeInfo &, int flags, sGrModeCap * pReturnModeInfo);
+    virtual BOOL OnTaskSwitch(BOOL bActive);
+    virtual BOOL DoStatHTrace();
+    virtual BOOL DoPageFlip();
+    virtual BOOL DoLock(sGrModeCap *);
+    virtual BOOL DoUnlock();
+    virtual void DoFlush();
+    virtual BOOL DoSetFlip(int bFlip);
+    virtual void RestoreSurfaces();
+
+    BOOL IsDesktopMode(const sGrModeInfo & mode)
+    {
+        return m_DesktopMode.w == mode.w && m_DesktopMode.h == mode.h && m_DesktopMode.bitDepth == mode.bitDepth &&
+               !((m_DesktopMode.flags ^ mode.flags) & kGrModeIsNative);
+    }
+
+private:
+    void ThrottleFrame();
+    BOOL InitFilteredBlit();
+    void FilteredBlit(RECT * pDest);
+    void ReleaseFilteredBlit();
+
+    BOOL                    m_bOwnSecondary;
+    LPDIRECTDRAWSURFACE4    m_pScaleSurface;
+    LPDIRECTDRAWSURFACE4    m_pOverlaySurface;
+    int                     m_nReserved;
+    DDSURFACEDESC2          m_ScaleDesc;
+    BOOL                    m_bLockBack;
+    sGrModeInfo             m_DesktopMode;
+    int                     m_nScaleMode;
+    BOOL                    m_bPersistent;
+    DWORD                   m_nFrameCapUs;
+    unsigned __int64        m_LastFrameUs;
+    IGameShell *            m_pGameShell;
+    LPDIRECTDRAWSURFACE4    m_pBackBuffer;
+    IDirect3D3 *            m_pD3D;
+    IDirect3DDevice3 *      m_pD3DDevice;
+    IDirect3DViewport3 *    m_pViewport;
+    LPDIRECTDRAWSURFACE4    m_pTexSurface;
+    IDirect3DTexture2 *     m_pTexture;
+    LPDIRECTDRAWSURFACE4    m_pRenderTarget;
+    float                   m_fTexelAdjustX;
+    float                   m_fTexelAdjustY;
+};
+
 
 #endif /* !__WDDMODE_H */

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/lazyagg.h,v 1.1 1997/12/31 00:08:21 mahk Exp $
 #pragma once  
 #ifndef __LAZYAGG_H

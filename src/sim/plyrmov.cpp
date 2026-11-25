@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/plyrmov.cpp,v 1.7 1998/11/18 10:41:10 JON Exp $
 //
@@ -97,6 +96,9 @@ cPlayerMovement::cPlayerMovement()
    
    m_volume = 1.0;
 
+   m_LeaveGroundZ = m_MaxAirZ = 0.0;
+   m_LastMantleTime = -1;
+
 #ifndef SHIP
    config_get_int("landing_min_ms", &m_LandingMinMs);
    config_get_int("landing_cutoff_vel", &m_LandingCutoffVel);
@@ -125,6 +127,7 @@ void cPlayerMovement::LeaveGround()
 
    PhysGetSubModLocation(PlayerObject(), PLAYER_FOOT, &m_LastFootLoc);
    m_LastFootTime = GetSimTime();
+   m_LeaveGroundZ = m_MaxAirZ = m_LastFootLoc.z;
 }
 
 void cPlayerMovement::LandOnGround(ObjID ground_obj)
@@ -135,28 +138,29 @@ void cPlayerMovement::LandOnGround(ObjID ground_obj)
    m_GroundObj = ground_obj;
 
    // Has there been enough time since our last landing?
-   if ((GetSimTime() - m_LastFootTime) > m_LandingMinMs)
+   if (((GetSimTime() - m_LastFootTime) > m_LandingMinMs) &&
+       ((GetSimTime() - m_LastMantleTime) > m_LandingMinMs))
    {
       mxs_vector foot_loc;
       mxs_vector velocity;
-      mxs_real   velocity_mag;
 
       PhysGetVelocity(PlayerObject(), &velocity);
-      velocity_mag = mx_mag_vec(&velocity);
-
       PhysGetSubModLocation(PlayerObject(), PLAYER_FOOT, &foot_loc);
 
       // Are we moving fast enough?
       if (velocity.z < -m_LandingCutoffVel)
       {
-         g_pPlayerMode->ActivateLandingMotion();
-
-         if (m_volume>0)
+         if (((m_MaxAirZ - m_LeaveGroundZ) > 0.5) || ((m_LeaveGroundZ - foot_loc.z) > 0.5))
          {
-            int play_vol = m_LandingBaseVol - m_LandingVolMul * (m_LandingCutoffVel + velocity.z);
-            if (play_vol >= 0)
-               play_vol = -1;
-            g_pPlayerMode->DoLandingSound(play_vol, foot_loc);
+            g_pPlayerMode->ActivateLandingMotion();
+
+            if (m_volume>0)
+            {
+               int play_vol = m_LandingBaseVol - m_LandingVolMul * (m_LandingCutoffVel + velocity.z);
+               if (play_vol >= 0)
+                  play_vol = -1;
+               g_pPlayerMode->DoLandingSound(play_vol, foot_loc);
+            }
          }
       }
    }
@@ -192,6 +196,9 @@ void cPlayerMovement::Update()
    mxs_vector foot_loc;
    PhysGetSubModLocation(PlayerObject(), PLAYER_FOOT, &foot_loc);
 
+   if (m_GroundObj == OBJ_NULL && foot_loc.z > m_MaxAirZ)
+      m_MaxAirZ = foot_loc.z;
+
    // Have we moved enough to step?
    mxs_real cur_dist_2 = mx_dist2_vec(&m_LastFootLoc, &foot_loc);
 
@@ -201,7 +208,7 @@ void cPlayerMovement::Update()
       ePlayerMode mode = g_pPlayerMode->GetMode();
 
       // Update our last footfall location/time
-      if ((mode != kPM_Jump) && ((mode != kPM_Stand) || on_ground))
+      if ((mode != kPM_Jump) && (((mode != kPM_Stand) && (mode != kPM_BodyCarry)) || on_ground))
       {
          m_LastFootLoc = foot_loc;
          m_LastFootTime = GetSimTime();

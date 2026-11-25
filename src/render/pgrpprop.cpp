@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/render/pgrpprop.cpp,v 1.27 2000/02/20 11:57:19 adurant Exp $
 //
@@ -55,6 +54,9 @@
 #include <pgrpprop.h>
 #include <objedit.h>
 #include <physapi.h>
+#include <litprop.h>
+#include <objshape.h>
+#include <math.h>
 
 #include <simtime.h>
 #include <mprintf.h>
@@ -83,6 +85,8 @@ struct sOpsParticleGroup : public ParticleGroup
       pl.location = NULL;
       pl.velocity = NULL;
       pl.time_info = NULL;
+      pl.nd_data4 = NULL;
+      pl.nd_data1 = NULL;
 
       return *this;
    }
@@ -97,6 +101,8 @@ struct sOpsParticleGroup : public ParticleGroup
       pl.location = NULL;
       pl.velocity = NULL;
       pl.time_info = NULL;
+      pl.nd_data4 = NULL;
+      pl.nd_data1 = NULL;
 
    }
 };
@@ -397,6 +403,18 @@ char *anim_type_strings[] =
 // macro to make the sdesc field descriptors fit on one line
 #define FL(a)  FieldLocation(ParticleGroup, a)
 
+static char *bm_disk_flag_names[] =
+{
+   "Use Lighting",
+   "Fade-in at Birth",
+   "Grow-in at Birth",
+   "Random Start Frame",
+   "Play Ani Once",
+   "Use RGB Colors",
+   "Fade RGB->2nd",
+   "Fade RGB->2nd->3rd",
+};
+
 static sFieldDesc particle_group_fields [] =
 {
    { "Active", kFieldTypeBool, FL(active), },
@@ -438,6 +456,15 @@ static sFieldDesc particle_group_fields [] =
    { "launch period",            kFieldTypeFix,    FL(launch_period) },
    { "animation offset ms",      kFieldTypeInt,    FL(ms_offset) },
    { "Group-scale velocity",     kFieldTypeFloat,  FL(scale_vel) },
+
+   { "bm-disk flags",            kFieldTypeBits,   FL(bm_flags), kFieldFlagUnsigned, 0, 8, 8, bm_disk_flag_names },
+   { "bm-disk birth time",       kFieldTypeFix,    FL(bm_birth_time) },
+   { "bm-disk rot (vel, offs, rand)", kFieldTypeVector, FL(bm_rot) },
+   { "bm-disk ani frame time",   kFieldTypeFix,    FL(bm_ani_frame_time) },
+   { "bm-disk grow speed",       kFieldTypeFloat,  FL(bm_grow_speed) },
+   { "bm-disk rgb",              kFieldTypeRGBA,   FL(bm_rgb[0]) },
+   { "bm-disk 2nd rgb",          kFieldTypeRGBA,   FL(bm_rgb[1]) },
+   { "bm-disk 3rd rgb",          kFieldTypeRGBA,   FL(bm_rgb[2]) },
 
    { "always simulate (slow)",     kFieldTypeBool, FL(always_simulate) },
    { "always simulate group",      kFieldTypeBool, FL(always_simulate_group) },
@@ -488,8 +515,8 @@ STDMETHODIMP cPGroupLaunchInfoOps::Read(sDatum *pdat, IDataOpsFile *file, int ve
    file->Read(&launch_info->min_time, sizeof(mxs_real));
    file->Read(&launch_info->max_time, sizeof(mxs_real));
 
-   file->Read(&launch_info->vel_unrotated, sizeof(bool));
-   file->Read(&launch_info->loc_unrotated, sizeof(bool));
+   file->Read(&launch_info->vel_unrotated, sizeof(BOOL));
+   file->Read(&launch_info->loc_unrotated, sizeof(BOOL));
 
    file->Read(launch_info->start_loc_bbox, sizeof(fix) * 2 * 3);
    file->Read(launch_info->start_vel_bbox, sizeof(fix) * 2 * 3);
@@ -993,6 +1020,148 @@ void ObjSetParticleGroup(ObjID obj, ParticleGroup *val)
 {
    particle_group_prop->Set(obj,val); 
    return;
+}
+
+static ushort pack_decal_norm_elem(float v)
+{
+   if (v == 0)
+      return 0;
+   int i = v * 256.0;
+   if (i > 511)
+      i = 511;
+   else if (i < -512)
+      i = -512;
+   return (ushort)i;
+}
+
+static ulong pack_decal_norm(const mxs_vector *norm)
+{
+   ulong x = pack_decal_norm_elem(norm->x);
+   ulong y = pack_decal_norm_elem(norm->y);
+   ulong z = pack_decal_norm_elem(norm->z);
+   return ((((x << 10) | y) << 10) | z) << 2;
+}
+
+BOOL DetailAttachCalcRelTransform(ObjID child, ObjID parent, sDetailAttachLinkData *data)
+{
+   mx_zero_vec(&data->rel_pos);
+   mx_mk_angvec(&data->rel_rot, 0, 0, 0);
+
+   ObjPos *child_pos = ObjPosGet(child);
+   ObjPos *parent_pos = ObjPosGet(parent);
+   if (!child_pos || !parent_pos)
+      return FALSE;
+
+   mxs_trans parent_trans, child_trans, inv_parent, rel;
+   mxs_trans sub_trans, inv_sub;
+
+   mx_ang2mat(&parent_trans.mat, &parent_pos->fac);
+   parent_trans.vec = parent_pos->loc.vec;
+   mx_ang2mat(&child_trans.mat, &child_pos->fac);
+   child_trans.vec = child_pos->loc.vec;
+   mx_transpose_trans(&inv_parent, &parent_trans);
+
+   switch (data->type)
+   {
+      case kDAT_object:
+      case kDAT_transparent_decal:
+         data->vhot_or_sub = 0;
+         data->joint = 0;
+         break;
+
+      case kDAT_vhot:
+         data->joint = 0;
+         if (ObjGetVhotTrans(&sub_trans, parent, data->vhot_or_sub, FALSE))
+         {
+            mx_transpose_trans(&inv_sub, &sub_trans);
+            mx_mul_trans(&sub_trans, &inv_parent, &child_trans);
+            mx_mul_trans(&rel, &inv_sub, &sub_trans);
+            data->rel_pos = rel.vec;
+            mx_mat2ang(&data->rel_rot, &rel.mat);
+            return TRUE;
+         }
+         break;
+
+      case kDAT_joint:
+         data->vhot_or_sub = 0;
+         if (data->flags & kDAF_NoJointRot)
+         {
+            GetCreatureJointPosC(parent, data->joint, &parent_trans.vec);
+            mx_identity_mat(&parent_trans.mat);
+         }
+         else
+            GetCreatureJointPosAndOrient(parent, data->joint, &parent_trans.vec, &parent_trans.mat);
+         mx_transpose_trans(&inv_parent, &parent_trans);
+         break;
+
+      case kDAT_submodel:
+      {
+         mxs_angvec ang;
+         data->joint = 0;
+         PhysGetSubModLocAndRot(parent, data->vhot_or_sub, &parent_trans.vec, &ang);
+         mx_ang2mat(&parent_trans.mat, &ang);
+         mx_transpose_trans(&inv_parent, &parent_trans);
+         break;
+      }
+
+      case kDAT_subobject:
+         data->joint = 0;
+         if (ObjGetSubobjTrans(&sub_trans, parent, data->vhot_or_sub, FALSE))
+         {
+            mx_transpose_trans(&inv_sub, &sub_trans);
+            mx_mul_trans(&sub_trans, &inv_parent, &child_trans);
+            mx_mul_trans(&rel, &inv_sub, &sub_trans);
+            data->rel_pos = rel.vec;
+            mx_mat2ang(&data->rel_rot, &rel.mat);
+            return TRUE;
+         }
+         break;
+
+      default:
+         return FALSE;
+   }
+
+   mx_mul_trans(&rel, &inv_parent, &child_trans);
+   data->rel_pos = rel.vec;
+   mx_mat2ang(&data->rel_rot, &rel.mat);
+
+   if (data->type != kDAT_transparent_decal || data->decal_plane_norm != 0)
+      return TRUE;
+
+   mxs_vector bmin, bmax;
+   if (ObjGetObjRelBBox(parent, &bmin, &bmax))
+   {
+      float dist[6];
+      int i, best = 0;
+
+      dist[0] = fabs(data->rel_pos.x - bmax.x);
+      dist[1] = fabs(data->rel_pos.y - bmax.y);
+      dist[2] = fabs(data->rel_pos.z - bmax.z);
+      dist[3] = fabs(-data->rel_pos.x - bmin.x);
+      dist[4] = fabs(-data->rel_pos.y - bmin.y);
+      dist[5] = fabs(-data->rel_pos.z - bmin.z);
+      for (i = 1; i < 6; i++)
+         if (dist[i] < dist[best])
+            best = i;
+
+      mxs_vector norm;
+      mx_zero_vec(&norm);
+      if (best >= 3)
+      {
+         int axis = best - 3;
+         norm.el[axis] = -1.0;
+         data->decal_plane_norm = pack_decal_norm(&norm);
+         data->decal_plane_dist = (data->rel_pos.el[axis] < bmin.el[axis]) ? bmin.el[axis] : data->rel_pos.el[axis];
+      }
+      else
+      {
+         norm.el[best] = 1.0;
+         data->decal_plane_norm = pack_decal_norm(&norm);
+         data->decal_plane_dist = (data->rel_pos.el[best] > bmax.el[best]) ? bmax.el[best] : data->rel_pos.el[best];
+      }
+   }
+   ObjSetHasRefs(child, FALSE);
+   return TRUE;
 }
 
 EXTERN void UpdateBitmapAnimations(int time);

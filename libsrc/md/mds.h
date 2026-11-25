@@ -279,6 +279,8 @@ typedef struct mds_node_subobj {
 typedef struct mds_segment_hit_detect_info {
    mxs_vector *a, *b;         // fill in before calling md_segment_hit_detect()
    bool early_out;            // fill in before calling md_sphere_hit_detect()
+   mds_mat *mats;
+   void *mat_ext;
    mxs_vector *hit_normal;    // set by md_segment_hit_detect()
    mxs_real r;                // set by md_segment_hit_detect()
    bool hit;                  // set by md_segment_hit_detect()

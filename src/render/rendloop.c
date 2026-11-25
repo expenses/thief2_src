@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/rendloop.c,v 1.95 2000/02/18 17:25:53 MAT Exp $
 
 #include <lg.h>
@@ -554,6 +553,7 @@ static void setup_from_config_vars()
 {
    if (!config_get_int("fogging", &portal_fog_on))
       portal_fog_on = 0;
+   portal_fog_config_on = portal_fog_on;
 }
 
 

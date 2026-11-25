@@ -114,6 +114,8 @@ EXTERN void gedit_set_default_brush_type(int type);
 // if current brush is an object, floor it correctly
 EXTERN void gedit_floor_brush(editBrush *us, mxs_vector *down);
 
+EXTERN BOOL gedit_light_brush_color_edit(editBrush *br);
+
 ////////////////
 // 
 

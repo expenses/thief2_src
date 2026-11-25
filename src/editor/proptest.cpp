@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/proptest.cpp,v 1.38 2000/01/18 12:35:24 PATMAC Exp $
 
 #include <comtools.h>
@@ -664,8 +663,8 @@ static Command commands[] =
    { "trait_cache_params", FUNC_VOID, EditDonorCacheParams, "Edit trait cache parameters", HK_EDITOR },
    { "trait_cache_clear", FUNC_VOID, clear_trait_cache, "Empty the trait cache", HK_ALL },
    { "link_lock_count", FUNC_VOID, link_lock_count, "Report the number active link queries", HK_ALL },
-   { "obj_tree", FUNC_STRING, edit_obj_tree, "Object Hierarchy editor", HK_EDITOR },
-   { "edit_obj", FUNC_STRING, obj_edit, "edit an object", HK_EDITOR },
+   { "obj_tree", FUNC_STRING, edit_obj_tree, "Object Hierarchy editor", HK_EDITOR, 1},
+   { "edit_obj", FUNC_STRING, obj_edit, "edit an object", HK_EDITOR, 1},
    { "copy_props_to", FUNC_STRING, copy_props_to, "Copy all props from selection to arg", HK_EDITOR },
 
    { "list_props", FUNC_VOID, list_props, "List properties on mono", HK_ALL },

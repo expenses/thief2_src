@@ -68,7 +68,7 @@
 
 float xsci=320,ysci=240;
 double xsc=1.0/320,ysc=1.0/240;
-extern bool project_space;
+extern BOOL project_space;
 
 void duv_set_size(int w, int h)
 {

@@ -194,9 +194,9 @@ DECLARE_INTERFACE_(IGameShell, IUnknown)
     STDMETHOD_(void, DisplayFlush)(THIS) PURE;
 
     //
-    // Get the present tick count, in msec since initialization or timer restart
+    // Get the present tick count, in usec since initialization or timer restart
     //
-    STDMETHOD_(unsigned long, GetTimerTick)(THIS) PURE;
+    STDMETHOD_(unsigned __int64, GetTimerTick)(THIS) PURE;
 
     //
     // Reset the timer (by default, starts at zero from initialization)

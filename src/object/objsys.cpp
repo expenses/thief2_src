@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/objsys.cpp,v 1.91 2000/03/07 19:57:45 toml Exp $
 #include <appagg.h>
 #include <constrid.h>
@@ -783,7 +782,7 @@ HRESULT cObjectSystem::LoadActiveArray(ITagFile* file, eObjPartition partition)
       {
 
          // @OPTIMIZE: This is not fast!
-         for (int i = 1; i < gMaxObjID; i++)
+         for (int i = 1; i < maxobj; i++)
          {
             int idx = ObjActiveIdx(i-minobj);
             int mask = ObjActiveMask(i-minobj);

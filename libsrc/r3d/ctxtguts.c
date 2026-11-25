@@ -13,12 +13,38 @@
 #include <space.h>
 #include <view.h>
 #include <ctxtguts.h>
+#include <clip_.h>
 
 // % requires: a context which has just been allocated
 // % modifies: the data in the passed in context structure
 // % effects : sets up transform and clip and other subfields of ctxt
 // %         : note ctxt passed in has flags and cur_con as _ONLY_ valid fields
 // % note that you still need to do a start frame with it to make it usable
+
+static void *_r3d_clip_pool;
+
+void _r3_guts_term(void)
+{
+   while (_r3d_clip_pool) {
+      void **p = (void **)_r3d_clip_pool;
+      _r3d_clip_pool = *p;
+      Free(p);
+   }
+}
+
+static void *_r3_clip_data_alloc(int size)
+{
+   void **p;
+   if (size > R3_CLIP_POOL_SIZE)
+      p = (void **)Malloc(size + sizeof(void *));
+   else if (_r3d_clip_pool) {
+      p = (void **)_r3d_clip_pool;
+      _r3d_clip_pool = *p;
+   } else
+      p = (void **)Malloc(R3_CLIP_POOL_SIZE + sizeof(void *));
+   return p+1;
+}
+
 void _r3_guts_ctxt_alloc(r3s_context *ctxt)
 {
    // Alloc and initialize the transform context
@@ -28,7 +54,7 @@ void _r3_guts_ctxt_alloc(r3s_context *ctxt)
    ctxt->clip.max_user_planes = r3d_state.clip_planes;
    ctxt->clip.num_user_planes = 0;
 
-   ctxt->clip.clip_data = Malloc(sizeof(mxs_plane) * 2 * ctxt->clip.max_user_planes);
+   ctxt->clip.clip_data = _r3_clip_data_alloc(sizeof(mxs_plane) * 2 * ctxt->clip.max_user_planes);
 
    // setup initial clipping mode
    ctxt->clip.clip_mode = R3_CLIP;
@@ -58,7 +84,11 @@ void _r3_guts_ctxt_free(r3s_context *ctxt)
    // free the context stack
    _r3_trans_free(&(ctxt->trans));
 
-   Free(ctxt->clip.clip_data);
+   if (ctxt->clip.clip_data) {
+      void **p = ((void **)ctxt->clip.clip_data)-1;
+      *p = _r3d_clip_pool;
+      _r3d_clip_pool = p;
+   }
 }
 
 // % requires: r3d_state.cur_con != NULL

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/motion/cretprop.cpp,v 1.49 1999/10/18 14:57:04 BFarquha Exp $
 
 #include <appagg.h>
@@ -39,9 +38,14 @@
 #include <objnotif.h>
 
 // must be last header
+#include <config.h>
 #include <dbmem.h>
 
 EXTERN int g_SimRunning; // from biploop.c
+
+BOOL g_bNoCretPoseInSim;
+
+static void CreaturePoseInSim(ObjID obj, cCreature *pCreature);
 
 ////////////////////////
 // Creature property value funcs.
@@ -243,6 +247,8 @@ public:
             g_DontListen=TRUE;
             Set(obj, &newHandle);
             g_DontListen=FALSE;
+            if (!g_bNoCretPoseInSim)
+               CreaturePoseInSim(obj, newHandle.pCreature);
          }
          break;
       }
@@ -328,54 +334,50 @@ private:
    // @NOTE: i moved it here, so blame me too
    void DoPose(const sCreaturePose *pPose, cCreature *pCreature)
    {
-      int motHandle;
-
       if (g_SimRunning)
          return;
 
-      if(pPose->type==kCPT_MotionName)
+      int motHandle;
+
+      if (pPose->type==kCPT_MotionName)
       {
-         motHandle=g_pMotionSet->GetMotHandleFromName((Label *)&pPose->motion);
-         pCreature->PoseAtMotionFrame(motHandle,pPose->frac*(g_pMotionSet->GetNumFrames(motHandle)-1));
-         pCreature->SetPhysSubModScale(pPose->scale);
-         if (pPose->ballistic != pCreature->IsBallistic())
-         {
-            if (pPose->ballistic)
-               pCreature->MakeBallistic(kCMB_Posed);
-            else
-               pCreature->MakeNonBallistic();
-         }
-         pCreature->MoveButt(&ObjPosGet(pCreature->GetObjID())->loc.vec,
-                             &ObjPosGet(pCreature->GetObjID())->fac, TRUE);
+         if (pPose->motion[0])
+            motHandle=g_pMotionSet->GetMotHandleFromName((Label *)&pPose->motion);
+         else
+            motHandle=-1;
       }
       else if (pPose->type==kCPT_Tags)
       {
-         cTagSet tags(pPose->motion);
-         cTagDBInput tagDBin;
-         cMotionSchema *pSchema;
-
-         tagDBin.Clear();
-         tagDBin.AppendTagSet(&tags);
-         if (g_pMotionDatabase->GetBestMatch(pCreature->GetActorType(),&tagDBin,&pSchema))
+         if (pPose->motion[0])
          {
-            if (pSchema->GetMotion(0,&motHandle))
-            {
-               pCreature->PoseAtMotionFrame(motHandle,pPose->frac*(g_pMotionSet->GetNumFrames(motHandle)-1));
-               pCreature->SetPhysSubModScale(pPose->scale);
+            cTagSet tags(pPose->motion);
+            cTagDBInput tagDBin;
+            cMotionSchema *pSchema;
 
-               if (pPose->ballistic != pCreature->IsBallistic())
-               {
-                  if (pPose->ballistic)
-                     pCreature->MakeBallistic(kCMB_Posed);
-                  else
-                     pCreature->MakeNonBallistic();
-               }
-
-               pCreature->MoveButt(&ObjPosGet(pCreature->GetObjID())->loc.vec,
-                                   &ObjPosGet(pCreature->GetObjID())->fac, TRUE);
-            }
+            tagDBin.Clear();
+            tagDBin.AppendTagSet(&tags);
+            if (!g_pMotionDatabase->GetBestMatch(pCreature->GetActorType(),&tagDBin,&pSchema))
+               return;
+            if (!pSchema->GetMotion(0,&motHandle))
+               return;
          }
+         else
+            motHandle=-1;
       }
+      else
+         return;
+
+      pCreature->PoseAtMotionFrame(motHandle,pPose->frac*(g_pMotionSet->GetNumFrames(motHandle)-1));
+      pCreature->SetPhysSubModScale(pPose->scale);
+      if (pPose->ballistic != pCreature->IsBallistic())
+      {
+         if (pPose->ballistic)
+            pCreature->MakeBallistic(kCMB_Posed);
+         else
+            pCreature->MakeNonBallistic();
+      }
+      pCreature->MoveButt(&ObjPosGet(pCreature->GetObjID())->loc.vec,
+                          &ObjPosGet(pCreature->GetObjID())->fac, TRUE);
    }
 
    void UnPose(cCreature *pCreature)
@@ -424,6 +426,58 @@ private:
 
 static cCreaturePoseProperty *pCreaturePoseProp;
 
+static void CreaturePoseInSim(ObjID obj, cCreature *pCreature)
+{
+   if (!g_SimRunning)
+      return;
+
+   sCreaturePose *pPose = NULL;
+   if (!pCreaturePoseProp->Get(obj, &pPose) || !pPose)
+      return;
+
+   int motHandle;
+
+   if (pPose->type==kCPT_MotionName)
+   {
+      if (pPose->motion[0])
+         motHandle=g_pMotionSet->GetMotHandleFromName((Label *)&pPose->motion);
+      else
+         motHandle=-1;
+   }
+   else if (pPose->type==kCPT_Tags)
+   {
+      if (pPose->motion[0])
+      {
+         cTagSet tags(pPose->motion);
+         cTagDBInput tagDBin;
+         cMotionSchema *pSchema;
+
+         tagDBin.Clear();
+         tagDBin.AppendTagSet(&tags);
+         if (!g_pMotionDatabase->GetBestMatch(pCreature->GetActorType(),&tagDBin,&pSchema))
+            return;
+         if (!pSchema->GetMotion(0,&motHandle))
+            return;
+      }
+      else
+         motHandle=-1;
+   }
+   else
+      return;
+
+   pCreature->PoseAtMotionFrame(motHandle,pPose->frac*(g_pMotionSet->GetNumFrames(motHandle)-1));
+   pCreature->SetPhysSubModScale(pPose->scale);
+   if (pPose->ballistic != pCreature->IsBallistic())
+   {
+      if (pPose->ballistic)
+         pCreature->MakeBallistic(kCMB_Posed);
+      else
+         pCreature->MakeNonBallistic();
+   }
+   pCreature->MoveButt(&ObjPosGet(pCreature->GetObjID())->loc.vec,
+                       &ObjPosGet(pCreature->GetObjID())->fac, TRUE);
+}
+
 static sPropertyDesc creaturePoseDesc =
 {
    PROP_CREATUREPOSE_NAME,
@@ -469,6 +523,29 @@ static sPropertyDesc creatureNonPhysDesc =
    kPropertyChangeLocally,
 };
 
+static IFloatProperty *pCreatureScaleProp=NULL;
+
+static sPropertyDesc creatureScaleDesc =
+{
+   PROP_CREATURESCALE_NAME,
+   0,  // flags
+   NULL, // constraints
+   0, 0, // Version
+   { "Creature", "Creature Scale" }, // ui strings
+};
+
+static IBoolProperty *pCreatureNoHeadTrackProp=NULL;
+
+static sPropertyDesc creatureNoHeadTrackDesc =
+{
+   PROP_CREATURENOHEADTRACK_NAME,
+   0,  // flags
+   NULL, // constraints
+   0, 0, // Version
+   { "Creature", "Disable Head Track" }, // ui strings
+   kPropertyChangeLocally,
+};
+
 ICreatureProperty *CreaturePropertiesInit(int nCreatureTypes, const char **pCreatureTypeNames)
 {
    cCreatureProp* prop = new cCreatureProp(&creature_desc);
@@ -492,6 +569,11 @@ ICreatureProperty *CreaturePropertiesInit(int nCreatureTypes, const char **pCrea
    pTools->Register(&creaturePoseStruct);
    pCreaturePoseProp = new cCreaturePoseProperty(&creaturePoseDesc);
 
+   pCreatureScaleProp=CreateFloatProperty(&creatureScaleDesc,kPropertyImplHash);
+   pCreatureNoHeadTrackProp=CreateBoolProperty(&creatureNoHeadTrackDesc,kPropertyImplHash);
+
+   g_bNoCretPoseInSim = config_is_nonzero("no_cretpose_in_sim");
+
    // return pointer to creature property
    return prop;
 }
@@ -501,6 +583,32 @@ void CreaturePropertiesTerm()
    SafeRelease(pCreatureProp);
    SafeRelease(pCreaturePoseProp);
    SafeRelease(pCreatureNonPhysProp);
+   SafeRelease(pCreatureScaleProp);
+   SafeRelease(pCreatureNoHeadTrackProp);
+}
+
+BOOL ObjGetCreatureScale(ObjID obj, float *pScale)
+{
+   return pCreatureScaleProp->Get(obj, pScale);
+}
+
+float ObjCreatureScale(ObjID obj)
+{
+   float scale;
+   if (pCreatureScaleProp->Get(obj, &scale))
+      return scale;
+   return 1.0;
+}
+
+void ObjSetCreatureScale(ObjID obj, float scale)
+{
+   pCreatureScaleProp->Set(obj, scale);
+}
+
+BOOL ObjCreatureNoHeadTrack(ObjID obj)
+{
+   BOOL result;
+   return pCreatureNoHeadTrackProp->Get(obj, &result) && result;
 }
 
 void ObjSetCreatureType(ObjID obj, int type)

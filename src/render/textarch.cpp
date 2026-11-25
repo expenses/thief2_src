@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/textarch.cpp,v 1.12 1998/11/10 23:06:31 mahk Exp $
 #include <textarch.h>
 
@@ -122,6 +121,9 @@ static cStr get_tex_name(IRes* pRes)
 
 ObjID BuildOneTextureArchetype(int i)
 {
+   if (i >= BACKHACK_IDX && i <= TEXMEM_EXT_FIRST_IDX)
+      return OBJ_NULL;
+
    IRes *pRes = texmemGetHandle(i);
    if (pRes)
    {
@@ -140,7 +142,7 @@ ObjID BuildOneTextureArchetype(int i)
 
 ObjID ForciblyRebuildOneTextureArchetype(int i)
 {
-   if (i >= BACKHACK_IDX) 
+   if (i >= BACKHACK_IDX && i <= TEXMEM_EXT_FIRST_IDX) 
       return OBJ_NULL; 
 
    if (OBJ_IS_CONCRETE(gArchMap[i]))
@@ -196,7 +198,7 @@ void RebuildTextureArchetypes(void)
 
 ObjID GetTextureObj(int idx)
 {
-   if (idx < 0 || idx >= BACKHACK_IDX)
+   if (idx < 0 || (idx >= BACKHACK_IDX && idx <= TEXMEM_EXT_FIRST_IDX))
       return OBJ_NULL;
 
    if (gArchMap[idx] == OBJ_NULL)

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/fvaredit.cpp,v 1.3 2000/02/19 13:10:40 toml Exp $
 
 #include <appagg.h>
@@ -69,7 +68,7 @@ static void edit_filevar_type(int file)
 
 static Command commands[] = 
 {
-   { "edit_file_vars", FUNC_INT, edit_filevar_type, "0 = mission vars, 1 = gamesys vars, 2 = cmpaign vars" }, 
+   { "edit_file_vars", FUNC_INT, edit_filevar_type, "0 = mission vars, 1 = gamesys vars, 2 = cmpaign vars", 0, 1}, 
 };
 
 void FileVarEditInit(void)

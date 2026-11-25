@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/hdskprop.cpp,v 1.7 1998/03/26 13:50:27 mahk Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
@@ -108,7 +107,10 @@ static sFieldDesc heat_disk_fields [] =
      kFieldTypeInt, FieldLocation(sHeatDiskCluster, num_disks) },
 
    { "height of effects",
-     kFieldTypeFloat, FieldLocation(sHeatDiskCluster, height) }
+     kFieldTypeFloat, FieldLocation(sHeatDiskCluster, height) },
+
+   { "Z-compare",
+     kFieldTypeBool, FieldLocation(sHeatDiskCluster, z_compare) }
 };
 
 static sStructDesc heat_disk_struct

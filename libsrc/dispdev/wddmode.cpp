@@ -31,6 +31,9 @@
 
 #include <wdispdd.h>
 #include <wddmode.h>
+#include <d3d.h>
+#include <lgd3d.h>
+#include <config.h>
 
 #ifdef MONO_SPEW
 #define put_mono(c) (*((uchar *)0xb0078)) = (c)
@@ -216,7 +219,7 @@ BOOL cDDModeOpsBase::WipeSurface(IDirectDrawSurface4 *pdds)
     {
         BEGIN_DEBUG_MSG_EX1(VERBOSE, "WipeSurface(0x%lx)", pdds);
 
-        DDSURFACEDESC2 surfaceDesc;
+        DDSURFACEDESC2 surfaceDesc = { 0 };
         surfaceDesc.dwSize = sizeof(surfaceDesc);
         HRESULT result = pdds->Lock(NULL, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
         DebugMsgIfErr("WipeSurface Lock failed.", result);
@@ -636,104 +639,27 @@ BOOL cDirectDDModeOps::DoSetFlip(int bFlip)
 
 BOOL cDirectDDModeOps::OnTaskSwitch(BOOL bActive)
 {
-    static BOOL bAppActive = TRUE;
-    static BOOL bSurfaceLost = FALSE;
+    static BOOL bRestored;
 
-    // Jacobson, 3/4/96.
-    // Ok, here is where we copy the current contents of the screen into
-    // a temporarily allocated back buffer DirectDraw surface.
-
-    BEGIN_DEBUG_MSG1("cDirectDDModeOps::OnTaskSwitch(%d)", !!bActive);
-
-    // Check for deactivation request (and that we're in a deactivated state)
-    if (bActive == FALSE)
+    if (!bActive)
     {
-        if (!bAppActive)
-            return FALSE;
-
-        bAppActive = FALSE;
-
-#ifdef PAUSE_BLIT
-        RestoreSurfaces();
-
-        // If the current visible or back buffer surface is lost, we're totally hosed.
-        // The contents are therefore lost and we can't do anything.
-        // In this case, we'll barf a warning and tell the app to repaint when we regain focus.
-        if (m_pPrimarySurface->IsLost())
-        {
-            bSurfaceLost = TRUE;
-            Warning(("Activation error: primary surface is lost!\n"));
-        }
-        if (m_pSecondarySurface&&m_pSecondarySurface->IsLost()) {
-            bSurfaceLost = TRUE;
-            Warning(("Activation error: secondary (back buffer) surface is lost!\n"));
-        }
-
-        if (bSurfaceLost)
-            return FALSE;
-
-        // Create a new offscreen DirectDraw surface to copy the curent
-        // contents of the visible surface into.
-        memset(&m_PauseDesc, 0, sizeof(m_PauseDesc));
-        m_PauseDesc.dwSize   = sizeof(m_PauseDesc);
-        m_PauseDesc.dwFlags  = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
-        m_PauseDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
-        m_PauseDesc.dwWidth  = m_PrimaryDesc.dwWidth;
-        m_PauseDesc.dwHeight = m_PrimaryDesc.dwHeight;
-
-        HRESULT result = GetDD()->CreateSurface(&m_PauseDesc, &m_pPauseSurface, NULL);
-        DebugMsgIfErr("CreateSurface (pause surface)", result);
-
-        // Now that we've got a buffer, copy the contents of the visible
-        // buffer into it.
-        if (result == DD_OK)
-        PauseBlit(m_pPauseSurface, m_pPrimarySurface);
-        if (m_pSecondarySurface) 
-        {
-            result = GetDD()->CreateSurface(&m_PauseDesc, &m_pPauseSurface2, NULL);
-            DebugMsgIfErr("CreateSurface (pause surface 2)", result);
-
-            // Now that we've got a buffer, copy the contents of the visible
-            // buffer into it.
-            if (result == DD_OK)
-            PauseBlit(m_pPauseSurface2, m_pSecondarySurface);
-        }
-#endif
+        if (bRestored)
+            bRestored = FALSE;
+        return FALSE;
     }
-    else
-    {
-        if (bAppActive)
-            return FALSE;
+    if (bRestored)
+        return FALSE;
+    bRestored = TRUE;
+    RestoreSurfaces();
+    return TRUE;
+}
 
-        bAppActive = TRUE;
+///////////////////////////////////////
 
-        RestoreSurfaces();
-
-#ifdef PAUSE_BLIT
-        if (bSurfaceLost) {
-            bSurfaceLost = FALSE;
-            return TRUE;
-        }
-
-        if (m_pPauseSurface==NULL)
-            return TRUE;
-
-        PauseBlit(m_pPrimarySurface, m_pPauseSurface);
-        SafeRelease(m_pPauseSurface);
-        if (m_pSecondarySurface) {
-            if (m_pPauseSurface2 == NULL)
-                return TRUE;
-
-            PauseBlit(m_pSecondarySurface, m_pPauseSurface2);
-            SafeRelease(m_pPauseSurface2);
-        }
-#else
-        return TRUE;
-#endif
-    }
-
+BOOL cDirectDDModeOps::DoStatHTrace()
+{
+    DoPageFlip();
     return FALSE;
-    END_DEBUG;
 }
 
 ///////////////////////////////////////
@@ -944,6 +870,8 @@ BOOL cPhoney512ModeOps::StartMode(const sGrModeInfo & modeInfo, int flags, sGrMo
 
 BOOL cPhoney512ModeOps::DoLock(sGrModeCap * pReturnModeInfo)
 {
+    pReturnModeInfo->vbase = NULL;
+    pReturnModeInfo->vbase2 = NULL;
     if (cDirectDDModeOps::DoLock(pReturnModeInfo))
     {
         pReturnModeInfo->vbase = (((uchar *)pReturnModeInfo->vbase) + (48 * m_ModeInfoEx.rowBytes)) + (64 * (m_ModeInfoEx.depth >> 3));
@@ -1300,29 +1228,618 @@ BOOL cOffVideoDDModeOps::DoLock(sGrModeCap * pReturnModeInfo)
 
 BOOL cOffVideoDDModeOps::DoUnlock()
 {
-    DebugMsgEx(VERBOSE, "cOffVideoDDModeOps::DoUnlock()");
-
-    // Make sure surfaces were not discarded, or are restored
     RestoreSurfaces();
-
-#if 0
-    HRESULT result;
-    if (m_pSecondarySurface != NULL)
-    {
-        result = m_pSecondarySurface->Unlock(NULL); //&m_PrimaryDesc);
-        DebugMsgIfErr("DoLock::Unlock BackBuffer", result);
-        if (result != DD_OK)
-        {
-            CriticalMsg("Lock count of DirectDraw surfaces appears corrupted");
-            // No way to recover...
-            SafeRelease(m_pSecondarySurface);
-            SafeRelease(m_pPrimarySurface);
-            SafeRelease(m_pPalette);
-            exit(0);
-        }
-    }
-#endif
+    if (m_bLocked && m_pSecondarySurface)
+        m_pSecondarySurface->Unlock(NULL);
     return TRUE;
 }
 
+///////////////////////////////////////
+
+BOOL cOffVideoDDModeOps::DoSetFlip(int bFlip)
+{
+    int count = m_pDisplayDevice->BreakLock();
+    m_bFlipOnFlush = bFlip;
+    m_pDisplayDevice->RestoreLock(count);
+    return m_bFlipOnFlush;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cFixedDDModeOps
+//
+
+
+extern int g_nD3DVSync;
+EXTERN RECT g_rcUIScaleView;
+EXTERN BOOL g_bUIScaleMode;
+EXTERN BOOL g_bUIScaleView;
+EXTERN BOOL g_bUIScaleDrawn;
+BOOL D3DFitWindowToMonitor(HWND hwnd, int height);
+
+static BOOL g_bFixedRestored;
+static BOOL g_bFixedLockOK;
+
+cFixedDDModeOps::~cFixedDDModeOps()
+{
+    ReleaseFilteredBlit();
+    SafeRelease(m_pOverlaySurface);
+    SafeRelease(m_pBackBuffer);
+    SafeRelease(m_pScaleSurface);
+    SafeRelease(m_pGameShell);
+}
+
+void cFixedDDModeOps::ReleaseFilteredBlit()
+{
+    SafeRelease(m_pTexture);
+    SafeRelease(m_pTexSurface);
+    SafeRelease(m_pViewport);
+    SafeRelease(m_pD3DDevice);
+    SafeRelease(m_pRenderTarget);
+    SafeRelease(m_pD3D);
+}
+
+BOOL cFixedDDModeOps::OnTaskSwitch(BOOL bActive)
+{
+    if (!bActive)
+    {
+        if (g_bFixedRestored)
+            g_bFixedRestored = FALSE;
+        return FALSE;
+    }
+    if (g_bFixedRestored)
+        return FALSE;
+    g_bFixedRestored = TRUE;
+    RestoreSurfaces();
+    return TRUE;
+}
+
+BOOL cFixedDDModeOps::DoStatHTrace()
+{
+    if (m_pBackBuffer)
+        DoPageFlip();
+    return FALSE;
+}
+
+void cFixedDDModeOps::RestoreSurfaces()
+{
+    if (m_pPrimarySurface->IsLost())
+        m_pPrimarySurface->Restore();
+    if (m_pSecondarySurface && m_pSecondarySurface->IsLost())
+        m_pSecondarySurface->Restore();
+    if (m_pScaleSurface && m_pScaleSurface->IsLost())
+        m_pScaleSurface->Restore();
+    if (m_pBackBuffer && m_pBackBuffer->IsLost())
+        m_pBackBuffer->Restore();
+    if (m_pTexSurface && m_pTexSurface->IsLost())
+    {
+        SafeRelease(m_pTexture);
+        if (m_pTexSurface->Restore() == DD_OK)
+            m_pTexSurface->QueryInterface(IID_IDirect3DTexture2, (void **) &m_pTexture);
+    }
+    if (m_pRenderTarget && m_pRenderTarget->IsLost())
+        m_pRenderTarget->Restore();
+}
+
+void cFixedDDModeOps::ThrottleFrame()
+{
+    if (!m_nFrameCapUs)
+        return;
+    unsigned __int64 now = (unsigned __int64) timeGetTime() * 1000;
+    DWORD elapsed = (now >= m_LastFrameUs) ? (DWORD)(now - m_LastFrameUs) : (DWORD)(now - m_LastFrameUs) - 999;
+    if (elapsed + 1000 < m_nFrameCapUs)
+    {
+        Sleep((m_nFrameCapUs - elapsed) / 1000);
+        now = (unsigned __int64) timeGetTime() * 1000;
+    }
+    m_LastFrameUs = now;
+}
+
+BOOL cFixedDDModeOps::StartMode(const sGrModeInfo & modeInfo, int flags, sGrModeCap * pReturnModeInfo)
+{
+    DDSURFACEDESC2 desc;
+    DDSCAPS2 caps;
+    float fps;
+    int nCount;
+    int nBackBuffers;
+
+    m_bOwnSecondary = FALSE;
+    ReleaseFilteredBlit();
+    if (!m_bPersistent)
+    {
+        SafeRelease(m_pBackBuffer);
+        SafeRelease(m_pPrimarySurface);
+    }
+    SafeRelease(m_pSecondarySurface);
+    SafeRelease(m_pScaleSurface);
+
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = sizeof(desc);
+
+    m_nFrameCapUs = 0;
+    nCount = 1;
+    if (config_get_value("framerate_cap", CONFIG_FLOAT_TYPE, (config_valptr) &fps, &nCount) && nCount > 0 && fps >= 1.0f)
+    {
+        m_nFrameCapUs = (DWORD)(1000000.0f / fps);
+        if (m_nFrameCapUs)
+        {
+            if (!m_pGameShell)
+                m_pGameShell = AppGetObj(IGameShell);
+            unsigned __int64 now = (unsigned __int64) timeGetTime() * 1000;
+            m_LastFrameUs = now - m_nFrameCapUs;
+            LogMsg1("sw framerate cap requested (%d us)", m_nFrameCapUs);
+        }
+    }
+
+    if (!m_pPrimarySurface)
+    {
+        if (!(GetCoopFlags() & DDSCL_FULLSCREEN))
+            D3DFitWindowToMonitor(m_pOuter->GetMainWnd(), m_DesktopMode.h);
+        else
+        {
+            int depth = m_DesktopMode.bitDepth;
+            if (depth == 15)
+                depth = 16;
+            if (SetDisplayMode(m_DesktopMode.w, m_DesktopMode.h, depth) != DD_OK)
+                return FALSE;
+        }
+    }
+
+    pReturnModeInfo->w = modeInfo.w;
+    pReturnModeInfo->h = modeInfo.h;
+
+    BOOL bFlipChain = !!(GetCoopFlags() & DDSCL_FULLSCREEN);
+    nBackBuffers = 0;
+    if (bFlipChain)
+    {
+        nCount = 1;
+        config_get_value("single_display_mode", CONFIG_INT_TYPE, (config_valptr) &nBackBuffers, &nCount);
+        if (nBackBuffers < 2)
+        {
+            bFlipChain = FALSE;
+            nBackBuffers = 0;
+        }
+        else
+        {
+            if (nBackBuffers > 3)
+                nBackBuffers = 3;
+            nBackBuffers--;
+        }
+    }
+
+    BOOL bWindowedScale = !(m_pDisplayDevice->GetCreateFlags() & kGrSetWindowed) && m_nScaleMode == 2 &&
+                          (modeInfo.w != m_DesktopMode.w || modeInfo.h != m_DesktopMode.h);
+
+    if (!m_pPrimarySurface)
+    {
+        for (;;)
+        {
+            desc.dwFlags = DDSD_CAPS;
+            desc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+            if (bFlipChain)
+            {
+                desc.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
+                desc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX | DDSCAPS_VIDEOMEMORY;
+                desc.dwBackBufferCount = nBackBuffers;
+            }
+            if (GetDD()->CreateSurface(&desc, &m_pPrimarySurface, NULL) == DD_OK)
+                break;
+            if (!bFlipChain)
+                return FALSE;
+            bFlipChain = FALSE;
+            nBackBuffers = 0;
+        }
+        if (bFlipChain)
+        {
+            memset(&caps, 0, sizeof(caps));
+            caps.dwCaps = DDSCAPS_BACKBUFFER;
+            m_pPrimarySurface->GetAttachedSurface(&caps, &m_pBackBuffer);
+        }
+    }
+
+    m_PrimaryDesc.dwSize = sizeof(m_PrimaryDesc);
+    if (m_pPrimarySurface->GetSurfaceDesc(&m_PrimaryDesc) != DD_OK)
+        return FALSE;
+
+    if (!m_pSecondarySurface)
+    {
+        DDSURFACEDESC2 sdesc;
+        memset(&sdesc, 0, sizeof(sdesc));
+        sdesc.dwSize = sizeof(sdesc);
+        sdesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+        if (!bWindowedScale)
+            sdesc.ddsCaps.dwCaps = nBackBuffers ? DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY : DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY | DDSCAPS_3DDEVICE;
+        else
+            sdesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY | DDSCAPS_3DDEVICE;
+        sdesc.dwWidth = modeInfo.w;
+        sdesc.dwHeight = modeInfo.h;
+        sdesc.ddpfPixelFormat = m_PrimaryDesc.ddpfPixelFormat;
+        int depth = modeInfo.bitDepth;
+        if (depth == 15)
+            depth = 16;
+        if (!bWindowedScale && depth == 16 && sdesc.ddpfPixelFormat.dwRGBBitCount != 16)
+        {
+            sdesc.ddpfPixelFormat.dwRGBBitCount = 16;
+            sdesc.ddpfPixelFormat.dwRBitMask = 0xf800;
+            sdesc.ddpfPixelFormat.dwGBitMask = 0x7e0;
+            sdesc.ddpfPixelFormat.dwBBitMask = 0x1f;
+        }
+        GetDD()->CreateSurface(&sdesc, &m_pSecondarySurface, NULL);
+        if (!bWindowedScale && !nBackBuffers &&
+            (depth != m_DesktopMode.bitDepth || modeInfo.w != m_DesktopMode.w || modeInfo.h != m_DesktopMode.h))
+        {
+            sdesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY | DDSCAPS_3DDEVICE | DDSCAPS_LOCALVIDMEM;
+            sdesc.ddpfPixelFormat = m_PrimaryDesc.ddpfPixelFormat;
+            GetDD()->CreateSurface(&sdesc, &m_pScaleSurface, NULL);
+        }
+        m_bOwnSecondary = TRUE;
+    }
+
+    if (!m_pSecondarySurface)
+    {
+        memset(&m_SecondaryDesc, 0, sizeof(m_SecondaryDesc));
+        m_bFlip = FALSE;
+    }
+    else
+    {
+        m_SecondaryDesc.dwSize = sizeof(m_SecondaryDesc);
+        if (m_pSecondarySurface->GetSurfaceDesc(&m_SecondaryDesc) != DD_OK)
+            return FALSE;
+        m_bFlip = !m_bOwnSecondary;
+    }
+
+    LogMsg10("DDProviderFixed StartMode: smode %dx%dx%d ; mode %dx%dx%d (%x %x %d %dD)",
+             m_DesktopMode.w, m_DesktopMode.h, m_DesktopMode.bitDepth, modeInfo.w, modeInfo.h, modeInfo.bitDepth,
+             m_pDisplayDevice->GetCreateFlags(), flags, m_pScaleSurface != NULL, bWindowedScale + 2);
+
+    SetModeInfoFromSurfaceDesc(m_SecondaryDesc, (flags & kGrSetWindowed) | kGrSetFullScreen, pReturnModeInfo);
+    RestoreSurfaces();
+
+    if (modeInfo.bitDepth == 8 && m_pPalette)
+    {
+        m_pPrimarySurface->SetPalette(m_pPalette);
+        if (m_pPalette->SetEntries(0, 0, 256, GetPaletteEntries()) != DD_OK)
+            return FALSE;
+    }
+
+    if (nBackBuffers)
+        InitFilteredBlit();
+
+    if (m_Flags & kClippingToWindow)
+        SetClipToWindow(TRUE);
+
+    pReturnModeInfo->vbase = NULL;
+    return TRUE;
+}
+
+BOOL cFixedDDModeOps::InitFilteredBlit()
+{
+    DDSURFACEDESC2 desc;
+    D3DVIEWPORT2 vp;
+    D3DMATRIX mat;
+    float fAdjust[2];
+    int nCount;
+    int iDriver;
+
+    if (m_pD3D)
+        return TRUE;
+
+    int nDrivers = lgd3d_enumerate_devices();
+    if (nDrivers < 1)
+        return FALSE;
+    nCount = 1;
+    iDriver = 0;
+    if (config_get_value("d3d_driver_index", CONFIG_INT_TYPE, (config_valptr) &iDriver, &nCount) && nCount > 0)
+    {
+        if (iDriver < 0)
+            iDriver += nDrivers;
+        if (iDriver < 0 || iDriver >= nDrivers)
+            iDriver = 0;
+    }
+
+    if (GetDD()->QueryInterface(IID_IDirect3D3, (void **) &m_pD3D) != DD_OK)
+        return FALSE;
+
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = sizeof(desc);
+    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+    desc.dwWidth = m_DesktopMode.w;
+    desc.dwHeight = m_DesktopMode.h;
+    desc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY | DDSCAPS_3DDEVICE;
+    desc.ddpfPixelFormat = m_PrimaryDesc.ddpfPixelFormat;
+    if (GetDD()->CreateSurface(&desc, &m_pRenderTarget, NULL) != DD_OK ||
+        m_pD3D->CreateDevice(lgd3d_get_device_info(iDriver)->device_guid, m_pRenderTarget, &m_pD3DDevice, NULL) != D3D_OK ||
+        m_pD3D->CreateViewport(&m_pViewport, NULL) != D3D_OK ||
+        m_pD3DDevice->AddViewport(m_pViewport) != D3D_OK)
+        goto fail;
+
+    memset(&vp, 0, sizeof(vp));
+    vp.dwSize = sizeof(vp);
+    vp.dwWidth = desc.dwWidth;
+    vp.dvClipX = -1.0f;
+    vp.dvClipY = -1.0f;
+    vp.dvClipWidth = 2.0f;
+    vp.dvClipHeight = 2.0f;
+    vp.dvMaxZ = 1.0f;
+    vp.dwHeight = desc.dwHeight;
+    if (m_pViewport->SetViewport2(&vp) != D3D_OK || m_pD3DDevice->SetCurrentViewport(m_pViewport) != D3D_OK)
+        goto fail;
+
+    memset(&mat, 0, sizeof(mat));
+    mat._11 = mat._22 = mat._33 = mat._44 = 1.0f;
+    m_pD3DDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &mat);
+    m_pD3DDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &mat);
+    m_pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION, &mat);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+    m_pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+    m_pD3DDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+    m_pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = sizeof(desc);
+    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+    desc.dwHeight = m_SecondaryDesc.dwHeight;
+    desc.dwWidth = m_SecondaryDesc.dwWidth;
+    desc.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+    desc.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
+    desc.ddpfPixelFormat = m_SecondaryDesc.ddpfPixelFormat;
+    if (GetDD()->CreateSurface(&desc, &m_pTexSurface, NULL) != DD_OK ||
+        m_pTexSurface->QueryInterface(IID_IDirect3DTexture2, (void **) &m_pTexture) != DD_OK)
+        goto fail;
+
+    m_fTexelAdjustX = 0.5f;
+    m_fTexelAdjustY = 0.5f;
+    fAdjust[0] = 0.5f;
+    fAdjust[1] = 0.5f;
+    nCount = 2;
+    if (config_get_value("texel_center_adjust", CONFIG_FLOAT_TYPE, (config_valptr) fAdjust, &nCount) && nCount > 0)
+    {
+        if (nCount == 1)
+            fAdjust[1] = fAdjust[0];
+        m_fTexelAdjustX = fAdjust[0];
+        m_fTexelAdjustY = fAdjust[1];
+        if (fAdjust[0] < 0.0f)
+            m_fTexelAdjustX = 0.0f;
+        else if (fAdjust[0] > 1.0f)
+            m_fTexelAdjustX = 1.0f;
+        if (fAdjust[1] < 0.0f)
+            m_fTexelAdjustY = 0.0f;
+        else if (fAdjust[1] > 1.0f)
+            m_fTexelAdjustY = 1.0f;
+    }
+    return TRUE;
+
+fail:
+    ReleaseFilteredBlit();
+    return FALSE;
+}
+
+void cFixedDDModeOps::FilteredBlit(RECT * pDest)
+{
+    D3DTLVERTEX v[4];
+    float u0 = m_fTexelAdjustX / m_SecondaryDesc.dwWidth;
+    float v0 = m_fTexelAdjustY / m_SecondaryDesc.dwHeight;
+
+    m_pTexSurface->Blt(NULL, m_pSecondarySurface, NULL, DDBLT_WAIT, NULL);
+    memset(v, 0, sizeof(v));
+    for (int i = 0; i < 4; i++)
+    {
+        v[i].rhw = 1.0f;
+        v[i].color = 0xffffffff;
+    }
+    v[0].sx = v[3].sx = (float) pDest->left;
+    v[1].sx = v[2].sx = (float) pDest->right;
+    v[0].sy = v[1].sy = (float) pDest->top;
+    v[2].sy = v[3].sy = (float) pDest->bottom;
+    v[0].tu = v[3].tu = u0;
+    v[1].tu = v[2].tu = 1.0f + u0;
+    v[0].tv = v[1].tv = v0;
+    v[2].tv = v[3].tv = 1.0f + v0;
+
+    m_pD3DDevice->SetTexture(0, m_pTexture);
+    if (m_pD3DDevice->BeginScene() == D3D_OK)
+    {
+        m_pD3DDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, D3DFVF_TLVERTEX, v, 4, D3DDP_WAIT);
+        m_pD3DDevice->EndScene();
+    }
+    m_pD3DDevice->SetTexture(0, NULL);
+}
+
+BOOL cFixedDDModeOps::DoPageFlip()
+{
+    BOOL bFullscreen = !!(m_pDisplayDevice->GetCreateFlags() & kGrSetFullScreen);
+    BOOL bVSync = bFullscreen ? (g_nD3DVSync & 1) : (g_nD3DVSync & 2);
+
+    if (m_pSecondarySurface && m_bOwnSecondary)
+    {
+        if (!m_pBackBuffer)
+        {
+            if (bFullscreen)
+                ThrottleFrame();
+            if (bVSync)
+                GetDD()->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+        }
+        m_bOwnSecondary = FALSE;
+        DoFlush();
+        m_bOwnSecondary = TRUE;
+    }
+
+    if (m_pBackBuffer)
+    {
+        if (bFullscreen)
+            ThrottleFrame();
+        RestoreSurfaces();
+        DWORD flipFlags = bVSync ? DDFLIP_WAIT : DDFLIP_WAIT | DDFLIP_NOVSYNC;
+        if (bVSync && (g_nD3DVSync & 0xc))
+            flipFlags = (DDFLIP_INTERVAL2 << (((g_nD3DVSync >> 2) & 3) - 1)) | DDFLIP_WAIT;
+        int count = m_pDisplayDevice->BreakLock();
+        HRESULT result;
+        while ((result = m_pPrimarySurface->Flip(NULL, flipFlags)) != DD_OK)
+        {
+            if (result != DDERR_WASSTILLDRAWING)
+            {
+                CriticalMsg("Flip failed!");
+                break;
+            }
+        }
+        m_pDisplayDevice->RestoreLock(count);
+    }
+    return FALSE;
+}
+
+void cFixedDDModeOps::DoFlush()
+{
+    RECT dest;
+    RECT src;
+    RECT * pSrc;
+    POINT origin = { 0, 0 };
+
+    if (!m_pSecondarySurface || m_bOwnSecondary)
+        return;
+
+    RestoreSurfaces();
+    HWND hwnd = m_pOuter->GetMainWnd();
+    ClientToScreen(hwnd, &origin);
+    GetClientRect(hwnd, &dest);
+    OffsetRect(&dest, origin.x, origin.y);
+
+    int count = m_pDisplayDevice->BreakLock();
+    LPDIRECTDRAWSURFACE4 pTarget = m_pBackBuffer ? m_pBackBuffer : m_pPrimarySurface;
+    LPDIRECTDRAWSURFACE4 pSource = m_pSecondarySurface;
+    pSrc = NULL;
+
+    if (m_DesktopMode.w != GetModeInfoEx().width || m_DesktopMode.h != GetModeInfoEx().height)
+    {
+        int w = dest.right - dest.left;
+        int h = dest.bottom - dest.top;
+        if (g_bUIScaleMode && g_bUIScaleView)
+        {
+            src = g_rcUIScaleView;
+            src.right += src.left;
+            src.bottom += src.top;
+            pSrc = &src;
+            g_bUIScaleDrawn = TRUE;
+            int fitH = (g_rcUIScaleView.bottom * w) / g_rcUIScaleView.right;
+            if (fitH < h)
+            {
+                int top = dest.top + (h - fitH) / 2;
+                dest.bottom = top + fitH;
+                dest.top = top;
+            }
+            else
+            {
+                int fitW = (g_rcUIScaleView.right * h) / g_rcUIScaleView.bottom;
+                dest.left += (w - fitW) / 2;
+                dest.right = dest.left + fitW;
+            }
+        }
+        else if (m_nScaleMode == 1 && !g_bUIScaleMode)
+        {
+            int scale = (h * 3 < w * 4) ? h / 480 : w / 640;
+            if (!scale)
+                scale = 1;
+            dest.left += (w - scale * 640) / 2;
+            dest.right = dest.left + scale * 640;
+            dest.top += (h - scale * 480) / 2;
+            dest.bottom = dest.top + scale * 480;
+        }
+        else if (m_DesktopMode.h * 4 != m_DesktopMode.w * 3)
+        {
+            if (w * 3 < h * 4)
+            {
+                int fitH = (w * 3) / 4;
+                dest.top += (h - fitH) / 2;
+                dest.bottom = dest.top + fitH;
+            }
+            else
+            {
+                int fitW = (h * 4) / 3;
+                dest.left += (w - fitW) / 2;
+                dest.right = dest.left + fitW;
+            }
+        }
+        if (m_pD3DDevice)
+        {
+            FilteredBlit(&dest);
+            m_pDisplayDevice->RestoreLock(count);
+            return;
+        }
+    }
+
+    if (m_pScaleSurface)
+    {
+        m_pScaleSurface->Blt(NULL, pSource, NULL, DDBLT_WAIT, NULL);
+        pSource = m_pScaleSurface;
+    }
+    pTarget->Blt(&dest, pSource, pSrc, DDBLT_WAIT, NULL);
+    m_pDisplayDevice->RestoreLock(count);
+}
+
+BOOL cFixedDDModeOps::DoLock(sGrModeCap * pModeInfo)
+{
+    DDSURFACEDESC2 desc;
+    HRESULT result;
+
+    pModeInfo->vbase = NULL;
+    pModeInfo->vbase2 = NULL;
+    RestoreSurfaces();
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = sizeof(desc);
+
+    LPDIRECTDRAWSURFACE4 pSurface = m_pSecondarySurface;
+    if (!pSurface)
+        pSurface = m_pBackBuffer ? m_pBackBuffer : m_pPrimarySurface;
+
+    result = pSurface->Lock(NULL, &desc, DDLOCK_WAIT, NULL);
+    if (result == DDERR_SURFACELOST)
+    {
+        RestoreSurfaces();
+        result = pSurface->Lock(NULL, &desc, DDLOCK_WAIT, NULL);
+    }
+    if (result != DD_OK)
+    {
+        if (!m_bLockBack && g_bFixedLockOK)
+            g_bFixedLockOK = FALSE;
+        return FALSE;
+    }
+    pModeInfo->rowBytes = desc.lPitch;
+    pModeInfo->vbase = (uchar *) desc.lpSurface;
+    if (!m_bLockBack)
+        g_bFixedLockOK = TRUE;
+    return desc.lpSurface != NULL;
+}
+
+BOOL cFixedDDModeOps::DoUnlock()
+{
+    RestoreSurfaces();
+    LPDIRECTDRAWSURFACE4 pSurface = m_pSecondarySurface;
+    if (!pSurface)
+        pSurface = m_pBackBuffer ? m_pBackBuffer : m_pPrimarySurface;
+    if (pSurface && pSurface->Unlock(NULL) != DD_OK)
+    {
+        CriticalMsg1("Lock count of DirectDraw surfaces appears corrupted (%s)", WhatDDError(DDERR_GENERIC));
+        SafeRelease(m_pSecondarySurface);
+        SafeRelease(m_pBackBuffer);
+        SafeRelease(m_pPrimarySurface);
+        SafeRelease(m_pPalette);
+        exit(0);
+    }
+    return TRUE;
+}
+
+BOOL cFixedDDModeOps::DoSetFlip(int bFlip)
+{
+    int count = m_pDisplayDevice->BreakLock();
+    m_bFlip = m_bLockBack ? TRUE : bFlip;
+    m_pDisplayDevice->RestoreLock(count);
+    return bFlip;
+}
+

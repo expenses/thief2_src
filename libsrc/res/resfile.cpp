@@ -42,6 +42,7 @@
 #include <res_.h>
 
 #include <_res.h>
+#include <lg_file.h>
 
 //  Resource files start with this signature
 
@@ -128,11 +129,11 @@ int ResOpenResFile(char *fname, ResOpenMode mode, bool auxinfo)
          cd_spoof = TRUE;
       if (fd >= 0)
       {
-         read(fd, &fileHead, sizeof(ResFileHeader));
+         lg_read(fd, &fileHead, sizeof(ResFileHeader));
          if (strncmp(fileHead.signature, resFileSignature,
                      sizeof(resFileSignature)) != 0)
          {
-            close(fd);
+            lg_close(fd);
             Error(1, "ResOpenResFile: %s is not valid resource file\n", fname);
             return (-3);
          }
@@ -153,7 +154,7 @@ int ResOpenResFile(char *fname, ResOpenMode mode, bool auxinfo)
 
    if (mode == ROM_CREATE)
    {
-      fd = open(fname, O_CREAT | O_TRUNC | O_RDWR | O_BINARY,
+      fd = lg_open(fname, O_CREAT | O_TRUNC | O_RDWR | O_BINARY,
                 S_IREAD | S_IWRITE);
       if (fd < 0)
       {
@@ -172,7 +173,7 @@ int ResOpenResFile(char *fname, ResOpenMode mode, bool auxinfo)
       if (prf->pedit == NULL)
       {
          Warning(("ResOpenResFile: unable to allocate ResEditInfo\n"));
-         close(fd);
+         lg_close(fd);
          return (-4);
       }
    }
@@ -201,8 +202,8 @@ int ResOpenResFile(char *fname, ResOpenMode mode, bool auxinfo)
          }
          else
          {
-            lseek(fd, fileHead.dirOffset, SEEK_SET);
-            read(fd, &dirHead, sizeof(ResDirHeader));
+            lg_lseek(fd, fileHead.dirOffset, SEEK_SET);
+            lg_read(fd, &dirHead, sizeof(ResDirHeader));
             ResReadDirEntries(filenum, &dirHead, (cd_spoof) ? RDF_CDSPOOF : 0);
          }
          break;
@@ -266,7 +267,7 @@ void ResCloseFile(int filenum)
 
 //  Close file
 
-   close(resFile[filenum].fd);
+   lg_close(resFile[filenum].fd);
    resFile[filenum].fd = -1;
 }
 //  --------------------------------------------------------------
@@ -322,7 +323,7 @@ void ResReadDirEntries(int filenum, ResDirHeader * pDirHead, uint add_flags)
 
       if (pDirEntry >= &dirEntries[NUM_DIRENTRY_BLOCK])
       {
-         read(fd, dirEntries, sizeof(ResDirEntry) * NUM_DIRENTRY_BLOCK);
+         lg_read(fd, dirEntries, sizeof(ResDirEntry) * NUM_DIRENTRY_BLOCK);
          pDirEntry = &dirEntries[0];
       }
 
@@ -391,7 +392,7 @@ void ResProcDirEntry(ResDirEntry * pDirEntry, int filenum, long dataOffset, uint
       currOffset = tell(resFile[filenum].fd);
       ResLoadResource(pDirEntry->id);
       ResCacheAdd(pDirEntry->id);
-      lseek(resFile[filenum].fd, currOffset, SEEK_SET);
+      lg_lseek(resFile[filenum].fd, currOffset, SEEK_SET);
    }
 }
 //  --------------------------------------------------------------
@@ -408,8 +409,8 @@ void ResReadEditInfo(ResFile * prf)
 
 //  Seek to start of file, read in header
 
-   lseek(prf->fd, 0L, SEEK_SET);
-   read(prf->fd, &pedit->hdr, sizeof(pedit->hdr));
+   lg_lseek(prf->fd, 0L, SEEK_SET);
+   lg_read(prf->fd, &pedit->hdr, sizeof(pedit->hdr));
 
 //  Set no directory (yet, anyway)
 
@@ -433,8 +434,8 @@ void ResReadDir(ResFile * prf, int filenum)
 
    pedit = prf->pedit;
    phead = &pedit->hdr;
-   lseek(prf->fd, phead->dirOffset, SEEK_SET);
-   read(prf->fd, &dirHead, sizeof(ResDirHeader));
+   lg_lseek(prf->fd, phead->dirOffset, SEEK_SET);
+   lg_read(prf->fd, &dirHead, sizeof(ResDirHeader));
 
 //  Allocate space for directory, copy directory header into it
 
@@ -447,7 +448,7 @@ void ResReadDir(ResFile * prf, int filenum)
 
 //  Read in directory into allocated space (past header)
 
-   read(prf->fd, RESFILE_DIRENTRY(pdir, 0),
+   lg_read(prf->fd, RESFILE_DIRENTRY(pdir, 0),
         dirHead.numEntries * sizeof(ResDirEntry));
 
 //  Scan directory, setting resource descriptors & counting data bytes
@@ -466,7 +467,7 @@ void ResReadDir(ResFile * prf, int filenum)
 
 //  Seek to current data location
 
-   lseek(prf->fd, pedit->currDataOffset, SEEK_SET);
+   lg_lseek(prf->fd, pedit->currDataOffset, SEEK_SET);
 }
 //  --------------------------------------------------------------
 //
@@ -495,7 +496,7 @@ void ResCreateDir(ResFile * prf)
                                          (sizeof(ResDirEntry) * pedit->numAllocDir));
    pedit->pdir->numEntries = 0;
    pedit->currDataOffset = pedit->pdir->dataOffset = sizeof(ResFileHeader);
-   lseek(prf->fd, pedit->currDataOffset, SEEK_SET);
+   lg_lseek(prf->fd, pedit->currDataOffset, SEEK_SET);
 }
 //  -------------------------------------------------------------
 //
@@ -518,8 +519,8 @@ void ResWriteDir(int filenum)
                          filenum));
 
    prf = &resFile[filenum];
-   lseek(prf->fd, prf->pedit->currDataOffset, SEEK_SET);
-   write(prf->fd, prf->pedit->pdir, sizeof(ResDirHeader) +
+   lg_lseek(prf->fd, prf->pedit->currDataOffset, SEEK_SET);
+   lg_write(prf->fd, prf->pedit->pdir, sizeof(ResDirHeader) +
          (prf->pedit->pdir->numEntries * sizeof(ResDirEntry)));
 }
 //  --------------------------------------------------------
@@ -545,8 +546,8 @@ void ResWriteHeader(int filenum)
    prf = &resFile[filenum];
    prf->pedit->hdr.dirOffset = prf->pedit->currDataOffset;
 
-   lseek(prf->fd, 0L, SEEK_SET);
-   write(prf->fd, &prf->pedit->hdr, sizeof(ResFileHeader));
+   lg_lseek(prf->fd, 0L, SEEK_SET);
+   lg_write(prf->fd, &prf->pedit->hdr, sizeof(ResFileHeader));
 }
 // Sets the path that the resource system will treat as a virtual CD
 //

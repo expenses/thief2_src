@@ -4,6 +4,7 @@
 #include <memory>
 #include <math.h>
 #include <cstdlib>
+#include <lg_file.h>
 
 extern cIBInputMapper* g_IB_input_mapper;
 cIBVariableManager* g_IB_variable_manager;
@@ -17,7 +18,7 @@ BOOL CDECL IBMaxActiveAgg(intrnl_var_channel** chans, long num_chans, char* str)
 {
 	intrnl_var_channel* max_chan = NULL;
 	BOOL ret_val = FALSE;
-	double max_val;
+	double max_val = 0;
 
 	for (int i = 0; i < num_chans; ++i)
 	{
@@ -92,7 +93,7 @@ void cIBVariableManager::Init()
 cIBVariableManager::~cIBVariableManager()
 {
 	if (m_bnd_path)
-		delete m_bnd_path;
+		delete [] m_bnd_path;
 }
 
 
@@ -309,6 +310,35 @@ char* cIBVariableManager::Cmd(char* pCmd, int already_down)
 		strcpy(tmp_cmd, "unbind ");
 		strcat(tmp_cmd, loc_tokens[1]);
 		Cmd(tmp_cmd, 0);
+
+		if (strstr(loc_tokens[1], "mouse_wheel_"))
+		{
+			strcpy(tmp_cmd, "unbind ");
+			strcat(tmp_cmd, "mouse_wheel");
+			Cmd(tmp_cmd, 0);
+		}
+		else if (!strcmp(loc_tokens[1], "mouse_wheel"))
+		{
+			delete[] tmp_cmd;
+			tmp_cmd = new char[strlen(loc_tokens[1]) + 40];
+			for (int i = 0; i < 2; i++)
+			{
+				strcpy(tmp_cmd, "unbind ");
+				strcat(tmp_cmd, (i == 0) ? "mouse_wheel_up" : "mouse_wheel_down");
+				char* mods = tmp_cmd + strlen(tmp_cmd);
+				for (int j = 0; j < 8; j++)
+				{
+					*mods = '\0';
+					if (j & 1)
+						strcat(tmp_cmd, "+alt");
+					if (j & 2)
+						strcat(tmp_cmd, "+ctrl");
+					if (j & 4)
+						strcat(tmp_cmd, "+shift");
+					Cmd(tmp_cmd, 0);
+				}
+			}
+		}
 		delete[] tmp_cmd;
 
 		ret_str = g_IB_input_mapper->Bind(loc_tokens + 1);
@@ -753,14 +783,14 @@ void cIBVariableManager::LoadBndContexted(
 	unsigned long iNumContexts,
 	cIBInputMapper** m_ppMappers)
 {
-	FILE* pFile = fopen(pFName, "r");
+	LGFILE* pFile = lg_fopen(pFName, "r");
 	if (pFile == NULL)
 		return;
 
 	do
 	{
 		char aszBuf[256];
-		fgets(aszBuf, 255, pFile);
+		fgets(aszBuf, 255, pFile->fp);
 
 		long iNumTokens;
 		char** ppszTokens = Tokenize(aszBuf, &iNumTokens, 1);
@@ -801,24 +831,24 @@ void cIBVariableManager::LoadBndContexted(
 			}
 			FreeTokens(ppszTokens, iNumTokens);
 		}
-	} while (!feof(pFile));
+	} while (!feof(pFile->fp));
 
-	fclose(pFile);
+	lg_fclose(pFile);
 }
 
 
 char* cIBVariableManager::LoadBnd(char* bnd_filename, char* prefix)
 {
-	FILE* fp = fopen(bnd_filename, "r");
+	LGFILE* fp = lg_fopen(bnd_filename, "r");
 	if (!fp)
 		return g_apszErrors[6];
 
-	fseek(fp, 0, 0);
+	fseek(fp->fp, 0, 0);
 
 	do
 	{
 		char str[128];
-		fgets(str, sizeof(str) / sizeof(str[0]) - 1, fp);
+		fgets(str, sizeof(str) / sizeof(str[0]) - 1, fp->fp);
 		if (prefix)
 		{
 			long num_tokens;
@@ -834,9 +864,9 @@ char* cIBVariableManager::LoadBnd(char* bnd_filename, char* prefix)
 		{
 			Cmd(str, 0);
 		}
-	} while (!feof(fp));
+	} while (!feof(fp->fp));
 
-	fclose(fp);
+	lg_fclose(fp);
 
 	return NULL;
 }

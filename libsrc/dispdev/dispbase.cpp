@@ -281,7 +281,7 @@ STDMETHODIMP_(BOOL) cDisplayDevice::IsFlushingPaused()
 // in an invalid pointer, for instance)
 //
 
-STDMETHODIMP_(BOOL) cDisplayDevice::SetMonitor(tGrDispBits ** ppDispBits, eDisplayDeviceMonitorFlag flags)
+STDMETHODIMP_(BOOL) cDisplayDevice::SetMonitor(tGrDispBits ** ppDispBits, ushort * pRowBytes, eDisplayDeviceMonitorFlag flags)
 {
     return TRUE;
 }

@@ -60,7 +60,7 @@ ubyte      mdd_type_or=0;   // mask for pgon type at render time
 ulong       mdd_tmap_mode=R3_PL_TEXTURE;  // default to perspective
 
 // global
-uchar mdd_render_b2f = TRUE; //render back to front?
+BOOL mdd_render_b2f = TRUE; //render back to front?
 
 bool        mdd_rgb_lighting = FALSE; // if true, use RGB lighting
 
@@ -97,6 +97,11 @@ void (*mdd_mesh_light_cback)(int num, float *ivals, mds_light *lights) = md_mesh
 
 EXTERN void stack_init(void);
 EXTERN void stack_transform_o2w(mxs_vector *dst, mxs_vector *src);
+EXTERN void stack_start_object(mxs_vector *v);
+EXTERN void stack_start_object_trans(mxs_trans *t);
+EXTERN void stack_start_object_n(mxs_vector *v, unsigned short ang, int n);
+EXTERN void stack_end_object(void);
+EXTERN mxs_trans *stack_o2w(void);
 
 #ifndef SHIP
    #define TEST_VERSION(fname,model)   \
@@ -118,7 +123,7 @@ ulong *mdd_index_table;  // an array of offsets into the buffer
 
 void update_stride(mds_model *m)
 {
-   static int max_points;
+   static uint max_points;
    static int last_stride;
    BOOL recompute_index = FALSE;
 
@@ -169,11 +174,19 @@ void md_set_globals(mds_model *m)
 }
 
 
+#define MD_FIND_PATH_MAX 32
+static int md_find_id;
+static mxs_trans *md_find_trans;
+static int md_find_path[MD_FIND_PATH_MAX];
+static int md_find_depth;
+
 // Set the 3d stack for this subobj
 // Both rotating and sliding subobjs need to transform into the plane of the
 // axle, then rotate or slide about it
 void md_start_subobj(int i)
 {
+   md_find_path[++md_find_depth] = i;
+
    // this is the root node, already set
    switch(mdd.subs[i].type) {
 
@@ -223,6 +236,8 @@ void md_start_subobj(int i)
 // End the transform stack for this object
 void md_end_subobj(int i)
 {
+   md_find_depth--;
+
    switch(mdd.subs[i].type) {
 
       case MD_SUB_NONE:
@@ -1321,16 +1336,16 @@ void md_start_subobj_object(int i)
    {
       mxs_vector zero;
       mx_mk_vec(&zero, 0.0f, 0.0f, 0.0f);
-      r3_start_object_trans(&mdd.subs[i].trans);
-      r3_start_object_n(&zero, mdd_parms[mdd.subs[i].parm].ang, 0);
+      stack_start_object_trans(&mdd.subs[i].trans);
+      stack_start_object_n(&zero, mdd_parms[mdd.subs[i].parm].ang, 0);
       break;
    }
    case 2:
    {
       mxs_vector v;
-      r3_start_object_trans(&mdd.subs[i].trans);
+      stack_start_object_trans(&mdd.subs[i].trans);
       mx_mk_vec(&v, mdd_parms[mdd.subs[i].parm].slide, 0.0f, 0.0f);
-      r3_start_object(&v);
+      stack_start_object(&v);
       break;
    }
    }
@@ -1342,8 +1357,8 @@ void md_end_subobj_object(int i)
 
    type = mdd.subs[i].type;
    if (type != 0 && type < 3) {
-      r3_end_object();
-      r3_end_object();
+      stack_end_object();
+      stack_end_object();
    }
 }
 
@@ -1360,6 +1375,99 @@ void traverse_subobjs_object(mdf_subrecur cback, int i)
    traverse_subobjs_object(cback, mdd.subs[i].next);
 }
 
+
+
+
+static int md_find_vhot_subobj(int i)
+{
+   int j, e, k, child, next, found;
+
+   md_find_path[md_find_depth++] = i;
+
+   e = mdd.subs[i].vhot_start + mdd.subs[i].vhot_num;
+   for (j = mdd.subs[i].vhot_start; j < e; j++)
+   {
+      mds_vhot *v = mdd.vhots + j;
+      if (v->id == md_find_id)
+      {
+         mxs_trans *o2w = stack_o2w();
+         for (k = 0; k < md_find_depth; k++)
+            md_start_subobj_object(md_find_path[k]);
+         md_find_trans->mat = o2w->mat;
+         mx_mat_mul_vec(&md_find_trans->vec, &o2w->mat, &v->v);
+         mx_add_vec(&md_find_trans->vec, &o2w->vec, &md_find_trans->vec);
+         return TRUE;
+      }
+   }
+
+   child = mdd.subs[i].child;
+   if (child != -1 && md_find_vhot_subobj(child))
+      return TRUE;
+
+   next = mdd.subs[i].next;
+   md_find_depth--;
+   if (next == -1)
+      return FALSE;
+   found = md_find_vhot_subobj(next);
+   return found;
+}
+
+static int md_find_subobj(int i)
+{
+   int k, child, next, found;
+
+   md_find_path[md_find_depth++] = i;
+
+   if (i == md_find_id)
+   {
+      for (k = 0; k < md_find_depth; k++)
+         md_start_subobj_object(md_find_path[k]);
+      *md_find_trans = *stack_o2w();
+      return TRUE;
+   }
+
+   child = mdd.subs[i].child;
+   if (child != -1 && md_find_subobj(child))
+      return TRUE;
+
+   next = mdd.subs[i].next;
+   md_find_depth--;
+   if (next == -1)
+      return FALSE;
+   found = md_find_subobj(next);
+   return found;
+}
+
+int md_get_vhot_trans_object(mds_model *m, int vhot, mds_parm p[], mxs_trans *t)
+{
+   int found;
+
+   stack_init();
+   md_find_id = vhot;
+   md_find_trans = t;
+   mdd_parms = p;
+   md_find_depth = 0;
+   mdd.vhots = md_vhot_list(m);
+   mdd.subs = md_subobj_list(m);
+   found = md_find_vhot_subobj(0);
+   md_find_depth = 0;
+   return found;
+}
+
+int md_get_subobj_trans_object(mds_model *m, int subobj, mds_parm p[], mxs_trans *t)
+{
+   int found;
+
+   stack_init();
+   md_find_id = subobj;
+   md_find_trans = t;
+   md_find_depth = 0;
+   mdd_parms = p;
+   mdd.subs = md_subobj_list(m);
+   found = md_find_subobj(0);
+   md_find_depth = 0;
+   return found;
+}
 
 void md_set_alpha(bool on)
 {

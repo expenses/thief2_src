@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //  $Header: r:/t2repos/thief2/src/portal/portdraw.c,v 1.119 2000/02/19 13:18:57 toml Exp $
 //
 //  PORTAL
@@ -40,8 +39,6 @@
 extern mxs_vector portal_camera_loc;
 extern bool show_lightmap;
 
-#define STATS_ON
-
 #ifdef DBG_ON
   #ifndef STATS_ON
   #define STATS_ON
@@ -57,6 +54,7 @@ extern bool show_lightmap;
 // Here's the current placement of textures applied to medium
 // boundaries:
 PortalCellMotion portal_cell_motion[MAX_CELL_MOTION];
+float portal_motion_proj_thresh = DEFAULT_MOTION_PROJ_THRESH;
 
 // We can fiddle this up and down to vary the level of detail.
 // Higher means more texels.  Right now it only affects MIP mapping.
@@ -654,7 +652,6 @@ bool draw_surface(PortalPolygonCore *poly, PortalPolygonRenderInfo *render,
 
    // prepare the vertex list
    n = poly->num_vertices;
-   if (n > MAX_VERT) Error(1, "draw_surface: too many vertices.\n");
 
    for (i=0; i < n; ++i)
       vlist[i] = &cur_ph[r_vertex_list[voff + i]];
@@ -712,14 +709,14 @@ bool draw_surface(PortalPolygonCore *poly, PortalPolygonRenderInfo *render,
       mxs_vector u_vec, v_vec, pt;
 
       portal_position_portal_texture(&u_vec, &v_vec, &pt,
-             &(cur_pool[r_vertex_list[voff + render->texture_anchor]]),
+             &(cur_pool[r_vertex_list[voff]]),
              render, &cur_cell->plane_list[poly->planeid],
              &portal_cell_motion[poly->motion_index]);
 
       g2pt_calc_uvw_deltas(&pt, &u_vec, &v_vec);
       position_from_motion = TRUE;
    } else
-      compute_tmapping(render, not_light, lt, vlist[render->texture_anchor]);
+      compute_tmapping(render, not_light, lt, vlist[0]);
 
      // rescale based on mipmap scaling
    for(i=0; i < 3; ++i) {
@@ -1143,7 +1140,7 @@ extern void draw_surface_texture_only(
       void *clip);
 
 BOOL portal_multitexture = FALSE;
-extern bool punt_hardware_lighting;
+extern BOOL punt_hardware_lighting;
 
 void draw_region_lgd3d(int cell)
 {  PROF

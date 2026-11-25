@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////
 //
 // $Header: x:/prj/tech/libsrc/namedres/RCS/resbase.h 1.11 1970/01/01 00:00:00 TOML Exp $
@@ -46,22 +45,8 @@ public:
    {
    }
 
-   STDMETHODIMP_(ULONG) AddRef()
-   {
-      return __m_ulRefs.AddRef();
-   }
-
-   STDMETHODIMP_(ULONG) Release()
-   {
-      if (__m_ulRefs.Release())
-         return __m_ulRefs;
-
-      OnFinalRelease();
-
-      delete this;
-
-      return 0;
-   }
+   STDMETHOD_(ULONG, AddRef)();
+   STDMETHOD_(ULONG, Release)();
 
    STDMETHOD (QueryInterface)(REFIID id, void ** ppI);
 
@@ -148,7 +133,6 @@ public:
    //
    // Data members
    //
-   unsigned long m_ulRefs;
 
    // @TBD (toml 04-21-98): should these be ordered so most commonly used is first for efficiency?
    // @TBD (toml 04-21-98): again, probably better served by consolodating all flags into an unsigned "flags" field
@@ -182,7 +166,12 @@ public:
    int            m_nAssignedCount;
 
 private:
-   cCTRefCount __m_ulRefs;
+   class cRefCount
+   {
+   public:
+      cRefCount() : ul(1) {}
+      LONG ul;
+   } __m_ulRefs;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

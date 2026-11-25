@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/imgsrc.cpp,v 1.7 1998/09/18 21:34:38 mahk Exp $
 #include <imgsrc.h>
 #include <dev2d.h>

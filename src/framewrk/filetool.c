@@ -3,13 +3,13 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/filetool.c,v 1.8 2000/02/19 13:16:13 toml Exp $
 // misc file tools for editor/resname stuff
 
 #include <lg.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <io.h>
@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 
 #include <filetool.h>
+#include <lg_file.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header! 
 
@@ -30,7 +31,7 @@ bool dir_exists(char *path)
    endslash=path[strlen(path)-1];
    if (is_slash(endslash))
       path[strlen(path)-1]='\0';
-   strv=stat(path,&st);
+   strv=lg_stat(path,&st);
    if (is_slash(endslash))
       path[strlen(path)-1]=endslash;
    if (strv==-1)
@@ -42,6 +43,24 @@ bool dir_exists(char *path)
 #else
    return TRUE; // S_ISDIR does not exist in ms. (toml 12-05-96)
 #endif
+}
+
+bool dir_writable(const char *path)
+{
+   struct _stat64i32 st;
+   char testname[_MAX_PATH];
+   LGFILE *f;
+
+   if (lg_stat(path, &st) != 0)
+      return TRUE;
+   if (_snprintf_s(testname, sizeof(testname), _TRUNCATE, "%s\\.dark-writeperm-test", path) < 0)
+      return TRUE;
+   f = lg_fopen(testname, "wb");
+   if (!f)
+      return FALSE;
+   lg_fclose(f);
+   remove(testname);
+   return TRUE;
 }
 
 // munges base_path, base_2, and file together, adding appropriate /'s, into targ
@@ -97,14 +116,14 @@ bool CopyOpenFile(const char *name, int src_hnd)
    int len, dst_hnd;
 
    if (!buf) return FALSE;
-   dst_hnd = open(name, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IWRITE);
+   dst_hnd = lg_open(name, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, S_IWRITE);
    if (dst_hnd!=-1)
    {
       do {
-         len = read(src_hnd, buf, COPY_SIZE);
-         if (len) write(dst_hnd, buf, len);
+         len = lg_read(src_hnd, buf, COPY_SIZE);
+         if (len) lg_write(dst_hnd, buf, len);
       } while (len);
-      close(dst_hnd);
+      lg_close(dst_hnd);
    }
    else rv=FALSE;
    Free(buf);
@@ -117,11 +136,11 @@ bool CopyFileNamed(const char *targ, const char *src)
    int src_hnd;
    bool rv;
 
-   src_hnd=open(src,O_RDONLY|O_BINARY);
+   src_hnd=lg_open(src,O_RDONLY|O_BINARY,0);
    if (src_hnd==-1)
       return FALSE;
    rv=CopyOpenFile(targ,src_hnd);
-   close(src_hnd);
+   lg_close(src_hnd);
    return rv;
 }
 

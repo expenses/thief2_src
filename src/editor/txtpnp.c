@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/txtpnp.c,v 1.48 2000/02/19 13:11:37 toml Exp $
 // Brush Texture PnP gadget
 
@@ -91,8 +90,9 @@ void txtPnP_buildRects(Rect *whole)
 
 // statics for the PnP itself
 static int pnpOwners[NUM_OWNED];
-static editBrush *txtPnP_br;
-static int face, media, texture;
+editBrush *txtPnP_br;
+static int face, media;
+int txtPnP_texture;
 static BOOL im_detached=FALSE;
 
 static _PnP_GadgData txtPnP;
@@ -114,6 +114,46 @@ char *faces[] =       // the actual use me in the PnP thing
   {"", "", "", "", "", "", "", "", "", "", "", "", ""};
 
 int cur_max_face=0, cur_primal=-1;
+
+char *txtPnP_get_brush_face_name(editBrush *br, int face)
+{
+   int primal_id, eff_face_cnt;
+   BOOL is_pyr;
+
+   if (br==NULL)
+   {
+      CriticalMsg("txtPnP_get_brush_face_name called with NULL brush");
+      return "<invalid>";
+   }
+   primal_id=br->primal_id;
+   if (primal_id==PRIMAL_CUBE_IDX)
+      return cube_faces[face];
+   if (face==0)
+      return cube_faces[0];
+   if (primal_id==PRIMAL_DODEC_IDX)
+   {
+      if (face==1)
+         return cube_faces[6];
+      if (face==7)
+         return cube_faces[5];
+      if (face<7)
+         return side_names[face-2];
+      return side_names[face-3];
+   }
+   if (primal_id==PRIMAL_WEDGE_IDX)
+   {
+      if (face>2)
+         return side_names[face-3];
+      return cube_faces[face+4];
+   }
+   is_pyr=(primalID_GetType(primal_id)==PRIMAL_TYPE_PYRAMID)||(primalID_GetType(primal_id)==PRIMAL_TYPE_CORNERPYR);
+   eff_face_cnt=primalBr_FaceCnt(primal_id)-(is_pyr?1:2);
+   if (face<=eff_face_cnt)
+      return side_names[face-1];
+   if (!is_pyr && face==eff_face_cnt+1)
+      return cube_faces[5];
+   return cube_faces[6];
+}
 
 static void txtPnP_rebuild_face_info(int primal_id)
 {
@@ -184,12 +224,12 @@ static void txtPnP_setvars(editBrush *br, bool update)
       PnP_Redraw(pnpOwners[FROBS_MEDIA],NULL);
       change=TRUE;
    }
-   if (texture!=(int)(*_geditGetTxPtr(br)))
+   if (txtPnP_texture!=(int)(*_geditGetTxPtr(br)))
    {
       if (update)
-         gedit_texture_brush(br,texture);
+         gedit_texture_brush(br,txtPnP_texture);
       else
-         texture=(int)(*_geditGetTxPtr(br));
+         txtPnP_texture=(int)(*_geditGetTxPtr(br));
       PnP_Redraw(pnpOwners[FROBS_TEXTURE],NULL);
       PnP_Redraw(pnpOwners[FROBS_PICTURE],NULL); // make sure we do the picture too
       change=TRUE;
@@ -208,7 +248,7 @@ static void txtPnP_OneShots(int lid)
       case BUTTON_ALIGN: PnP_ExecCommandInt("start_pnp", PNP_ALIGN); break;
       case BUTTON_SHOW:  CommandExecute("cam_to_brush"); break;
       case BUTTON_RESET:
-         PnP_ExecCommandInt("reset_brush_tx",texture);
+         PnP_ExecCommandInt("reset_brush_tx",txtPnP_texture);
          txtPnP_setvars(txtPnP_br,FALSE);
          break;
    }
@@ -239,12 +279,12 @@ static void txtPnP_TxtFrob(PnP_SliderOp op,Rect *where, int val, int data)
    if (op == PnP_SliderUpdateOp)
    {
       if ((val==-1)&&(face==0))
-         texture=0;          // cant set to default if you are whole brush
+         txtPnP_texture=0;          // cant set to default if you are whole brush
       if (val>=texmemGetMax())
       {
          int mid=texmemGetMax()+((BACKHACK_IDX-texmemGetMax())/2);
-         if ((texture<mid)||(texture>=BACKHACK_IDX)) texture=BACKHACK_IDX;
-         else texture=texmemGetMax()-1;
+         if ((txtPnP_texture<mid)||(txtPnP_texture>=BACKHACK_IDX)) txtPnP_texture=BACKHACK_IDX;
+         else txtPnP_texture=texmemGetMax()-1;
       }
       txtPnP_setvars(txtPnP_br,TRUE);
    }
@@ -329,7 +369,7 @@ static void draw_string_hack(int color, char *str)
 // since we really hope it is consistent and right when we get here
 static void txtPnP_Picture(int data)
 {
-   int mt=texture;
+   int mt=txtPnP_texture;
 
    if (im_detached||(txtPnP_br==NULL))
       draw_string_hack(0,"Detached");
@@ -372,13 +412,13 @@ void Create_txtPnP(LGadRoot *root, Rect *bounds, editBrush *br)
    if (!config_is_defined("txt_click"))
    {
       pnpOwners[FROBS_TEXTURE]=
-         PnP_SliderInt(getRect(7),"Texture",-1,BACKHACK_IDX,1,&texture,txtPnP_TxtFrob,
+         PnP_SliderInt(getRect(7),"Texture",-1,BACKHACK_IDX,1,&txtPnP_texture,txtPnP_TxtFrob,
                        FROBS_TEXTURE,PNP_SLIDER_VSLIDE); // |PNP_SLIDER_CLICKS);
    }
    else
    {
       pnpOwners[FROBS_TEXTURE]=
-         PnP_SliderInt(getRect(7),"Texture",-1,BACKHACK_IDX,1,&texture,txtPnP_TxtFrob,
+         PnP_SliderInt(getRect(7),"Texture",-1,BACKHACK_IDX,1,&txtPnP_texture,txtPnP_TxtFrob,
                        FROBS_TEXTURE,PNP_SLIDER_VSLIDE|PNP_SLIDER_CLICKS);
    }
 }
@@ -447,15 +487,15 @@ static bool txtpal_update(int txt)
                }
             break;
          case TPAL_XTRA_REMOVE:
-            if (texture!=BACKHACK_IDX)
+            if (txtPnP_texture!=BACKHACK_IDX)
             {  // ask if they really want to remove it
                char buf[200];
                strcpy(buf,"Do you really want to Remove\n");
-               if (FillInName(buf+strlen(buf),TRUE,texture))
+               if (FillInName(buf+strlen(buf),TRUE,txtPnP_texture))
                   if (winui_GetYorN(buf))
                   {
-                     family_free_single(texture);
-                     texture=0;
+                     family_free_single(txtPnP_texture);
+                     txtPnP_texture=0;
                   }
             }
             break;
@@ -463,13 +503,13 @@ static bool txtpal_update(int txt)
             Warning(("Txtpal_Update in default case\n"));
             break;
          }
-         TexturePaletteSelect(texture);
+         TexturePaletteSelect(txtPnP_texture);
          return FALSE;
       }
-   texture = txt;
+   txtPnP_texture = txt;
    {
       char buf[200];
-      if (FillInName(buf,TRUE,texture))
+      if (FillInName(buf,TRUE,txtPnP_texture))
          Status(buf);
    }
    if (txtPnP_allow_attach)
@@ -485,7 +525,7 @@ void texture_pal_cmd(void)
    {
       if (!txtPnP_allow_attach)
          txtPnP_detach();
-      TexturePaletteSelect(texture);
+      TexturePaletteSelect(txtPnP_texture);
    }
 }
 
@@ -493,7 +533,7 @@ void texture_pal_cmd(void)
 int txtPnP_pal_query(void)
 {
    if (TexturePaletteVisible())  // hey, we be on screen
-      return texture;
+      return txtPnP_texture;
    else
       return TXTPNP_NO_PAL_UP;
 }

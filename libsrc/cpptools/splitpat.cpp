@@ -327,7 +327,7 @@ BOOL cPathSplitter::DoSplitTo(eComponent /* SplitToComponent */)
         {
         DebugMsg("First time through...");
         if (RemoveLeadingSpaceForKind(FileSystem))
-            while (isspace(*pcszTarget))
+            while (isspace((unsigned char)*pcszTarget))
                 pcszTarget++;
 
         if ((nSignificantTargetLen = strlen(pcszTarget)) >= MaxPath)

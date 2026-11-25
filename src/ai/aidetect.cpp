@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aidetect.cpp,v 1.21 2000/02/28 18:32:54 adurant Exp $
 //
@@ -47,6 +46,8 @@
 #include <portal.h>
 
 #include <aiprops.h>
+#include <aisgtcst.h>
+#include <objcast.h>
 
 // Must be last header
 #include <dbmem.h>
@@ -145,6 +146,19 @@ STDMETHODIMP_(void) cAIDetect::OnActionProgress(IAIAction * pAction)
 
 DECLARE_TIMER(cAIDetect_SearchForBodies, Average);
 
+static BOOL AIDetectRaycast(Location *pFrom, Location *pTo, Location *pHit)
+{
+   if (g_bAIEnhancedDetectTrace)
+   {
+      int nObjs;
+      ObjID *pObjs = AIGetInterestingObjects(&nObjs);
+      return ObjRaycast(pFrom, pTo, pHit, kObjCastStopAtAnyHit | kObjCastNoMesh, pObjs, nObjs, NULL, TRUE) == kObjCastNone;
+   }
+   return PortalRaycast(pFrom, pTo, pHit, 0);
+}
+
+///////////////////////////////////////
+
 BOOL cAIDetect::SearchForBodies(void)
 {
    AUTO_TIMER(cAIDetect_SearchForBodies);
@@ -203,7 +217,7 @@ BOOL cAIDetect::SearchForBodies(void)
             if ((distSq < kBodyLookDistSq) && (mx_dot_vec(&relfac,&ourvecfac) >= kBodyDotMinimum))
             {  // need to check lighting and raycast
                Location hit;
-               if (PortalRaycast(&themLoc->loc,&ourLoc->loc,&hit,0))
+               if (AIDetectRaycast(&themLoc->loc,&ourLoc->loc,&hit))
                {  // should check verse objects
                   float light = AIGetObjectLighting(targ);
 
@@ -322,7 +336,7 @@ BOOL cAIDetect::SearchForSuspicious(void)
               (mx_dot_vec(&relfac,&ourvecfac) >= kSuspiciousDotMinimum))
             {  // need to check lighting and raycast
               Location hit;
-              if (PortalRaycast(&themLoc->loc,&ourLoc->loc,&hit,0))
+              if (AIDetectRaycast(&themLoc->loc,&ourLoc->loc,&hit))
                 {  // should check verse objects
                   float light = AIGetObjectLighting(targ);
 

@@ -50,7 +50,6 @@ int gd_close(void)
       return 0;
    gr_pop_video_state();
    gr_close_device (&grd_info);
-   grd_mode = -1;
    gdd_active = 0;
 
    temp_mem_uninit();

@@ -12,6 +12,7 @@
 #include <canvas.h>
 #include <grd.h>
 #include <gdbm.h>
+#include <hw2dapi.h>
 
 static grs_canvas get_cnv;
 void gd_get_bitmap(grs_bitmap *bm, int x, int y)
@@ -19,6 +20,12 @@ void gd_get_bitmap(grs_bitmap *bm, int x, int y)
    grs_canvas *c = grd_canvas;
    grs_canvas gc_save=get_cnv;
    short flags_save=c->bm.flags;
+
+   if (g_pHW2D && (grd_canvas->bm.flags & BMF_RELOCATABLE))
+   {
+      IHW2DRenderer_CopyFromScreen(g_pHW2D, bm, x, y);
+      return;
+   }
 
    gr_make_canvas(bm, &get_cnv);
    gr_set_canvas(&get_cnv);

@@ -11,6 +11,5 @@ typedef struct lgd3ds_device_info lgd3ds_device_info;
 extern void InitTextureSys(lgd3ds_device_info *info);
 extern void ShutdownTextureSys(void);
 
-#define LGD3D_MAX_TEXTURES 1024
 
 #endif

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/camera.c,v 1.35 2000/02/19 12:35:41 toml Exp $
 
 // camera stuff
@@ -18,6 +17,7 @@
 #include <physapi.h>
 #include <phmoapi.h>
 #include <camera.h>
+#include <camovl.h>
 #include <config.h>
 #include <plyrmode.h>
 #include <rendprop.h>
@@ -30,7 +30,10 @@
 #include <mprintf.h>
 
 //shock hack (gen_bind.cpp)  I'm using it here because it's useful.
-extern BOOL gNoMoveKeys;
+EXTERN BOOL gNoMoveKeys;
+
+void CameraSendAttachMessages(ObjID oldObj, ObjID newObj);
+BOOL g_bCameraQuietAttach = FALSE;
 
 mxs_vector CameraPosOffsets[MAX_CAMERA_MODE] = { { 0,0,0 }, { -5,0,3 }, { 0,0,0 }, { 0,0,0 }, { 0,0,0 }, {0,0,0} , {0,0,0} };
 mxs_angvec CameraAngOffsets[MAX_CAMERA_MODE] = { { 0,0,0 }, { 0,2048,0 }, { 0,0,0 }, { 0,0,0 }, { 0,0,0 }, {0,0,0}, {0,0,0} };
@@ -45,7 +48,11 @@ static void CameraSwitchProcess(Camera *cam, BOOL DoFlash, ObjID newobj)
   if (cam == PlayerCamera())
     {
 #ifdef THIEF
-      if (DoFlash) FlashOnlyPlayer(1.0);
+      if (DoFlash)
+      {
+         FlashOnlyPlayer(1.0);
+         CameraOverlayCameraSwitch();
+      }
 #endif 
       gNoMoveKeys = (cam->mode != FIRST_PERSON);
       if (gNoMoveKeys)
@@ -125,8 +132,10 @@ void CameraDetach(Camera *cam)
 {
    if (cam != NULL)
    {
+      ObjID oldObj = cam->objid;
       cam->objid = 0;
       cam->mode = DETACHED;
+      CameraSendAttachMessages(oldObj, OBJ_NULL);
    }
 }
 
@@ -150,8 +159,9 @@ void CameraAttach(Camera *cam, ObjID objid)
    BOOL DoFlash = FALSE;
    if (cam != NULL)
    {
-      if (cam->objid != OBJ_NULL)
-	ObjSetHasRefs(cam->objid, TRUE);
+      ObjID oldObj = cam->objid;
+      if (oldObj != OBJ_NULL)
+	ObjSetHasRefs(oldObj, TRUE);
       cam->objid = objid;
       if (objid == PlayerObject())
 	{
@@ -164,7 +174,8 @@ void CameraAttach(Camera *cam, ObjID objid)
       else
          cam->mode = OBJ_ATTACH; 
 
-
+      if (!g_bCameraQuietAttach)
+         CameraSendAttachMessages(oldObj, objid);
    }
 }
 
@@ -177,8 +188,9 @@ void CameraView(Camera *cam, ObjID objid)
 {
   if (cam != NULL)
     {
-      if (cam->objid != OBJ_NULL)
-	ObjSetHasRefs(cam->objid, TRUE);
+      ObjID oldObj = cam->objid;
+      if (oldObj != OBJ_NULL)
+	ObjSetHasRefs(oldObj, TRUE);
       cam->objid = objid;
       if (objid == PlayerObject())
 	{
@@ -197,6 +209,7 @@ void CameraView(Camera *cam, ObjID objid)
 	  Warning(("Remote attach should only attach to physical objects.  Making it OBJ_ATTACH instead.\n"));
 	  cam->mode=OBJ_ATTACH;
 	}
+      CameraSendAttachMessages(oldObj, objid);
     }
 }
 
@@ -208,8 +221,9 @@ void CameraRemote(Camera *cam, ObjID objid)
 {
   if (cam != NULL)
     {
-      if (cam->objid != OBJ_NULL)
-	ObjSetHasRefs(cam->objid, TRUE);
+      ObjID oldObj = cam->objid;
+      if (oldObj != OBJ_NULL)
+	ObjSetHasRefs(oldObj, TRUE);
       cam->objid = objid;
       if (objid == PlayerObject())
 	{
@@ -227,7 +241,8 @@ void CameraRemote(Camera *cam, ObjID objid)
 	{
 	  Warning(("Remote attach should only attach to physical objects.  Making it OBJ_ATTACH instead.\n"));
 	  cam->mode=OBJ_ATTACH;
-	}      
+	}
+      CameraSendAttachMessages(oldObj, objid);      
 
     }
 }
@@ -410,7 +425,7 @@ void CameraUpdate(Camera *cam)
 void CameraNextMode(Camera *cam)
 {
    if (cam != NULL)
-      if (++cam->mode >= MAX_CAMERA_MODE)
+      if ((cam->mode = (eCameraMode)(cam->mode + 1)) >= MAX_CAMERA_MODE)
 	cam->mode = FIRST_PERSON;
 
 }
@@ -458,6 +473,7 @@ ObjID CameraGetObjID(Camera *cam)
 #include <string.h>
 
 #include <dump.h>
+#include <lg_file.h>
 
 #include <status.h>
 #include <memall.h>
@@ -476,7 +492,7 @@ void CameraSave(Camera *cam, char *str)
    else
    {
       // add .cam?
-      fh=open(str,O_BINARY|O_WRONLY|O_CREAT,S_IREAD|S_IWRITE);
+      fh=lg_open(str,O_BINARY|O_WRONLY|O_CREAT|O_TRUNC,S_IREAD|S_IWRITE);
    }
    if (fh==-1)
       Status("Couldnt Open File");
@@ -489,8 +505,8 @@ void CameraSave(Camera *cam, char *str)
       CameraGetLocation(cam, &pos, &ang);
       sprintf(buf,"%x %x %x %x %x %x",
               *((int *)&pos.x),*((int *)&pos.y),*((int *)&pos.z),(int)ang.el[0],(int)ang.el[1],(int)ang.el[2]);
-      write(fh,buf,strlen(buf));
-      close(fh);
+      lg_write(fh,buf,strlen(buf));
+      lg_close(fh);
       sprintf(buf,"Wrote %s",str);
       Status(buf);
    }

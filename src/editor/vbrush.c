@@ -3,9 +3,9 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/vbrush.c,v 1.52 2000/03/16 19:17:52 patmac Exp $
 // virtual brush/multi brush concentrator abstractions
+#line 50
 
 #include <string.h>
 #include <stdlib.h>
@@ -151,6 +151,7 @@ static void br_eot(editBrush *move_me)
 //  1 is reserved for the "in progress" selection
 //  2-> are saved (real) selections
 static int        cur_Group=0;
+int               vBrush_in_group_op=0;
 
 static editBrush  _virtual_Br;           // static for holding a multiBrush virtual object
 static editBrush  _last_Br;              // static for holding copy of last brush, v or not
@@ -221,47 +222,57 @@ void we_switched_brush_focus(void)
 void vBrush_GroupOp(BOOL run_all, void (*br_op)(editBrush *us))
 {
    bool grid_state=cur_global_grid.grid_enabled;
-   editBrush *us, *tmp;
+   int group=cur_Group;
+   editBrush *us;
    int hIter;
 
-   if (!run_all && cur_Group==0) return; // well, no group, so we just dont care
+   if (!run_all && group==0) return; // well, no group, so we just dont care
+   vBrush_in_group_op++;
    cur_global_grid.grid_enabled=0;
    us=blistIterStart(&hIter);
    while (us!=NULL)
    {
-      tmp=us;                     // save us off
-      us=blistIterNext(hIter);   // get to next now, then do the callback
-      if (run_all || (brSelect_Group(tmp)==cur_Group))
-         (*br_op)(tmp);           // look, go run the op
+      if (run_all || (brSelect_Group(us)==group))
+         (*br_op)(us);            // look, go run the op
+      AssertMsg(group==cur_Group,"someone was naughty changing cur_Group in the middle of the operation");
+      us=blistIterNext(hIter);
    }
-   cur_global_grid.grid_enabled=grid_state;   
+   vBrush_in_group_op--;
+   cur_global_grid.grid_enabled=grid_state;
 }
 
 // run a callback on all brushes in the group, or on all brushes if run_all is TRUE
 static void run_simple_bounded_group_br_op(void (*br_op)(editBrush *us))
 {
    bool grid_state=cur_global_grid.grid_enabled;
-   editBrush *us, *tmp, *end;
+   int group=cur_Group;
+   editBrush *us, *end;
    int hIter;
 
-   if (cur_Group==0) return; // well, no group, so we just dont care
+   if (group==0) return; // well, no group, so we just dont care
+   vBrush_in_group_op++;
    cur_global_grid.grid_enabled=0;
    blistSeek(0,SEEK_END);
    end=blistGet();
    us=blistIterStart(&hIter);
    while (us!=NULL)
    {
-      tmp=us;                    // save us off
-      us=blistIterNext(hIter);  // get to next now, then do the callback
-      if (brSelect_Group(tmp)==cur_Group)
-         (*br_op)(tmp);          // look, go run the op
-      if (tmp==end)              // should be tmp, not us, since we want to run the original end of list too
+      if (brSelect_Group(us)==group)
+         (*br_op)(us);           // look, go run the op
+      // should be us, since we want to run the original end of list too
+      if (us==end)
       {
-         blistIterDone(hIter);  // tell next system we are done
-         break;                  // at original end of list, lets go home
+         // tell next system we are done
+         blistIterDone(hIter);
+         // at original end of list, lets go home
+         break;
       }
+
+      AssertMsg(group==cur_Group,"someone was naughty changing cur_Group in the middle of the operation");
+      us=blistIterNext(hIter);
    }
-   cur_global_grid.grid_enabled=grid_state;   
+   vBrush_in_group_op--;
+   cur_global_grid.grid_enabled=grid_state;
 }
 
 static BOOL group_ok(editBrush *br)
@@ -597,12 +608,16 @@ BOOL vBrush_editBrush_Op(editBrush *us, int op)
    {
       case vBrush_OP_ADD:
          new_group=FALSE;
+         if (us==NULL)
+            return FALSE;
          if (brSelect_Group(us)!=0)
           { Warning(("cant add from an existing group\n")); rv=FALSE; }
          else
             add_to_group(us);
          break;
       case vBrush_OP_REM:
+         if (us==NULL)
+            return FALSE;
          if (brSelect_Group(us)==0)
           { Warning(("Trying to remove an ungrouped brush\n")); rv=FALSE; }
          else if (brSelect_Group(us)!=cur_Group)
@@ -611,6 +626,8 @@ BOOL vBrush_editBrush_Op(editBrush *us, int op)
          break;         
       case vBrush_OP_TOG:
          new_group=FALSE;
+         if (us==NULL)
+            return FALSE;
          if (brSelect_Group(us)==0)     
             add_to_group(us);           // we have no group, so put us in the group
          else if (cur_Group==0)
@@ -764,7 +781,9 @@ static void vbrui_save_vbrush(void)
       vBrush_editBrush_Op(NULL,vBrush_OP_SAVE);
       strcpy(def,"Group_");
       itoa(cur_Group,def+strlen(def),10);
-      val=prompt_string(def,buf);
+      val=prompt_string(def,buf,NULL);
+      if (!val)
+         val=def;
       NamenumStore(pNN_MultiBrush,val,cur_Group);
       Status("Saved Group");
    }
@@ -809,11 +828,11 @@ static void change_brushes_by_id(char *args, int op)
 
    if (s==NULL) return;
    do {
-      while ((*s)!='\0'&&!isdigit(*s))
+      while ((*s)!='\0'&&!isdigit((uchar)*s))
          ++s;
       if ((*s)=='\0') break;
       p=s;
-      while ((*p)!='\0'&&isdigit(*p))
+      while ((*p)!='\0'&&isdigit((uchar)*p))
          p++;  // go over the digits
       tmp=*p; *p='\0'; val=atoi(s); *p=tmp;
       vBrush_editBrush_Op(brFind(val),op);
@@ -823,7 +842,7 @@ static void change_brushes_by_id(char *args, int op)
       {
          s++;
          p=s;
-         while ((*p)!='\0'&&isdigit(*p))
+         while ((*p)!='\0'&&isdigit((uchar)*p))
             p++;  // go over the digits
          tmp=*p; *p='\0'; max=atoi(s); *p=tmp;
          for (++val;val<=max;++val)
@@ -1099,7 +1118,7 @@ Command vbrush_keys[] =
    { "obj_brush_select", FUNC_INT, vbrui_select_obj, "set current brush to objID" },
    { "vBrush_click", FUNC_VOID, vbrui_click, "alt-click cur brush" },  // , auto last_Group if no multi" },
    { "vBrush_EOT", FUNC_VOID, vBrush_go_EOT, "send to end of time" },
-   { "load_group", FUNC_STRING, vbrui_load_group },
+   { "load_group", FUNC_STRING, vbrui_load_group, NULL, 0, 1},
    { "save_group", FUNC_STRING, vbrui_save_group },
 #ifdef DBG_ON
    { "vBrush_dump", FUNC_INT, vBrush_DebugInfo },

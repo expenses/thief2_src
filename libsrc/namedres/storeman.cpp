@@ -22,7 +22,7 @@ cFactoryEntry::cFactoryEntry(IStoreFactory* pFactory, const char* pExt)
 	m_pFactory = pFactory;
 	m_pFactory->AddRef();
 
-	m_pExt = static_cast<char*>(Malloc(strlen(pExt) + 1));
+	m_pExt = new char[strlen(pExt) + 1];
 	strcpy(m_pExt, pExt);
 }
 
@@ -36,7 +36,7 @@ cFactoryEntry::~cFactoryEntry()
 
 	if (m_pExt)
 	{
-		Free(m_pExt);
+		delete [] m_pExt;
 		m_pExt = NULL;
 	}
 }

@@ -411,7 +411,8 @@ DECLARE_PROPERTY_INTERFACE(IAIProperty)
 
 struct sAIEfficiency
 {
-   BOOL  fEnabled;
+   short fEnabled;
+   short flags;
 
    // Super Efficiency limits
    float distEnterSuperEffSq,

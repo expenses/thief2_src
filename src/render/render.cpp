@@ -3,12 +3,15 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/render.cpp,v 1.41 2000/02/08 13:38:55 zarko Exp $
 
+#include <windows.h>
+#include <ddraw.h>
+#include <d3d.h>
 #include <wrtype.h>
 #include <portal.h>
 #include <lgd3d.h>
+#include <d6states.h>
 #include <render.h>
 #include <simstate.h>
 #include <simflags.h>
@@ -196,27 +199,27 @@ static void set_invisible(int nVal)
 static Command all_keys[]=
 {
    { "toggle_mm_indexed", FUNC_VOID, toggle_mm_indexed, "toggle using indexed r3d interface"},
-   { "toggle_mm_sort", TOGGLE_BOOL, &mm_punt_sort, "punt mm sort"},
-   { "toggle_mm_xform", TOGGLE_BOOL, &mm_punt_xform, "punt mm transforms"},
-   { "toggle_mm_render", TOGGLE_BOOL, &mm_punt_render, "punt mm render"},
-   { "toggle_render_mesh", TOGGLE_BOOL, &g_bRenderMesh, "toggle render mesh"},
+   { "toggle_mm_sort", TOGGLE_BOOL, &mm_punt_sort, "punt mm sort", 0, 1},
+   { "toggle_mm_xform", TOGGLE_BOOL, &mm_punt_xform, "punt mm transforms", 0, 1},
+   { "toggle_mm_render", TOGGLE_BOOL, &mm_punt_render, "punt mm render", 0, 1},
+   { "toggle_render_mesh", TOGGLE_BOOL, &g_bRenderMesh, "toggle render mesh", 0, 1},
    { "toggle_draw_lgd3d", TOGGLE_BOOL, &portal_draw_lgd3d, "toggle draw lgd3d"},
    { "toggle_lightmap_first", TOGGLE_BOOL, &pt_lightmap_first, "toggle lightmap rendering order"},
    { "toggle_d3d_buffer", TOGGLE_BOOL, &lgd3d_punt_buffer, "toggle d3d primitive buffering"},
    { "toggle_d3d_blend_trans", TOGGLE_BOOL, &lgd3d_blend_trans, "toggle transparent texel color search"},
-   { "toggle_draw_surface", TOGGLE_BOOL, &portal_punt_draw_surface, "toggle draw surface"},
-   { "toggle_hardware_lighting", TOGGLE_BOOL, &punt_hardware_lighting, "toggle hardware lighting"},
+   { "toggle_draw_surface", TOGGLE_BOOL, &portal_punt_draw_surface, "toggle draw surface", 0, 1},
+   { "toggle_hardware_lighting", TOGGLE_BOOL, &punt_hardware_lighting, "toggle hardware lighting", 0, 1},
    { "toggle_two_pass", TOGGLE_BOOL, &portal_true_two_pass, "toggle two pass rendering"},
    { "toggle_multitexture", FUNC_VOID, &toggle_multitexture, "toggle multitexture support"},
    { "fast_poly_setup", FUNC_VOID, g2_set_new_poly_funcs, "do fast poly setup"},
    { "slow_poly_setup", FUNC_VOID, g2_set_old_poly_funcs, "do slow poly setup"},
    { "toggle_render_on_start_frame", TOGGLE_BOOL, &g_render_on_begin_frame, "toggle normal render loop"},
    { "flash_clamp", VAR_INT, &flash_clamp_time, "Set flashbomb max effect time in ms" },
-   { "set_mesh_detail_dist", FUNC_FLOAT, set_mesh_detail_dist, "set distance at which stretchy mesh is punted"},
+   { "set_mesh_detail_dist", FUNC_FLOAT, set_mesh_detail_dist, "set distance at which stretchy mesh is punted", 0, 1},
    { "set_gamma", FUNC_FLOAT, set_hardware_gamma_level, "set gamma correction level. 1.0 = no correction"},
-   { "set_obj_zbias", FUNC_INT, set_obj_zbias, "set object rendering z bias (in bits)"},
-   { "set_znear", FUNC_FLOAT, set_znear, "set max sorting z distance"},
-   { "set_zfar", FUNC_FLOAT, set_zfar, "set min sorting z distance"},
+   { "set_obj_zbias", FUNC_INT, set_obj_zbias, "set object rendering z bias (in bits)", 0, 1},
+   { "set_znear", FUNC_FLOAT, set_znear, "set max sorting z distance", 0, 1},
+   { "set_zfar", FUNC_FLOAT, set_zfar, "set min sorting z distance", 0, 1},
    { "toggle_dithering", FUNC_VOID, toggle_dithering, "toggle dithering"}, //zb
    { "toggle_antialiasing", FUNC_VOID, toggle_antialiasing, "toggle antialiasing"}, //zb
    { "set_invisible", FUNC_INT, set_invisible, "Set player invisibility"},
@@ -225,8 +228,294 @@ static Command all_keys[]=
 
 void register_sky_mode();
 
+EXTERN BOOL mm_punt_render;
+EXTERN BOOL mm_punt_sort;
+EXTERN BOOL mm_punt_xform;
+EXTERN BOOL g_bRenderMesh;
+EXTERN BOOL portal_punt_draw_surface;
+EXTERN BOOL punt_hardware_lighting;
+EXTERN BOOL g_bRenderObjects = TRUE;
+EXTERN BOOL g_bClearToPink = FALSE;
+EXTERN BOOL g_bSquarePartsAsDisks = FALSE;
+EXTERN BOOL g_bPixelPartsAsDisks = FALSE;
+EXTERN BOOL g_bAlphaTestAsOpaque = FALSE;
+EXTERN BOOL g_bRenderWeaponParticles = TRUE;
+EXTERN BOOL g_bLegacyForceMatchUnrefs = FALSE;
+EXTERN BOOL g_bEnhancedPrecipTrace = FALSE;
+EXTERN BOOL g_bEnhancedCoronaTrace = FALSE;
+EXTERN BOOL g_bSmallPortalRepel = FALSE;
+EXTERN BOOL g_bIndexedMMRender = FALSE;
+EXTERN BOOL g_bWRRenderZComp = FALSE;
+EXTERN BOOL g_bD3DDistortionFX = FALSE;
+EXTERN BOOL g_bD8PostProcess = FALSE;
+EXTERN int g_nExtendedPlayerLighting = 0;
+EXTERN int g_nVSyncMode = 0;
+EXTERN int g_nAlphaTestMode;
+EXTERN float g_MeshRenderLowDetailDist2;
+EXTERN float g_fMipmapBias;
+EXTERN float g_fBloomScale = 0;
+EXTERN float g_fBloomPreScale = 0;
+EXTERN float g_fBloomThreshold = 0;
+EXTERN float g_fBloomRange = 0;
+EXTERN float g_fBloomSaturation = 0;
+EXTERN float g_f2DOverlayAlpha = 0;
+EXTERN double g_obj_zbias_d = 0;
+EXTERN BOOL UseD3DDisplay();
+EXTERN void init_replace_list(void);
+EXTERN BOOL g_b2DTexFilter;
+
+static BOOL g_bD3D2DZBuffer;
+static BOOL g_bRenderWaterUnlit;
+static int g_nEditorWaterAlpha = 255;
+
+static void set_znear_nd(float z_near)
+{
+   znear = z_near;
+   SetZNearFar(znear, zfar);
+}
+
+static void set_zfar_nd(float z_far)
+{
+   zfar = z_far;
+   SetZNearFar(znear, zfar);
+}
+
+static void set_mesh_detail_dist_nd(float dist)
+{
+   g_MeshRenderLowDetailDist2 = dist * dist;
+   mprintf("Low-detail meshes rendered at %g\n", dist);
+}
+
+static void set_invisible_nd(int nVal)
+{
+   g_pIsInvisibleProperty->Set(PlayerObject(), nVal);
+}
+
+static void set_2d_tex_filter(int n)
+{
+   if (n <= -1)
+      g_b2DTexFilter = !g_b2DTexFilter;
+   else
+      g_b2DTexFilter = (n != 0);
+}
+
+static Command render_keys[] =
+{
+   { "toggle_mm_sort", TOGGLE_BOOL, &mm_punt_sort, "punt mm sort"},
+   { "toggle_mm_xform", TOGGLE_BOOL, &mm_punt_xform, "punt mm transforms"},
+   { "toggle_mm_render", TOGGLE_BOOL, &mm_punt_render, "punt mm render"},
+   { "toggle_render_mesh", TOGGLE_BOOL, &g_bRenderMesh, "toggle render mesh"},
+   { "toggle_draw_surface", TOGGLE_BOOL, &portal_punt_draw_surface, "toggle draw surface"},
+   { "toggle_hardware_lighting", TOGGLE_BOOL, &punt_hardware_lighting, "toggle hardware lighting"},
+   { "set_mesh_detail_dist", FUNC_FLOAT, set_mesh_detail_dist_nd, "set distance at which stretchy mesh is punted"},
+   { "set_znear", FUNC_FLOAT, set_znear_nd, "set max sorting z distance"},
+   { "set_zfar", FUNC_FLOAT, set_zfar_nd, "set min sorting z distance"},
+   { "set_invisible", FUNC_INT, set_invisible_nd, "Set player invisibility"},
+   { "toggle_object_render", TOGGLE_BOOL, &g_bRenderObjects, "toggle object rendering", 0, 1},
+   { "set_2d_tex_filter", FUNC_INT, set_2d_tex_filter, "enable/disable texture filtering with HW 2D driver, -1 toggles (d3d disp provider)", 0, 1},
+   { "toggle_2d_zbuffer", TOGGLE_BOOL, &g_bD3D2DZBuffer, "toggle zbuffering with HW 2D driver (d3d disp provider)", 0, 1},
+   { "toggle_unlit_water", TOGGLE_BOOL, &g_bRenderWaterUnlit, "toggle lightmapped water rendering", 0, 1},
+   { "editor_water_alpha", VAR_INT, &g_nEditorWaterAlpha, "set editor water alpha when using HW 2D driver (d3d disp provider)", 0, 1},
+};
+
+static void set_poly_mode(int n)
+{
+   if (n)
+      lgd3d_set_poly_mode((ePolyMode)(n & 7));
+   else
+      lgd3d_set_poly_mode(kLgd3dPolyModeDefault);
+}
+
+static void set_obj_zbias_nd(int n)
+{
+   g_obj_zbias_d = n * (1.0 / 65536.0);
+   lgd3d_set_zbias_table(n, 1.0 / 65536.0);
+}
+
+static void set_alpha_test(int n)
+{
+   if (g_nAlphaTestMode == n)
+      return;
+   g_nAlphaTestMode = n;
+   if (pcStates && !n)
+      pcStates->ResetAlphaTest();
+}
+
+static void toggle_alpha_test(void)
+{
+   set_alpha_test(!g_nAlphaTestMode);
+}
+
+static void set_tex_filter(int n)
+{
+   if (pcStates)
+      pcStates->SetTextureFilterMode(n);
+}
+
+static void set_lm_filter(int n)
+{
+   if (pcStates)
+      pcStates->SetLightmapFilterMode(n);
+}
+
+static void set_trilinear(int n)
+{
+   if (pcStates)
+      pcStates->SetTrilinearFiltering(n != 0);
+}
+
+static void set_mipmap_bias(float f)
+{
+   g_fMipmapBias = f;
+   if (pcStates)
+      pcStates->SetMipmapBias(f);
+}
+
+static void set_vsync(int n)
+{
+   g_nVSyncMode = n & 3;
+}
+
+static void set_extended_plr_lighting(int n)
+{
+   g_nExtendedPlayerLighting = n;
+}
+
+static void set_overlay_alpha(float f)
+{
+   if (!UseD3DDisplay())
+      return;
+   if (f <= 0.0f)
+      f = 0.0f;
+   else if (f > 1.0f)
+      f = 1.0f;
+   g_f2DOverlayAlpha = f;
+}
+
+static void set_bloomscale(float f)
+{
+   g_fBloomScale = f;
+   if (f < 0.0f)
+      g_fBloomScale = 0.0f;
+}
+
+static void set_bloomprescale(float f)
+{
+   g_fBloomPreScale = f;
+   if (f < 0.0f)
+      g_fBloomPreScale = 0.0f;
+}
+
+static void set_bloom_range(float f)
+{
+   g_fBloomRange = f;
+   if (f < 0.0f)
+      g_fBloomRange = 0.0f;
+   else if (f > 100.0)
+      g_fBloomRange = 100.0f;
+}
+
+static void set_bloom_saturation(float f)
+{
+   g_fBloomSaturation = f;
+   if (f < 0.0f)
+      g_fBloomSaturation = 0.0f;
+   else if (f > 1.0f)
+      g_fBloomSaturation = 1.0f;
+}
+
+#define D8_EFFECT_COLORCORRECT 7
+
+static void set_brightness(float f)
+{
+   lgd3d_set_effect_param(D8_EFFECT_COLORCORRECT, 1, &f);
+}
+
+static void set_contrast(float f)
+{
+   if (f <= 0.0f)
+      f = 0.0f;
+   lgd3d_set_effect_param(D8_EFFECT_COLORCORRECT, 2, &f);
+}
+
+static void set_saturation(float f)
+{
+   if (f <= 0.0f)
+      f = 0.0f;
+   lgd3d_set_effect_param(D8_EFFECT_COLORCORRECT, 3, &f);
+}
+
+static void set_colorfilter(char *pszArgs)
+{
+   float color[3];
+   char buf[256];
+   if (pszArgs && strlen(pszArgs))
+   {
+      color[2] = color[1] = color[0] = -11.0f;
+      sscanf(pszArgs, "%g %g %g", &color[0], &color[1], &color[2]);
+      if (color[0] == -11.0f || color[1] == -11.0f || color[2] == -11.0f)
+         return;
+      if (color[0] < 0.0f)
+         color[0] = 0.0f;
+      if (color[1] < 0.0f)
+         color[1] = 0.0f;
+      if (color[2] < 0.0f)
+         color[2] = 0.0f;
+      lgd3d_set_effect_param(D8_EFFECT_COLORCORRECT, 4, color);
+      return;
+   }
+   color[2] = color[1] = color[0] = 1.0f;
+   lgd3d_get_effect_param(D8_EFFECT_COLORCORRECT, 4, color);
+   sprintf(buf, "fog color: %g %g %g", color[0], color[1], color[2]);
+   mprintf("%s\n", buf);
+}
+
+static Command render_d3d_keys[] =
+{
+   { "clear", TOGGLE_BOOL, &g_bClearToPink, "clear framebuffer to pink"},
+   { "set_poly_mode", FUNC_INT, set_poly_mode, "set poly fill mode mask for obj rendering: bit 0: texture, 1: color, 2: edges"},
+   { "set_obj_zbias", FUNC_INT, set_obj_zbias_nd, "set object rendering z bias (in bits)"},
+   { "toggle_alpha_test", FUNC_VOID, toggle_alpha_test, "toggle alpha test"},
+   { "set_alpha_test", FUNC_INT, set_alpha_test, "enable/disable alpha test"},
+   { "set_tex_filter", FUNC_INT, set_tex_filter, "set texture filtering mode: 0 point, 1 linear, 2- aniso"},
+   { "set_lm_filter", FUNC_INT, set_lm_filter, "set lightmap filtering mode: 0 point, 1 linear, 2- aniso"},
+   { "set_trilinear", FUNC_INT, set_trilinear, "enable/disable trilinear texture filtering"},
+   { "set_mipmap_bias", FUNC_FLOAT, set_mipmap_bias, "set mipmap lod bias (-3.0 to 3.0)"},
+   { "set_vsync", FUNC_INT, set_vsync, "set vertical sync mode for screen updates"},
+   { "toggle_square_parts", TOGGLE_BOOL, &g_bSquarePartsAsDisks, "toggle square particles as disks", 0, 1},
+   { "toggle_pixel_parts", TOGGLE_BOOL, &g_bPixelPartsAsDisks, "toggle pixel particles as (small) disks", 0, 1},
+   { "toggle_alpha_test_opaque", TOGGLE_BOOL, &g_bAlphaTestAsOpaque, "toggle treating alpha test objects as opaque", 0, 1},
+   { "set_extended_plr_lighting", FUNC_INT, set_extended_plr_lighting, "set extended player lighting mode"},
+   { "set_postprocess", VAR_BOOL, &g_bD8PostProcess, "set post process enable/disable, if originally enabled in cfg (d3d disp provider)"},
+   { "set_bloomscale", FUNC_FLOAT, set_bloomscale, "set bloom amount (d3d disp provider)"},
+   { "set_bloomprescale", FUNC_FLOAT, set_bloomprescale, "set bloom scale/amplification applied before blurring (d3d disp provider)"},
+   { "set_bloom_threshold", VAR_INT, &g_fBloomThreshold, "set bloom threshold (d3d disp provider)"},
+   { "set_bloom_range", FUNC_FLOAT, set_bloom_range, "set bloom range (d3d disp provider)"},
+   { "set_bloom_saturation", FUNC_FLOAT, set_bloom_saturation, "set bloom saturation (d3d disp provider)"},
+   { "set_saturation", FUNC_FLOAT, set_saturation, "overall saturation while in-game (with d3d_disp_sw_cc)"},
+   { "set_brightness", FUNC_FLOAT, set_brightness, "overall brightness while in-game (with d3d_disp_sw_cc)"},
+   { "set_contrast", FUNC_FLOAT, set_contrast, "overall contrast while in-game (with d3d_disp_sw_cc)"},
+   { "set_colorfilter", FUNC_STRING, set_colorfilter, "overall color filter while in-game (with d3d_disp_sw_cc)"},
+   { "set_overlay_alpha", FUNC_FLOAT, set_overlay_alpha, "set 2D overlay alpha (d3d disp provider)"},
+   { "toggle_wr_zcomp", TOGGLE_BOOL, &g_bWRRenderZComp, "toggle z-compare for worldrep rendering", 0, 1},
+};
+
+static bool config_get_double(const char *pszName, double *pValue)
+{
+   char *pszValue;
+   int nCount = 1;
+   if (!config_get_value(pszName, CONFIG_STRING_TYPE, (config_valtype)&pszValue, &nCount) || nCount <= 0)
+      return false;
+   *pValue = atof(pszValue);
+   f_free(pszValue);
+   return true;
+}
+
+static double g_fObjZBiasRange = 1.0 / 65536.0;
+
 void RendererInit()
 {
+   init_replace_list();
    objmodelInit();
    RenderPropsInit();
    SetZNearFar(znear, zfar);
@@ -236,9 +525,64 @@ void RendererInit()
    ObjShadowInit();
    MissionRenderInit();
    WaterColorPropInit();
-#ifdef PLAYTEST
-   COMMANDS(all_keys, HK_ALL);
-#endif
+   COMMANDS(render_keys, HK_ALL);
+   COMMANDS(render_d3d_keys, HK_ALL);
+
+   if (UseD3DDisplay() && config_is_defined("d3d_disp_enable_distortionfx"))
+      g_bD3DDistortionFX = TRUE;
+   g_bSquarePartsAsDisks = config_is_defined("square_parts_as_disks");
+   g_bPixelPartsAsDisks = config_is_defined("pixel_parts_as_disks");
+   g_bAlphaTestAsOpaque = config_is_defined("alpha_test_as_opaque");
+   g_bRenderWeaponParticles = config_is_defined("render_weapon_particles");
+   g_bLegacyForceMatchUnrefs = config_is_nonzero("legacy_force_match_unrefs");
+   g_bEnhancedPrecipTrace = config_is_defined("enhanced_precip_trace");
+   g_bEnhancedCoronaTrace = config_is_defined("enhanced_corona_trace");
+   g_bSmallPortalRepel = config_is_defined("small_portal_repel");
+   g_bRenderWaterUnlit = !config_is_defined("render_water_unlit");
+
+   if (UseD3DDisplay() && !config_is_nonzero("d3d_disp_no_batch"))
+      g_bIndexedMMRender = !config_is_nonzero("indexed_mm_render");
+   else
+      g_bIndexedMMRender = config_is_nonzero("indexed_mm_render");
+
+   double z;
+   if (config_get_double("z_near", &z))
+      znear = z;
+   if (config_get_double("z_far", &z))
+      zfar = z;
+   SetZNearFar(znear, zfar);
+
+   g_bWRRenderZComp = config_is_nonzero("wr_render_zcomp");
+
+   int nZBias;
+   if (config_get_int("obj_zbias", &nZBias))
+   {
+      if (nZBias < 0)
+         nZBias = 0;
+      else if (nZBias > 0xffff)
+         nZBias = 0xffff;
+      g_obj_zbias_d = nZBias * g_fObjZBiasRange;
+      lgd3d_set_zbias_table(nZBias, g_fObjZBiasRange);
+   }
+
+   if (UseD3DDisplay())
+   {
+      float f;
+      if (config_get_float("d3d_disp_2d_overlay_alpha", &f))
+         set_overlay_alpha(f);
+      g_bD8PostProcess = config_is_nonzero("postprocess");
+      if (config_get_float("bloomprescale", &f) && f > 0.0f)
+         g_fBloomPreScale = f;
+      if (config_get_float("bloomscale", &f) && f > 0.0f)
+         g_fBloomScale = f;
+      if (config_get_float("bloom_range", &f))
+         set_bloom_range(f);
+      if (config_get_float("bloom_saturation", &f))
+         set_bloom_saturation(f);
+      config_get_float("bloom_threshold", &g_fBloomThreshold);
+      config_get_int("d3d_disp_2d_zbuffer", &g_bD3D2DZBuffer);
+      config_get_int("editor_water_alpha", &g_nEditorWaterAlpha);
+   }
 }
 
 
@@ -665,3 +1009,6 @@ EXTERN void set_mm_sort(BOOL sort)
       mm_set_render_pipeline(MM_RPIPE_HARDWARE);
 }
 
+EXTERN BOOL g_bMtlTexLoadDither = FALSE;
+EXTERN BOOL g_bMtlTexLoadNoMip = FALSE;
+EXTERN BOOL g_bMtlTexLoadNoPal = FALSE;

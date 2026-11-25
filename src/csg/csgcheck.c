@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csgcheck.c,v 1.4 2000/02/19 12:26:43 toml Exp $
 
 #include <lg.h>
@@ -11,6 +10,7 @@
 #include <bspdata.h>
 #include <csgcheck.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 extern void cross_prod(BspVertex *cp, BspVertex *p1, BspVertex *p2, BspVertex *p3);
@@ -115,7 +115,7 @@ void CheckVertices(PortalPolygon *poly, PortalPolyEdge *first,
 static void bad_vertex(BspVertex *a, BspPlane *p, char *str)
 {
    double dist = a->x*p->a + a->y*p->b + a->z*p->c + p->d;
-   Error(1, "CheckPolygonPlane%s: Vertex not on plane (missed by %g).\n",
+   CsgError("CheckPolygonPlane%s: Vertex not on plane (missed by %g).\n",
              str, dist);
 }
 

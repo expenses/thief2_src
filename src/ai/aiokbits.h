@@ -41,7 +41,7 @@
 #define kAIOKCOND_HighStrike  0x20
 
 #define kConditionMask 0x30
-#define kNoConditionMask 0xcf
+#define kNoConditionMask (~kConditionMask)
 
 // These are installed by the app at runtime and evaluated through
 // callbacks.  Which makes them much more expensive than the others.
@@ -50,7 +50,7 @@
 
 // 'All' is everything except HighStrike, SmallCreature, and Stressed:
 #define kAIOK_All       (~(kAIOKCOND_HighStrike|kAIOKCOND_Stressed|kAIOK_SmallCreature))
-#define kAIOK_Normal    0x07    // all but App1 & App2 & SmallCreature
+#define kAIOK_Normal    (~(kAIOK_AppAll|kConditionMask|kAIOK_SmallCreature))    // all but App1 & App2 & SmallCreature
 #define kAIOK_AppAll    (kAIOK_App1 | kAIOK_App2)
 
 // wsf 10/25/99: Here's something new. Orthogonal to the okbits are the okcondbits. These are

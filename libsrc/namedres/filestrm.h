@@ -3,6 +3,7 @@
 #include <storeapi.h>
 #include <filespec.h>
 #include <cstdio>
+#include <lg_file.h>
 
 struct cFileStream : IStoreStream
 {
@@ -19,7 +20,7 @@ struct cFileStream : IStoreStream
 
 	cRefCount __m_ulRefs;
 	IStore* m_pStorage;
-	FILE* m_pFile;
+	LGFILE* m_pFile;
 	cFileSpec* m_pFileSpec;
 	long m_nLastPos;
 	int m_nOpenCount;

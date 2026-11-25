@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/edmedmo.c,v 1.20 2000/02/19 13:10:38 toml Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
@@ -384,6 +383,7 @@ typedef struct sMotionEdit {
    uint major_axis;
    char texture_name_base[kMedmoSurfaceFilenameLength];
    BOOL in_motion;
+   double proj_thresh;
 } sMotionEdit;
 
 static sFieldDesc gMotionEdit[] = {
@@ -404,7 +404,9 @@ static sFieldDesc gMotionEdit[] = {
      FieldLocation(sMotionEdit, texture_name_base) },
 
 
-   { "used?", kFieldTypeBool, FieldLocation(sMotionEdit, in_motion)}
+   { "used?", kFieldTypeBool, FieldLocation(sMotionEdit, in_motion)},
+
+   { "global proj. thresh.", kFieldTypeDouble, FieldLocation(sMotionEdit, proj_thresh)}
 };
 
 
@@ -448,6 +450,8 @@ static void SetSDESCFromMotionStructures(int index, sMotionEdit *data)
 
 
    data->in_motion = (BOOL) portal_cell_motion[index].in_motion;
+
+   data->proj_thresh = portal_motion_proj_thresh;
 }
 
 
@@ -491,6 +495,12 @@ static void SetMotionStructuresFromSDESC(sMotionEdit *data)
       portal_cell_motion[index].major_axis = data->major_axis;
 
    portal_cell_motion[index].in_motion = data->in_motion;
+
+   portal_motion_proj_thresh = data->proj_thresh;
+   if (portal_motion_proj_thresh < MIN_MOTION_PROJ_THRESH)
+      portal_motion_proj_thresh = MIN_MOTION_PROJ_THRESH;
+   else if (portal_motion_proj_thresh > MAX_MOTION_PROJ_THRESH)
+      portal_motion_proj_thresh = MAX_MOTION_PROJ_THRESH;
 }
 
 

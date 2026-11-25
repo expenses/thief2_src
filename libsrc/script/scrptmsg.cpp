@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/scrptmsg.cpp,v 1.10 1998/03/05 08:19:53 MAT Exp $
 //
@@ -38,7 +37,11 @@ IMPLEMENT_SCRMSG_PERSISTENT(sScrMsg)
       return FALSE;
 
    Persistent(from);
+   if (Reading() && g_pfnPersistObjRemap)
+      from = (*g_pfnPersistObjRemap)(from);
    Persistent(to);
+   if (Reading() && g_pfnPersistObjRemap)
+      to = (*g_pfnPersistObjRemap)(to);
    Persistent(message);
    Persistent(time);
    Persistent(flags);

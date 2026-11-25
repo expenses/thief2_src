@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkldout.cpp,v 1.22 2000/02/28 14:17:04 kevin Exp $
 #include <comtools.h>
 #include <appagg.h>
@@ -38,6 +37,8 @@
 #include <drkmenu.h>
 
 #include <command.h>
+
+#include <mlight.h>
 
 // Include these last
 #include <dbmem.h>
@@ -221,6 +222,9 @@ protected:
 
    guiStyle mTextStyle; 
 
+   BOOL mbSuspended; 
+   BOOL mbContainersDestroyed; 
+
 }; 
 
 void cLoadout::RedrawDisplay()
@@ -272,8 +276,13 @@ void cLoadout::sButtList::Destroy()
 // INIT/TERM UI
 //
 
+static BOOL gLoadoutBuyAutoAdvance;
+
 void cLoadout::InitUI()
 {
+   mld_multi_ambient = 0.1;
+   mld_multi_hilight = 0;
+   memset(&mld_multi_rgb_ambient, 0, sizeof(mld_multi_rgb_ambient));
    cDarkPanel::InitUI(); 
    memset(&mTextStyle,0,sizeof(mTextStyle)); 
    guiStyle* the_style = GetCurrentStyle(); 
@@ -330,6 +339,7 @@ void cLoadout::InitUI()
    // setup the "clear" button 
    mClearString = mStrings[(int)kClear]; 
 
+   gLoadoutBuyAutoAdvance = config_is_nonzero("loadout_buy_autoadvance");
 }
 
 void cLoadout::TermUI()
@@ -390,6 +400,7 @@ void cLoadout::ComputeContainers()
 void cLoadout::BuildContainers()
 {
    Assert_(PlayerObjectExists());
+   mbContainersDestroyed = FALSE; 
 
    // Create the store and the cart objects
    AutoAppIPtr_(ObjectSystem,pObjSys); 
@@ -440,14 +451,21 @@ void cLoadout::BuildContainers()
 
 void cLoadout::DestroyContainers()
 {
+   if (mbContainersDestroyed)
+      return; 
+
    // You bought 'em, you keep 'em. 
    mpContainSys->MoveAllContents(PlayerObject(),mContainers[kCartRegion],CTF_COMBINE); 
 
    AutoAppIPtr_(ObjectSystem,pObjSys); 
    pObjSys->Destroy(mContainers[kCartRegion]); 
 
-   AutoAppIPtr(QuestData); 
-   pQuestData->Set(MONEY_QVAR,mCash); 
+   if (!mbSuspended)
+   {
+      AutoAppIPtr(QuestData); 
+      pQuestData->Set(MONEY_QVAR,mCash); 
+   }
+   mbContainersDestroyed = TRUE; 
 }
 
 
@@ -788,11 +806,13 @@ void cLoadout::OnLoopMsg(eLoopMessage msg, tLoopMessageData data)
          BuildContainers(); 
          break; 
       case kMsgExitMode:  // Only exit, NOT suspend
+         mbSuspended = FALSE; 
          DestroyContainers(); 
          break; 
 
       case kMsgSuspendMode:
       {
+         mbSuspended = TRUE; 
          AutoAppIPtr(QuestData); 
          pQuestData->Set(MONEY_QVAR,mCash); 
       }
@@ -800,6 +820,7 @@ void cLoadout::OnLoopMsg(eLoopMessage msg, tLoopMessageData data)
 
       case kMsgResumeMode:
       {
+         mbSuspended = FALSE; 
          AutoAppIPtr(QuestData); 
          mCash = pQuestData->Get(MONEY_QVAR); 
       }
@@ -904,7 +925,12 @@ void cLoadout::OnButtonList(ushort action, int button)
                   // refresh display 
                   ComputeContainers(); 
                   if (mObjs[mRegionSel][mSlotSel] != obj)
-					      Select(-1,-1); //Don't keep buying.  AMSD
+                  {
+                     if (gLoadoutBuyAutoAdvance)
+                        Select(mRegionSel,mSlotSel);
+                     else
+					         Select(-1,-1); //Don't keep buying.  AMSD
+                  }
                   //   Select(mRegionSel,mSlotSel);
                   DrawItemRegion(kStoreRegion); 
                   DrawItemRegion(kCartRegion); 
@@ -946,6 +972,8 @@ cLoadout::cLoadout()
    : cDarkPanel(&panel_desc), mpContainSys(AppGetObj(IContainSys)), mpSelState(NULL)
 {
    mpStackCount = mpContainSys->StackCountProp(); 
+   mbContainersDestroyed = FALSE; 
+   mbSuspended = FALSE; 
 }
 
 cLoadout::~cLoadout()

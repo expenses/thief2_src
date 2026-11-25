@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //  $Header: r:/t2repos/thief2/src/portal/portsurf.c,v 1.42 2000/02/19 13:18:58 toml Exp $
 //
 //  PORTAL
@@ -13,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <emmintrin.h>
 
 #include <lg.h>
 #include <r3d.h>
@@ -33,6 +33,7 @@
 #include <dbmem.h>   // must be last header! 
 
 BOOL g_lgd3d;
+extern BOOL r3d_using_g2;
 
 #ifdef DBG_ON
   #define STATIC
@@ -235,8 +236,8 @@ struct
    short *ptr;     // thing that points to this entry
    ushort w, h;
    ushort mip_level;
-   uchar active;
-   uchar texture_id;
+   ushort active;
+   ushort texture_id;
 } surf_cache[SURFACE_CACHE_ENTRIES];
 
 static int surf_first_free = 0;
@@ -290,9 +291,12 @@ void clear_surface_cache(void)
 
 // When we animate textures, we want to invalidate all surface cache
 // entries which have a particular texture id.
-void clear_surfaces_for_texture(uchar texture_id)
+void clear_surfaces_for_texture(ushort texture_id)
 {
    int i;
+
+   if (g_lgd3d || r3d_using_g2)
+      return;
 
    for (i = 1; i < SURFACE_CACHE_ENTRIES; ++i)
       if (surf_cache[i].bits && surf_cache[i].texture_id == texture_id) {
@@ -496,9 +500,15 @@ void set_up_temp_lightmap(PortalLightMap *map)
 #define BLUE_SHIFT 10
 
 
+#define RED_MASK   0x001f
+#define GREEN_MASK 0x03e0
+#define BLUE_MASK  0x7c00
+
+extern int portal_lightmap_32bit;
+extern uint g_CPUSSELevel;
+
 void add_to_temp_lightmap(LightmapEntry *source, uchar intensity)
 {
-   int r,g,b;
    int i, j;
    uint v;
    LightmapEntry *dest = &temp_lightmap_bits[0];
@@ -515,60 +525,182 @@ void add_to_temp_lightmap(LightmapEntry *source, uchar intensity)
       dest += _portal_lightmap_row;
    }
 #else
-   for (i = 0; i < _portal_lightmap_height; i++) {
-      for (j = 0; j < _portal_lightmap_width; j++) {
+   if (portal_lightmap_32bit) {
+      LightmapEntry32 *src32 = (LightmapEntry32 *)source;
+      LightmapEntry32 *dest32 = (LightmapEntry32 *)dest;
+      uint scale = ((uint)intensity << 8) / 255;
 
-#ifdef RGB_888
-         v = ((intensity * source[j].A[0]) >> 8) + dest[j].A[0];
-         if (v > 255)
-            v = 255;
-         dest[j].A[0] = v;
+      if (g_CPUSSELevel >= 2) {
+         __m128i vscale = _mm_set1_epi16((short)scale);
+         uint blocks = _portal_lightmap_width >> 2;
+         __m128i zero = _mm_set1_epi32(0);
+         __m128i s, d, lo, hi;
+         __m128i ts, td;
+         LightmapEntry32 *sp, *dp;
 
-         v = ((intensity * source[j].A[1]) >> 8) + dest[j].A[1];
-         if (v > 255)
-            v = 255;
-         dest[j].A[1] = v;
+         switch (_portal_lightmap_width & 3) {
+         case 0:
+            for (i = 0; i < _portal_lightmap_height; i++) {
+               sp = src32;
+               dp = dest32;
+               for (j = 0; j < blocks; j++) {
+                  s = _mm_loadu_si128((__m128i *)sp);
+                  d = _mm_loadu_si128((__m128i *)dp);
+                  lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, s), vscale), _mm_unpacklo_epi8(d, zero));
+                  hi = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpackhi_epi8(zero, s), vscale), _mm_unpackhi_epi8(d, zero));
+                  _mm_storeu_si128((__m128i *)dp, _mm_packus_epi16(lo, hi));
+                  sp += 4;
+                  dp += 4;
+               }
+               src32 += _portal_lightmap_row;
+               dest32 += _portal_lightmap_row;
+            }
+            break;
 
-         v = ((intensity * source[j].A[2]) >> 8) + dest[j].A[2];
-         if (v > 255)
-            v = 255;
-         dest[j].A[2] = v;
-#else // RGB_888
-         // as an optimization for RGB lighting, we add it with no scaling
-         int cur,plus,sum;
-         cur = dest[j];
-         plus = source[j];
+         case 1:
+            ts.m128i_u32[0] = ts.m128i_u32[1] = ts.m128i_u32[2] = ts.m128i_u32[3] = 0;
+            td.m128i_u32[0] = td.m128i_u32[1] = td.m128i_u32[2] = td.m128i_u32[3] = 0;
+            for (i = 0; i < _portal_lightmap_height; i++) {
+               sp = src32;
+               dp = dest32;
+               for (j = 0; j < blocks; j++) {
+                  s = _mm_loadu_si128((__m128i *)sp);
+                  d = _mm_loadu_si128((__m128i *)dp);
+                  lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, s), vscale), _mm_unpacklo_epi8(d, zero));
+                  hi = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpackhi_epi8(zero, s), vscale), _mm_unpackhi_epi8(d, zero));
+                  _mm_storeu_si128((__m128i *)dp, _mm_packus_epi16(lo, hi));
+                  sp += 4;
+                  dp += 4;
+               }
+               ts.m128i_u32[0] = sp[0].I;
+               td.m128i_u32[0] = dp[0].I;
+               lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, ts), vscale), _mm_unpacklo_epi8(td, zero));
+               td = _mm_packus_epi16(lo, zero);
+               dp[0].I = td.m128i_u32[0];
+               src32 += _portal_lightmap_row;
+               dest32 += _portal_lightmap_row;
+            }
+            break;
 
-         r = ((((plus & pl_red_mask)>>RED_SHIFT)*intensity)>>8)<<RED_SHIFT;
-         g = ((((plus & pl_green_mask)>>GREEN_SHIFT)*intensity)>>8)<<GREEN_SHIFT;
-         b = ((((plus & pl_blue_mask)>>BLUE_SHIFT)*intensity)>>8)<<BLUE_SHIFT;
-         plus = r+g+b;
+         case 2:
+            ts.m128i_u32[0] = ts.m128i_u32[1] = ts.m128i_u32[2] = ts.m128i_u32[3] = 0;
+            td.m128i_u32[0] = td.m128i_u32[1] = td.m128i_u32[2] = td.m128i_u32[3] = 0;
+            for (i = 0; i < _portal_lightmap_height; i++) {
+               sp = src32;
+               dp = dest32;
+               for (j = 0; j < blocks; j++) {
+                  s = _mm_loadu_si128((__m128i *)sp);
+                  d = _mm_loadu_si128((__m128i *)dp);
+                  lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, s), vscale), _mm_unpacklo_epi8(d, zero));
+                  hi = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpackhi_epi8(zero, s), vscale), _mm_unpackhi_epi8(d, zero));
+                  _mm_storeu_si128((__m128i *)dp, _mm_packus_epi16(lo, hi));
+                  sp += 4;
+                  dp += 4;
+               }
+               ts.m128i_u32[0] = sp[0].I;
+               ts.m128i_u32[1] = sp[1].I;
+               td.m128i_u32[0] = dp[0].I;
+               td.m128i_u32[1] = dp[1].I;
+               lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, ts), vscale), _mm_unpacklo_epi8(td, zero));
+               td = _mm_packus_epi16(lo, zero);
+               dp[0].I = td.m128i_u32[0];
+               dp[1].I = td.m128i_u32[1];
+               src32 += _portal_lightmap_row;
+               dest32 += _portal_lightmap_row;
+            }
+            break;
 
-         sum = cur + plus;
-
-         // test for overflow
-         //    how can we tell if overflow occured?  if we carried
-         //    into a given bit (the next up bit).  How can we tell
-         //    if we carried?  Because bit #n =
-         //                (cur-n ^ plus-n ^ carry-n)
-         //    so we can infer the carries with:
-         //        (cur-n ^ plus-n ^ sum-n)
-         if ((cur ^ plus ^ sum) & (32 + (32<<5) + (32<<10))) {
-            // overflow, so do it the slow way
-            r = (cur & pl_red_mask) + (plus & pl_red_mask);
-            g = (cur & pl_green_mask) + (plus & pl_green_mask);
-            b = (cur & pl_blue_mask) + (plus & pl_blue_mask);
-            if (r > pl_red_mask) r = pl_red_mask;
-            if (g > pl_green_mask) g = pl_green_mask;
-            if (b > pl_blue_mask) b = pl_blue_mask;
-            sum = r + g + b;
+         case 3:
+            ts.m128i_u32[0] = ts.m128i_u32[1] = ts.m128i_u32[2] = ts.m128i_u32[3] = 0;
+            td.m128i_u32[0] = td.m128i_u32[1] = td.m128i_u32[2] = td.m128i_u32[3] = 0;
+            for (i = 0; i < _portal_lightmap_height; i++) {
+               sp = src32;
+               dp = dest32;
+               for (j = 0; j < blocks; j++) {
+                  s = _mm_loadu_si128((__m128i *)sp);
+                  d = _mm_loadu_si128((__m128i *)dp);
+                  lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, s), vscale), _mm_unpacklo_epi8(d, zero));
+                  hi = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpackhi_epi8(zero, s), vscale), _mm_unpackhi_epi8(d, zero));
+                  _mm_storeu_si128((__m128i *)dp, _mm_packus_epi16(lo, hi));
+                  sp += 4;
+                  dp += 4;
+               }
+               ts.m128i_u32[0] = sp[0].I;
+               ts.m128i_u32[1] = sp[1].I;
+               ts.m128i_u32[2] = sp[2].I;
+               td.m128i_u32[0] = dp[0].I;
+               td.m128i_u32[1] = dp[1].I;
+               td.m128i_u32[2] = dp[2].I;
+               lo = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpacklo_epi8(zero, ts), vscale), _mm_unpacklo_epi8(td, zero));
+               hi = _mm_add_epi16(_mm_mulhi_epu16(_mm_unpackhi_epi8(zero, ts), vscale), _mm_unpackhi_epi8(td, zero));
+               td = _mm_packus_epi16(lo, hi);
+               dp[0].I = td.m128i_u32[0];
+               dp[1].I = td.m128i_u32[1];
+               dp[2].I = td.m128i_u32[2];
+               src32 += _portal_lightmap_row;
+               dest32 += _portal_lightmap_row;
+            }
+            break;
          }
+      } else {
+         for (i = 0; i < _portal_lightmap_height; i++) {
+            for (j = 0; j < _portal_lightmap_width; j++) {
+               v = ((src32[j].A[0] * scale) >> 8) + dest32[j].A[0];
+               if (v > 255)
+                  v = 255;
+               dest32[j].A[0] = v;
 
-         dest[j] = sum;
-#endif RGB_888
+               v = ((src32[j].A[1] * scale) >> 8) + dest32[j].A[1];
+               if (v > 255)
+                  v = 255;
+               dest32[j].A[1] = v;
+
+               v = ((src32[j].A[2] * scale) >> 8) + dest32[j].A[2];
+               if (v > 255)
+                  v = 255;
+               dest32[j].A[2] = v;
+            }
+            src32 += _portal_lightmap_row;
+            dest32 += _portal_lightmap_row;
+         }
       }
-      source += _portal_lightmap_row;
-      dest += _portal_lightmap_row;
+   } else {
+      for (i = 0; i < _portal_lightmap_height; i++) {
+         for (j = 0; j < _portal_lightmap_width; j++) {
+            // as an optimization for RGB lighting, we add it with no scaling
+            uint cur,plus,sum,r,g,b;
+            cur = dest[j];
+            plus = source[j];
+
+            plus = (((plus & RED_MASK) * intensity) & (RED_MASK << 8)
+                  | ((plus & GREEN_MASK) * intensity) & (GREEN_MASK << 8)
+                  | ((plus & BLUE_MASK) * intensity) & (BLUE_MASK << 8)) >> 8;
+
+            sum = cur + plus;
+
+            // test for overflow
+            //    how can we tell if overflow occured?  if we carried
+            //    into a given bit (the next up bit).  How can we tell
+            //    if we carried?  Because bit #n =
+            //                (cur-n ^ plus-n ^ carry-n)
+            //    so we can infer the carries with:
+            //        (cur-n ^ plus-n ^ sum-n)
+            if ((cur ^ plus ^ sum) & (32 + (32<<5) + (32<<10))) {
+               // overflow, so do it the slow way
+               r = (cur & RED_MASK) + (plus & RED_MASK);
+               g = (cur & GREEN_MASK) + (plus & GREEN_MASK);
+               b = (cur & BLUE_MASK) + (plus & BLUE_MASK);
+               if (r > RED_MASK) r = RED_MASK;
+               if (g > GREEN_MASK) g = GREEN_MASK;
+               if (b > BLUE_MASK) b = BLUE_MASK;
+               sum = r | g | b;
+            }
+
+            dest[j] = sum;
+         }
+         source += _portal_lightmap_row;
+         dest += _portal_lightmap_row;
+      }
    }
 #endif
 }
@@ -691,7 +823,7 @@ static void (*surf16_setup_funcs[5])() = {
 
 void uncache_surface(PortalPolygonRenderInfo *render)
 {
-   if (render->cached_surface && (!g_lgd3d))
+   if (render->cached_surface && (!g_lgd3d) && (!r3d_using_g2))
    {
       free_surface_cache(render->cached_surface);
       render->cached_surface = 0;

@@ -13,7 +13,7 @@
 #include <r3ds.h>
 #include <objtype.h> // sadly, i have failed in keeping Obj's out of this, i suck - dc
 
-#define MAX_OBJMODELS 1024 // was 512, changed for e3 98 - was 2048 changed 10/3 dc
+#define MAX_OBJMODELS 2048 // was 512, changed for e3 98 - was 2048 changed 10/3 dc
 
 // ref counting for model loading
 EXTERN void  objmodelIncRef(int idx);

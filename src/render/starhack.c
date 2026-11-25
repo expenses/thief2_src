@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/starhack.c,v 1.20 2000/02/19 12:35:48 toml Exp $
 // starfield setup/initializers/so on
 
@@ -33,6 +32,7 @@
 #include <dbmem.h>   // must be last header! 
 
 extern BOOL g_lgd3d;
+extern BOOL r3d_using_g2;
 extern BOOL g_zbuffer;
 ////////////
 // silly starfield code for now
@@ -165,7 +165,7 @@ void starfield_endframe(Position *campos, float zoom)
       StarSetPixFunc(lgd3d_pixfunc);
       starfield_renderframe(campos, zoom);
    }
-   if ((!g_lgd3d) && (!g_span_sky))
+   if ((!g_lgd3d) && (!r3d_using_g2) && (!g_span_sky))
    {
       StarSetPixFunc(NULL);
       starfield_renderframe(campos, zoom);

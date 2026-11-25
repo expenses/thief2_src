@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/tweqprop.cpp,v 1.35 1999/12/10 15:40:46 BFarquha Exp $
 // tweaq property
 
@@ -39,8 +38,8 @@ static char *tweq_do_ops[] =
 // bitfield names
 
 static char *animc_bit_names[] = { "NoLimit", "Sim", "Wrap", "OneBounce", "SimSmallRad", "SimLargeRad", "OffScreen" };
-static char *miscc_bit_names[] = { "Anchor", "Scripts", "Random", "Grav", "ZeroVel", "TellAi", "PushOut", "NegativeLogic", "Relative Velocity", "NoPhysics", "AnchorVhot", "HostOnly" };
-static char *curve_bit_names[] = { "JitterLow", "JitterHi", "Mul" };
+static char *miscc_bit_names[] = { "Anchor", "Scripts", "Random", "Grav", "ZeroVel", "TellAi", "PushOut", "NegativeLogic", "Relative Velocity", "NoPhysics", "AnchorVhot", "HostOnly", "CreatureScale", "Use Model 5", "LinkRel" };
+static char *curve_bit_names[] = { "JitterLow", "JitterHi", "Mul", "Pendulum(/BounceHi)", "Bounce" };
 
 static char *halt_act_names[]  = { "Destroy Obj", "Remove Prop", "Stop Tweq", "Continue", "Slay Obj" };
 static char *anims_bit_names[] = { "On", "Reverse", "ReSynch", "GoEdge", "LapOne" };

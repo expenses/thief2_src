@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 
 // $Header: r:/t2repos/thief2/libsrc/gadget/drawelem.c,v 1.16 1998/07/20 22:45:43 mahk Exp $
 

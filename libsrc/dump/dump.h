@@ -21,6 +21,9 @@ EXTERN BOOL dmp_pcx_dump_screen(char *pFileName);
 // return -1 if unsuccessful
 EXTERN BOOL dmp_bmp_dump_screen(char *pFileName);
 
+// writes out a 24 bit or 8 bit palettized png
+EXTERN BOOL dmp_png_dump_screen(char *pFileName);
+
 
 /* Finds the free file in a sequence like
  * "<prefix>000.<suffix>", tries to open it,

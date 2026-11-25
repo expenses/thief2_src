@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/scrptmod.cpp,v 1.4 2000/02/22 19:49:47 toml Exp $
 //
@@ -18,16 +17,23 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+EXTERN BOOL g_bDark1;
+extern class cDark1ScriptMan * g_pDark1ScriptMan;
+
 BOOL cScriptMan::LoadModule(const cFileSpec & fsModule, sScrModuleInfo * pInfo)
 {
    LGALLOC_AUTO_CREDIT();
+
+   IScriptMan * pScriptMan = this;
+   if (g_bDark1)
+      pScriptMan = (IScriptMan *)g_pDark1ScriptMan;
 
    if ((pInfo->hModule = (HANDLE)LoadLibrary(fsModule.GetName())) != 0)
    {
       tScriptModuleInitFunc pfnInit
          = (tScriptModuleInitFunc)GetProcAddress((HINSTANCE)pInfo->hModule,
                                                  "_ScriptModuleInit@20");
-      if (pfnInit && (*pfnInit)(fsModule.GetFileName(), this, m_pfnPrint,
+      if (pfnInit && (*pfnInit)(fsModule.GetFileName(), pScriptMan, m_pfnPrint,
                                 g_pMalloc, &pInfo->pModule))
          return TRUE;
       FreeLibrary((HINSTANCE)pInfo->hModule);

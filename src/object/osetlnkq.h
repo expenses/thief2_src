@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/osetlnkq.h,v 1.1 1997/09/26 16:02:55 mahk Exp $
 #pragma once  
 #ifndef __OSETLNKQ_H

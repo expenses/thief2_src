@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/quest.cpp,v 1.14 1999/08/31 17:42:29 Justin Exp $
 
 #include <questapi.h>
@@ -34,6 +33,8 @@
 #include <str.h>
 
 #include <netmsg.h>
+#include <ctype.h>
+#include <quesbin.h>
 
 #ifndef SHIP
 #include <mprintf.h>
@@ -150,6 +151,8 @@ public:
       m_pCreateMsg = new cNetMsg(&gm_CreateMsgDesc, this);
       m_pSetMsg = new cNetMsg(&gm_SetMsgDesc, this);
 
+      m_binData.Init();
+
       return S_OK; 
    }
 
@@ -158,6 +161,7 @@ public:
       DeleteAll(); 
       delete m_pCreateMsg;
       delete m_pSetMsg;
+      m_binData.Term();
       return S_OK; 
    }
 
@@ -167,6 +171,11 @@ public:
    STDMETHOD_(BOOL, Exists)(const char *pName)
    {
       return (m_nameHash.Search(pName)!=NULL);
+   }
+   STDMETHOD_(BOOL, ExistsType)(const char *pName, eQuestDataType type)
+   {
+      cQuestDataNode *pNode = m_nameHash.Search(pName);
+      return pNode != NULL && pNode->m_type == type;
    }
    STDMETHOD(Delete)(const char *pName);
    STDMETHOD_(IQuestDataIter*, Iter)(eQuestDataType type)
@@ -196,6 +205,7 @@ public:
    // Internal methods that need to get called from network callbacks:
    STDMETHOD(doCreate)(const char *pName, int value, eQuestDataType type);
    STDMETHOD(doSet)(const char *pName, int value);
+   STDMETHOD(SendAllMsgs)(const char *pName, int oldValue, int newValue);
 
 private:
 
@@ -210,7 +220,273 @@ private:
    cNetMsg *m_pCreateMsg;
    static sNetMsgDesc gm_SetMsgDesc;
    cNetMsg *m_pSetMsg;
+
+   cQuestBinData m_binData;
+
+   cObjList m_allSubscriberList;
 };
+
+//////////
+//
+// Binary quest data
+//
+
+cQuestBinData *g_pQuestBinData = NULL;
+
+static void dispatchBinCreate(const char *pName, int size, const void *pData, void *pBinData)
+{
+   char *pCopy = new char[size];
+   memcpy(pCopy, pData, size);
+   ((cQuestBinData*)pBinData)->doCreate(pName, pCopy, size);
+}
+
+static sNetMsgDesc gBinCreateMsgDesc = {
+   kNMF_Broadcast,
+   "QuesXCreate",
+   "Create QuestEx Data",
+   NULL,
+   dispatchBinCreate,
+   {{kNMPT_String},
+    {kNMPT_DynBlock},
+    {kNMPT_End}}
+};
+
+static void dispatchBinSet(const char *pName, int size, const void *pData, void *pBinData)
+{
+   char *pCopy = new char[size];
+   memcpy(pCopy, pData, size);
+   ((cQuestBinData*)pBinData)->doSet(pName, pCopy, size);
+}
+
+static sNetMsgDesc gBinSetMsgDesc = {
+   kNMF_Broadcast,
+   "QuesXSet",
+   "Set QuestEx Data",
+   NULL,
+   dispatchBinSet,
+   {{kNMPT_String},
+    {kNMPT_DynBlock},
+    {kNMPT_End}}
+};
+
+static void dispatchBinDelete(const char *pName, void *pBinData)
+{
+   ((cQuestBinData*)pBinData)->doDelete(pName);
+}
+
+static sNetMsgDesc gBinDeleteMsgDesc = {
+   kNMF_Broadcast,
+   "QuesXDel",
+   "Delete QuestEx Data",
+   NULL,
+   dispatchBinDelete,
+   {{kNMPT_String},
+    {kNMPT_End}}
+};
+
+STDMETHODIMP cQuestBinData::Init()
+{
+   g_pQuestBinData = this;
+   m_pCreateMsg = new cNetMsg(&gBinCreateMsgDesc, this);
+   m_pSetMsg = new cNetMsg(&gBinSetMsgDesc, this);
+   m_pDeleteMsg = new cNetMsg(&gBinDeleteMsgDesc, this);
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::Term()
+{
+   DeleteAll();
+   delete m_pCreateMsg;
+   delete m_pSetMsg;
+   delete m_pDeleteMsg;
+   g_pQuestBinData = NULL;
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::Create(const char *pName, const void *pData, int size)
+{
+   if (size <= 0 || size > kQuestBinMaxSize || !pData)
+      return E_INVALIDARG;
+
+   m_pCreateMsg->Send(OBJ_NULL, pName, size, pData);
+
+   char *pCopy = new char[size];
+   memcpy(pCopy, pData, size);
+   return doCreate(pName, pCopy, size);
+}
+
+STDMETHODIMP cQuestBinData::Set(const char *pName, const void *pData, int size)
+{
+   if (size <= 0 || size > kQuestBinMaxSize || !pData)
+      return E_INVALIDARG;
+
+   m_pSetMsg->Send(OBJ_NULL, pName, size, pData);
+
+   char *pCopy = new char[size];
+   memcpy(pCopy, pData, size);
+   return doSet(pName, pCopy, size);
+}
+
+STDMETHODIMP_(const void*) cQuestBinData::Get(const char *pName, int *pSize)
+{
+   cQuestBinDataNode *pNode = m_hash.Search(pName);
+   if (pNode)
+   {
+      *pSize = pNode->m_size;
+      return pNode->m_pData;
+   }
+   return NULL;
+}
+
+STDMETHODIMP_(BOOL) cQuestBinData::Exists(const char *pName)
+{
+   return m_hash.Search(pName) != NULL;
+}
+
+STDMETHODIMP cQuestBinData::Delete(const char *pName)
+{
+   cQuestBinDataNode *pNode = m_hash.Search(pName);
+   if (!pNode)
+      return S_FALSE;
+
+   m_pDeleteMsg->Send(OBJ_NULL, pName);
+
+   m_hash.Remove(pNode);
+   delete pNode;
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::DeleteAll()
+{
+   m_hash.DestroyAll();
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::Save(QuestMoveFunc moveFunc)
+{
+   tHashSetHandle hnd;
+   cQuestBinDataNode *pNode;
+
+   for (pNode = m_hash.GetFirst(hnd); pNode != NULL; pNode = m_hash.GetNext(hnd))
+   {
+      int len = strlen(pNode->m_name) + 1;
+      moveFunc(&len, sizeof(int), 1);
+      moveFunc((void*)(const char*)pNode->m_name, 1, len);
+      moveFunc(&pNode->m_size, sizeof(int), 1);
+      moveFunc(pNode->m_pData, 1, pNode->m_size);
+   }
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::Load(QuestMoveFunc moveFunc)
+{
+   int len;
+
+   while (moveFunc(&len, sizeof(int), 1) == sizeof(int))
+   {
+      cStr name("", len);
+      if (moveFunc((void*)(const char*)name, 1, len) != len)
+         return E_FAIL;
+
+      int size;
+      if (moveFunc(&size, sizeof(int), 1) != sizeof(int))
+         return E_FAIL;
+      if (size <= 0 || size > kQuestBinMaxSize)
+         return E_FAIL;
+
+      char *pData = new char[size];
+      if (moveFunc(pData, 1, size) != size)
+         return E_FAIL;
+
+      m_pCreateMsg->Send(OBJ_NULL, (const char*)name, size, pData);
+      doCreate(name, pData, size);
+   }
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::doCreate(const char *pName, void *pData, int size)
+{
+   cQuestBinDataNode *pNode = m_hash.Search(pName);
+   if (pNode)
+   {
+      delete [] (char*)pNode->m_pData;
+      pNode->m_pData = pData;
+      pNode->m_size = size;
+      return S_OK;
+   }
+
+   pNode = new cQuestBinDataNode(pName);
+   pNode->m_pData = pData;
+   pNode->m_size = size;
+   m_hash.Insert(pNode);
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::doSet(const char *pName, void *pData, int size)
+{
+   cQuestBinDataNode *pNode = m_hash.Search(pName);
+   if (!pNode)
+      return Create(pName, pData, size);
+
+   delete [] (char*)pNode->m_pData;
+   pNode->m_pData = pData;
+   pNode->m_size = size;
+   return S_OK;
+}
+
+STDMETHODIMP cQuestBinData::doDelete(const char *pName)
+{
+   cQuestBinDataNode *pNode = m_hash.Search(pName);
+   if (!pNode)
+      return S_FALSE;
+
+   m_hash.Remove(pNode);
+   delete pNode;
+   return S_OK;
+}
+
+#ifndef SHIP
+void cQuestBinData::Dump()
+{
+   if (IsEmpty())
+   {
+      mprintf("no bin quest data\n");
+      return;
+   }
+
+   mprintf("\nQuest Bin Store Dump:\n--------------------\n");
+
+   tHashSetHandle hnd;
+   cQuestBinDataNode *pNode;
+   for (pNode = m_hash.GetFirst(hnd); pNode != NULL; pNode = m_hash.GetNext(hnd))
+   {
+      mprintf("\"%s\" (%d bytes):\n", (const char*)pNode->m_name, pNode->m_size);
+
+      const uchar *p = (const uchar*)pNode->m_pData;
+      const uchar *pEnd = p + pNode->m_size;
+      while (p < pEnd)
+      {
+         int i;
+         for (i = 0; i < 16; i++)
+         {
+            if (p + i < pEnd)
+               mprintf(" %02X", p[i]);
+            else
+               mprintf("   ");
+         }
+         for (i = 0; i < 16 && p < pEnd; i++, p++)
+            mprintf(" %c", isprint(*p) ? *p : '.');
+         mprintf("\n");
+      }
+      mprintf("\n");
+   }
+}
+
+void QuestBinDataDump(void)
+{
+   g_pQuestBinData->Dump();
+}
+#endif
 
 //////////
 //
@@ -331,6 +607,28 @@ STDMETHODIMP cQuestData::doSet(const char *pName, int value)
 
    pNode->m_value = value;
    pNode->SendMsgs(oldValue);
+   SendAllMsgs(pNode->m_pName, oldValue, value);
+   return S_OK;
+}
+
+STDMETHODIMP cQuestData::SendAllMsgs(const char *pName, int oldValue, int newValue)
+{
+   if (!m_allSubscriberList.Size())
+      return S_OK;
+
+   AutoAppIPtr(ScriptMan);
+
+   ObjID objs[512];
+   int n = 0;
+   cObjList::cIter iter;
+   for (iter = m_allSubscriberList.Iter(); !iter.Done() && n < 512; iter.Next())
+      objs[n++] = iter.Value();
+
+   for (int i = 0; i < n; i++)
+   {
+      sQuestMsg msg(objs[i], pName, oldValue, newValue);
+      pScriptMan->SendMessage(&msg);
+   }
    return S_OK;
 }
 
@@ -346,6 +644,9 @@ STDMETHODIMP_(BOOL) cQuestData::Get(const char *pName)
 STDMETHODIMP cQuestData::SubscribeMsg(ObjID objID, const char *pName, eQuestDataType type)
 {
    cQuestDataNode *pQuestNode;
+
+   if (pName && pName[0] == '*' && pName[1] == '\0')
+      return m_allSubscriberList.AddElem(objID) ? S_OK : S_FALSE;
 
    if ((pQuestNode = m_nameHash.Search(pName)) == NULL)
    {
@@ -372,6 +673,9 @@ STDMETHODIMP cQuestData::SubscribeMsg(ObjID objID, const char *pName, eQuestData
 
 STDMETHODIMP cQuestData::UnsubscribeMsg(ObjID objID, const char *pName)
 {
+   if (pName && pName[0] == '*' && pName[1] == '\0')
+      return m_allSubscriberList.RemoveElem(objID) ? S_OK : S_FALSE;
+
    cQuestDataNode* pQuestNode = m_nameHash.Search(pName); 
    if (pQuestNode  == NULL)
       return S_FALSE;
@@ -424,6 +728,8 @@ STDMETHODIMP cQuestData::UnsubscribeAll()
    }
 
    m_subscriberHash.Clear(); 
+
+   m_allSubscriberList.RemoveAll(); 
 
    return S_OK; 
    
@@ -540,6 +846,8 @@ STDMETHODIMP cQuestData::ObjDeleteListener(ObjID objID)
       delete pSubscribedList; 
       m_subscriberHash.Delete(objID); 
    }
+   if (m_allSubscriberList.Size())
+      m_allSubscriberList.RemoveElem(objID);
    return S_OK;
 }
 

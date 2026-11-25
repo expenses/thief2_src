@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ////////////////////////////////////////////////////////////////////////////////
 //$Header: r:/t2repos/thief2/src/sim/prjctile.cpp,v 1.94 2000/03/18 15:24:51 ccarollo Exp $
 //
@@ -453,7 +452,7 @@ BOOL ObjIsProjectile(ObjID obj)
 void shoot_gun_type(char* arg)
 {
    // eliminate trailing whitespace
-   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace(*s); s--)
+   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0'; 
 
    AutoAppIPtr_(ObjectSystem,ObjSys);

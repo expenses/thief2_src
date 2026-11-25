@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/bspdata.c,v 1.6 2000/02/19 12:26:34 toml Exp $
 
 #include <lg.h>
@@ -136,6 +135,53 @@ int BspReadNode(BspNode **n, FILE *f)
    return 0;
 }
 
+int BspReadNodeBin(BspNode **n, FILE *f)
+{
+   BspPlane p;
+   int tag;
+   double d[4];
+   *n = BspAllocateLeaf();
+   (*n)->medium = base_medium;
+   (*n)->parent = 0;
+
+   if (!fread(&tag, sizeof(tag), 1, f))
+      return 0;
+
+   if (tag == -1 && fread(d, sizeof(d[0]), 4, f) == 4) {
+      int z;
+      p.a = d[0];
+      p.b = d[1];
+      p.c = d[2];
+      p.d = d[3];
+      z = find_plane(&p);
+      if (z >= 0) {
+         BspPlane *q = &all_planes[z];
+         if (q->a*d[0] + q->b*d[1] + q->c*d[2] > 0)
+            p = *q;
+         else {
+            p.a = -q->a;      
+            p.b = -q->b;      
+            p.c = -q->c;      
+            p.d = -q->d;
+         }
+      } else {
+         extern void show_match_plane(BspPlane *);
+         Warning(("BspReadNode: optimized split plane not from any brush.\n"));
+         mprintf("%lg %lg %lg %lg (input)\n", p.a,p.b,p.c,p.d);
+         show_match_plane(&p);
+      }
+      BspChangeLeafToNode(*n, &p);
+      if (BspReadNodeBin(&(*n)->inside, f)) return 1;
+      if (BspReadNodeBin(&(*n)->outside, f)) return 1;
+      (*n)->inside->parent = *n;
+      (*n)->outside->parent = *n;
+   } else if (tag != 0) {
+      mprintf("Error in binary bsp file\n");
+      return 1;
+   }
+   return 0;
+}
+
 void *BspReadTree(FILE *f)
 {
    BspNode *n;
@@ -171,6 +217,33 @@ int BspCompareNode(BspNode *n, FILE *f)
       if (BspCompareNode(n ? n->inside : 0, f)) return 1;
       if (BspCompareNode(n ? n->outside : 0, f)) return 1;
    } else if (bsp_buffer[0] == '0') {
+      if (n && n->medium == NO_MEDIUM) {
+         Warning(("BspCompareNode: Node that was unsplit in optimizer "
+                  "split in portalization.\n"));
+      }
+   } else {
+      return 1;
+   }
+   return 0;
+}
+
+int BspCompareNodeBin(BspNode *n, FILE *f)
+{
+   int tag;
+   double d[4];
+
+   if (!fread(&tag, sizeof(tag), 1, f))
+      return 1;
+
+   if (tag == -1 && fread(d, sizeof(d[0]), 4, f) == 4) {
+      if (n && n->medium != NO_MEDIUM) {
+         Warning(("BspCompareNode: Node that was split in optimizer "
+                  "not split in portalization.\n"));
+         n = 0;
+      }
+      if (BspCompareNodeBin(n ? n->inside : 0, f)) return 1;
+      if (BspCompareNodeBin(n ? n->outside : 0, f)) return 1;
+   } else if (tag == 0) {
       if (n && n->medium == NO_MEDIUM) {
          Warning(("BspCompareNode: Node that was unsplit in optimizer "
                   "split in portalization.\n"));

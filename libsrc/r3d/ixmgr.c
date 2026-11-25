@@ -162,11 +162,10 @@ void r3_free_indexed_range(int start, int n)
       r3_reset_index();
 }
 
-int r3_transform_block_indexed(int start, int n, mxs_vector *verts)
+void r3_transform_block_indexed(int start, int n, mxs_vector *verts)
 {
    start = r3_alloc_indexed(start, n);
    r3_transform_block(n, (r3s_point *)(r3dix_point_list + (start + r3dix_offset) * stride), verts);
-   return start;
 }
 
 r3s_point *r3_get_indexed_phandle(int id)

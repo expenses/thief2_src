@@ -59,5 +59,6 @@ EXTERN const mxs_matrix &GetCreatureJointOrient(ObjID creature, int joint);
 
 EXTERN void GetCreatureJointPosC(ObjID creature, int joint, mxs_vector *vec);
 EXTERN void GetCreatureJointOrientC(ObjID creature, int joint, mxs_matrix *mat);
+EXTERN void GetCreatureJointPosAndOrient(ObjID creature, int joint, mxs_vector *pos, mxs_matrix *orient);
 
 #endif

@@ -7,6 +7,7 @@
 
 #include <io.h>
 #include <cstdio>
+#include <lg_file.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -66,8 +67,8 @@ cFileStream::~cFileStream()
 #line 55
 		CriticalMsg1("Destroying stream %s that was not fully closed!", pName);
 #line 45
-		Free(pName);
-		fclose(m_pFile);
+		operator delete(pName);
+		lg_fclose(m_pFile);
 		m_pFile = NULL;
 	}
 	if (m_pStorage)
@@ -120,8 +121,8 @@ BOOL cFileStream::Open()
 	char* pFileName;
 	GetName(&pFileName);
 
-	m_pFile = fopen(pFileName, "rb");
-	Free(pFileName);
+	m_pFile = lg_fopen(pFileName, "rb");
+	operator delete(pFileName);
 	if (!m_pFile)
 		return FALSE;
 	m_nLastPos = 0;
@@ -137,7 +138,7 @@ void cFileStream::Close()
 
 	if (m_nOpenCount == 0)
 	{
-		fclose(m_pFile);
+		lg_fclose(m_pFile);
 		m_pFile = NULL;
 	}
 }
@@ -156,7 +157,7 @@ BOOL cFileStream::SetPos(long nPos)
 		return FALSE;
 
 	m_nLastPos = nPos;
-	return fseek(m_pFile, nPos, 0) == 0;
+	return fseek(m_pFile->fp, nPos, 0) == 0;
 }
 
 long cFileStream::GetPos()
@@ -172,10 +173,10 @@ long cFileStream::ReadAbs(long nStartPos, long nEndPos, char* pBuf)
 	if (!m_pFile)
 		return -1;
 
-	if (m_nLastPos != nStartPos && fseek(m_pFile, nStartPos, 0))
+	if (m_nLastPos != nStartPos && fseek(m_pFile->fp, nStartPos, 0))
 		return -1;
 
-	size_t pos = fread(pBuf, 1u, nEndPos - nStartPos + 1, m_pFile);
+	size_t pos = lg_fread(pBuf, 1u, nEndPos - nStartPos + 1, m_pFile);
 	m_nLastPos = nStartPos + pos;
 
 	return pos;
@@ -186,22 +187,22 @@ long cFileStream::ReadAbs(long nStartPos, long nEndPos, char* pBuf)
 long cFileStream::GetSize()
 {
 	if (m_pFile)
-		return filelength(fileno(m_pFile));
+		return lg_filelength(m_pFile->id);
 
 	if (m_pFileSpec)
 	{
 		char* pFileName;
 		GetName(&pFileName);
 
-		m_pFile = fopen(pFileName, "rb");
+		m_pFile = lg_fopen(pFileName, "rb");
 
-		Free(pFileName);
+		operator delete(pFileName);
 
 		if (!m_pFile)
 			return -1;
 
-		long nSize = filelength(fileno(m_pFile));
-		fclose(m_pFile);
+		long nSize = lg_filelength(m_pFile->id);
+		lg_fclose(m_pFile);
 
 		return nSize;
 	}
@@ -216,7 +217,7 @@ long cFileStream::Read(long nNumBytes, char* pBuf)
 	if (!m_pFile || nNumBytes < 1)
 		return -1;
 
-	size_t pos = fread(pBuf, 1, nNumBytes, m_pFile);
+	size_t pos = lg_fread(pBuf, 1, nNumBytes, m_pFile);
 	m_nLastPos += pos;
 
 	return pos;
@@ -231,7 +232,7 @@ int16 cFileStream::Getc()
 
 	++m_nLastPos;
 
-	return fgetc(m_pFile);
+	return lg_fgetc(m_pFile);
 }
 
 ///////////////////////////////////////
@@ -247,7 +248,7 @@ void cFileStream::ReadBlocks(void* pBuf, long nSize, tStoreStreamBlockCallback c
 
 	do
 	{
-		nRead = fread(pBuf, 1u, nSize, m_pFile);
+		nRead = lg_fread(pBuf, 1u, nSize, m_pFile);
 		if (nRead < nSize)
 			bDone = 1;
 

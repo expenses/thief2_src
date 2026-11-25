@@ -47,11 +47,6 @@ bool cHashHelperFunctions::is_fermat_prime(uint n, uint numtests)
 
 bool cHashHelperFunctions::is_prime(uint n)
 {
-   if (n < 3)
-      return FALSE;
-   if (n % 2 == 0)
-      return FALSE;
-
    uint sqrt_n = (uint)sqrt((double)n);
 
    for (uint i = 3; i <= sqrt_n; i += 2)
@@ -62,3 +57,13 @@ bool cHashHelperFunctions::is_prime(uint n)
 }
 
 
+
+uint cHashHelperFunctions::next_prime(uint n)
+{
+   if (n <= 3)
+      return 3;
+   n |= 1;
+   while (!is_prime(n))
+      n += 2;
+   return n;
+}

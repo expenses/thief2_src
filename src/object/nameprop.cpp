@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/nameprop.cpp,v 1.5 1998/05/13 16:30:33 mahk Exp $
 #include <nameprop.h>
 #include <objnotif.h>
@@ -14,6 +13,10 @@
 #include <hshpptem.h>
 
 // Must be last header
+#include <appagg.h>
+#include <propman.h>
+#include <traitprp.h>
+
 #include <dbmem.h>
 
 typedef cGenericProperty<IInvStringProperty,&IID_IInvStringProperty,cStr*> cBaseInvStringProp; 
@@ -121,6 +124,8 @@ protected:
 
    cValTable mByVal; 
 
+   friend void RebuildSymNameTable(void);
+
 }; 
 
 
@@ -135,11 +140,13 @@ IInvStringProperty* CreateInvStringPropertyFromStore(const sPropertyDesc* desc, 
    return new cInvStringProp(desc,impl);
 }
 
-
-
-
-
-
-
-
-
+void RebuildSymNameTable(void)
+{
+   AutoAppIPtr(PropertyManager);
+   IProperty *pProp = pPropertyManager->GetPropertyNamed(PROP_SYMNAME_NAME);
+   if (pProp)
+   {
+      ((cInvStringProp *)pProp)->Rebuild();
+      pProp->Release();
+   }
+}

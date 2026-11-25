@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/portal/porthw.c,v 1.24 2000/02/19 13:18:39 toml Exp $
 #include <string.h>
 
@@ -538,7 +537,7 @@ void porthw_preload_lightmap(
 }
 
 
-bool punt_hardware_lighting=FALSE;
+BOOL punt_hardware_lighting=FALSE;
 
 // Main entry point.  Allocates lightmaps and textures as 
 // appropriate.  Sets hw->lm, hw->lm_u0, and hw->lm_v0.

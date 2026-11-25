@@ -94,8 +94,8 @@ tResult LGAPI AppInit()
    if (!gPrimordialMode)
       setup_game_mode();   
 
-   char buf[80];
-   if (config_get_raw("file",buf,80))
+   char buf[_MAX_PATH];
+   if (config_get_raw("file",buf,sizeof(buf)))
       dbLoad(buf,kFiletypeAll);
    else
       dbBuildDefault();

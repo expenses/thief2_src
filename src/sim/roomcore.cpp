@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/roomcore.cpp,v 1.33 2000/03/18 15:25:33 ccarollo Exp $
 //
@@ -78,8 +77,8 @@ static Command g_RoomCommands[] =
 {
    {"rooms_spew",    FUNC_VOID,  SpewRooms,           "Spew entire room database",      HK_ALL},
    {"spew_room_obj", FUNC_INT,   SpewRoomObj,         "List room for specified object", HK_ALL},
-   {"show_player_room", TOGGLE_BOOL, &g_show_player_room, "Draw the player's room obj", HK_ALL},
-   {"show_bad_rooms",   TOGGLE_BOOL, &g_show_bad_rooms, "Draw areas outside the room db", HK_ALL},
+   {"show_player_room", TOGGLE_BOOL, &g_show_player_room, "Draw the player's room obj", HK_ALL, 1},
+   {"show_bad_rooms",   TOGGLE_BOOL, &g_show_bad_rooms, "Draw areas outside the room db", HK_ALL, 1},
    {"spew_bad_room_objs", FUNC_VOID, SpewBadRoomObjs, "List all rooms with bad room objIDs", HK_ALL},
    {"door_slam_open", FUNC_INT,  DoorSlamOpen, "", HK_ALL},
    {"door_slam_closed", FUNC_INT, DoorSlamClosed, "", HK_ALL},

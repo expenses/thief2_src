@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/sndgen.cpp,v 1.31 2000/03/05 18:37:46 adurant Exp $
 
 //#define PROFILE_ON
@@ -37,6 +36,8 @@
 #include <timings.h>
 #include <esnd.h>
 #include <textarch.h>
+#include <physcast.h>
+#include <config.h>
 
 // Must be last header 
 #include <dbmem.h>
@@ -99,13 +100,18 @@ EXTERN bool foot_sounds;
 //
 // @HACK: This has been moved from physics.c so I can get rid of that file.  
 //
-static int GetTxtIdNearAndUnder(const mxs_vector *pos, const Location *old_loc, mxs_vector *snd_loc)
+static BOOL g_bEnhancedAIFootstepTrace;
+
+static BOOL FootfallIgnoreObj(ObjID obj, const cPhysModel *pModel, void *pData)
+{
+   return obj != (ObjID)pData;
+}
+
+static ObjID GetTxtIdNearAndUnder(const mxs_vector *pos, const Location *old_loc, mxs_vector *snd_loc, ObjID objID)
 {
    mxs_vector ray_start, ray_end, delta;
    Location   ray_source, ray_dest, ray_hit;
    int  poly_id, txt_id;
-
-   txt_id = -1;
 
    mx_copy_vec(&ray_start, (mxs_vector *)pos);
    mx_mk_vec(&delta, 0, 0, -10);
@@ -114,37 +120,50 @@ static int GetTxtIdNearAndUnder(const mxs_vector *pos, const Location *old_loc, 
    MakeHintedLocationFromVector(&ray_source, &ray_start, (Location *)old_loc);
    MakeHintedLocationFromVector(&ray_dest, &ray_end, (Location *) old_loc);
 
-   if (!PortalRaycast(&ray_source, &ray_dest, &ray_hit, 0))
+   if (g_bEnhancedAIFootstepTrace)
    {
-      if (ray_source.vec.z != ray_hit.vec.z)
-      {
-         poly_id = PortalRaycastFindPolygon();
-         txt_id = WR_CELL(PortalRaycastCell)->render_list[poly_id].texture_id;
-      }
-      else
-         Warning(("GetTxtIdNearAndUnder: out of level?\n"));
+      ObjID hit_obj = OBJ_NULL;
 
-      *snd_loc = ray_hit.vec;
-      snd_loc->z += 0.2;
+      PhysRaycastSetCallback(FootfallIgnoreObj, (void *)objID);
+      PhysRaycast(ray_source, ray_dest, &ray_hit, &hit_obj, 0.0, kCollideOBB | kCollideTerrain);
+      PhysRaycastClearCallback();
+
+      if (hit_obj && (ray_source.vec.z != ray_hit.vec.z))
+      {
+         *snd_loc = ray_hit.vec;
+         snd_loc->z += 0.2;
+         return hit_obj;
+      }
+   }
+   else if (!PortalRaycast(&ray_source, &ray_dest, &ray_hit, 0) && (ray_source.vec.z != ray_hit.vec.z))
+   {
+      poly_id = PortalRaycastFindPolygon();
+      txt_id = WR_CELL(PortalRaycastCell)->render_list[poly_id].texture_id;
+      if (txt_id != -1)
+      {
+         *snd_loc = ray_hit.vec;
+         snd_loc->z += 0.2;
+         return GetTextureObj(txt_id);
+      }
    }
 
-   return txt_id;
+   return OBJ_NULL;
 }
 
 void FootfallSound(const ObjID objID, const mxs_vector *footPos)
 {
    AUTO_TIMER(FFALL_PCALL);
-   int textureType;
+   ObjID textureObj;
 
    mxs_vector snd_loc;
 
    // @TODO: make AIs have better media states
    if (PhysObjInWater(objID))
       return;
-   if ((textureType = GetTxtIdNearAndUnder(footPos, &(ObjPosGet(objID)->loc), &snd_loc)) != -1)
+   if ((textureObj = GetTxtIdNearAndUnder(footPos, &(ObjPosGet(objID)->loc), &snd_loc, objID)) != OBJ_NULL)
    {
       cTagSet Event("Event Footstep");
-      ESndPlayLoc(&Event,objID,GetTextureObj(textureType),&snd_loc);
+      ESndPlayLoc(&Event,objID,textureObj,&snd_loc);
    }
    else
       Warning(("Can't find texture type for AI (%d) footfall at (%g, %g, %g)\n", objID, footPos->x, footPos->y, footPos->z));
@@ -186,6 +205,7 @@ void SoundGenInit(void)
       pPropMan = AppGetObj(IPropertyManager);
    if (pObjSys == NULL)
       pObjSys = AppGetObj(IObjectSystem);
+   g_bEnhancedAIFootstepTrace = config_is_defined("enhanced_aifootstep_trace");
 }
 
 void SoundGenShutdown(void)

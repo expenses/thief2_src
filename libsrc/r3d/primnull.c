@@ -2,7 +2,7 @@
 
 #include <r3ds.h>
 #include <dev2d.h>
-
+#include <prim.h>
 #include <primfunc.h>
 
 static void setup_null(r3s_texture tm)
@@ -82,6 +82,9 @@ void r3_use_null(void)
       null_convert_indexed,
       null_line,
       null_point);
+   r3d_using_lgd3d = FALSE;
+   r3d_using_g2 = FALSE;
+   r3_set_prim();
 }
 
 

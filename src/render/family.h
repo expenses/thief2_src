@@ -47,6 +47,8 @@ EXTERN void family_term(void);
 // integrated block load with the lresdisk block swizzle stuff
 EXTERN BOOL familyDiskTexBlockLoad(void *mem);
 
+EXTERN void fam_get_res_path(struct IRes *pRes, char *buf);
+
 // integrated block load with the lresdisk block swizzle stuff
 // NOTE: this MALLOC's the void *, you MUST FREE IT
 EXTERN void *familyDiskTexBlockBuild(void);

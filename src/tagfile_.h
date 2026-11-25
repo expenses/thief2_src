@@ -11,6 +11,7 @@
 #include <io.h>
 
 #include <tagfile.h>
+#include <lg_file.h>
 
 ////////////////////////////////////////////////////////////
 // TAG FILE IMPLEMENTATION
@@ -90,8 +91,8 @@ protected:
 public:
    virtual ~TagFileTable();
 
-   void Write(FILE* file);  // write to file 
-   void Read(FILE* file);   // read from file
+   void Write(LGFILE* file);  // write to file 
+   void Read(LGFILE* file);   // read from file
 }; 
 
 
@@ -105,14 +106,14 @@ class TagFileBase : public ITagFile
 {
 protected:
    TagFileTable table;                    // Tag table
-   FILE* file;                            // file 
+   LGFILE* file;                            // file 
    TagTableEntry* block;                  // current block
    ulong blockptr;                        // file ptr within block
 
 public:
-   TagFileBase(FILE* f = NULL) :file(f),block(NULL) {} ;
+   TagFileBase(LGFILE* f = NULL) :file(f),block(NULL) {} ;
    TagFileBase(const char* fname, const char* mode)
-      : file(fopen(fname,mode)),block(NULL) {} ; 
+      : file(lg_fopen(fname,mode)),block(NULL) {} ; 
    virtual ~TagFileBase();
 
    static ITagFile* Open(const char* filename, TagFileOpenMode mode);

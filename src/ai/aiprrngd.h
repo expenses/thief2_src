@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aiprrngd.h,v 1.7 2000/01/29 12:45:39 adurant Exp $
 //
@@ -81,7 +80,7 @@ struct sVantagePtProp
 {
    sVantagePtProp()
    {
-      AssertMsg(sizeof(sVantagePtProp()) == 8, "You need to update the constructor for sVantagePtProp");
+      AssertMsg(sizeof(sVantagePtProp) == 8, "You need to update the constructor for sVantagePtProp");
 
       value = 0;
       decay_speed = 0.8;
@@ -108,7 +107,7 @@ struct sCoverPtProp
 {
    sCoverPtProp()
    {
-      AssertMsg(sizeof(sCoverPtProp()) == 12, "You need to update the constructor for sCoverPtProp");
+      AssertMsg(sizeof(sCoverPtProp) == 12, "You need to update the constructor for sCoverPtProp");
 
       value = 0;
       decay_speed = 0.8;

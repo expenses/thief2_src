@@ -111,7 +111,7 @@ ulong volatile *mouse_ticks = &default_mouse_ticks;     // Place to get mouse ti
 ulong default_mouse_ticks()
 {
     if (g_pInputGameShell)
-        return g_pInputGameShell->GetTimerTick();
+        return g_pInputGameShell->GetTimerTick() / 1000;
     else
         return 0;
 }

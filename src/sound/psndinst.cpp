@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sound/psndinst.cpp,v 1.79 2000/03/23 18:33:20 patmac Exp $
 //
@@ -89,7 +88,7 @@ cPropSndInst::cPropSndInst()
    m_InfoTable.Clear();
    m_InfoList.SetSize(0);
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       m_ActiveObject[i] = OBJ_NULL;
       m_ActiveSound[i] = NULL;
@@ -112,7 +111,7 @@ cPropSndInst::~cPropSndInst()
 
    ClearSoundInfo();
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_ActiveObject[i] != OBJ_NULL)
       {
@@ -180,7 +179,7 @@ void cPropSndInst::Init(int handle, ObjID objID, const mxs_vector &loc, ObjID sc
    }
 
    // Make sure we have reserved our active sound objects
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_ActiveObject[i] == OBJ_NULL)
       {
@@ -203,7 +202,7 @@ void cPropSndInst::Cleanup()
    g_pPropSnd->SoundHaltAll();
 
    // Destroy all active sounds
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_ActiveObject[i] != OBJ_NULL)
       {
@@ -316,7 +315,7 @@ BOOL cPropSndInst::PlaySoundList(cPlayerSoundList *pCurPlayerList)
    cSoundInfo *pSoundInfo = pCurPlayerList->GetFirst();
 
    // Determine if this is an active sound
-   if (ActiveSound(pSoundInfo) && (m_nActiveSoundObjects < kMaxActiveSounds))
+   if (ActiveSound(pSoundInfo) && (m_nActiveSoundObjects < g_nMaxActiveSounds))
    {
       #ifndef SHIP
       if (m_SoundSpew)
@@ -324,9 +323,9 @@ BOOL cPropSndInst::PlaySoundList(cPlayerSoundList *pCurPlayerList)
       #endif
 
       // Find unused active sound object
-      for (int j=0; j<kMaxActiveSounds && (m_ActiveSound[j] != NULL); j++);
+      for (int j=0; j<g_nMaxActiveSounds && (m_ActiveSound[j] != NULL); j++);
 
-      AssertMsg(j != kMaxActiveSounds, "Unable to find available active sound object");
+      AssertMsg(j != g_nMaxActiveSounds, "Unable to find available active sound object");
 
       // Point the sound struct at its active sound object
       pSoundInfo->flags &= ~kSIF_Deferred;
@@ -632,7 +631,7 @@ void cPropSndInst::ApplySoundInfo()
                cPlayerSoundList *pPlayerSoundList;
                cSoundInfo       *pSound;
 
-               for (j=0; j<kMaxActiveSounds; j++)
+               for (j=0; j<g_nMaxActiveSounds; j++)
                {
                   if ((pPlayerSoundList = g_pPropSnd->GetSound(j)) != NULL)
                   {
@@ -689,9 +688,9 @@ void cPropSndInst::ClearSoundInfo()
 void cPropSndInst::AddActiveSound(cSoundInfo *pSoundInfo)
 {
 // @OBB: i removed an ifndef SHIP, since we need to set J for below
-   for (int j=0; j<kMaxActiveSounds && (m_ActiveSound[j] != NULL); j++);
+   for (int j=0; j<g_nMaxActiveSounds && (m_ActiveSound[j] != NULL); j++);
 
-   AssertMsg(j != kMaxActiveSounds, "Unable to find available active sound object");
+   AssertMsg(j != g_nMaxActiveSounds, "Unable to find available active sound object");
 
    // Point the sound struct at its active sound object
    pSoundInfo->flags &= ~kSIF_Deferred;
@@ -707,13 +706,13 @@ void cPropSndInst::EndActiveSound(cSoundInfo *pActiveSound)
    int i, j;
 
    // Find it in array
-   for (i=0; i<kMaxActiveSounds; i++)
+   for (i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_ActiveSound[i] == pActiveSound)
          break;
    }
 
-   if (i != kMaxActiveSounds)
+   if (i != g_nMaxActiveSounds)
    {
       // Remove soundinfo from player list, just in case it's there
       if (PlayerObjectExists() && m_InfoTable.Lookup(PlayerObject(), (cSoundInfoList **)&pPlayerList))
@@ -762,7 +761,7 @@ void cPropSndInst::BumpActiveSound(cPlayerSoundList *pPlayerList)
 {
    cSoundInfo* pSoundInfo = pPlayerList->GetFirst();
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_ActiveSound[i] == pPlayerList->GetFirst())
       {
@@ -772,7 +771,7 @@ void cPropSndInst::BumpActiveSound(cPlayerSoundList *pPlayerList)
 
          // Since we're taking it off the active list, make sure it's on the main list
          BOOL found = FALSE;
-         for (int j=0; j<kMaxActiveSounds && !found; j++)
+         for (int j=0; j<g_nMaxActiveSounds && !found; j++)
             found = (g_pPropSnd->GetSound(j) == pPlayerList);
 
          AssertMsg2(found, "Attempt to bump %s (handle %d), but not on SoundList!",
@@ -928,7 +927,7 @@ void cPropSndInst::UpdateActiveSounds()
    cPlayerSoundList *pPlayerList;
    cSoundInfo       *pSoundInfo;
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if ((m_ActiveSound[i] != NULL) && !(m_ActiveSound[i]->flags & kSIF_Static))
       {
@@ -1041,7 +1040,7 @@ void cPropSndInst::UpdateDeferredSounds()
    cPlayerSoundList *pPlayerSoundList;
    cSoundInfo       *pDeferredSound;
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       // Grab any sound in this slot
       if ((pPlayerSoundList = g_pPropSnd->GetSound(i)) != NULL)
@@ -1157,7 +1156,7 @@ void cPropSndInst::ResolveActiveSounds(ObjID hearingObj)
    cSoundInfo *pSoundInfoNext;
    int i;
 
-   for (i=0; i<kMaxActiveSounds; i++)
+   for (i=0; i<g_nMaxActiveSounds; i++)
    {
       if ((m_ActiveSound[i] != NULL) && !(m_ActiveSound[i]->flags & kSIF_Static))
       {
@@ -1243,7 +1242,7 @@ void cPropSndInst::ResolveActiveSounds(ObjID hearingObj)
                   cPlayerSoundList *pSoundList;
                   BOOL found = FALSE;
 
-                  for (int j=0; j<kMaxActiveSounds; j++)
+                  for (int j=0; j<g_nMaxActiveSounds; j++)
                   {
                      if ((pSoundList = g_pPropSnd->GetSound(j)) != NULL)
                      {
@@ -1287,7 +1286,7 @@ void cPropSndInst::ResolveDeferredSounds(ObjID hearingObj)
    cSoundInfo *pSoundInfoNext;
    int i;
 
-   for (i=0; i<kMaxActiveSounds; i++)
+   for (i=0; i<g_nMaxActiveSounds; i++)
    {
       AssertMsg(AccumList.GetFirst() == NULL, "Sound accumulator not empty on resolve start?");
 
@@ -1349,7 +1348,7 @@ void cPropSndInst::ResolveDeferredSounds(ObjID hearingObj)
                         {
                            pSoundInfo->SFXHandle = SFX_Play_Raw(SFX_STATIC, &pSoundInfo->AppsfxParms, pSoundInfo->SampleName);
 
-                           for (int j=0; j<kMaxActiveSounds && (m_ActiveSound[j] != NULL); j++);
+                           for (int j=0; j<g_nMaxActiveSounds && (m_ActiveSound[j] != NULL); j++);
 
                            if (pSoundInfo->SFXHandle != SFX_NO_HND)
                            {
@@ -1388,7 +1387,7 @@ void cPropSndInst::DrawActiveSounds()
    r3s_point pt;
    cSoundInfo *pSoundInfo;
 
-   for (int i=0; i<kMaxActiveSounds; i++)
+   for (int i=0; i<g_nMaxActiveSounds; i++)
    {
       if ((pSoundInfo = m_ActiveSound[i]) == NULL)
          continue;
@@ -1416,7 +1415,7 @@ void cPropSndInst::SpewActiveSounds()
    int i;
 
    mprintf("\nACTIVE SOUND LIST\n");
-   for (i=0; i<kMaxActiveSounds; i++)
+   for (i=0; i<g_nMaxActiveSounds; i++)
    {
       if (m_ActiveSound[i] == NULL)
          mprintf(" [%d] - FREE -\n", i);

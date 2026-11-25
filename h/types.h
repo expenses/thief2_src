@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 /*
  * $Source: x:/prj/tech/hsrc/RCS/types.h $
  * $Revision: 1.31 $
@@ -426,5 +425,9 @@ typedef unsigned char   tResultCode;
 #define MAKE_HRESULT(sev,fac,code) \
     ((HRESULT) (((unsigned long)(sev)<<31) | ((unsigned long)(fac)<<16) | ((unsigned long)(code))) )
 
+
+#if defined(__cplusplus) && _MSC_VER >= 1300
+#include <new>
+#endif
 
 #endif /* !__TYPES_H */

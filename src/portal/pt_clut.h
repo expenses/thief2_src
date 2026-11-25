@@ -13,7 +13,7 @@ typedef struct st_ClutChain
 {
    struct st_ClutChain *next;
    uchar clut_id, clut_id2;
-   uchar pad0,pad1;
+   uchar fog_zone,pad1;
 } ClutChain;
 
 uchar *pt_get_clut(ClutChain *cc);

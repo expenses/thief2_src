@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 //////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/physics/physapi.cpp,v 1.179 2000/03/20 09:44:15 adurant Exp $
 //
@@ -689,6 +688,14 @@ extern BOOL net_cap_physics;
 //
 // Init the system
 //
+EXTERN BOOL g_bDark1;
+
+float g_fJumpSpeedBoost = 1.05;
+BOOL  g_bPhysKeepOutOfWorldAI = TRUE;
+int   g_NewMantle;
+float g_fNewMantleFwd = 0.5;
+float g_fSwimChestOffset;
+
 void PhysInit()
 {
    AutoAppIPtr_(PropertyManager, pPropMan);
@@ -701,6 +708,38 @@ void PhysInit()
 #else
    net_cap_physics = !config_is_defined("phys_no_net_cap");
 #endif
+
+   if (g_bDark1)
+      g_fJumpSpeedBoost = 1.4;
+   if (config_get_float("jump_speed_boost", &g_fJumpSpeedBoost) && (g_fJumpSpeedBoost < 1.0))
+      g_fJumpSpeedBoost = 1.0;
+
+   g_NewMantle = config_is_nonzero("new_mantle");
+   if (g_NewMantle)
+   {
+      char buf[8];
+      config_get_raw("new_mantle", buf, sizeof(buf));
+      if (!strcmp(buf, "2"))
+         g_NewMantle = 2;
+   }
+
+   if (config_get_float("new_mantle_fwd", &g_fNewMantleFwd))
+   {
+      if (g_fNewMantleFwd < 0.5)
+         g_fNewMantleFwd = 0.5;
+      else if (g_fNewMantleFwd > 1.0)
+         g_fNewMantleFwd = 1.0;
+   }
+
+   if (config_get_float("swim_chest_offset", &g_fSwimChestOffset))
+   {
+      if (g_fSwimChestOffset > 1.15)
+         g_fSwimChestOffset = 1.15;
+      else if (g_fSwimChestOffset < 0.0)
+         g_fSwimChestOffset = 0.0;
+   }
+
+   g_bPhysKeepOutOfWorldAI = !config_is_nonzero("phys_deactivate_outofworld_ai");
 
    sim_frames = 0;
    phys_frames = 0;
@@ -1144,6 +1183,21 @@ void PhysGetSubModRotation(ObjID objID, tPhysSubModId subModId, mxs_angvec *ang)
       return;
    }
 
+   mx_mk_angvec(ang, g_pModel->GetRotation(subModId).tx,   
+                     g_pModel->GetRotation(subModId).ty,    
+                     g_pModel->GetRotation(subModId).tz);
+}
+
+void PhysGetSubModLocAndRot(ObjID objID, tPhysSubModId subModId, mxs_vector *loc, mxs_angvec *ang)
+{
+   if (!CheckMoveable(objID, "PhysGetSubModLocAndRot"))
+   {
+      mx_zero_vec(loc);
+      mx_mk_angvec(ang, 0, 0, 0);
+      return;
+   }
+
+   mx_copy_vec(loc, (mxs_vector *) &g_pModel->GetLocationVec(subModId));
    mx_mk_angvec(ang, g_pModel->GetRotation(subModId).tx,   
                      g_pModel->GetRotation(subModId).ty,    
                      g_pModel->GetRotation(subModId).tz);
@@ -3037,7 +3091,7 @@ void PhysPlayerJump(ObjID player, mxs_real jump_speed)
 
       mx_scale_vec(&grav_comp, &kGravityDir, mx_dot_vec(&kGravityDir, &velocity));
       mx_subeq_vec(&velocity, &grav_comp);
-      mx_scaleeq_vec(&velocity, 1.05);
+      mx_scaleeq_vec(&velocity, g_fJumpSpeedBoost);
       mx_scale_addeq_vec(&velocity, &kGravityDir, -jump_speed);
 
       if (friction <= 1.0)
@@ -3094,6 +3148,37 @@ BOOL PhysIsProjectile(ObjID objID)
 //
 // Wake up all sleeping physics models
 //
+EXTERN BOOL ObjIsAI(ObjID obj);
+
+static BOOL PhysObjNearValidPos(ObjID objID)
+{
+   mxs_vector offsets[] =
+   {
+      { 0.0,   0.0,   0.25 },
+      { -0.25, 0.0,   0.0 },
+      { 0.25,  0.0,   0.0 },
+      { 0.0,   0.25,  0.0 },
+      { 0.0,   -0.25, 0.0 },
+      { 0.0,   0.0,   -0.25 },
+      { -0.25, 0.0,   0.3 },
+      { 0.25,  0.0,   0.3 },
+      { 0.0,   0.25,  0.3 },
+      { 0.0,   -0.25, 0.3 },
+   };
+
+   for (int i = 0; i < sizeof(offsets) / sizeof(offsets[0]); i++)
+   {
+      if (PhysObjValidPos(objID, &offsets[i]))
+         return TRUE;
+   }
+   return FALSE;
+}
+
+static BOOL PhysAINearValidPos(ObjID objID)
+{
+   return ObjIsAI(objID) && PhysObjNearValidPos(objID);
+}
+
 void PhysWakeUpAll()
 {
    cPhysModel *pModel;
@@ -3119,7 +3204,8 @@ void PhysWakeUpAll()
       if (!pModel->IsLocationControlled() && 
           !PhysObjValidPos(pModel->GetObjID(), NULL) &&
           !pModel->IsPlayer() && !pModel->IsRope() &&
-          !pModel->IsMovingTerrain())
+          !pModel->IsMovingTerrain() &&
+          !(g_bPhysKeepOutOfWorldAI && PhysAINearValidPos(pModel->GetObjID())))
          pModel->Deactivate();
 
       pModel = pModelNext;

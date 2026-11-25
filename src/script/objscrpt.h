@@ -16,6 +16,15 @@
 // Object services
 //
 
+enum RelTransformType
+{
+   RelObject,
+   RelJoint,
+   RelVHot,
+   RelSubObject,
+   RelSubPhysModel
+};
+
 DECLARE_SCRIPT_SERVICE(Object, 0xdf)
 {
    // Start creating an object.  If you are going to put initial properties
@@ -66,6 +75,14 @@ DECLARE_SCRIPT_SERVICE(Object, 0xdf)
 
    // useful to know for an object
    STDMETHOD_(boolean, RenderedThisFrame)(object scr_obj) PURE;
+
+   STDMETHOD_(vector,ObjectToWorld)(object obj, const vector ref obj_pos) PURE;
+
+   STDMETHOD_(vector,WorldToObject)(object obj, const vector ref world_pos) PURE;
+
+   STDMETHOD_(boolean,CalcRelTransform)(object parent_obj, object child_obj, vector ref rel_pos, vector ref rel_facing, int rel_type, int sub_or_vhot_or_joint) PURE;
+
+   STDMETHOD_(object, Archetype)(object scr_obj) PURE;
 };
 
 #ifdef SCRIPT

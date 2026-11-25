@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/buftagf.cpp,v 2.2 2000/03/07 19:56:48 toml Exp $
 
 #include <lg.h>
@@ -18,6 +17,7 @@
 
 // Must be last header
 #include <dbmem.h>
+#include <lg_file.h>
 
 ////////////////////////////////////////////////////////////
 // TagFileVersion
@@ -45,9 +45,9 @@ tHashSetKey TagFileTable::GetKey(tHashSetNode node) const
 
 ////////////////////////////////////////
 
-#define WRITE(file,x) Verify(fwrite(&(x),sizeof(x),1,file) == 1)
+#define WRITE(file,x) Verify(lg_fwrite(&(x),sizeof(x),1,file) == 1)
 
-void TagFileTable::Write(FILE* file)
+void TagFileTable::Write(LGFILE* file)
 {
    tHashSetHandle idx;
    const TagTableEntry* e;
@@ -74,9 +74,9 @@ TagFileTable::~TagFileTable()
 
 ////////////////////////////////////////
 
-#define READ(file,x) Verify(fread(&(x),sizeof(x),1,file) == 1)
+#define READ(file,x) Verify(lg_fread(&(x),sizeof(x),1,file) == 1)
 
-void TagFileTable::Read(FILE* file)
+void TagFileTable::Read(LGFILE* file)
 {
    ulong items;
    READ(file,items);
@@ -101,7 +101,7 @@ TagFileBase::~TagFileBase()
 #line 104
    AssertMsg(block == NULL,"Tag file closing with a block still open");
    if (file != NULL)
-      fclose(file);
+      lg_fclose(file);
    file = NULL;
 }
 
@@ -156,7 +156,7 @@ int TagFileBase::PrepSeek(ulong& offset, TagFileSeekMode mode)
          offset += block->Start();
          break;
       case kTagSeekFromHere:
-         offset += ftell(file);
+         offset += lg_ftell(file);
          break;
       case kTagSeekFromEnd:
          offset += block->End();
@@ -194,7 +194,7 @@ STDMETHODIMP TagFileBase::Seek(ulong offset, TagFileSeekMode mode)
       return E_FAIL;
    }
    // @TBD: change logic so that SEEK_CUR is preserved for performance
-   fseek(file,offset,SEEK_SET);
+   lg_fseek(file,offset,SEEK_SET);
    blockptr = offset - block->Start();
 
    if (OpenMode() == kTagOpenWrite)
@@ -285,12 +285,12 @@ TagFileWrite::~TagFileWrite()
    {
       TagFileHeader header;
 
-      fseek(file,0,SEEK_END); // seek to end
-      header.table = ftell(file);
+      lg_fseek(file,0,SEEK_END); // seek to end
+      header.table = lg_ftell(file);
 
       table.Write(file); // write out the table
 
-      fseek(file,0,SEEK_SET); // seek to front
+      lg_fseek(file,0,SEEK_SET); // seek to front
 
       // fill out header
       header.version = MyVersion;
@@ -325,16 +325,16 @@ STDMETHODIMP TagFileWrite::OpenBlock(const TagFileTag* tag, TagVersion* version)
    header.version = *version;
 
    // put the block at the end of the file!
-   fseek(file,0,SEEK_END);
+   lg_fseek(file,0,SEEK_END);
 
    // store offset and tag in table
-   TagTableEntry* entry = new TagTableEntry(*tag,ftell(file));
+   TagTableEntry* entry = new TagTableEntry(*tag,lg_ftell(file));
    void* result = table.Insert(entry);
    if (!result) return E_FAIL;
 
    SetCurBlock(tag);
 
-   int len = fwrite(&header,1,sizeof(header),file);
+   int len = lg_fwrite(&header,1,sizeof(header),file);
    if (len != sizeof(header))
    {
       Warning(("TagFileWrite::NewBlock(): wrote only %d out of %d bytes\n",len,sizeof(header)));
@@ -376,7 +376,7 @@ STDMETHODIMP_(long) TagFileWrite::Write(const char* buf, int buflen)
    if (file == NULL)
       return -1;
 
-   long len = fwrite(buf,1,buflen,file);
+   long len = lg_fwrite(buf,1,buflen,file);
    blockptr += len;
 
    block->size = max(blockptr,block->size);
@@ -420,7 +420,7 @@ TagFileRead::TagFileRead(const char* filename)
    if (memcmp(header.deadbeef,Deadbeef,sizeof(header.deadbeef)) != 0)
    {
       Warning(("Tag file %s is corrupt!\n",filename));
-      fclose (file);
+      lg_fclose(file);
       file = NULL;
       return;
    }
@@ -439,7 +439,7 @@ TagFileRead::TagFileRead(const char* filename)
       if (delta < 0)
       {
          Warning(("Version in file is new.  Discarding tag\n"));
-         fclose (file);
+         lg_fclose(file);
          file = NULL;
          return;
       }
@@ -447,7 +447,7 @@ TagFileRead::TagFileRead(const char* filename)
 
 
    // read in tag table
-   fseek(file,header.table,SEEK_SET);
+   lg_fseek(file,header.table,SEEK_SET);
    table.Read(file);
 
 }
@@ -473,10 +473,10 @@ STDMETHODIMP TagFileRead::OpenBlock(const TagFileTag* tag, TagVersion* version)
       ConfigSpew("tagfile_spew", ("Tag %s not in tag file\n", tag->label));
       return E_FAIL;
    }
-   fseek(file,block->offset,SEEK_SET);
+   lg_fseek(file,block->offset,SEEK_SET);
 
    TagFileBlockHeader header;
-   int len = fread(&header,1,sizeof(header),file);
+   int len = lg_fread(&header,1,sizeof(header),file);
    if (len != sizeof(header))
    {
       Warning(("TagFileRead::OpenBlock(): read only %d of %d bytes\n",len,sizeof(header)));
@@ -534,7 +534,7 @@ STDMETHODIMP_(long) TagFileRead::Read(char* buf, int buflen)
    if (buflen > bytesleft)
       buflen = max(bytesleft,0);
 
-   int len = fread(buf,1,buflen,file);
+   int len = lg_fread(buf,1,buflen,file);
    blockptr += len;
    return len;
 }

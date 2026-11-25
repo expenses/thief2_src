@@ -52,7 +52,7 @@ HASHTABLE_TEMPLATE void HASHTABLE::Init()
 HASHTABLE_TEMPLATE  HASHTABLE::cHashTable(int vecsize)
    : fullness(0),tombstones(0)
 {
-   while(!is_prime(vecsize)) vecsize++;
+   vecsize = next_prime(vecsize);
    size = vecsize;
    Init();
 }
@@ -138,7 +138,7 @@ HASHTABLE_TEMPLATE errtype HASHTABLE::Grow(int newsize)
    int oldsize = size;
    int i;
 
-   for (;!is_prime(newsize);newsize++);
+   newsize = next_prime(newsize);
 
    newvec = new Elem[newsize];
    if (newvec == NULL) return ERR_NOMEM;
@@ -276,7 +276,7 @@ HASHTABLE_TEMPLATE  HASHTABLE::~cHashTable()
 // Clear the table to empty
 HASHTABLE_TEMPLATE void HASHTABLE::Clear(int newsize)
 {
-   while(!is_prime(newsize)) newsize++;
+   newsize = next_prime(newsize);
    delete [] statvec;
    delete []  vec;
    size = newsize;
@@ -287,7 +287,7 @@ HASHTABLE_TEMPLATE void HASHTABLE::Clear(int newsize)
 
 
 // Return an iterator across elements
-HASHTABLE_TEMPLATE HASHTABLE::cIter HASHTABLE::Iter() const
+HASHTABLE_TEMPLATE typename HASHTABLE::cIter HASHTABLE::Iter() const
 {
    HASHTABLE::cIter iter(this);
    return iter;

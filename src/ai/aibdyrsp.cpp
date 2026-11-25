@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aibdyrsp.cpp,v 1.3 1999/11/22 17:50:56 henrys Exp $
 //
@@ -99,6 +98,16 @@ static sFieldDesc _g_AIBodyResponseFieldDesc[] =
    BODY_RESPONSE_FIELDS(4),
    BODY_RESPONSE_FIELDS(5),
    BODY_RESPONSE_FIELDS(6),
+   BODY_RESPONSE_FIELDS(7),
+   BODY_RESPONSE_FIELDS(8),
+   BODY_RESPONSE_FIELDS(9),
+   BODY_RESPONSE_FIELDS(10),
+   BODY_RESPONSE_FIELDS(11),
+   BODY_RESPONSE_FIELDS(12),
+   BODY_RESPONSE_FIELDS(13),
+   BODY_RESPONSE_FIELDS(14),
+   BODY_RESPONSE_FIELDS(15),
+   BODY_RESPONSE_FIELDS(16),
 };
 
 static sStructDesc _g_AIBodyResponseStructDesc = StructDescBuild(sAIBodyResponse, kStructFlagNone, _g_AIBodyResponseFieldDesc);

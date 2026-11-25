@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/scrptman.cpp,v 1.42 2000/02/22 19:49:46 toml Exp $
 //
@@ -42,6 +41,67 @@ cScrStr NULL_STRING;
 ///////////////////////////////////////////////////////////////////////////////
 
 cScriptMan * g_pScriptMan;
+
+class cDark1ScriptMan
+{
+public:
+   STDMETHOD(QueryInterface)(REFIID id, void ** ppReturn) { return static_cast<IScriptMan *>(g_pScriptMan)->QueryInterface(id, ppReturn); }
+   STDMETHOD_(ULONG, AddRef)() { return static_cast<IScriptMan *>(g_pScriptMan)->AddRef(); }
+   STDMETHOD_(ULONG, Release)() { return static_cast<IScriptMan *>(g_pScriptMan)->Release(); }
+
+   STDMETHOD (GameInit)() { return g_pScriptMan->GameInit(); }
+   STDMETHOD (GameEnd)() { return g_pScriptMan->GameEnd(); }
+   STDMETHOD (BeginScripts)() { return g_pScriptMan->BeginScripts(); }
+   STDMETHOD (EndScripts)() { return g_pScriptMan->EndScripts(); }
+   STDMETHOD (SetModuleDatapath)(const Datapath * pDatapath) { return g_pScriptMan->SetModuleDatapath(pDatapath); }
+   STDMETHOD (AddModule)(const char * pszModule) { return g_pScriptMan->AddModule(pszModule); }
+   STDMETHOD (RemoveModule)(const char * pszModule) { return g_pScriptMan->RemoveModule(pszModule); }
+   STDMETHOD (ClearModules)() { return g_pScriptMan->ClearModules(); }
+   STDMETHOD (ExposeService)(IUnknown * pService, const GUID * pGuid) { return g_pScriptMan->ExposeService(pService, pGuid); }
+   STDMETHOD_(IUnknown *, GetService)(const GUID * pGuid) { return g_pScriptMan->GetService(pGuid); }
+   STDMETHOD_(const sScrClassDesc *, GetFirstClass)(tScrIter * pIter) { return g_pScriptMan->GetFirstClass(pIter); }
+   STDMETHOD_(const sScrClassDesc *, GetNextClass)(tScrIter * pIter) { return g_pScriptMan->GetNextClass(pIter); }
+   STDMETHOD_(void, EndClassIter)(tScrIter * pIter) { g_pScriptMan->EndClassIter(pIter); }
+   STDMETHOD_(const sScrClassDesc *, GetClass)(const char * pszClass) { return g_pScriptMan->GetClass(pszClass); }
+   STDMETHOD (SetObjScripts)(ObjID obj, const char ** ppszScripts, unsigned n) { return g_pScriptMan->SetObjScripts(obj, ppszScripts, n); }
+   STDMETHOD (ForgetObj)(ObjID obj) { return g_pScriptMan->ForgetObj(obj); }
+   STDMETHOD (ForgetAllObjs)() { return g_pScriptMan->ForgetAllObjs(); }
+   STDMETHOD_(BOOL, WantsMessage)(ObjID obj, const char * pszMessage) { return g_pScriptMan->WantsMessage(obj, pszMessage); }
+   STDMETHOD (SendMessage)(sScrMsg * pMsg, sMultiParm * pReply) { return g_pScriptMan->SendMessage(pMsg, pReply); }
+   STDMETHOD_(void, KillTimedMessage)(tScrTimer timer) { g_pScriptMan->KillTimedMessage(timer); }
+   STDMETHOD_(int, PumpMessages)() { return g_pScriptMan->PumpMessages(); }
+   STDMETHOD_(void, PostMessage)(sScrMsg * pMsg) { g_pScriptMan->PostMessage(pMsg); }
+   STDMETHOD_(tScrTimer, SetTimedMessage)(sScrMsg * pMsg, ulong time, eScrTimedMsgKind kind) { return g_pScriptMan->SetTimedMessage(pMsg, time, kind); }
+   STDMETHOD_(cMultiParm, SendMessage2)(ObjID from, ObjID to, const char * pszMessage, const cMultiParm & data, const cMultiParm & data2, const cMultiParm & data3)
+   {
+      return g_pScriptMan->SendMessage2(from, to, pszMessage, data, data2, data3);
+   }
+   STDMETHOD_(void, PostMessage2)(ObjID from, ObjID to, const char * pszMessage, const cMultiParm & data, const cMultiParm & data2, const cMultiParm & data3)
+   {
+      g_pScriptMan->PostMessage2(from, to, pszMessage, data, data2, data3, 0);
+   }
+   STDMETHOD_(tScrTimer, SetTimedMessage2)(ObjID to, const char * pszName, ulong time, eScrTimedMsgKind kind, const cMultiParm & data)
+   {
+      return g_pScriptMan->SetTimedMessage2(to, pszName, time, kind, data);
+   }
+   STDMETHOD_(BOOL, IsScriptDataSet)(const sScrDatumTag * pTag) { return g_pScriptMan->IsScriptDataSet(pTag); }
+   STDMETHOD (GetScriptData)(const sScrDatumTag * pTag, sMultiParm * pParm) { return g_pScriptMan->GetScriptData(pTag, pParm); }
+   STDMETHOD (SetScriptData)(const sScrDatumTag * pTag, const sMultiParm * pParm) { return g_pScriptMan->SetScriptData(pTag, pParm); }
+   STDMETHOD (ClearScriptData)(const sScrDatumTag * pTag, sMultiParm * pParm) { return g_pScriptMan->ClearScriptData(pTag, pParm); }
+   STDMETHOD (AddTrace)(ObjID Object, char * pszMessage, eScrTraceAction ScrTraceAction, int iTraceLine) { return g_pScriptMan->AddTrace(Object, pszMessage, ScrTraceAction, iTraceLine); }
+   STDMETHOD (RemoveTrace)(ObjID Object, char * pszMessage) { return g_pScriptMan->RemoveTrace(Object, pszMessage); }
+   STDMETHOD_(BOOL, GetTraceLine)(int iTraceLine) { return g_pScriptMan->GetTraceLine(iTraceLine); }
+   STDMETHOD_(void, SetTraceLine)(int iTraceLine, BOOL bStatus) { g_pScriptMan->SetTraceLine(iTraceLine, bStatus); }
+   STDMETHOD_(int, GetTraceLineMask)() { return g_pScriptMan->GetTraceLineMask(); }
+   STDMETHOD_(void, SetTraceLineMask)(int iTraceLineMask) { g_pScriptMan->SetTraceLineMask(iTraceLineMask); }
+   STDMETHOD_(const cScrTrace *, GetFirstTrace)(tScrIter * pIter) { return g_pScriptMan->GetFirstTrace(pIter); }
+   STDMETHOD_(const cScrTrace *, GetNextTrace)(tScrIter * pIter) { return g_pScriptMan->GetNextTrace(pIter); }
+   STDMETHOD_(void, EndTraceIter)(tScrIter * pIter) { g_pScriptMan->EndTraceIter(pIter); }
+   STDMETHOD (SaveLoad)(tPersistIOFunc pfnIO, void * pContextIO, BOOL fLoading) { return g_pScriptMan->SaveLoad(pfnIO, pContextIO, fLoading); }
+   STDMETHOD_(void, PostLoad)() { g_pScriptMan->PostLoad(); }
+};
+
+cDark1ScriptMan * g_pDark1ScriptMan;
 
 ///////////////////////////////////////
 
@@ -98,12 +158,15 @@ cScriptMan::cScriptMan(IUnknown * pOuter, tScrTimeFunc pfnTime,
 {
    MI_INIT_AGGREGATION_1(pOuter, IScriptMan, kPriorityLibrary, NULL);
    DatapathClear(&m_Datapath);
+   g_pDark1ScriptMan = new cDark1ScriptMan;
 }
 
 ///////////////////////////////////////
 
 cScriptMan::~cScriptMan()
 {
+   delete g_pDark1ScriptMan;
+   g_pDark1ScriptMan = NULL;
 }
 
 ///////////////////////////////////////
@@ -1114,6 +1177,8 @@ STDMETHODIMP cScriptMan::SaveLoad(tPersistIOFunc pfnIO,
 
          pfnIO(pContextIO, aClassName, sizeof(aClassName));
          pfnIO(pContextIO, &obj, sizeof(obj));
+         if (g_pfnPersistObjRemap)
+            obj = (*g_pfnPersistObjRemap)(obj);
 
          {
             sScrObjFilterTag filterTag(aClassName, obj);

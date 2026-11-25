@@ -54,7 +54,7 @@ public:
 
     ///////////////////////////////////
 
-private:
+public:
 
     struct sResRequest;
     class cResControlTable : public cHashSet<sResRequest *, Id *, cHashFunctions>
@@ -120,6 +120,8 @@ private:
         DECLARE_POOL();
 
         };
+
+private:
 
     ///////////////////////////////////
 

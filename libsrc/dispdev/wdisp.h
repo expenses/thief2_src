@@ -163,7 +163,7 @@ public:
     STDMETHOD_(void, FlushRect)(int x0, int y0, int x1, int y1);
 
     // Add/Remove a pointer to the monitor set.
-    STDMETHOD_(BOOL, SetMonitor)(tGrDispBits **, eDisplayDeviceMonitorFlag);
+    STDMETHOD_(BOOL, SetMonitor)(tGrDispBits **, ushort *, eDisplayDeviceMonitorFlag);
 
     // Create a device based bitmap
     STDMETHOD (CreateBitmap)(sGrDevBitmapDesc *, int flags, IDeviceBitmap **);
@@ -265,6 +265,8 @@ private:
     };
 
     friend class cIWinDisplayDeviceProxy;
+    friend class cD3DHW2DCache;
+    friend class cD3DModeOps;
 
     ///////////////////////////////////
     //

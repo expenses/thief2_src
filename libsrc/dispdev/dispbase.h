@@ -93,7 +93,7 @@ public:
     STDMETHOD_(BOOL, IsFlushingPaused)();
 
     // Add/Remove a pointer to the monitor set.
-    STDMETHOD_(BOOL, SetMonitor)(tGrDispBits **, eDisplayDeviceMonitorFlag);
+    STDMETHOD_(BOOL, SetMonitor)(tGrDispBits **, ushort *, eDisplayDeviceMonitorFlag);
 
     // Create a device based bitmap
     STDMETHOD (CreateBitmap)(sGrDevBitmapDesc *, int flags, IDeviceBitmap **);

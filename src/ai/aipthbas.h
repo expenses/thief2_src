@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aipthbas.h,v 1.14 2000/01/31 18:20:33 bfarquha Exp $
 //
@@ -191,13 +190,11 @@ struct sAIPathCell // 32 bytes
 /* 8*/   tAIPathCellIDPacked  bestNeighbor;    // bestNeighbor yet found during the search, index in g_AIPathDB.m_Cells
 /*10*/   tAIPathCell2CellLinkIDPacked  linkFromNeighbor;// link used to connect neighbor to me
 
-/*12*/   uchar vertexCount; // in pathCell2VertexLink array
+/*12*/   ushort vertexCount; // in pathCell2VertexLink array
 
-/*13*/   BYTE pathFlags;
+/*14*/   BYTE pathFlags;
 
-/*14*/   uchar cellCount;   // in pathCell2CellLink array
-
-/*15*/   uchar wrapFlags; // set if any ID's have wrapped. Only used in processing, not in game!
+/*15*/   uchar cellCount;   // in pathCell2CellLink array
 
 /*16*/   cMxsVector center;
 
@@ -243,6 +240,7 @@ struct sAIPathCellLink // 8 bytes
 /* 4*/                         vertex_2; // what vertices do I head towards to reach the other cell (index in g_AIPathDB.m_Vertices array)
 /* 6*/   tAIPathOkBits         okBits;   // which AIs can use the link?
 /* 7*/   uchar                 cost;     // how expensive is it?
+         uchar                 pad;
 /*END 8*/
 };
 

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/command.c,v 1.28 2000/02/19 12:29:40 toml Exp $
 
 // Command storage manager/parser
@@ -21,6 +20,7 @@
 #include <prompts.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header! 
+#include <lg_file.h>
 
 // maximum number of registerable commands sets
 #define MAX_COMMAND_SETS  256
@@ -91,13 +91,13 @@ bool CommandParse(char *inp, Command **res_1, char **res_2)
    Command *cmd;
 
      // skip leading whitespace
-   while (*inp && isspace(*inp)) ++inp;
+   while (*inp && isspace((uchar)*inp)) ++inp;
 
      // if empty it's a no-op
    if (!*inp) return FALSE;
 
    s = inp;
-   while (*s && !isspace(*s)) ++s;
+   while (*s && !isspace((uchar)*s)) ++s;
 
    n = s - inp;
 
@@ -152,19 +152,27 @@ bool atobool(char *s)
 // actual execute of the parsed command
 
 // @TODO: the s && *s logic is still wrong!
-#define get_val_and_exec(f,s,cvrt,prmpt,def) \
-   if (do_prompt) f(prmpt(s)); else if ((s)&&(*s)) f(cvrt(s)); else f(def)
+#define get_val_and_exec(f,s,cvrt,prmpt,def,type) \
+   if (do_prompt) { type v = prmpt(s,cmd->name,&ok); if (ok) f(v); } \
+   else if ((s)&&(*s)) f(cvrt(s)); else f(def)
+
+// fill buf with the prompt default: the argument if there is one, else the current value
+#define prompt_default(buf,s,fmt,cur) \
+   if ((s)&&(*s)) { strncpy(buf,s,sizeof(buf)-1); buf[sizeof(buf)-1]='\0'; } \
+   else sprintf(buf,fmt,cur)
 
 void CommandExecuteParsed(Command *cmd, char *s)
 {
    BOOL do_prompt;
+   BOOL ok;
+   char buf[PROMPT_STR_LEN];
    
    if (!(cmd->contexts & *command_context_ptr)) {
       Warning(("CommandExecuteParsed: Invalid context for '%s'\n", cmd->name));
       return;
    }
 
-   while (*s && isspace(*s)) ++s;
+   while (*s && isspace((uchar)*s)) ++s;
 
    do_prompt=(strncmp("@@",s,2)==0);
    if (do_prompt) s+=2;
@@ -183,28 +191,28 @@ void CommandExecuteParsed(Command *cmd, char *s)
       {
          void (*func)(bool);
          func = (void (*)(bool)) cmd->val;
-         get_val_and_exec(func,s,atobool,prompt_bool,TRUE);
+         get_val_and_exec(func,s,atobool,prompt_bool,TRUE,bool);
          break;
       }
       case FUNC_INT: 
       {
          void (*func)(int);
          func = (void (*)(int)) cmd->val;
-         get_val_and_exec(func,s,atoi,prompt_int,0);
+         get_val_and_exec(func,s,atoi,prompt_int,0,int);
          break;
       }
       case FUNC_FLOAT:
       {
          void (*func)(float);
          func = (void (*)(float)) cmd->val;
-         get_val_and_exec(func,s,atof,prompt_double,0.0);
+         get_val_and_exec(func,s,atof,prompt_double,0.0,float);
          break;
       }
       case FUNC_DOUBLE:
       {
          void (*func)(double);
          func = (void (*)(double)) cmd->val;
-         get_val_and_exec(func,s,atof,prompt_double,0.0);
+         get_val_and_exec(func,s,atof,prompt_double,0.0,double);
          break;
       }
       case FUNC_STRING: 
@@ -216,8 +224,10 @@ void CommandExecuteParsed(Command *cmd, char *s)
          // ok, strings are funky so do the following "special" get_val_and_exec
          if (do_prompt)
          {
-            char *tmp=Malloc(PROMPT_STR_LEN*sizeof(char *));
-            func(prompt_string(s,tmp));
+            char *tmp=Malloc(PROMPT_STR_LEN);
+            char *val=prompt_string(s,tmp,cmd->name);
+            if (val)
+               func(val);
             Free(tmp);
          }
          else //  if ((s)&&(*s)) - since for strings both elses are the same, ie call with s
@@ -227,7 +237,15 @@ void CommandExecuteParsed(Command *cmd, char *s)
       case VAR_BOOL:
       {
          bool *var = (bool *) cmd->val;
-         if (*s)
+         if (do_prompt)
+         {
+            bool val;
+            prompt_default(buf,s,"%d",*var);
+            val = prompt_bool(buf,cmd->name,&ok);
+            if (ok)
+               *var = val;
+         }
+         else if (*s)
             *var = atobool(s);
          else
             mprintf("%s=%d\n", cmd->name, (int) *var);
@@ -237,7 +255,15 @@ void CommandExecuteParsed(Command *cmd, char *s)
       case VAR_INT:
       {
          int *var = (int *) cmd->val;
-         if (*s)
+         if (do_prompt)
+         {
+            int val;
+            prompt_default(buf,s,"%d",*var);
+            val = prompt_int(buf,cmd->name,&ok);
+            if (ok)
+               *var = val;
+         }
+         else if (*s)
             *var = atoi(s);
          else
             mprintf("%s=%d\n", cmd->name, (int) *var);
@@ -247,7 +273,16 @@ void CommandExecuteParsed(Command *cmd, char *s)
       case VAR_STRING:
       {
          char *var = (char *) cmd->val;
+         if (do_prompt)
+         {
+            strncpy(buf, ((s)&&(*s)) ? s : var, CMD_STRING_LEN);
+            buf[CMD_STRING_LEN-1] = '\0';
+            s = prompt_string(s,buf,cmd->name);
+            if (!s)
+               break;
+         }
          strncpy(var, s, CMD_STRING_LEN);
+         var[CMD_STRING_LEN-1] = '\0';
          // vm_redraw(); 
          break;
       }
@@ -262,7 +297,15 @@ void CommandExecuteParsed(Command *cmd, char *s)
       case VAR_FLOAT:
       {
          float *var = (float *) cmd->val;
-         if (*s)
+         if (do_prompt)
+         {
+            float val;
+            prompt_default(buf,s,"%g",*var);
+            val = prompt_double(buf,cmd->name,&ok);
+            if (ok)
+               *var = val;
+         }
+         else if (*s)
             *var = atof(s);
          else
             mprintf("%s=%g\n", cmd->name, (float) *var);
@@ -274,11 +317,10 @@ void CommandExecuteParsed(Command *cmd, char *s)
          if (*s)
             *var = atobool(s);
          else {
-            char str[80];
             *var = !*var;
-            sprintf(str,"%s=%d\n", cmd->name, (int) *var);
-            mprintf(str);
-            Status(str);
+            sprintf(buf,"%s=%d\n", cmd->name, (int) *var);
+            mprintf(buf);
+            Status(buf);
          }
          // vm_redraw(); 
          break;
@@ -288,8 +330,11 @@ void CommandExecuteParsed(Command *cmd, char *s)
          int *var = (int *) cmd->val;
          if (*s)
             *var = atoi(s);
-         else
+         else {
             *var = !*var;
+            sprintf(buf,"%s=%d\n", cmd->name, *var);
+            mprintf(buf);
+         }
          // vm_redraw(); 
          break;
       }
@@ -445,13 +490,13 @@ BOOL CommandParseStringArgs(char *args, char *arg1, int arg1_len,
 
 static void dump_commands(char *s)
 {
-   FILE *f;
+   LGFILE *f;
    int j,i;
 
    if (!(s && *s))
       return;
 
-   f = fopen(s, "w");
+   f = lg_fopen(s, "w");
 
    if (!f) {
       Warning(("Couldn't open command-dump file '%s'.\n", s));
@@ -462,11 +507,11 @@ static void dump_commands(char *s)
       for (i=0; i < command_count[j]; ++i)
       {
          Command *cmd = &command_list[j][i];
-         fprintf(f, "%-20s:  %s\n", cmd->name,
+         lg_fprintf(f, "%-20s:  %s\n", cmd->name,
                cmd->comment ? cmd->comment : type_name[cmd->type]);
       }
 
-   fclose(f);
+   lg_fclose(f);
 }
 
 // wouldnt it be cool if this used the "script_path" variable????
@@ -474,8 +519,8 @@ static void dump_commands(char *s)
 void CommandRunScript(char *s)
 {
    static char buf[256];
-   FILE *f;
-   f = fopen(s, "r");
+   LGFILE *f;
+   f = lg_fopen(s, "r");
    if (f) {
       while (fgets(buf, 256, f)) {
          buf[255] = 0;
@@ -485,7 +530,7 @@ void CommandRunScript(char *s)
          // we won't nest buffers down the stack infinitely;
          // we reuse this one, which is safe
       }
-      fclose(f);
+      lg_fclose(f);
    }
 }
 

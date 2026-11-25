@@ -97,4 +97,6 @@ EXTERN BOOL brushConvertTest(editBrush *br);
 // check if brush is filtered
 EXTERN bool applyFilters(editBrush *curBrush);
 
+EXTERN void brush_uvmap_cylinder(editBrush *br, float uScale, float vScale, int uOff, int vOff, BOOL bRotate, int nFaces);
+
 #endif  // __BRREND_H

@@ -37,6 +37,7 @@ private:
 
    unsigned        Index;
    sHashSetChunk * pChunk;
+   sHashSetChunk * pNext;
    sHashSetChunk * pPrev;
 };
 

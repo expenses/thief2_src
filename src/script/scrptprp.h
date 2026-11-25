@@ -9,5 +9,6 @@
 #define __SCRPTPRP_H
 
 EXTERN void CreateScriptProp(void); 
+EXTERN BOOL ScriptPropEnsureModule(const char *name);
 
 #endif // __SCRPTPRP_H

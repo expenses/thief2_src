@@ -47,7 +47,7 @@ cGDIProvider::cGDIProvider(cWinDisplayDevice * pDisplayDevice)
     m_fUsingStaticColors(0),
     m_h16to8RemapPalette(0)
 {
-    m_fStrictPalette = GetPrivateProfileInt("WinShell", "StrictGDIPalette", FALSE, "lg.ini");
+    m_fStrictPalette = GetPrivateProfileInt("WinShell", "StrictGDIPalette", FALSE, ".\\lg.ini");
 
     // Create palette used to help Windows translate 16-bit source
     // to 8-bit screen driver, if needed
@@ -604,6 +604,7 @@ BOOL cGDIModeOps::DoLock(sGrModeCap * pReturnModeInfo)
     BITMAP bmInfo;
     GetObject(m_hOffscreenBitmap, sizeof(BITMAP), &bmInfo);
     pReturnModeInfo->vbase    = (uchar *)bmInfo.bmBits;
+    pReturnModeInfo->rowBytes = bmInfo.bmWidthBytes;
     return !!pReturnModeInfo->vbase;
 }
 

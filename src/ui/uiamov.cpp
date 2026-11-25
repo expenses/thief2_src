@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/ui/uiamov.cpp,v 1.4 2000/02/19 13:28:22 toml Exp $
 
 // Asynchronous movie player for ui screens, you can multiply inherit this

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/inv_rend.c,v 1.47 2000/02/19 13:15:07 toml Exp $
 // code to draw the current inventory object
 // more generally, code to support the issue of rendering models to various canvases
@@ -92,6 +91,7 @@ static float gRenderZoom = 4.0;
 // actual renderer
 
 EXTERN BOOL g_lgd3d;
+EXTERN BOOL r3d_using_g2;
 EXTERN BOOL g_null_raster;
 int g_inv_bcolor = -1;
 
@@ -116,7 +116,7 @@ static mls_multi_light lights[] =
 static void start_ir_stride(void)
 {
 #ifdef RGB_LIGHTING
-   if( g_lgd3d )
+   if( g_lgd3d || r3d_using_g2 )
    {
       r3d_glob.cur_stride = sizeof(g2s_point); // for
       mdd_rgb_lighting = TRUE;
@@ -408,7 +408,7 @@ static void invrend_init_state(invRendState* us, int flags, const Rect *r, grs_c
 // need to look up inv_rend property here!
 invRendState *invRendBuildState(int flags, ObjID o_id, const Rect *r, grs_canvas *draw_cnv)
 {
-   invRendState *us=(invRendState *)Malloc(sizeof(invRendState));
+   invRendState *us=(invRendState *)Calloc(sizeof(invRendState));
    sInvRenderType defprop = { kInvRenderDefault };
    sInvRenderType* rendprop = &defprop;
 
@@ -424,7 +424,7 @@ invRendState *invRendBuildState(int flags, ObjID o_id, const Rect *r, grs_canvas
 // need to look up inv_rend property here!
 invRendState *invRendBuildStateFromType(int flags, sInvRenderType* type, const Rect *r, grs_canvas *draw_cnv)
 {
-   invRendState *us=(invRendState *)Malloc(sizeof(invRendState));
+   invRendState *us=(invRendState *)Calloc(sizeof(invRendState));
 
    us->obj_id = OBJ_NULL;
    us->rendtype = *type;

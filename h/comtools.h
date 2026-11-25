@@ -142,7 +142,11 @@ typedef struct IUnknown  IUnknown;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
 
+#if _MSC_VER >= 1500
+    interface DECLSPEC_NOVTABLE IUnknown
+#else
     interface IUnknown
+#endif
     {
     public:
         virtual HRESULT __stdcall QueryInterface(

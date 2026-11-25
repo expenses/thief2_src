@@ -41,6 +41,7 @@ extern "C" {
 // the single most important call here!!
 // How to create the mixer in the first place
 BOOL SndCreateMixer(ISndMixer **ppMixer, IUnknown *pOuter);
+BOOL SndCreateALMixer(ISndMixer **ppMixer, IUnknown *pOuter);
 #define SndCreateDSMixer SndCreateMixer
 BOOL SndCreateQSMixer(ISndMixer **ppMixer, IUnknown *pOuter);
 BOOL SndCreateA3DMixer(ISndMixer **ppMixer, IUnknown *pOuter);
@@ -133,7 +134,8 @@ typedef enum _eSndSquelchMode {
 
 typedef enum _eSndDataType {
    kSndDataPCM,
-   kSndDataIMAADPCM
+   kSndDataIMAADPCM,
+   kSndDataOgg
 } eSndDataType;
 
 //

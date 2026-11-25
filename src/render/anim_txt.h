@@ -18,7 +18,7 @@ F_DECLARE_INTERFACE(IRes);
 EXTERN int   ectsAnimTxtTime;
 EXTERN BOOL  ectsAnimLoading;
 
-EXTERN BOOL  ectsAnimTxtIgnore(const char *name);
+EXTERN BOOL  ectsAnimTxtIgnore(const char *name, const char *path);
 EXTERN void  ectsAnimTxtCheckLoad(IRes *me, BOOL portal_tmap, char *path, int txt_id);
 EXTERN void *ectsAnimTxtGetFrame(IRes *me);
 EXTERN void  ectsAnimTxtCheckFree(IRes *me);

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/engfeat/tweqctrl.cpp,v 1.56 2000/02/20 18:11:26 adurant Exp $
 // tweq system controllers
 
@@ -64,6 +63,7 @@
 #include <iobjnet.h>
 #include <netmsg.h>
 
+#include <cretprop.h>
 #include <dbmem.h>
 #include <vhot.h>
 
@@ -382,6 +382,22 @@ int processTweqScale(ObjID obj, void *state, int ms)
       return rv;
    }
    if (!tweq_process_needed(&vec_cfg->cfg,obj)) return rv;
+   if (vec_cfg->cfg.flg_misc&TWEQ_MC_CRETSCALE)
+   {
+      scale.el[0]=scale.el[1]=scale.el[2]=ObjCreatureScale(obj);
+      rv=processTweqVector(&scale,vec_state,vec_cfg,ms);
+
+      misc_flag = vec_cfg->cfg.flg_misc;
+      if (misc_flag&(TWEQ_MC_ANCHOR|TWEQ_MC_VHOT)) {
+         mxs_vector init_anchor;
+         get_anchor(obj,misc_flag,&init_anchor);
+         ObjSetCreatureScale(obj,scale.el[0]);
+         finalize_anchor(obj,misc_flag,&init_anchor);
+      } else {
+         ObjSetCreatureScale(obj,scale.el[0]);
+      }
+      return rv;
+   }
    if (!ObjGetScale(obj,&scale))
       scale.el[0]=scale.el[1]=scale.el[2]=1.0;
    rv=processTweqVector(&scale,vec_state,vec_cfg,ms);
@@ -633,7 +649,8 @@ static int tweqHitEdge(sTweqSimpleState *twq_state, sTweqModelsConfig *mds_cfg, 
       twq_state->tm_info.cur_frame=top_edge?0:tweqGetTop(mds_cfg);
    else
    {
-      twq_state->tm_info.cur_frame=top_edge?tweqGetTop(mds_cfg)-1:1;
+      int top=tweqGetTop(mds_cfg);
+      twq_state->tm_info.cur_frame=(top==0)?0:(top_edge?top-1:1);
       _tweq_do_reverse(&twq_state->state);
    }
    return TWEQ_STATUS_QUO;
@@ -642,7 +659,8 @@ static int tweqHitEdge(sTweqSimpleState *twq_state, sTweqModelsConfig *mds_cfg, 
 static void chooseRandomFrame(sTweqSimpleState *twq_state, sTweqModelsConfig *mds_cfg)
 {
    int i, new_fr;   // recount the frames every damn time...
-   for (i=0; i<MAX_TWEQ_MODELS-1; i++)
+   int num_models = (mds_cfg->cfg.flg_misc&TWEQ_MC_USEMODEL5) ? MAX_TWEQ_MODELS : MAX_TWEQ_MODELS-1;
+   for (i=0; i<num_models; i++)
       if (mds_cfg->names[i].text[0]=='\0')
          break;
    if (i<2)

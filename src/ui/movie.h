@@ -24,4 +24,6 @@ EXTERN BOOL MoviePlayAsynchronous(const char * pszFile,int x,int y,int w,int h, 
 // Get the current status
 EXTERN eMP1State MovieStatus();
 
+EXTERN BOOL MovieInConfigList(const char* fn, const char* var);
+
 #endif /* !__MOVIE_H */

@@ -435,6 +435,7 @@
 
 #include <coremutx.h>
 #include <lgassert.h>
+#include <lg_file.h>
 
 #ifdef DBG_ON
 
@@ -783,7 +784,7 @@ bool DbgSetLogFile(ulong src, char *name)
 				pdlf = &dbgLogFile[*pfi];
 				if (--pdlf->refCount == 0)
 					{
-					fclose(pdlf->fp);
+					lg_fclose(pdlf->fp);
 					pdlf->name[0] = 0;
 					}
 				*pfi = 0;
@@ -871,7 +872,7 @@ bool DbgOpenLogFile(int index)
 //	Open file
 
 	pdlf = &dbgLogFile[index];
-	pdlf->fp = fopen(fname, "w");
+	pdlf->fp = lg_fopen(fname, "w");
 
 //	If can't open, remove any references to this file index
 
@@ -908,7 +909,7 @@ void DbgCloseLogFiles()
 		{
 		if (pdlf->fp)
 			{
-			fclose(pdlf->fp);
+			lg_fclose(pdlf->fp);
 			pdlf->fp = NULL;
 			pdlf->refCount = 0;
 			pdlf->name[0] = 0;
@@ -964,8 +965,8 @@ static bool exiting = FALSE;
 			{
 			if (dbgLogFile[fileIndex].fp)
 				{
-				fprintf(dbgLogFile[fileIndex].fp, "%s", buff);
-				fflush(dbgLogFile[fileIndex].fp);
+				lg_fprintf(dbgLogFile[fileIndex].fp, "%s", buff);
+				lg_fflush(dbgLogFile[fileIndex].fp);
 				}
 			}
 		}
@@ -982,8 +983,8 @@ static bool exiting = FALSE;
 				fileIndex = *pfi;
 				if (fileIndex && ((didLogFile & (1 << fileIndex)) == 0))
 					{
-					fprintf(dbgLogFile[fileIndex].fp, "%s", buff);
-					fflush(dbgLogFile[fileIndex].fp);
+					lg_fprintf(dbgLogFile[fileIndex].fp, "%s", buff);
+					lg_fflush(dbgLogFile[fileIndex].fp);
 					didLogFile |= (1 << fileIndex);	// did this file, don't repeat
 					}
 				}

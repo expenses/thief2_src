@@ -160,6 +160,14 @@ typedef void (*tResEnumExtsCallback)(const char *pExt,
 //
 #define RES_IS_STATIC 0x01
 
+//
+// Flags for Bind
+//
+#define RES_BIND_IMAGE_TYPE_PRIO 0x02
+
+EXTERN BOOL g_bImageTypePrio;
+#define RES_BIND_IMAGE_FLAGS (g_bImageTypePrio ? RES_BIND_IMAGE_TYPE_PRIO : 0)
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // INTERFACE: IResMan
@@ -416,6 +424,8 @@ DECLARE_INTERFACE_(IResMan, IUnknown)
    // implement a "recheck the world" button.
    //
    STDMETHOD_(void, GlobalRefresh) (THIS) PURE;
+
+   STDMETHOD_(IResType *, GetResType) (THIS_ const char *pTypeName) PURE;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -1093,5 +1103,8 @@ DECLARE_INTERFACE_(IResMemOverride, IUnknown)
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma pack()
+
+IStoreStream *ResOpenStoreStream(IStore *pStore, const char *pName);
+IStoreStream *ResOpenConfigFile(const char *pPathName, const char *pRelPath, IStore **ppStore);
 
 #endif /* !__RESAPI_H */

@@ -65,7 +65,7 @@ protected:
     STDMETHOD_(void, DisplayFlush)();
 
     // Get the present tick count, in msec since initialization or timer restart
-    STDMETHOD_(unsigned long, GetTimerTick)();
+    STDMETHOD_(unsigned __int64, GetTimerTick)();
 
     // Reset the timer (by default, starts at zero from initialization)
     STDMETHOD_(void , SetTimer)(unsigned long);

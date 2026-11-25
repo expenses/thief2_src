@@ -1,3 +1,4 @@
+#line 427
 /*
 @Copyright Looking Glass Studios, Inc.
 1996,1997,1998,1999,2000 Unpublished Work.
@@ -18,23 +19,83 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 
 #include <lg.h>
 
 #include <matrix.h>
 #include <math.h>
 #include <wr.h>
+#include <mprintf.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header! 
 
 #define EXACT_MATCH
 
+static jmp_buf merge_jmp;
+
+#define MergeError(...)  (mprintf("ERROR: " __VA_ARGS__), longjmp(merge_jmp, 1))
+
+typedef struct sMergeAlloc
+{
+   struct sMergeAlloc *prev;
+   struct sMergeAlloc *next;
+} sMergeAlloc;
+
+static sMergeAlloc *alloc_list;
+
 int allocations;
+
+static void unlink_alloc(sMergeAlloc *a)
+{
+   if (a->prev) {
+      a->prev->next = a->next;
+      if (a->next)
+         a->next->prev = a->prev;
+   } else {
+      alloc_list = a->next;
+      if (alloc_list)
+         alloc_list->prev = NULL;
+   }
+}
+
+static void link_alloc(sMergeAlloc *a)
+{
+   if (alloc_list)
+      alloc_list->prev = a;
+   a->prev = NULL;
+   a->next = alloc_list;
+   alloc_list = a;
+}
 
 void MyFree(void *p)
 {
+   sMergeAlloc *a = (sMergeAlloc *) p - 1;
    --allocations;
-   Free(p);
+   unlink_alloc(a);
+   Free(a);
+}
+
+static void *MergeRealloc(void *p, size_t sz)
+{
+   sMergeAlloc *a = (sMergeAlloc *) p - 1;
+   unlink_alloc(a);
+   a = Realloc(a, sz + sizeof(sMergeAlloc));
+   link_alloc(a);
+   return a + 1;
+}
+
+static void ReleaseAllocs(void)
+{
+   sMergeAlloc *next;
+   if (allocations)
+      mprintf("Releasing remaining allocs: %d\n", allocations);
+   while (alloc_list) {
+      next = alloc_list->next;
+      Free(alloc_list);
+      alloc_list = next;
+   }
+   allocations = 0;
 }
 
 #ifdef Free
@@ -45,13 +106,50 @@ void MyFree(void *p)
 
 bool debug;
 
+typedef struct
+{
+   Vector raw;
+   void *cached;
+} CachedVector;
+
+typedef struct
+{
+   CachedVector *norm;
+   float plane_constant;
+} MergePlane;
+
+typedef struct
+{
+   CachedVector *u, *v;
+   float u_base, v_base;
+   ushort texture_id;
+   short cached_surface;
+   float texture_mag;
+   Vector center;
+} MergeRenderInfo;
+
+typedef struct
+{
+   short base_u, base_v;
+   short pixel_row;
+   uchar h, w;
+   void *data;
+   void *dynamic_light;
+   uint anim_light_bitmask;
+   void *decal;
+} MergeLightMap;
+
+#define RENDER_LIST(c)  ((MergeRenderInfo *) (c)->render_list)
+#define PLANE_LIST(c)   ((MergePlane *) (c)->plane_list)
+#define LIGHT_LIST(c)   ((MergeLightMap *) (c)->light_list)
+
 #define VALIDATE_SIDEDNESS
 
 //////////////////    STATIC LIMITS    //////////////////////
 
-#define MAX_GLOBAL_POINTS     (65536*2)  // 64*2*16K == 2^(6+1+4+10) = 2^21
-#define MAX_GLOBAL_PLANES     16384
-#define MAX_GLOBAL_RENDER     8000
+#define MAX_GLOBAL_POINTS     (65536*4)
+#define MAX_GLOBAL_PLANES     65536
+#define MAX_GLOBAL_RENDER     32000
 #define POINT_HASH            16
 
 //////////////////    BEHINDEDNESS     //////////////////////
@@ -74,15 +172,17 @@ int max_alloc;
 
 void *MallocSafe(size_t sz)
 {
-   void *p = Malloc(sz);
+   sMergeAlloc *p;
    if (sz == 0) {
-      printf("Allocated 0.\n");
+      mprintf("Allocated 0.\n");
       return 0;
    }
-   if (!p) Error(1, "Out of memory allocating %d.\n", sz);
+   p = Malloc(sz + sizeof(sMergeAlloc));
+   if (!p) MergeError("Out of memory allocating %d.\n", sz);
    if (++allocations > max_alloc) max_alloc = allocations;
-   memset(p, 0xAA, sz);
-   return p;
+   link_alloc(p);
+   memset(p + 1, 0, sz);
+   return p + 1;
 }
 
 void *MallocCounted(size_t sz)
@@ -111,7 +211,7 @@ int SubCount(void *p, char *func)
    int *q = COUNT(p);
    if ((*q -= 1) <= 0) {
       if (*q < 0)
-         Error(1, "RefCount decremented below 0: %s!\n", func); 
+         MergeError("RefCount decremented below 0: %s!\n", func); 
       return 1;
    }
    return 0;
@@ -178,8 +278,8 @@ void SetArray(DynamicArray *a, int min)
       if (new_size < min)
          new_size = min;
 
-      a->memory = Realloc(a->memory, new_size);
-      if (!a->memory) Error(1, "Out of memory.\n");
+      a->memory = MergeRealloc(a->memory, new_size);
+      if (!a->memory) MergeError("Out of memory.\n");
    }
 }
 
@@ -225,6 +325,7 @@ double PLANE_EPSILON =       0.001;
 #define POINT_EPSILON        0.001
 
 #define FIXUP_EPSILON        0.0005
+#define AREA_EPSILON         0.0001
 
 
 #define GE_ONE(x)     ((x) >= (1 - REAL_EPSILON))
@@ -371,19 +472,19 @@ Plane findPlane(mxs_vector *normal, mxs_real d)
       return i;
    }
    if (num_planes == MAX_GLOBAL_PLANES)
-      Error(1, "Increase MAX_GLOBAL_PLANES\n");
+      MergeError("Increase MAX_GLOBAL_PLANES\n");
 
    // make a new one!
    createPlane(num_planes++, normal, d);
    return i;
 }
 
-void dump_plane(Plane p)
+static void dump_plane(Plane p)
 {
    if (p < 0 || p > num_planes)
-      printf("Invalid plane %d\n", p);
+      mprintf("Invalid plane %d\n", p);
    else
-      printf("Plane %d: %g %g %g %g\n", p,
+      mprintf("Plane %d: %g %g %g %g\n", p,
          plane[p].norm.x, plane[p].norm.y, plane[p].norm.z,
          plane[p].d);
 }
@@ -479,9 +580,9 @@ Point findPoint(mxs_vector *pt)
 
    if (i < 0 || j < 0 || k < 0 ||
         i >= POINT_HASH || j >= POINT_HASH || k >= POINT_HASH) {
-      printf("Hash base: %d %d %d\n", hash_base[0], hash_base[1], hash_base[2]);
-      printf("Hash size: %d %d %d\n", hash_size[0], hash_size[1], hash_size[2]);
-      Error(1, "Invalid hash %d %d %d for %f %f %f\n", i,j,k,
+      mprintf("Hash base: %d %d %d\n", hash_base[0], hash_base[1], hash_base[2]);
+      mprintf("Hash size: %d %d %d\n", hash_size[0], hash_size[1], hash_size[2]);
+      MergeError("Invalid hash %d %d %d for %f %f %f\n", i,j,k,
               MP(pt->x), MP(pt->y), MP(pt->z));
       
    }
@@ -498,7 +599,7 @@ Point findPoint(mxs_vector *pt)
    }
 
    if (num_point == MAX_GLOBAL_POINTS)
-      Error(1, "Increase MAX_GLOBAL_POINTS");
+      MergeError("Increase MAX_GLOBAL_POINTS");
 
    point[num_point].next_hash = *p;
    point[num_point].pt = *pt;
@@ -511,9 +612,9 @@ Point findPoint(mxs_vector *pt)
 void dump_point(Point p)
 {
    if (p < 0 || p >= num_point)
-      printf("Invalid point %d\n", p);
+      mprintf("Invalid point %d\n", p);
    else
-      printf("%d: [%g %g %g]", (int) p, PT(p)->x, PT(p)->y, PT(p)->z);
+      mprintf("%d: [%g %g %g]", (int) p, PT(p)->x, PT(p)->y, PT(p)->z);
 }
 
 void emit_point(Point p)
@@ -594,16 +695,16 @@ Polygon *freezePolygon(TempPoly *t)
 
 void dump_polygon(Polygon *a)
 {
-   printf("Polygon: %d vertices  plane %d\n", a->num_verts, a->p);
+   mprintf("Polygon: %d vertices  plane %d\n", a->num_verts, a->p);
    if (a->num_verts < 20) {
       int i;
       for (i=0; i < a->num_verts; ++i)
           dump_point(a->vert[i]);
-      printf("\n");
+      mprintf("\n");
    }
 }
 
-void emit_polygon(Polygon *a)
+static void emit_polygon(Polygon *a)
 {
    int i;
    fprintf(out_file, "%d ", a->num_verts);
@@ -666,7 +767,7 @@ PtrArray *freezePtrArray(TempPtrArray *t)
 typedef struct {
    mxs_vector u,v;           // 24
    mxs_real u_base, v_base;  // u&v values at projection of origin on plane
-   uchar texture_id;
+   ushort texture_id;
 } RenderData;
 
 RenderData render[MAX_GLOBAL_RENDER];
@@ -688,7 +789,7 @@ void emit_render_aspects(void)
 #define UV_EPSILON 0.05
 #define UV_ROUND   (UV_EPSILON/2)
 
-int FindRenderCore(uchar tex, mxs_vector *u, mxs_vector *v,
+int FindRenderCore(ushort tex, mxs_vector *u, mxs_vector *v,
                  mxs_real u_base, mxs_real v_base)
 {
    int i;
@@ -706,7 +807,7 @@ int FindRenderCore(uchar tex, mxs_vector *u, mxs_vector *v,
    }
 
    if (i == MAX_GLOBAL_RENDER)
-      Error(1, "Increase MAX_GLOBAL_RENDER\n");
+      MergeError("Increase MAX_GLOBAL_RENDER\n");
 
    ++num_render;
 
@@ -723,8 +824,8 @@ int FindRenderCore(uchar tex, mxs_vector *u, mxs_vector *v,
 // Convert u_base & v_base from the meaning in the
 // worldrep to the meaning above
 
-int FindRender(uchar tex, mxs_vector *u, mxs_vector *v,
-                 Plane p, ushort u_base, ushort v_base, mxs_vector *anchor)
+int FindRender(ushort tex, mxs_vector *u, mxs_vector *v,
+                 Plane p, float u_base, float v_base, mxs_vector *anchor)
 {
    // project origin onto plane
    mxs_vector pt;
@@ -762,8 +863,8 @@ int FindRender(uchar tex, mxs_vector *u, mxs_vector *v,
         anchor->y * (u->z * pt.x - u->x * pt.z) +
         anchor->z * (u->x * pt.y - u->y * pt.x);
 
-   nu = nu * det + u_base/(16*256.0);
-   nv = nv * det + v_base/(16*256.0);
+   nu = nu * det + u_base;
+   nv = nv * det + v_base;
 
    // now we want to extract a number 0..1 from these
    f = floor(nu + UV_ROUND);
@@ -794,7 +895,7 @@ struct st_RenderPoly
 
 static void bad(char *s)
 {
-   printf("ERROR: Polygon list (%s) had cycle\n");
+   mprintf("ERROR: Polygon list (%s) had cycle\n");
    exit(1);
 }
 
@@ -1015,7 +1116,7 @@ bool PartitionPolygonByPlane(Polygon *a, Plane p,
 #endif
 
    if (n > MAX_POLY_POINT)
-      Error(1, "PartitionPolygonByPlane: %d > MAX_POLY_POINT.\n", n);
+      MergeError("PartitionPolygonByPlane: %d > MAX_POLY_POINT.\n", n);
 
    *in = *out = 0;
 
@@ -1048,16 +1149,16 @@ bool PartitionPolygonByPlane(Polygon *a, Plane p,
 
 #ifdef VALIDATE_SIDEDNESS
    if (side == COPLANAR && (c_in || c_out))
-      Error(1, "Expected coplanar and got inside or outside.\n");
+      MergeError("Expected coplanar and got inside or outside.\n");
    if (side == INSIDE && c_out)
-      Error(1, "Expected inside and got outside.\n");
+      MergeError("Expected inside and got outside.\n");
    if (side == OUTSIDE && c_in)
-      Error(1, "Expected outside and got inside.\n");
-//printf("%s ", "IN\0\0OUT\0CROSS"+4*(side-1));
+      MergeError("Expected outside and got inside.\n");
+//mprintf("%s ", "IN\0\0OUT\0CROSS"+4*(side-1));
 #endif
 
    if (!c_in && !c_out) {
-      printf("WARNING: Didn't grab coplanar case!\n");
+      mprintf("WARNING: Didn't grab coplanar case!\n");
       if (planar) {
          *planar = a;
          return TRUE;
@@ -1128,7 +1229,7 @@ bool PartitionPolygonByPlane(Polygon *a, Plane p,
       (*in)->inside = (*out)->inside = a->inside;
 
       if (!(*in)->num_verts || !(*out)->num_verts)
-         Error(1, "Bad split.\n");
+         MergeError("Bad split.\n");
    }
    return FALSE;
 }
@@ -1148,30 +1249,30 @@ void PartitionRenderPolyByPlane(RenderPoly *rp, Plane p,
 
    if (plane && plane_p) {
       if (plane_p != rp->poly)
-         Error(1, "A coplanar plane wasn't the original!\n");
+         MergeError("A coplanar plane wasn't the original!\n");
       *in = 0;
       *out = 0;
       return;
    }
 
    if (in_p == rp->poly) {
-//printf("in ");
+//mprintf("in ");
       *in = rp;
       *out = 0;
       return;
    }
 
    if (out_p == rp->poly) {
-//printf("out ");
+//mprintf("out ");
       *out = rp;
       *in = 0;
       return;
    }
 
    if (!in_p || !out_p)
-      Error(1, "Split polygon into one fragment different from original\n");
+      MergeError("Split polygon into one fragment different from original\n");
 
-//printf("split ");
+//mprintf("split ");
    *in  = makeRenderPoly(in_p, rp);
    *out = makeRenderPoly(out_p, rp);
 }
@@ -1262,7 +1363,7 @@ void SplitPlanePartition(PlanePartition *db, Plane p,
 
    if (!inside && !outside) {
       // huh
-      printf("Totally coplanar... ick.\n");
+      mprintf("Totally coplanar... ick.\n");
       *inside_db = NULL;
       *outside_db = NULL;
       FreePlanePartition(db);
@@ -1324,7 +1425,7 @@ void SplitPartition(PlanePartition *db, Plane p,
       }
       db = next;
    }
-   //printf("Split %d planesets into %d and %d\n", i, j, k);
+   //mprintf("Split %d planesets into %d and %d\n", i, j, k);
 }
 
 /////////////////////////////////////
@@ -1387,7 +1488,7 @@ int evaluateSplit(PlanePartition *db, Plane p, bool show_res)
    count = inside + outside + split;
 
    if (show_res)
-      printf("(Split results) plane %d: %d inside, %d outside, %d split\n",
+      mprintf("(Split results) plane %d: %d inside, %d outside, %d split\n",
                     p, inside, outside, split);
 
    if (split == 0 && always_take_0_split)
@@ -1457,13 +1558,15 @@ Plane SelectSplitPlane(PlanePartition *db)
       }
    }
    if (best_value == plane_split_metric_infinity) {
-      Error(1, "No split plane was any good.\n");
+      MergeError("No split plane was any good.\n");
    }
 
    return best_plane;
 }
 
-#define WRITE_LEAF()  fprintf(out_file, "0\n")
+static int bsp_leaf;
+
+#define WRITE_LEAF()  fwrite(&bsp_leaf, sizeof(bsp_leaf), 1, out_file)
 
 void RecursivePartition(PlanePartition *db);
 void BSPPartitionByPlane(PlanePartition *db, Plane p)
@@ -1480,14 +1583,21 @@ void BSPPartitionByPlane(PlanePartition *db, Plane p)
 void BSPPartition(PlanePartition *db)
 {
    Plane p;
+   int split;
+   double d[4];
 
    // select the best-guess split plane
 
    p = SelectSplitPlane(db);
    if (debug) evaluateSplit(db, p, TRUE);
 
-   fprintf(out_file, "-1 %15.15g %15.15g %15.15g %15.15g\n",
-      plane[p].norm.x, plane[p].norm.y, plane[p].norm.z, plane[p].d);
+   split = -1;
+   d[0] = plane[p].norm.x;
+   d[1] = plane[p].norm.y;
+   d[2] = plane[p].norm.z;
+   d[3] = plane[p].d;
+   fwrite(&split, sizeof(split), 1, out_file);
+   fwrite(d, sizeof(d[0]), 4, out_file);
 
    BSPPartitionByPlane(db, p);
 }
@@ -1526,6 +1636,8 @@ void RecursivePartition(PlanePartition *db)
 
 int colinear_merge, num_merged, colinear_del;
 
+static BOOL remove_duplicate_verts(Polygon *q);
+
 Polygon *try_merge(Polygon *a, Polygon *b)
 {
    int i,j, n1,n2, e,f, k, pts;
@@ -1548,6 +1660,7 @@ Polygon *try_merge(Polygon *a, Polygon *b)
 
       p1 = a->vert[i];
       p2 = a->vert[j];
+      AssertMsg(p1 != p2, "polygon with 0-len edge");
 
       for (e=0; e < n2; ++e) {
          f = (e+1)%n2;
@@ -1659,7 +1772,15 @@ delete_i = delete_j = 0;
    if (!delete_j)
       out->vert[k++] = b->vert[e];
 
+   AssertMsg(k <= n1 + n2 - 2 - delete_i - delete_j, "used more verts than allocated");
+
    out->num_verts = k;
+
+   if (!remove_duplicate_verts(out)) {
+      --num_merged;
+      FreePoly(out);
+      return NULL;
+   }
 
    return out;
 }
@@ -1684,7 +1805,7 @@ int merge_render(RenderPoly *a, RenderPoly *b)
 
 ////////       process and merge together rendered polygons    ///////
 
-int add_render_plane(PortalPolygonRenderInfo *r, mxs_vector *anchor, Plane p)
+int add_render_plane(MergeRenderInfo *r, mxs_vector *anchor, Plane p)
 {
    return FindRender(r->texture_id, &r->u->raw, &r->v->raw,
                   p, r->u_base, r->v_base, anchor);
@@ -1724,6 +1845,50 @@ void merge_poly_list(int p)
 }
 
 int num_input_polys;
+int num_degenerate;
+
+static BOOL remove_duplicate_verts(Polygon *q)
+{
+   int i, n = q->num_verts;
+   if (n < 3)
+      return FALSE;
+   for (i=0; i < n; ++i) {
+      if (q->vert[i] == q->vert[(i+1)%n]) {
+         if (n-i-1)
+            memmove(&q->vert[i], &q->vert[i+1], (n-i-1)*sizeof(Point));
+         --q->num_verts;
+         --n;
+         --i;
+         if (n < 3)
+            return FALSE;
+      }
+   }
+   return TRUE;
+}
+
+static bool polygon_is_degenerate(Polygon *q)
+{
+   double v0[3], e[2][3], c[3], area = 0;
+   int i, n = q->num_verts;
+   mxs_vector *v;
+
+   v = PT(q->vert[0]);
+   v0[0] = v->x; v0[1] = v->y; v0[2] = v->z;
+   v = PT(q->vert[1]);
+   e[0][0] = v->x - v0[0]; e[0][1] = v->y - v0[1]; e[0][2] = v->z - v0[2];
+   if (n <= 2)
+      return TRUE;
+   for (i=2; i < n; ++i) {
+      double *d = e[~i & 1];
+      v = PT(q->vert[i]);
+      d[0] = v->x - v0[0]; d[1] = v->y - v0[1]; d[2] = v->z - v0[2];
+      c[0] = e[0][1]*e[1][2] - e[0][2]*e[1][1];
+      c[1] = e[0][2]*e[1][0] - e[0][0]*e[1][2];
+      c[2] = e[0][0]*e[1][1] - e[0][1]*e[1][0];
+      area += sqrt(c[0]*c[0] + c[1]*c[1] + c[2]*c[2]);
+   }
+   return area < AREA_EPSILON;
+}
 
   // turn the n'th polygon in the cell p into a
   //   Polygon.  v is the appropriate offset into vertex_list
@@ -1732,30 +1897,38 @@ Polygon *build_poly(PortalCell *p, int n, int v)
    int i, k = p->poly_list[n].num_vertices;
    int pl = p->poly_list[n].planeid;
    Polygon *q = allocatePolygon(k);
-   q->p = findPlane(&p->plane_list[pl].norm->raw,
-                     p->plane_list[pl].plane_constant);
+   q->p = findPlane(&PLANE_LIST(p)[pl].norm->raw,
+                     PLANE_LIST(p)[pl].plane_constant);
 
    q->inside = !reversed;
    for (i=0; i < k; ++i)
       q->vert[i] = findPoint(&p->vpool[p->vertex_list[v+i]]);
 
+   if (!remove_duplicate_verts(q) || polygon_is_degenerate(q)) {
+      ++num_degenerate;
+      FreeCounted(q);
+      return NULL;
+   }
    return q;
 }
 
 void extract_polys_from_cell(PortalCell *p)
 {
    int i,v,n,k;
+   Polygon *q;
 
    n = p->num_render_polys;
    v = 0;
    num_input_polys += n;
    for (i=0; i < n; ++i) {
       int pl = p->poly_list[i].planeid;
-      k = add_render_plane(&p->render_list[i],
-            &p->vpool[p->vertex_list[v+p->render_list[i].texture_anchor]],
-            findPlane(&p->plane_list[pl].norm->raw, 
-                     p->plane_list[pl].plane_constant));
-      add_poly_to_plane_list(build_poly(p, i, v), k);
+      k = add_render_plane(&RENDER_LIST(p)[i],
+            &p->vpool[p->vertex_list[v]],
+            findPlane(&PLANE_LIST(p)[pl].norm->raw, 
+                     PLANE_LIST(p)[pl].plane_constant));
+      q = build_poly(p, i, v);
+      if (q)
+         add_poly_to_plane_list(q, k);
       v += p->poly_list[i].num_vertices;
    }
 }
@@ -1771,13 +1944,13 @@ char *read_into(FILE *f, void **data, char *mem, int sz, int count)
 
 void bad_cell(PortalCell *p)
 {
-   printf("Bad cell:\n");
-   printf("Num verts: %d\n", p->num_vertices);
-   printf("Num polys; %d\n", p->num_polys);
-   printf("Num render polys: %d\n", p->num_render_polys);
-   printf("Num portal polys: %d\n", p->num_portal_polys);
-   printf("Num planes: %d\n", p->num_planes);
-   Error(1, "Bad cell\n");
+   mprintf("Bad cell:\n");
+   mprintf("Num verts: %d\n", p->num_vertices);
+   mprintf("Num polys; %d\n", p->num_polys);
+   mprintf("Num render polys: %d\n", p->num_render_polys);
+   mprintf("Num portal polys: %d\n", p->num_portal_polys);
+   mprintf("Num planes: %d\n", p->num_planes);
+   MergeError("Bad cell\n");
 }
 
 mxs_vector vec_min, vec_max;
@@ -1826,11 +1999,11 @@ PortalCell *read_cell(FILE *f)
    sz = sizeof(p) +
         p.num_vertices * sizeof(Vertex) +
         p.num_polys * sizeof(PortalPolygonCore) +
-        p.num_render_polys * sizeof(PortalPolygonRenderInfo) +
-        p.num_planes * sizeof(PortalPlane) +
+        p.num_render_polys * sizeof(MergeRenderInfo) +
+        p.num_planes * sizeof(MergePlane) +
         p.num_planes * sizeof(CachedVector) +
         p.num_render_polys * 2 * sizeof(CachedVector) +
-        p.num_render_polys * sizeof(PortalLightMap) + vl;
+        p.num_render_polys * sizeof(MergeLightMap) + vl;
    //        p.num_vlist; // this was for vertex lighting
 
    mem = MallocSafe(sz);
@@ -1843,8 +2016,8 @@ PortalCell *read_cell(FILE *f)
    mem = read_into(f, &q->poly_list, mem,
            sizeof(PortalPolygonCore), p.num_polys);
    mem = read_into(f, &q->render_list, mem,
-           sizeof(PortalPolygonRenderInfo), p.num_render_polys);
-   mem = read_into(f, &q->plane_list, mem, sizeof(PortalPlane), p.num_planes);
+           sizeof(MergeRenderInfo), p.num_render_polys);
+   mem = read_into(f, &q->plane_list, mem, sizeof(MergePlane), p.num_planes);
    mem = read_into(f, &q->vertex_list, mem, 1, vl);
 //   mem = read_into(f, &q->vertex_list_lighting, mem, 1, p.num_vlist);
 
@@ -1852,29 +2025,29 @@ PortalCell *read_cell(FILE *f)
    mem += sizeof(CachedVector) * 2 * p.num_render_polys;
 
    for (i=0; i < p.num_render_polys; ++i) {
-      q->render_list[i].u = &cv[i*2+0];
-      q->render_list[i].v = &cv[i*2+1];
-      fread(&q->render_list[i].u->raw, sizeof(Vector), 1, f);
-      fread(&q->render_list[i].v->raw, sizeof(Vector), 1, f);
+      RENDER_LIST(q)[i].u = &cv[i*2+0];
+      RENDER_LIST(q)[i].v = &cv[i*2+1];
+      fread(&RENDER_LIST(q)[i].u->raw, sizeof(Vector), 1, f);
+      fread(&RENDER_LIST(q)[i].v->raw, sizeof(Vector), 1, f);
    }
 
    cv = (CachedVector *) mem;
    mem += sizeof(CachedVector) * p.num_planes;
 
    for (i=0; i < p.num_planes; ++i) {
-      q->plane_list[i].norm = &cv[i];
-      fread(&q->plane_list[i].norm->raw, sizeof(Vector), 1, f);
+      PLANE_LIST(q)[i].norm = &cv[i];
+      fread(&PLANE_LIST(q)[i].norm->raw, sizeof(Vector), 1, f);
    }
 
    mem = read_into(f, &q->light_list, mem,
-           sizeof(PortalLightMap), p.num_render_polys);
+           sizeof(MergeLightMap), p.num_render_polys);
 
    for (i=0; i < p.num_render_polys; ++i) {
-      fseek(f, q->light_list[i].w*q->light_list[i].h, SEEK_CUR);
+      fseek(f, LIGHT_LIST(q)[i].w*LIGHT_LIST(q)[i].h, SEEK_CUR);
    }
 
    if ((char *) q + sz != mem)
-      Error(1, "read_cell: buffer size different from read amount.");
+      MergeError("read_cell: buffer size different from read amount.");
 
    update_min_max(q->vpool, p.num_vertices);
 
@@ -1892,7 +2065,7 @@ PortalCell **level;
 PtrArray *db, *part_level;
 int num_cells;
 
-void process_level(char *fname)
+bool process_level(char *fname)
 {
    FILE *f = fopen(fname, "rb");
    int n, i;
@@ -1900,39 +2073,50 @@ void process_level(char *fname)
    PlanePartition *pp;
 
    if (!f) {
-      fprintf(stderr, "merge: file %s not found.\n", fname);
-      exit(1);
+      mprintf("ERROR: file %s not found.\n", fname);
+      return FALSE;
    }
 
    init_min_max();
 
    fread(&n, sizeof(n), 1, f);
+   if (n >= 0) {
+      mprintf("ERROR: file %s not correct format.\n", fname);
+      return FALSE;
+   }
+   fread(&n, sizeof(n), 1, f);
    num_cells = n;
-   printf("File has %d cells.\n", n);
+   mprintf("File has %d cells.\n", n);
+
+   if (num_cells <= 0)
+      return TRUE;
+
+   if (setjmp(merge_jmp))
+      return FALSE;
 
    level = MallocSafe(sizeof(PortalCell *)* n);
 
    for (i=0; i < n; ++i) {
-      if (feof(f)) Error(1, "Premature end of input file after %d cells.\n",i);
+      if (feof(f)) MergeError("Premature end of input file after %d cells.\n",i);
       level[i] = read_cell(f);
    }
-   if (fread(&dummy, 1, 1, f)) Error(1, "Data appears after file end.\n");
+   if (fread(&dummy, 1, 1, f)) MergeError("Data appears after file end.\n");
 
-   printf("Allocations: %d\n", allocations);
+   mprintf("Allocations: %d\n", allocations);
 
-   printf("Min: %g %g %g\n", vec_min.x, vec_min.y, vec_min.z);
-   printf("Max: %g %g %g\n", vec_max.x, vec_max.y, vec_max.z);
+   mprintf("Min: %g %g %g\n", vec_min.x, vec_min.y, vec_min.z);
+   mprintf("Max: %g %g %g\n", vec_max.x, vec_max.y, vec_max.z);
    initPointHash(&vec_min, &vec_max);
 
    for (i=0; i < n; ++i)
       extract_polys_from_cell(level[i]);
 
-   printf("Input polys: %d\n", num_input_polys);
-   printf("Unique planes: %d\n", num_planes);
-   printf("Unique render aspects: %d\n", num_render);
-   printf("Unique vertices: %d\n", num_point);
+   mprintf("Input polys: %d\n", num_input_polys);
+   mprintf("Unique planes: %d\n", num_planes);
+   mprintf("Unique render aspects: %d\n", num_render);
+   mprintf("Unique vertices: %d\n", num_point);
 
-   printf("Allocations: %d\n", allocations);
+   mprintf("Allocations: %d\n", allocations);
 
    pp = NULL;
    for (i=0; i < num_planes; ++i) {
@@ -1945,43 +2129,58 @@ void process_level(char *fname)
       pp = pl;
    }
 
-   printf("Merges made: %d\n", num_merged);
-   printf("Merges with internal colinear points: %d\n", colinear_merge);
-   printf("%d colinear points deleted\n", colinear_del);
+   mprintf("Merges made: %d\n", num_merged);
+   mprintf("Merges with internal colinear points: %d\n", colinear_merge);
+   mprintf("%d colinear points deleted\n", colinear_del);
 
-   printf("Allocations: %d\n", allocations);
+   mprintf("Allocations: %d\n", allocations);
 
    RecursivePartition(pp);
 
-   {
-      int i;
-      for (i=0; i < num_cells; ++i)
-         Free(level[i]);
-      Free(level);
-   }
+   if (num_degenerate)
+      mprintf("Discarded degenerate polys: %d\n", num_degenerate);
+
+   for (i=0; i < num_cells; ++i)
+      Free(level[i]);
+   Free(level);
+
+   return TRUE;
 }
 
-int main(int argc, char **argv)
+int csgmerge(double eps)
 {
-   if (argc > 1 && !strcmp(argv[1], "-d")) {
-      debug = TRUE;
-      --argc;
-      ++argv;
+   int result = 0;
+
+   mprintf("--------------- csgmerge ---------------\n");
+
+   max_alloc = 0;
+   num_planes = 0;
+   memset(plane, 0, sizeof(plane));
+   num_render = 0;
+   memset(render, 0, sizeof(render));
+   reversed = FALSE;
+   num_input_polys = 0;
+   num_degenerate = 0;
+   colinear_merge = 0;
+   num_merged = 0;
+   colinear_del = 0;
+
+   if (eps >= 0) {
+      PLANE_EPSILON = eps;
+      mprintf("Epsilon is %lg\n", PLANE_EPSILON);
    }
 
-   if (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'e') {
-      PLANE_EPSILON = atof(argv[1]+2);
-      --argc;
-      ++argv;
-      printf("Epsilon is %lg\n", PLANE_EPSILON);
-   }
+   out_file = fopen("bsp.bin", "wb");
+   if (!process_level("temp.wr"))
+      result = -1;
+   mprintf("Current allocations: %d\nMax allocations: %d\n",
+         allocations, max_alloc);
+   fclose(out_file);
+   if (result == -1)
+      remove("bsp.bin");
 
-   if (argc > 1) {
-      out_file = fopen("bsp.out", "w");
-      process_level(argv[1]);
-      printf("Current allocations: %d\nMax allocations: %d\n",
-            allocations, max_alloc);
-      fclose(out_file);
-   }
-   return 0;
+   ReleaseAllocs();
+
+   mprintf("------------- csgmerge end -------------\n");
+   return result;
 }

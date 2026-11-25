@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/diskfree.c,v 1.5 2000/02/19 13:16:36 toml Exp $
 
 #include <config.h>
@@ -12,11 +11,19 @@
 #include <limits.h>
 
 #include <diskfree.h>
+#include <filetool.h>
+#include <direct.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <memall.h>
 #include <dbmem.h>   // must be last header! 
+
+#ifdef EDITOR
+#define PRODUCT_NAME "DromEd"
+#else
+#define PRODUCT_NAME "Thief 2"
+#endif
 
 int compute_free_diskspace(char *str)
 {
@@ -56,10 +63,29 @@ BOOL CheckForDiskspaceAndMessage(char *str, int minMB)
       strcpy(cfgvar,"no_diskspace_");
       strcat(cfgvar,lang);
       if (!config_get_raw(cfgvar,tmp_buf,512))
-         strcpy(tmp_buf,"You have %dM of free disk space.  Thief 2 requires %dM.\n");
+         strcpy(tmp_buf,"You have %dM of free disk space.  " PRODUCT_NAME " requires %dM.\n");
       sprintf(buffer, tmp_buf, space >> MB_SHIFT, minMB);
-      MessageBox(NULL, buffer, "Thief 2", MB_ICONERROR);
+      MessageBox(NULL, buffer, PRODUCT_NAME, MB_ICONERROR);
       return FALSE;
    }
    return TRUE;
+}
+
+BOOL CheckForWriteAccessAndMessage(void)
+{
+   char path[MAX_PATH];
+   char tmp_buf[512];
+   char lang[32], cfgvar[64];
+
+   if (!_getcwd(path, MAX_PATH) || dir_writable(path))
+      return TRUE;
+
+   if (!config_get_raw("language",lang,32))
+      strcpy(lang,"english");
+   strcpy(cfgvar,"no_diskwrite_");
+   strcat(cfgvar,lang);
+   if (!config_get_raw(cfgvar,tmp_buf,512))
+      strcpy(tmp_buf,"You have no write access to the game directory. " PRODUCT_NAME " will not function properly.\n");
+   MessageBox(NULL, tmp_buf, PRODUCT_NAME, MB_ICONERROR);
+   return FALSE;
 }

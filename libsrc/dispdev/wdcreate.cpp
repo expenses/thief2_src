@@ -24,6 +24,21 @@
 #include <wdspmode.h>
 #include <wdispgdi.h>
 #include <wdispdd.h>
+#include <config.h>
+#include <wdispd3d.h>
+
+extern "C" BOOL UseD3DDisplay(void)
+{
+   static BOOL bRead = FALSE;
+   static BOOL bUse = FALSE;
+   if (!bRead)
+   {
+      bUse = config_is_defined("use_d3d_display");
+      bRead = TRUE;
+   }
+   return bUse;
+}
+#line 27
 
 #ifndef NO_DB_MEM
 // Must be last header
@@ -60,6 +75,13 @@ cWinDisplayProvider * CreateProvider(eDisplayDeviceKind kind, cWinDisplayDevice 
         case kDispWindowed:
         case kDispFullScreen:
         case kDispUndefined:
+            if (UseD3DDisplay())
+            {
+                if (!LoadDirect3D9())
+                    return NULL;
+                return new cD3DProvider(pDisplayDevice);
+            }
+#line 63
             if (LoadDirectDraw())
                 return new cDDProvider(pDisplayDevice);
             // else

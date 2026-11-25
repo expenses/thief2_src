@@ -24,5 +24,9 @@ void _r3_recalc_w2v();
 void _r3_recalc_world_pyr();
 void _r3_trans_alloc(r3s_xform_context *trans);
 void _r3_trans_free(r3s_xform_context *trans);
+void _r3_trans_term(void);
+
+// transform stacks come from a pool of blocks this deep
+#define R3_TRANS_POOL_SIZE (8*sizeof(r3s_trans))
 
 #endif

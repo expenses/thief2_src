@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sound/psndapi.cpp,v 1.26 1999/08/05 18:20:56 Justin Exp $
 //
@@ -137,7 +136,7 @@ static Command g_RoomCommands[] =
    {"make_sound_z",    FUNC_FLOAT,  MakeSound,         "Generate a sound at 0,0,0",        HK_ALL},
    {"make_sound" ,     FUNC_FLOAT,  MeMakeSound,       "Generate a sound at the player",   HK_ALL},
    {"spew_room_ai",    FUNC_VOID,   SpewRoomAI,        "List each AI's current room",      HK_ALL},
-   {"show_sounds",     TOGGLE_BOOL, &g_show_sounds,    "Toggles visible sound display",    HK_ALL},
+   {"show_sounds",     TOGGLE_BOOL, &g_show_sounds,    "Toggles visible sound display",    HK_ALL, 1},
    {"draw_sound_path", FUNC_STRING, DrawSoundPath,     "Draw the sound prop path",         HK_ALL},
    {"clear_sound_path",FUNC_VOID,   ClearSoundPath,    "Clears any drawn sound paths",     HK_ALL},
    {"spew_sounds",     FUNC_VOID,   SpewSounds,        "Spews all propagating sounds",     HK_ALL},

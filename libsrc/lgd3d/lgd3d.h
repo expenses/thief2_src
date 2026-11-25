@@ -172,6 +172,13 @@ extern double lgd3d_set_zbias(double zbias);
 
 // 0 <= nZbias <= 16
 extern void lgd3d_push_zbias_i( int nZBias );
+extern void lgd3d_set_zbias_table( int nScale, double fRange );
+extern int lgd3d_set_alpha_test_ref( int nRef );
+extern BOOL lgd3d_begin_effect( int nEffect );
+extern void lgd3d_end_effect( void );
+extern BOOL lgd3d_set_effect_param( int nEffect, int nParam, const void *pValue );
+extern BOOL lgd3d_get_effect_param( int nEffect, int nParam, void *pValue );
+extern void lgd3d_set_effect_texture( grs_bitmap *pBm );
 extern void lgd3d_pop_zbias( void );
 
 // States
@@ -402,6 +409,9 @@ extern int lgd3d_g2TrifanMTD( int n, g2s_point **vpl, LGD3D_tex_coord **vptc );
 
 
 // error codes:( the first argument of "lgd3d_get_error" )
+#define LGD3D_MAX_TEXTURES 16384
+#define LGD3D_NUM_TEX_FORMATS 6
+
 #define LGD3D_EC_OK                             0L
 #define LGD3D_EC_DD_KAPUT                       1L
 #define LGD3D_EC_RESTORE_ALL_SURFS              2L

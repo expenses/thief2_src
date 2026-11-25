@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 #include <limits.h>
 #include <stdio.h>
 #include <windows.h>

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/libsrc/script/persist.cpp,v 1.7 1999/11/03 12:08:36 Justin Exp $
 //
@@ -194,6 +193,7 @@ sPersistent * PersistReadWrite(sPersistent *p, tPersistIOFunc pfnIO,
    return p;
 }
 
+tPersistObjRemapFunc g_pfnPersistObjRemap = 0;
 sPersistReg *g_pPersistFactoryList = 0;
 
 extern sPersistReg* PersistLookupReg(const char* pszName)

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/aicbrwnd.cpp,v 1.2 1999/03/29 08:47:47 JON Exp $
 //
@@ -20,6 +19,7 @@
 #include <objpos.h>
 
 #include <aiactloc.h>
+#include <aiactmot.h>
 #include <aiapisns.h>
 #include <aiapisnd.h>
 #include <aidebug.h>
@@ -69,10 +69,13 @@ cAIAction* cAIRangedWound::SuggestAction(void)
    sAIRangedCombatEvent* pEvent = m_pOwner->GetEvent(kAIRC_EventWounded);
 
    Assert_(pEvent); 
+   cAIAction* pAction;
    if (int(pEvent->m_pData)>AIGetRangedWound(GetID())->m_severeThreshold)
-      return CreateMotionAction("ReceiveWound 0, SevereWound 0");
+      pAction = CreateMotionAction("ReceiveWound 0, SevereWound 0");
    else
-      return CreateMotionAction("ReceiveWound 0");
+      pAction = CreateMotionAction("ReceiveWound 0");
+   ((cAIMotionAction *)pAction)->SetFocus(OBJ_NULL);
+   return pAction;
 }
 
 

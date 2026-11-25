@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/relnull.h,v 1.4 2000/01/29 13:24:55 adurant Exp $
 #pragma once
 
@@ -39,6 +38,7 @@ public:
    STDMETHOD(Listen)(RelationListenMsgSet interests, RelationListenFunc func, RelationListenerData data);   
    STDMETHOD_(LinkID, GetSingleLink)(ObjID source, ObjID dest);
    STDMETHOD_(BOOL, AnyLinks)(ObjID source, ObjID dest);
+   STDMETHOD(AddFullAtID)(LinkID id, ObjID source, ObjID dest, void* data);
    
 };
 

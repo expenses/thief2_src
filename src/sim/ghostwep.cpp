@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/ghostwep.cpp,v 1.3 1999/08/13 16:15:29 dc Exp $
 
 // until this is propertized, this is completely shock/gamesys specific, sadly

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkinvui.cpp,v 1.78 2000/03/19 16:09:37 patmac Exp $
 
 #include <lg.h>
@@ -62,7 +61,7 @@
 #include <aiaware.h>
 #include <aiprcore.h>
 #include <weapcb.h>
-#include <quest.h>
+#include <questapi.h>
 
 // Hacks
 #include <esnd.h>
@@ -555,7 +554,7 @@ static void select_command(char* arg)
 {
    // blast trailing whitespace
    char* s = arg + strlen(arg) - 1;
-   for (; s >= arg && isspace(*s); s--)
+   for (; s >= arg && isspace((uchar)*s); s--)
       *s = '\0';
 
    AutoAppIPtr_(ObjectSystem,pObjSys);
@@ -649,7 +648,7 @@ static void select_loot_command()
 
 static BOOL throw_obj(ObjID thrower, ObjID obj, float power)
 {
-   if (CreatureExists(obj))
+   if (obj && CreatureExists(obj))
    {
       mxs_matrix orien;
       mxs_vector launch_pos;
@@ -1222,6 +1221,17 @@ void AnnotateObject(ObjID obj, int wid, int hgt)
 // Actually render the transparent item and weapon selections
 //
 
+enum eHideUIElements
+{
+   kHideUILightGem  = 1 << 0,
+   kHideUIHealthBar = 1 << 1,
+   kHideUIAirBar    = 1 << 2,
+   kHideUIWeapon    = 1 << 3,
+   kHideUIItem      = 1 << 4,
+};
+
+static int gHideUIElements;
+
 static void render_selection_display(ulong time)
 {
    int i;
@@ -1274,6 +1284,13 @@ static void render_selection_display(ulong time)
       }
 
       state.last_msec = time;
+
+      if (gHideUIElements & (kHideUIWeapon << i))
+      {
+         if (compass1 || compass2)
+            gSelExpired[i] = NO_EXPIRATION;
+         continue;
+      }
 
       // compute canvas, perhaps this should be a GUISetup?
       const Rect& draw = state.last;
@@ -1567,6 +1584,8 @@ public:
       config_get_int("hpbar_ang",&ang);
       zoom = 100;
       config_get_int("hpbar_zoom",&zoom);
+      brightness = 1.0;
+      config_get_float("hpbar_brightness",&brightness);
    }
 
    void Stop()
@@ -1588,6 +1607,7 @@ protected:
    sInvRenderType RenderType;
    int ang;
    int zoom;
+   float brightness;
    BOOL bDidStart;
 
    BOOL MakeDrawCanvas()   { return FALSE; }
@@ -1636,7 +1656,8 @@ protected:
          UseMe.ul.x = mScreenRect.ul.x+rw*i/n;
          UseMe.lr.x = UseMe.ul.x+w;
 
-         view.lighting = 0.50 + 0.50*(i+1)/val;
+         float lighting = 0.50 + 0.50*(i+1)/val;
+         view.lighting = lighting * brightness;
          invRendSetView(rends[i],&view);
          invRendSetRect(rends[i],&UseMe);
          invRendUpdateState(rends[i], 0, OBJ_NULL, NULL, NULL);
@@ -1770,7 +1791,8 @@ static void render_stat_bars(ulong time, int top_margin, int bot_margin)
    Rect r= { hp_x[0]*w/kExtentX, top_margin, hp_x[1]*w/kExtentX, bot_margin };
 
    hpbar.SetScreenRect(r);
-   hpbar.Update(time);
+   if (!(gHideUIElements & kHideUIHealthBar))
+      hpbar.Update(time);
 
    // Air
 
@@ -1786,7 +1808,8 @@ static void render_stat_bars(ulong time, int top_margin, int bot_margin)
       r.lr.x = air_x[1]*w/kExtentX;
 
       airbar.SetScreenRect(r);
-      airbar.Update(time);
+      if (!(gHideUIElements & kHideUIAirBar))
+         airbar.Update(time);
    }
 }
 
@@ -1835,6 +1858,9 @@ static float gStatusMargin = 1.0/480; // %of screen
 
 void InvUIInit(void)
 {
+   if (config_is_nonzero("hide_maxed_hpbar"))
+      hpbar.flags |= SB::kHideAtMax;
+
    pInventory = AppGetObj(IInventory);
    pContainSys = AppGetObj(IContainSys);
    COMMANDS(commands,HK_ALL);
@@ -1969,6 +1995,9 @@ void InvUIRender(ulong msec)
 {
    if (enable_inv)
    {
+      AutoAppIPtr(QuestData);
+      gHideUIElements = pQuestData->Get("HIDE_UI_ELEMENTS");
+
       ScrnLockDrawCanvas();
 
       // @TODO: compute top and bottom margins for real
@@ -1981,7 +2010,7 @@ void InvUIRender(ulong msec)
       Rect vis_r = { 0, top, 0, bot};
       vis_r.ul.x = hp_x[1]*grd_canvas->bm.w/kExtentX;
       vis_r.lr.x = air_x[0]*grd_canvas->bm.w/kExtentX;
-      VisMeterUpdate(msec,&vis_r);
+      VisMeterUpdate(msec,&vis_r,gHideUIElements & kHideUILightGem);
 
       setup_selection_display(msec,top);
 

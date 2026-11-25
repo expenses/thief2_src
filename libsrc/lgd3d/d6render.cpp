@@ -26,6 +26,7 @@ cD6Renderer* cD6Renderer::DeInstance()
 {
     if (m_RendererInstance)
     {
+        m_RendererInstance->ReleaseStates();
         delete m_RendererInstance;
         m_RendererInstance = NULL;
     }
@@ -34,7 +35,11 @@ cD6Renderer* cD6Renderer::DeInstance()
 
 cD6Renderer::cD6Renderer(unsigned long mode, unsigned long* pInitFlags)
 {
-    m_bOverlaysOn = 1;
+    Init(mode, pInitFlags);
+}
+
+void cD6Renderer::CreateStates(unsigned long mode, unsigned long* pInitFlags)
+{
     switch (mode) {
         case 1:
             pcRenderBuffer = cMSBuffer::Instance();
@@ -45,6 +50,12 @@ cD6Renderer::cD6Renderer(unsigned long mode, unsigned long* pInitFlags)
             pcStates = cImStates::Instance();
             break;
     }
+}
+
+void cD6Renderer::Init(unsigned long mode, unsigned long* pInitFlags)
+{
+    m_bOverlaysOn = 1;
+    CreateStates(mode, pInitFlags);
     CreateStatesStack(10, pcStates->GetRenderStatesSize());
     if (pcStates->Initialize(*pInitFlags) == 0)
     {
@@ -54,8 +65,7 @@ cD6Renderer::cD6Renderer(unsigned long mode, unsigned long* pInitFlags)
             pcRenderBuffer->DeInstance();
             DeletStatesStack();
             *pInitFlags &= ~LGD3DF_MULTI_TEXTURING;
-            pcRenderBuffer = cImBuffer::Instance();
-            pcStates = cImStates::Instance();
+            CreateStates(0, pInitFlags);
             CreateStatesStack(10, pcStates->GetRenderStatesSize());
             if (pcStates->Initialize(*pInitFlags) != 0)
             {
@@ -68,10 +78,10 @@ cD6Renderer::cD6Renderer(unsigned long mode, unsigned long* pInitFlags)
     }
 }
 
-cD6Renderer::~cD6Renderer()
+void cD6Renderer::ReleaseStates()
 {
-    pcStates->DeInstance();
-    pcRenderBuffer->DeInstance();
+    pcStates = pcStates->DeInstance();
+    pcRenderBuffer = pcRenderBuffer->DeInstance();
     DeletStatesStack();
     if (pcOverlayHandler)
     {
@@ -80,11 +90,33 @@ cD6Renderer::~cD6Renderer()
     }
 }
 
+HRESULT cD6Renderer::SetTransform(int nWhich, D3DMATRIX* pMatrix)
+{
+    D3DTRANSFORMSTATETYPE type;
+    switch (nWhich) {
+        case 0:
+            type = D3DTRANSFORMSTATE_WORLD;
+            break;
+        case 1:
+            type = D3DTRANSFORMSTATE_VIEW;
+            break;
+        case 2:
+            type = D3DTRANSFORMSTATE_PROJECTION;
+            break;
+        default:
+            return E_INVALIDARG;
+    }
+    return g_lpD3Ddevice->SetTransform(type, pMatrix);
+}
+
+HRESULT cD6Renderer::Clear(DWORD dwCount, D3DRECT* pRects, DWORD dwFlags, D3DCOLOR dwColor, float dvZ, DWORD dwStencil)
+{
+    return g_lpViewport->Clear2(dwCount, pRects, dwFlags, dwColor, dvZ, dwStencil);
+}
+
 void cD6Renderer::StartFrame(int frame)
 {
-    int iResult = IDirect3DDevice3_BeginScene(g_lpD3Ddevice);
-#line 166
-    AssertMsg(iResult >= 0, "BeginScene failed");
+    IDirect3DDevice3_BeginScene(g_lpD3Ddevice);
     pcRenderBuffer->StartFrame();
     if (g_tmgr)
     {
@@ -159,18 +191,14 @@ void cD6Renderer::CleanDepthBuffer(int x0, int y0, int x1, int y1)
 }
 
 
-void cD6Renderer::CleanRenderSurface(BOOL bDepthBuffToo)
+void cD6Renderer::CleanRenderSurface(double dvZ)
 {
-    DWORD dwFlags = D3DCLEAR_TARGET;
-    if (bDepthBuffToo) dwFlags |= D3DCLEAR_ZBUFFER;
     D3DRECT rect;
     rect.x1 = 0;
     rect.y1 = 0;
     rect.x2 = g_dwScreenWidth;
     rect.y2 = g_dwScreenHeight;
-    HRESULT hr = IDirect3DViewport3_Clear((LPDIRECT3DVIEWPORT3)g_lpViewport, 1, &rect, dwFlags);
-#line 326
-    CheckHResult(hr, "CleanRenderSurface failed.");
+    pcRenderer->Clear(1, &rect, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | (g_sDDPFDepth.dwStencilBitDepth ? D3DCLEAR_STENCIL : 0), 0, (float)dvZ, 0);
 }
 
 void cD6Renderer::CreateStatesStack(unsigned long depth, size_t size)
@@ -178,9 +206,9 @@ void cD6Renderer::CreateStatesStack(unsigned long depth, size_t size)
     m_dwEntrySize = size;
     m_dwNoEntries = depth;
 #line 192
-    m_pStackData = (char*)malloc(size * depth);
-    m_pSetEntry = (char*)malloc(size);
-    m_pdwRSCData = (unsigned long*)malloc(depth * 4);
+    m_pStackData = (char*)calloc(1, size * depth);
+    m_pSetEntry = (char*)calloc(1, size);
+    m_pdwRSCData = (unsigned long*)calloc(1, depth * 4);
     if (m_pStackData == NULL || m_pSetEntry == NULL || m_pdwRSCData == NULL) {
 #line 346
         CriticalMsg("Memory Allocation failure!");

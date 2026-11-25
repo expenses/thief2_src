@@ -37,7 +37,7 @@ typedef struct {
 
 #define SFX_LOOP_INFINITE 0
 
-#define SFX_MAX_MODE_COUNT 16
+#define SFX_MAX_MODE_COUNT 48
 #define SFX_MAX_COUNT (SFX_MAX_MODE_COUNT * 2)
 #define SFX_CHANNELS  8
 
@@ -99,12 +99,14 @@ typedef enum sfx_mode {
 // setup functions
 EXTERN void SFXClose(void);
 EXTERN BOOL SFXInit(void);
+EXTERN void SoundInitTypeCaps(void);
 EXTERN BOOL SFXReset(void);
 
 #define SFXDEVICE_NoSound      (0)
 #define SFXDEVICE_Software     (1)
 #define SFXDEVICE_A3D          (2)
 #define SFXDEVICE_QMIXER       (3)
+#define SFXDEVICE_OPENAL       (4)
 
 EXTERN BOOL SFX_SetSoundDevice(int device, BOOL reset);
 EXTERN int  SFX_GetSoundDevice();

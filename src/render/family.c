@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/family.c,v 1.68 2000/02/14 20:35:19 bfarquha Exp $
 // hack for family loading/palette switch until real dataflow
 
@@ -67,18 +66,18 @@ static char *_fam_dir_names[2][2]=
 // utility functions
 
 // remap a single cell texture through the swap table
-static BOOL cell_tx_id_remap(uchar *cur_val, int *tex_swap, int cnt)
+static BOOL cell_tx_id_remap(ushort *cur_val, int *tex_swap, int cnt)
 {
    int val=(int)*cur_val;
    int newval=0;
+   if ((val>=WATERIN_IDX)&&(val<=255))      // hateful initial check to save sky_tex
+      return FALSE;                         // "special"'s just stay themselves
    if ((val>=0)&&(val<cnt))                 // protect against mahks broken cosmic ray level
       newval=tex_swap[val];
-   else if ((val>=WATERIN_IDX)&&(val<=255)) // hateful initial check to save sky_tex
-      return FALSE;                         // "special"'s just stay themselves
    if (newval==-1) newval=0;
    if (newval!=val)
    {
-      *cur_val=(uchar)newval;
+      *cur_val=(ushort)newval;
       return TRUE;
    }
    return FALSE;
@@ -177,12 +176,35 @@ BOOL fam_name_cb(char* name)
 static BOOL no_remap_on_load = FALSE;
 
 // messy integrated load for use with lresdisk block swizzle stuff
+void fam_get_res_path(IRes *pRes, char *buf)
+{
+   char *pPath, *p, *p2;
+   int len;
+
+   IRes_GetCanonPathName(pRes, &pPath);
+   p = strrchr(pPath, '\\');
+   p2 = strrchr(p ? p : pPath, '/');
+   if (p2 > p)
+      p = p2;
+   if (p)
+   {
+      len = p - pPath;
+      if (len >= 24)
+         len = 23;
+      strncpy(buf, pPath, len);
+      buf[len] = '\0';
+   }
+   else
+      buf[0] = '\0';
+   free(pPath);
+}
+
 BOOL familyDiskTexBlockLoad(void *mem)
 {
    IRes *handles[TEXMEM_MAX];
    BOOL rv, old_find_align=texmem_find_align;
 
-   if (TEXMEM_MAX<=ResBlockHndCnt(mem))
+   if (TEXMEM_MAX<ResBlockHndCnt(mem))
       return FALSE;
 
    if (no_remap_on_load)
@@ -487,7 +509,7 @@ static void reload_single_water(int i)
       }
 
       // reload the texture
-      if (i>BACKHACK_IDX)      // try to get the sky correct, hate hate
+      if (i>BACKHACK_IDX && i<=TEXMEM_EXT_FIRST_IDX)      // try to get the sky correct, hate hate
          _get_sky_palette(path,_fam_sky_name);
       else
          texmemSetPalette(path,"full");

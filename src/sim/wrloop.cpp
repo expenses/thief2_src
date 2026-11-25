@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/wrloop.cpp,v 1.73 2000/03/18 15:20:54 adurant Exp $
 
 #include <wrloop.h>
@@ -203,7 +202,6 @@ void SpewCell(PortalCell *p)
       mprintf("render_list u_base:%d\n", p->render_list[i].u_base);
       mprintf("render_list v_base:%d\n", p->render_list[i].v_base);
       mprintf("render_list texture_id:%d\n", p->render_list[i].texture_id);
-      mprintf("render_list texture_anchor:%d\n", p->render_list[i].texture_anchor);
       mprintf("render_list cached_surface:%d\n", p->render_list[i].cached_surface);
    }
    
@@ -623,12 +621,16 @@ void ReadWriteLight(LightReadWrite func)
 // management of PortalCellMotion structures
 
 
-static void ReadWriteWaterMotion(PortalReadWrite func)
+static void ReadWriteWaterMotion(PortalReadWrite func, const TagVersion *v, BOOL loading)
 {
    (*func)(portal_cell_motion,
            sizeof(portal_cell_motion[0]), MAX_CELL_MOTION);
    (*func)(g_aMedMoCellMotion,
            sizeof(g_aMedMoCellMotion[0]), MAX_CELL_MOTION);
+   if (v->minor > 1)
+      (*func)(&portal_motion_proj_thresh, sizeof(portal_motion_proj_thresh), 1);
+   else if (loading)
+      portal_motion_proj_thresh = DEFAULT_MOTION_PROJ_THRESH;
 }
 
 
@@ -725,7 +727,7 @@ static void cleanup_tagfile(ITagFile* file)
 // water tag file thingbobs
 
 TagFileTag WaterMotionTag = { "CELL_MOTION" };
-TagVersion WaterMotionVersion = { 0, 1 };
+TagVersion WaterMotionVersion = { 0, 2 };
 TagVersion AcceptWaterMotionVersion = { 0, 1 };
 
 
@@ -767,7 +769,7 @@ static void water_db_message(DispatchData* msg)
             TagVersion v = WaterMotionVersion; 
             if (setup_tagfile(data.save, &WaterMotionTag, &v, &AcceptWaterMotionVersion) )
             {
-               ReadWriteWaterMotion(movefunc);
+               ReadWriteWaterMotion(movefunc, &v, DB_MSG(msg->subtype) == kDatabaseLoad);
                cleanup_tagfile(data.save);
             }
          }

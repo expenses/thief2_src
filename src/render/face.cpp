@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/face.cpp,v 1.4 2000/01/20 16:47:45 MAT Exp $
 
 /* --<<= -+-/-/-/=/=/\/- <<< ((( ((( / \ ))) ))) >>> -\/\=\=\-\-\-+- =>>-- *\
@@ -35,6 +34,7 @@
 #include <resistr.h>
 #include <traitman.h>
 #include <imaadpcm.h>
+#include <oggdec.h>
 
 #include <objsys.h>
 #include <objquery.h>
@@ -426,6 +426,8 @@ static const char *ObjName(ObjID id)
 
 static inline char *FetchMouthString(const char* pSample)
 {
+   if (!g_pFaceTalk)
+      return 0;
    char *pS = g_pFaceTalk->StringLock(pSample);
    if (pS) {
       char *pS2 = strdup(pS);
@@ -448,7 +450,7 @@ static inline char *FetchMouthString(const char* pSample)
 #ifdef EDITOR
 // make buffer of floats from ADPCM data
 static inline void NormBuffFromRes4(sSndAttribs *pAttribs, void *pRawData,
-                                    float *pfSamples)
+                                    float *pfSamples, cSndDecoder *pDecoder)
 {
    short *pTemp = (short *) malloc(pAttribs->numSamples * sizeof(short));
    short *pOut = pTemp;
@@ -457,7 +459,6 @@ static inline void NormBuffFromRes4(sSndAttribs *pAttribs, void *pRawData,
    uint skipNSamples = 0;
    uint nSamps;
    BOOL getHeader;
-   IMA_ADPCM Decoder;
 
    // This loop is more or less copied from the sndsrc library.
    while ( nSamplesOutNeeded > 0 ) {
@@ -465,7 +466,7 @@ static inline void NormBuffFromRes4(sSndAttribs *pAttribs, void *pRawData,
          // current block is empty, get new block
          iInSamplesLeft = pAttribs->samplesPerBlock - skipNSamples;
          if ( skipNSamples != 0 ) {
-            pRawData = DecompressIMABlkPartial(&Decoder, FALSE,
+            pRawData = DecompressIMABlkPartial(pDecoder, FALSE,
                                                (char *) pRawData,pOut,0,TRUE);
             getHeader = FALSE;
          } else
@@ -476,7 +477,7 @@ static inline void NormBuffFromRes4(sSndAttribs *pAttribs, void *pRawData,
       // decompress a block
       nSamps = (nSamplesOutNeeded < iInSamplesLeft) ?
          nSamplesOutNeeded : iInSamplesLeft;
-      pRawData = DecompressIMABlkPartial(&Decoder, FALSE, (char *) pRawData,
+      pRawData = DecompressIMABlkPartial(pDecoder, FALSE, (char *) pRawData,
                                          pOut, nSamps, getHeader);
       iInSamplesLeft -= nSamps;
 
@@ -592,20 +593,40 @@ static inline void ProcessSample(const char *pszName, FILE *pFile)
    mprintf("(%d bits per sample)", Attribs.bitsPerSample);
 
    // We want a buffer of floats, each 0-1.  We can handle three formats.
-   switch(Attribs.bitsPerSample)
+   switch(Attribs.dataType)
    {
-      case 4:        // ADPCM
-         NormBuffFromRes4(&Attribs, pRawData, pfSamples);
+      case kSndDataPCM:
+         switch(Attribs.bitsPerSample)
+         {
+            case 4:
+               break;
+            case 8:
+               NormBuffFromRes8(&Attribs, pRawData, pfSamples);
+               break;
+            case 16:
+               NormBuffFromRes16(&Attribs, pRawData, pfSamples);
+               break;
+            default:
+               Warning(("Cannot handle %d bits per sample.\n",
+                        Attribs.bitsPerSample));
+               pRes->Unlock();
+               pRes->Release();
+               return;
+         }
          break;
-      case 8:
-         NormBuffFromRes8(&Attribs, pRawData, pfSamples);
+      case kSndDataIMAADPCM:
+      {
+         IMA_ADPCM Decoder;
+         NormBuffFromRes4(&Attribs, pRawData, pfSamples, &Decoder);
          break;
-      case 16:
-         NormBuffFromRes16(&Attribs, pRawData, pfSamples);
+      }
+      case kSndDataOgg:
+      {
+         cOggDecoder Decoder;
+         NormBuffFromRes4(&Attribs, pRawData, pfSamples, &Decoder);
          break;
+      }
       default:
-         Warning(("Cannot handle %d bits per sample.\n",
-                  Attribs.bitsPerSample));
          pRes->Unlock();
          pRes->Release();
          return;

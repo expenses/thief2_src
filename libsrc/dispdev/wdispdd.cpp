@@ -33,6 +33,12 @@
 
 #include <wdispdd.h>
 #include <wddmode.h>
+#include <config.h>
+
+EXTERN sGrModeInfo g_DesktopModeInfo;
+EXTERN sGrModeInfo g_D3DWindowedModeInfo;
+EXTERN DWORD g_D3DWindowMode;
+void UpdateUIScaleMode();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -225,6 +231,7 @@ cDDProvider::cDDProvider(cWinDisplayDevice * pOwner)
   : cWinDisplayProvider(pOwner),
     m_pDD(0),               // DirectDraw object
     m_pModeOps(0),
+    m_bPersistentMode(FALSE),
     m_Flags(0),
     m_PalFlags(DDPCAPS_8BIT | DDPCAPS_ALLOW256),  // | DDPCAPS_INITIALIZE;
     m_DDCoopFlags(0),
@@ -232,7 +239,7 @@ cDDProvider::cDDProvider(cWinDisplayDevice * pOwner)
 {
     DebugMsg("cDDProvider::cDDProvider()");
 #if 0
-    if (GetPrivateProfileInt("WinShell", "NoPrimaryAccess", FALSE, "lg.ini"))
+    if (GetPrivateProfileInt("WinShell", "NoPrimaryAccess", FALSE, ".\\lg.ini"))
     {
         m_Flags |= kAlwaysEmulate;
     }
@@ -543,228 +550,202 @@ cDDProvider::DoSetMode(const sGrModeInfo & modeInfo,
                        int flags,
                        sGrModeCap * pReturnModeInfo)
 {
-    BEGIN_DEBUG_MSG3("cDDProvider::DoSetMode(width %ld, height %ld, bitDepth %ld)", modeInfo.w, modeInfo.h, modeInfo.bitDepth);
-
+    static BOOL fInRetry;
     HRESULT result = S_OK;
     LPDIRECTDRAWPALETTE pPalette = NULL;
+    const sGrModeInfo * pDesktopMode = NULL;
+    int nScaleMode = 0;
 
-    ///////////////////////////////////
-
-#if 0
-    // Hook for experiemental windowed DD mode (toml 05-20-96)
-    if (GetPrivateProfileInt("WinShell", "ExperimentalWindowedDirectDraw", FALSE, "lg.ini"))
-    {
+    if (config_is_defined("force_windowed"))
         flags |= kGrSetWindowed;
+
+    m_Flags &= ~kDesktopRes;
+
+    if (!(g_DesktopModeInfo.flags & kGrModeIsNative))
+    {
+        if (config_is_defined("single_display_mode"))
+        {
+            int mode = gr_mode_from_info(g_DesktopModeInfo.w, g_DesktopModeInfo.h, g_DesktopModeInfo.bitDepth);
+            if (mode != -1)
+            {
+                g_DesktopModeInfo.bankShift = grd_mode_info[mode].bankShift;
+                g_DesktopModeInfo.flags |= grd_mode_info[mode].flags & kGrModeExtended;
+                m_Flags |= kDesktopRes;
+                pDesktopMode = &g_DesktopModeInfo;
+                if (config_is_defined("scale_ui_even_pixels"))
+                    nScaleMode = 1;
+                config_get_int("ui_scale_mode", &nScaleMode);
+                if (nScaleMode < 0 || nScaleMode > 2)
+                    nScaleMode = 0;
+            }
+        }
     }
-#endif
+    else
+    {
+        if (!(flags & kGrSetFullScreen) && modeInfo.bitDepth < 32)
+        {
+            g_D3DWindowedModeInfo = modeInfo;
+            pDesktopMode = &g_D3DWindowedModeInfo;
+        }
+        if (!(flags & kGrSetFullScreen))
+            flags |= kGrSetWindowed;
+    }
 
     if (!(flags & (kGrSetWindowed | kGrSetFullScreen)))
     {
-        eDisplayDeviceKind kind = m_pDisplayDevice->GetKind();
-
-        switch (kind)
+        switch (m_pDisplayDevice->GetKind())
         {
             case kDispDefault:
             case kDispFullScreen:
             case kDispUndefined:
-            {
                 flags |= kGrSetFullScreen;
                 break;
-            }
 
             case kDispDebug:
             case kDispWindowed:
-            {
                 flags |= kGrSetWindowed;
                 break;
-            }
 
             default:
-
                 CriticalMsg("Unknown display device kind");
         }
     }
 
-    // Make sure we can do the mode in the way desired
     if ((flags & kGrSetWindowed) && !(modeInfo.flags & kGrModeCanWindow))
         flags &= ~kGrSetWindowed;
 
-    // Set proper DirectDraw cooperative level
-    
-    YieldDisplay(m_pDisplayDevice);
-    
-    if (flags & kGrSetWindowed)
+    if (m_bPersistentMode)
     {
-        if (m_DDCoopFlags != kDDWindowedCoopFlags)
+        cFixedDDModeOps * pFixed = (cFixedDDModeOps *) m_pModeOps;
+        if (!pDesktopMode ||
+            !!(flags & kGrSetWindowed) != (m_DDCoopFlags == kDDWindowedCoopFlags) ||
+            !pFixed->IsDesktopMode(*pDesktopMode))
         {
-            SetWindowLong(GetMainWnd(), GWL_STYLE, m_NormalWindowStyle);
-            m_DDCoopFlags = kDDWindowedCoopFlags;
-            m_pDD->RestoreDisplayMode();
-            result = SetCooperativeLevel(m_DDCoopFlags);
+            m_bPersistentMode = FALSE;
+            DoClose();
+            DoOpen(NULL, 0);
         }
     }
-    else
+
+    if (!m_bPersistentMode)
     {
-        if (m_DDCoopFlags != kDDFullScreenCoopFlags)
+        YieldDisplay(m_pDisplayDevice);
+        if (flags & kGrSetWindowed)
+        {
+            if (m_DDCoopFlags != kDDWindowedCoopFlags)
+            {
+                SetWindowLong(GetMainWnd(), GWL_STYLE, m_NormalWindowStyle);
+                SetWindowPos(GetMainWnd(), NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                m_DDCoopFlags = kDDWindowedCoopFlags;
+                m_pDD->RestoreDisplayMode();
+                result = SetCooperativeLevel(m_DDCoopFlags);
+            }
+        }
+        else if (m_DDCoopFlags != kDDFullScreenCoopFlags)
         {
             SetWindowLong(GetMainWnd(), GWL_STYLE, WS_POPUP);
+            SetWindowPos(GetMainWnd(), NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
             SetForegroundWindow(GetMainWnd());
-
             m_DDCoopFlags = kDDFullScreenCoopFlags;
             result = SetCooperativeLevel(m_DDCoopFlags);
         }
+        RegainDisplay(m_pDisplayDevice);
+        if (result != S_OK)
+            return NULL;
     }
-    
-    RegainDisplay(m_pDisplayDevice);
-    
-    DebugMsgIfErr("SetCooperativeLevel", result);
 
-    if (result != S_OK)
-        return NULL;
-
-    ///////////////////////////////////
-
-    // detach the existing palette and destroy the present mode operations
     if (m_pModeOps)
     {
-        DebugMsgEx(SETMODE, "Detaching existing palette and destroying old mode operations...");
         pPalette = m_pModeOps->GetPalette();
         m_pModeOps->AttachPalette(NULL);
-        delete m_pModeOps;
-        m_pModeOps = NULL;
-    }
-
-    // If we're 8-bit palettized and haven't got a palette
-    if ((modeInfo.bitDepth == 8)&&(pPalette == NULL))
-    {
-        // ... then create a palette
-        DebugMsgEx(SETMODE, "Creating palette...");
-        m_PalFlags = DDPCAPS_8BIT | DDPCAPS_ALLOW256 | DDPCAPS_INITIALIZE;
-
-        result = m_pDD->CreatePalette(m_PalFlags, m_pDisplayDevice->GetPaletteEntries(), &pPalette, NULL);
-        DebugMsgIfErr("CreatePalette", result);
-
-        AssertMsg(pPalette, "Failed to create palette");
-    }
-
-    ///////////////////////////////////
-
-    // Create the appropriate set of operations for the requested mode
-//    const BOOL fModeIsNative = (cDisplayDevice::GetAvailableMode(modeInfo.w, modeInfo.h, modeInfo.bitDepth) != -1);
-    const BOOL fModeIsNative = (modeInfo.flags & kGrModeIsNative);
-
-    DebugMsgEx2(SETMODE, "using flags = 0x%x, m_Flags = 0x%x", flags, m_Flags);
-
-    // For now, we always emulate modeX modes, and (only for now), windowed operation
-    BOOL bUseEmulation = (m_Flags & kAlwaysEmulate) || !fModeIsNative || (!(flags & kGrSetWindowed) && modeInfo.w < 400);
-
-    if (modeInfo.w == 512 && !fModeIsNative) // @Note (toml 12-09-96): hack for Dark.  Need real support for direct-faked subregion modes
-    {
-        DebugMsg("New mode is an emulated mode");
-        m_pModeOps = new cPhoney512ModeOps(m_pDisplayDevice, this, pPalette);
-    }
-    else if (bUseEmulation)
-    {
-        DebugMsgTrue1(fModeIsNative, "New mode is a native mode, but choosing emulation (%d)", !!(m_Flags & kAlwaysEmulate));
-        DebugMsgTrue(!fModeIsNative, "New mode is an emulated mode");
-        m_pModeOps = new cOffVideoDDModeOps(m_pDisplayDevice, this, pPalette);
-    }
-    else
-    {
-        DebugMsg("New mode is a native mode");
-        m_pModeOps = new cDirectDDModeOps(m_pDisplayDevice, this, pPalette);
-    }
-
-    DebugMsgEx(SETMODE, "Created new mode operations");
-
-    // Release our lock on palette now that mode ops has it
-    SafeRelease(pPalette);
-
-    // Make sure the main window is visible
-    if (!IsWindowVisible(GetMainWnd()))
-    {
-        YieldDisplay(m_pDisplayDevice);
-
-        m_pModeOps->SetScaleFactor(
-            AdjustWindow(GetMainWnd(),
-                         modeInfo.w,
-                         modeInfo.h,
-                         TRUE)
-            );
-
-        ShowMainWnd();
-
-        RegainDisplay(m_pDisplayDevice);
-    }
-
-    // Attempt to start the mode
-    DebugMsgEx(SETMODE, "Attempting to start mode...");
-    if (!m_pModeOps->StartMode(modeInfo, flags, pReturnModeInfo))
-    {
-        static BOOL fInRetry;
-
-        // We failed, so clean up...
-
-        if (!fInRetry)
+        if (!m_bPersistentMode)
         {
-            fInRetry = TRUE;
-            cWinDisplayModeOperations * pReturn = NULL;
-            if ((flags & kGrSetWindowed))
-            {
-                // Try full screen
-                pReturn = DoSetMode(modeInfo, (flags & ~kGrSetWindowed), pReturnModeInfo);
-            }
-            else if (!bUseEmulation)
-            {
-                // In this case, DD has told us that it supports direct modes
-                // but it lied, since the direct mode didn't work. So we're
-                // always going to emulate and not believe DD again.
-                DebugMsg("StartMode() on native mode failed, switching to emulation");
-                m_Flags |= kAlwaysEmulate;
-                pReturn = DoSetMode(modeInfo, flags, pReturnModeInfo);
-            }
-            fInRetry = FALSE;
-            return pReturn;
-        }
-        else
-        {
-            DebugMsgEx(SETMODE, "Start mode failed.  No recourse.");
             delete m_pModeOps;
             m_pModeOps = NULL;
         }
     }
 
-    DebugDumpModeInfo(m_pModeOps, pReturnModeInfo);
-    DebugMsg1("DoSetMode %s", (m_pModeOps) ? "success" : "failure");
+    if (modeInfo.bitDepth == 8 && pPalette == NULL)
+    {
+        m_PalFlags = DDPCAPS_8BIT | DDPCAPS_ALLOW256 | DDPCAPS_INITIALIZE;
+        m_pDD->CreatePalette(m_PalFlags, m_pDisplayDevice->GetPaletteEntries(), &pPalette, NULL);
+    }
 
-    // If we succeeded...
+    const BOOL fModeIsNative = (modeInfo.flags & kGrModeIsNative);
+    BOOL bUseEmulation = (m_Flags & kAlwaysEmulate) || !fModeIsNative || (!(flags & kGrSetWindowed) && modeInfo.w < 400);
+
+    if (pDesktopMode)
+    {
+        if (!m_pModeOps)
+        {
+            if (!config_is_defined("no_persistent_display_mode"))
+                m_bPersistentMode = TRUE;
+            m_pModeOps = new cFixedDDModeOps(m_pDisplayDevice, this, pPalette, *pDesktopMode, nScaleMode, m_bPersistentMode);
+        }
+    }
+    else if (modeInfo.w == 512 && !fModeIsNative)
+        m_pModeOps = new cPhoney512ModeOps(m_pDisplayDevice, this, pPalette);
+    else if (!bUseEmulation && (!(flags & kGrSetWindowed) || (m_pDisplayDevice->GetCreateFlags() & 2)))
+        m_pModeOps = new cDirectDDModeOps(m_pDisplayDevice, this, pPalette);
+    else
+        m_pModeOps = new cOffVideoDDModeOps(m_pDisplayDevice, this, pPalette);
+
+    SafeRelease(pPalette);
+
+    if (!IsWindowVisible(GetMainWnd()))
+    {
+        YieldDisplay(m_pDisplayDevice);
+        if (m_Flags & kDesktopRes)
+            m_pModeOps->SetScaleFactor(AdjustWindow(GetMainWnd(), g_DesktopModeInfo.w, g_DesktopModeInfo.h, TRUE));
+        else
+            m_pModeOps->SetScaleFactor(AdjustWindow(GetMainWnd(), modeInfo.w, modeInfo.h, TRUE));
+        ShowMainWnd();
+        RegainDisplay(m_pDisplayDevice);
+    }
+
+    if (!m_pModeOps->StartMode(modeInfo, flags, pReturnModeInfo))
+    {
+        if (!fInRetry && !nScaleMode)
+        {
+            fInRetry = TRUE;
+            if (flags & kGrSetWindowed)
+                flags &= ~kGrSetWindowed;
+            else
+            {
+                if (!bUseEmulation)
+                {
+                    fInRetry = FALSE;
+                    return NULL;
+                }
+                m_Flags |= kAlwaysEmulate;
+            }
+            cWinDisplayModeOperations * pReturn = DoSetMode(modeInfo, flags, pReturnModeInfo);
+            fInRetry = FALSE;
+            return pReturn;
+        }
+        delete m_pModeOps;
+        m_pModeOps = NULL;
+        m_bPersistentMode = FALSE;
+    }
+
     if (m_pModeOps)
     {
         YieldDisplay(m_pDisplayDevice);
-
-        // ... and windowed, adjust the outer frame
         if (m_pModeOps->GetModeInfoEx().flags & kGrModeIsWindowed)
         {
-            m_pModeOps->SetScaleFactor(
-                AdjustWindow(GetMainWnd(),
-                             m_pModeOps->GetModeInfoEx().width,
-                             m_pModeOps->GetModeInfoEx().height,
-                             TRUE)
-                );
+            if (m_Flags & kDesktopRes)
+                m_pModeOps->SetScaleFactor(AdjustWindow(GetMainWnd(), g_DesktopModeInfo.w, g_DesktopModeInfo.h, TRUE));
+            else
+                m_pModeOps->SetScaleFactor(AdjustWindow(GetMainWnd(), m_pModeOps->GetModeInfoEx().width,
+                                                        m_pModeOps->GetModeInfoEx().height, TRUE));
         }
-        // ... otherwise, make sure we obscure all other windows
         else
-        {
             m_pModeOps->SetScaleFactor(0);
-        }
-
-        WinDispBringToFront();
+        UpdateUIScaleMode();
         RegainDisplay(m_pDisplayDevice);
     }
 
     return m_pModeOps;
-
-    END_DEBUG;
 }
 
 ///////////////////////////////////////
@@ -782,29 +763,19 @@ BOOL cDDProvider::DoGetDirectDraw(IDirectDraw4 ** ppDD)
 
 ///////////////////////////////////////
 
-#pragma off(unreferenced)
-BOOL cDDProvider::DoGetBitmapSurface(sGrBitmap * pBm, IDirectDrawSurface4 ** ppDDS)
+BOOL cDDProvider::DoGetBitmapSurface(sGrBitmap *, IDirectDrawSurface4 ** ppDDS)
 {
-// @Note (toml 05-23-97): hey, this implementation is wrong but will do the job for Kevin: MUST FIX, or decide a better api for doing this
-    IDirectDrawSurface4 *pPrimary = NULL, *pSecondary = NULL;
-
-    m_pModeOps->GetSurfaces(&pPrimary, &pSecondary);
-
-    if (pSecondary != NULL) 
-    {
-        DebugMsg("DoGetBitmapSurf(): returning back buffer.\n");
-        *ppDDS = pSecondary;
-        SafeRelease(pPrimary);
-    } 
-    else
-    {
-        DebugMsg("DoGetBitmapSurf(): no back buffer. Returning primary surface.\n");
-        *ppDDS = pPrimary;
-    }
-
+    m_pModeOps->GetSurfaces(ppDDS, NULL);
+    *ppDDS = NULL;
     return TRUE;
 }
-#pragma on(unreferenced)
+
+///////////////////////////////////////
+
+BOOL cDDProvider::DoIsPersistentMode()
+{
+    return m_bPersistentMode;
+}
 
 ///////////////////////////////////////
 
@@ -812,12 +783,9 @@ HRESULT cDDProvider::SetCooperativeLevel(DWORD flags)
 {
     HRESULT result;
 
-    // Set the cooperative level
     YieldDisplay(m_pDisplayDevice);
-
-    result = m_pDD->SetCooperativeLevel(GetMainWnd(), flags);
-
-    DebugMsgIfErr("SetCooperativeLevel", result);
+    g_D3DWindowMode = flags;
+    result = m_pDD->SetCooperativeLevel(GetMainWnd(), g_D3DWindowMode);
     RegainDisplay(m_pDisplayDevice);
 
     return result;

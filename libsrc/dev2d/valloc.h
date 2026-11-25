@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-extern bool vMonitor (uchar **p);
+extern bool vMonitor (uchar **p, ushort *row);
 extern void vUnmonitor (uchar **p);
-extern bool vAlloc (uchar **p, int w, int h);
+extern bool vAlloc (uchar **p, ushort *row, int w, int h);
 extern void vFree (uchar **p);
 
 #ifdef __cplusplus

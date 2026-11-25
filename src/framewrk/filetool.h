@@ -9,6 +9,7 @@
 
 // does this directory exist, modifies path to be well-formed
 EXTERN bool dir_exists(char *path); 
+EXTERN bool dir_writable(const char *path);
 
 // munges base_path, base_2, and file together, adding appropriate /'s, into targ
 // NOTE: there MUST BE A BASE_PATH, and targ must be long enough

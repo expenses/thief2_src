@@ -118,6 +118,12 @@ typedef struct _GUID CLSID;
 #endif // !__IID_DEFINED__
 
 #if defined( _WIN32 ) && !defined( _NO_COM )
+#if _MSC_VER >= 1500
+#if defined(_M_IX86) && !defined(_X86_)
+#define _X86_
+#endif
+#include <windef.h>
+#endif
 #include <winerror.h>
 #include <basetyps.h>
 #else
@@ -142,7 +148,11 @@ typedef struct IUnknown  IUnknown;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
 
+#if _MSC_VER >= 1500
+    interface DECLSPEC_NOVTABLE IUnknown
+#else
     interface IUnknown
+#endif
     {
     public:
         virtual HRESULT __stdcall QueryInterface(
@@ -198,7 +208,7 @@ typedef struct IUnknown  IUnknown;
 #endif
 
 
-#ifndef _OBJBASE_H_
+#if !defined(_OBJBASE_H_) && !defined(_SYS_GUID_OPERATORS_)
 #ifdef __cplusplus
 inline BOOL IsEqualGUID(REFGUID rguid1, REFGUID rguid2)
 {

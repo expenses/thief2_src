@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/editor/lightpnp.c,v 1.24 2000/02/19 13:10:55 toml Exp $
 // lighting PnP gadget
 
@@ -65,6 +64,7 @@ void lightPnP_buildRects(Rect *whole)
 // actual setup for the PnP
 extern int global_ambient;
 static bool _local_type=FALSE;
+static bool _local_type_btn=FALSE;
 static editBrush *lightPnP_br=NULL;
 
 static _PnP_GadgData lightPnP;
@@ -84,6 +84,7 @@ static void lightPnP_setvars(editBrush *br, bool update)
    else
    {
       _local_type=brLight_Type(br);
+      _local_type_btn=_local_type;
    }
 }
 
@@ -103,7 +104,21 @@ static void lightPnP_Slide(PnP_SliderOp op,Rect *where, float val, int data)
 
 static void lightPnP_ChangeInt(Rect *where, bool val, int data)
 {
-   lightPnP_setvars(lightPnP_br,TRUE);
+   if (_local_type)
+   {
+      _local_type=FALSE;
+      lightPnP_setvars(lightPnP_br,TRUE);
+   }
+   else
+   {
+      _local_type_btn=FALSE;
+      PnP_FullRedraw(&lightPnP);
+      if (gedit_light_brush_color_edit(lightPnP_br))
+      {
+         lightPnP_setvars(lightPnP_br,TRUE);
+         PnP_FullRedraw(&lightPnP);
+      }
+   }
 }
 #pragma enable_message(202)
 
@@ -114,7 +129,7 @@ void Create_lightPnP(LGadRoot* root, Rect* bounds, editBrush *br)
    PnP_GadgStart(&lightPnP,root);   
    lightPnP_setvars(br,FALSE);
    PnP_PictureBox(getRect(0),NULL,0);       // making this a bool * is super icky
-   PnP_ButtonToggle(getRect(1),"Type:Omni","Type:Spot",&_local_type,lightPnP_ChangeInt,0);
+   PnP_ButtonToggle(getRect(1),"Type:Omni","Type:Spot",&_local_type_btn,lightPnP_ChangeInt,0);
    PnP_SliderFloat(getRect(2),"Bright",1.0,1024.0,4.0,&brLight_Bright(br),
                     lightPnP_Slide,LIGHT_BRIGHT,PNP_SLIDER_VSLIDE);
    PnP_SliderFloat(getRect(3),"Hue",0,1.0,0.05,&brLight_Hue(br),lightPnP_Slide,0,PNP_SLIDER_VSLIDE);

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/eosapp.c,v 1.34 2000/02/24 23:43:11 mahk Exp $
 
 // Interface to object system
@@ -46,7 +45,10 @@ void CellRefInit (void)
 #pragma off(unreferenced)
 ObjRefID *CellRefListFunc (void *bin, BOOL create)
 {
-   int n = * (int *) bin;
+   int n;
+   if (wr_num_cells == 0)
+      return NULL;
+   n = * (int *) bin;
    return (ObjRefID *) &WR_CELL(n)->refs;
 }
 #pragma on(unreferenced)

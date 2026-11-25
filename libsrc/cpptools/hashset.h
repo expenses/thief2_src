@@ -483,7 +483,10 @@ inline tHashSetHandle cHashSetBase::FindIndex(tHashSetKey a) const
     while (h.pChunk)
     {
        if (IsEqual(GetKey(h.pChunk->node), a))
+       {
+          h.pNext = h.pChunk->pNext;
           return h;
+       }
         
        h.pPrev = h.pChunk;
        h.pChunk = h.pChunk->pNext;
@@ -492,6 +495,7 @@ inline tHashSetHandle cHashSetBase::FindIndex(tHashSetKey a) const
     // Not Found: return index of the empty slot
     h.pChunk = 0;
     h.pPrev = 0;
+    h.pNext = 0;
     return h;
 }
 
@@ -544,6 +548,8 @@ inline tHashSetNode cHashSetBase::GetFirst(tHashSetHandle & h) const
 {
     h.Index = (unsigned)-1;
     h.pChunk = 0;
+    h.pNext = 0;
+    h.pPrev = 0;
     return ScanNext(h);
 }
 

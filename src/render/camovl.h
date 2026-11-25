@@ -15,5 +15,6 @@ EXTERN void CameraOverlayInit();
 EXTERN void CameraOverlayTerm();
 EXTERN void CameraOverlayOnFrame();
 EXTERN void CameraOverlayRender(BOOL bIsScreenLocked);
+EXTERN void CameraOverlayCameraSwitch();
 
 #endif

@@ -8,6 +8,6 @@
 #define __WRLIMIT_H
 
 #define MAX_REGIONS   28672
-#define MAX_ACTIVE_REGIONS  768
+#define MAX_ACTIVE_REGIONS  20480
 
 #endif

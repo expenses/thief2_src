@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/gamestr.cpp,v 1.7 1998/09/29 10:40:25 TOML Exp $
 #include <stdio.h>
 #include <gamestr.h>
@@ -29,6 +28,7 @@
 #include <dbmem.h>
 #include <initguid.h>
 #include <gstrguid.h>
+#include <lg_file.h>
 
 //
 // Hash set elem for game string properties
@@ -280,7 +280,7 @@ public:
 
       cStr fnamestr; 
       fname.GetNameString(fnamestr); 
-      FILE* file = fopen(fnamestr,"wt"); 
+      LGFILE* file = lg_fopen(fnamestr,"wt"); 
       if (file == NULL)
       {
          Warning(("DoDumpProp: Could not open fname %s!\n",fnamestr));
@@ -296,10 +296,10 @@ public:
       {
          cStr name,text; 
          ParsePropString(str,&name,&text); 
-         fprintf(file,"%s: \"%s\"\n",(const char*)name,(const char*)text); 
+         lg_fprintf(file,"%s: \"%s\"\n",(const char*)name,(const char*)text); 
       }
       prop->IterStop(&iter); 
-      fclose(file); 
+      lg_fclose(file); 
    }
 
    STDMETHOD(DumpProp)(const char* table)
@@ -469,7 +469,7 @@ EXTERN void GameStringsCreate()
 static void do_load(char* arg)
 {
    // eat trailing whitespace
-   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace(*s); s--)
+   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0'; 
 
    if (*arg == '\0') arg = NULL; 
@@ -481,7 +481,7 @@ static void do_load(char* arg)
 static void do_dump(char* arg)
 {
    // eat trailing whitespace
-   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace(*s); s--)
+   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0'; 
 
    if (*arg == '\0') arg = NULL; 
@@ -494,7 +494,7 @@ static void do_dump(char* arg)
 static void do_strip(char* arg)
 {
    // eat trailing whitespace
-   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace(*s); s--)
+   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0'; 
 
    if (*arg == '\0') arg = NULL; 
@@ -506,7 +506,7 @@ static void do_strip(char* arg)
 static void do_modernize(char* arg)
 {
    // eat trailing whitespace
-   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace(*s); s--)
+   for (char* s = arg +strlen(arg) - 1; s >= arg && isspace((uchar)*s); s--)
       *s = '\0'; 
 
    if (*arg == '\0') arg = NULL; 

@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/portal/wrcast.c,v 1.42 2000/02/19 13:18:52 toml Exp $
 
 /* ----- /-/-/-/-/-/-/-/-/ <<< (((((( /\ )))))) >>> \-\-\-\-\-\-\-\-\ ----- *\
@@ -249,6 +248,7 @@ bool debug_raycast;
 
 #define RAYCAST_EPSILON 0.001
 #define EXTENDED_TIME_RAYCAST_EPSILON (RAYCAST_EPSILON / 3.0)
+#define RAYCAST_SLOW_EPSILON 0.0001
 #define HULL_TEST_EPSILON 0.00025
 
 
@@ -675,6 +675,8 @@ bool PortalRaycast(Location *start_loc, Location *end_loc,
    int plane_is_all_portals;
    int num_portals_in_plane;
    int num_portals_to_test;
+   int prev_cell;
+   PortalPlane *hit_plane = NULL;
    _PortalRaycastExit possible_exit[256];
 
 #ifndef SHIP
@@ -708,13 +710,8 @@ if (use_old_raycast)
    // check to make sure we're in the database
    if (cur_cell == CELL_INVALID) {
 
-      // stuff our globals used for query functions and return FALSE
-      PortalRaycastCell = CELL_INVALID;
       SpewRaycast (("Started outside.\n"));
-      *hit_loc = *start_loc;
-      PortalRaycastResult = FALSE;
-
-      goto finished;
+      goto outside;
    }
 
 
@@ -727,6 +724,9 @@ if (use_old_raycast)
    // along a ray three times the length of the one passed in.
    mx_sub_vec(&ray_vector, &end_point, &start_point);
    ray_length = mx_mag_vec(&ray_vector);
+
+   if (ray_length == 0.0)
+      goto finished;
 
    if (use_zero_epsilon) {
       time_epsilon = space_epsilon = 0.0;
@@ -744,6 +744,8 @@ if (use_old_raycast)
 
    // So now our ray runs from early_point to end_point.
    mx_scaleeq_vec(&ray_vector, 3.0);
+
+   prev_cell = -70000;
 
    // We advance through the cells until the next plane ahead is at
    // least as far along the ray as our endpoint.
@@ -779,6 +781,7 @@ if (use_old_raycast)
                if (time < PortalRaycastTime) {
                   PortalRaycastTime = time;
                   cur_plane_index = plane_index;
+                  hit_plane = cur_plane;
                }
             }
          }
@@ -831,6 +834,9 @@ if (use_old_raycast)
       // If this plane is nothing but one big portal, we go through it.
       if (num_portals_in_plane == 1
        && plane_is_all_portals) {
+         if (possible_exit[0].poly->destination == prev_cell)
+            goto finished_with_collision;
+         prev_cell = cur_cell;
          cur_cell = possible_exit[0].poly->destination;
       } else {
          // Here's the nasty case.  A surface with more than one
@@ -862,9 +868,11 @@ if (use_old_raycast)
                   break;
             }
 
-            if (i == num_portals_to_test && !plane_is_all_portals)
+            if ((i == num_portals_to_test && !plane_is_all_portals)
+             || possible_exit[i].poly->destination == prev_cell)
                goto finished_with_collision;
 
+            prev_cell = cur_cell;
             cur_cell = possible_exit[i].poly->destination;
          }
       }
@@ -873,12 +881,36 @@ if (use_old_raycast)
    // We set a few globals before we leave, for anyone who wants to
    // know more about what we hit and where.
 finished_with_collision:
-   PortalRaycastResult = FALSE;
    PortalRaycastCell = cur_cell;
-   mx_scale_add_vec(&PortalRaycastHit, &early_point, &ray_vector,
-                    PortalRaycastTime);
+   PortalRaycastResult = FALSE;
 
-   hit_loc->vec = PortalRaycastHit;
+   if (hit_plane) {
+      PortalRaycastTime = mx_dot_vec(&start_loc->vec, &hit_plane->normal)
+                        + hit_plane->plane_constant;
+      end_time = mx_dot_vec(&end_loc->vec, &hit_plane->normal)
+               + hit_plane->plane_constant;
+
+      if (PortalRaycastTime <= end_time || PortalRaycastTime < 0) {
+         PortalRaycastHit = start_loc->vec;
+         PortalRaycastTime = 0;
+      } else {
+         PortalRaycastTime = PortalRaycastTime / (PortalRaycastTime - end_time);
+         mx_interpolate_vec(&PortalRaycastHit, &start_loc->vec, &end_loc->vec,
+                            PortalRaycastTime);
+         if (mx_dot_vec(&PortalRaycastHit, &hit_plane->normal)
+             + hit_plane->plane_constant < 0)
+            mx_scale_addeq_vec(&PortalRaycastHit, &hit_plane->normal, RAYCAST_SLOW_EPSILON);
+      }
+
+      hit_loc->vec = PortalRaycastHit;
+      return FALSE;
+   }
+
+outside:
+   PortalRaycastTime = 0;
+   *hit_loc = *start_loc;
+   PortalRaycastCell = CELL_INVALID;
+   PortalRaycastResult = FALSE;
 
 finished:
    return PortalRaycastResult;
@@ -1256,7 +1288,6 @@ void compute_raycast_times(int cell, mxs_vector *start, mxs_vector *end,
 }
 
 
-#define RAYCAST_SLOW_EPSILON 0.0001
 
 // We mark those cells which we have determined do not intersect our
 // ray, so we can avoid revisiting them.

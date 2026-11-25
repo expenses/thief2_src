@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/csg/csg.c,v 1.95 2000/02/19 12:26:35 toml Exp $
 //
 // csg.c
@@ -46,10 +45,11 @@
 #include <texmem.h>
 #include <status.h>
 #include <memall.h>
+#include <csgerr.h>
 #include <dbmem.h>   // must be last header! 
 
 
-float REAL_EPSILON = 0.0001;
+double REAL_EPSILON = 0.0001;
 
 // storage for the world rep?  What's this doing here?
 PortalCell *wr_cell[MAX_REGIONS];
@@ -85,13 +85,16 @@ int VertexCode(BspVertex *v, BspPlane *p)
 
 extern void *BspMakeTree(void);
 extern void BspCompareNode(BspNode *n, FILE *f);
+extern int BspCompareNodeBin(BspNode *n, FILE *f);
 
 #define MAX_PLANES   16384
 BspPlane all_planes[MAX_PLANES] = { { 1,0,0 }, {0,1,0}, {0,0,1} };   // 96K
 int plane_brushid[MAX_PLANES];  // first brush with this id
 
-bool coplanar=TRUE, split_polys;
-bool optimize_bsp;
+BOOL coplanar=TRUE;
+bool split_polys;
+BOOL optimize_bsp;
+BOOL bsp_binary;
 
 // This function is called with a pointer to a bspnode and
 // a polyhedron which represents the space for this node.
@@ -230,7 +233,7 @@ void RegisterFace(ulong brface, int cell, int surface, int vertex)
    int c;
 
    if (br >= MAX_FACE_BRUSHES)
-      Error(1, "RegisterFace: MAX_FACE_BRUSHES exceeded.\n");
+      CsgError("RegisterFace: MAX_FACE_BRUSHES exceeded.\n");
 
    if (ref_count[br]) {
       c = ref_count[br]++;
@@ -447,7 +450,7 @@ static void CheckPolyhedronFinal(PortalPolyhedron *ph)
 static void MarkNode(BspNode *b)
 {
    if (b->ph) {
-      if (b->medium == NO_MEDIUM) Error(1, "Bad medium in MarkNode.\n");
+      if (b->medium == NO_MEDIUM) CsgError("Bad medium in MarkNode.\n");
       if (b->medium == MEDIA_SOLID)
          UNMARK(b);
       else {
@@ -897,7 +900,7 @@ void find_matched_plane(BspPlane *p)
    if (i == -1) {
       i = bsp_num_planes++;
       if (i == MAX_PLANES)
-         Error(1, "Too many unique planes; increase MAX_PLANES.\n");
+         CsgError("Too many unique planes; increase MAX_PLANES.\n");
       all_planes[i] = *p;
       plane_brushid[i] = cur_brush;
       //mprintf("New plane: %g %g %g %g\n",p->a,p->b,p->c,p->d);
@@ -980,6 +983,15 @@ void init_csg_mem(void)
 }
 
 extern void *BspReadTree(FILE *f);
+extern int BspReadNodeBin(BspNode **n, FILE *f);
+
+static void *BspReadTreeBin(FILE *f)
+{
+   BspNode *n;
+   if (BspReadNodeBin(&n, f))
+      return 0;
+   return n;
+}
 int csg_clip_count;
 
 void init_csg_internal_database(void)
@@ -987,12 +999,12 @@ void init_csg_internal_database(void)
    init_csg_mem();
 
    if (optimize_bsp) {
-      FILE *f = fopen("bsp.out", "r");
+      FILE *f = bsp_binary ? fopen("bsp.bin", "rb") : fopen("bsp.out", "r");
       if (!f) {
-         mprintf("No bsp.out file found.\n");
+         mprintf("No bsp.%s file found.\n", bsp_binary ? "bin" : "out");
          tree = BspMakeTree();
       } else {
-         tree = BspReadTree(f);
+         tree = bsp_binary ? BspReadTreeBin(f) : BspReadTree(f);
          if (!tree)
             tree = BspMakeTree();
          fclose(f);
@@ -1064,9 +1076,12 @@ void portalize_csg_internal_database(void)
    mprintf("RAW cell count: %d\n", leaf_count);
 
    if (optimize_bsp) {
-      FILE *f = fopen("bsp.out", "r");
+      FILE *f = bsp_binary ? fopen("bsp.bin", "rb") : fopen("bsp.out", "r");
       if (f) {
-         BspCompareNode((BspNode *) tree, f);
+         if (bsp_binary)
+            BspCompareNodeBin((BspNode *) tree, f);
+         else
+            BspCompareNode((BspNode *) tree, f);
          fclose(f);
       }
    }

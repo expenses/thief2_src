@@ -30,6 +30,8 @@
 #include <dbg.h>
 
 #include <mixerlck.h>
+#include <config.h>
+#include <mmreg.h>
 
 #ifdef _MSC_VER
 // short-term workaround: the A3D libs/headers don't work for Watcom, so disable
@@ -129,7 +131,6 @@ cDSndMixer::cDSndMixer()
    mpEAXDummyBuffer = NULL;
    mpEAXDummy3DBuffer = NULL;
    mpEAX = NULL;
-   mEAXLevel = 0;
    // end DirectSound Specific stuff
 }
 
@@ -715,15 +716,17 @@ cDSndMixer::FreeHWChannelCount(int32 *pHWChans, int32 *p3DHWChans)
 STDMETHODIMP_(int32)
 cDSndMixer::Kludge(int kludgeSelector, void *pKludgeStruct, int32 sizeKludgeStruct)
 {
-   switch (kludgeSelector)
+   if (kludgeSelector != 0)
    {
-      case 0:
-         *(int32 *)pKludgeStruct = sizeKludgeStruct;
-         return mSoundDevice->GetCaps((LPDSCAPS)pKludgeStruct);
-      case 1:
+      if (kludgeSelector == 1)
          return (int32)mSoundDevice;
+      return 0;
    }
-   return 0;
+   *(int32 *)pKludgeStruct = sizeKludgeStruct;
+   HRESULT hr = mSoundDevice->GetCaps((LPDSCAPS)pKludgeStruct);
+   if (FAILED(hr))
+      return 0;
+   return hr;
 }
 
 STDMETHODIMP_(int32)
@@ -752,7 +755,7 @@ cDSndMixer::Have3DOcclusion(void)
    if (!g_occlusionChecked)
    {
       g_occlusionPresent = FALSE;
-      if (mpEAX && mEAXLevel > 1)
+      if (mpEAX)
       {
          mpEAX->QuerySupport(DSPROPSETID_EAX20_BufferProperties, 9, &support);
          if ((support & 3) == 3)
@@ -925,7 +928,7 @@ cDSndMixer::Get3DReverbSettings(ReverbSettings *pSettings)
    return TRUE;
 }
 
-BOOL
+STDMETHODIMP_(BOOL)
 cDSndMixer::EAXInit(void)
 {
    WAVEFORMATEX fmt;
@@ -969,7 +972,7 @@ cDSndMixer::EAXInit(void)
    return FALSE;
 }
 
-void
+STDMETHODIMP_(void)
 cDSndMixer::EAXRelease(void)
 {
    ReverbSettings rs;
@@ -980,12 +983,10 @@ cDSndMixer::EAXRelease(void)
       rs.type = 0;
       rs.level = 0;
       Set3DReverbSettings(&rs);
-      mpEAX->Release();
+      SafeRelease(mpEAX);
    }
-   if (mpEAXDummy3DBuffer)
-      mpEAXDummy3DBuffer->Release();
-   if (mpEAXDummyBuffer)
-      mpEAXDummyBuffer->Release();
+   SafeRelease(mpEAXDummy3DBuffer);
+   SafeRelease(mpEAXDummyBuffer);
    mpEAX = NULL;
    mpEAXDummy3DBuffer = NULL;
    mpEAXDummyBuffer = NULL;
@@ -995,4 +996,76 @@ BOOL
 cDSndMixer::EAXLevelSupported(void)
 {
    return mEAXLevel;
+}
+
+#define kSpeakerMono       1
+#define kSpeakerStereo     2
+#define kSpeakerQuad       4
+#define kSpeakerSurround   5
+#define kSpeaker51         6
+#define kSpeaker61         7
+#define kSpeaker71         8
+#define kSpeaker51Side     9
+#define kSpeaker71Wide     10
+
+#define kMaskMono      0x4
+#define kMaskStereo    0x3
+#define kMaskQuad      0x33
+#define kMaskSurround  0x107
+#define kMask51        0x3F
+#define kMask61        0x1060F
+#define kMask71        0xFF
+#define kMask51Side    0x60F
+#define kMask71Wide    0x63F
+
+struct sWaveFormatExtensible
+{
+   WAVEFORMATEX Format;
+   union { WORD wValidBitsPerSample; WORD wSamplesPerBlock; WORD wReserved; } Samples;
+   DWORD dwChannelMask;
+   GUID SubFormat;
+};
+
+extern "C" const GUID g_SubFormatPCM = { 0x00000001, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+
+const char *SndFillSpeakerFormat(int *pConfig, const WAVEFORMATEX *pSrc, sWaveFormatExtensible *pFmt)
+{
+   const char *pszName;
+   int nChannels;
+
+   *pConfig = 0;
+   int n = 1;
+   config_get_value("snd_speaker_config", CONFIG_INT_TYPE, (config_valptr)pConfig, &n);
+   if (*pConfig == 3 || *pConfig < 2 || *pConfig > 10)
+   {
+      *pConfig = 0;
+      return NULL;
+   }
+
+   memcpy(pFmt, pSrc, sizeof(WAVEFORMATEX));
+   pFmt->Format.wFormatTag = 0xFFFE;
+   pFmt->Format.cbSize = 22;
+   pFmt->Samples.wValidBitsPerSample = 16;
+   pFmt->SubFormat = g_SubFormatPCM;
+   pFmt->dwChannelMask = kMaskStereo;
+   pFmt->Format.nChannels = 2;
+   pszName = "Stereo";
+
+   switch (*pConfig)
+   {
+      case kSpeakerMono:    pFmt->dwChannelMask = kMaskMono; nChannels = 1; pszName = "Mono"; break;
+      case kSpeakerStereo:  nChannels = 2; break;
+      case kSpeakerQuad:    pFmt->dwChannelMask = kMaskQuad; nChannels = 4; pszName = "Quadraphonic"; break;
+      case kSpeakerSurround:pFmt->dwChannelMask = kMaskSurround; nChannels = 4; pszName = "Surround"; break;
+      case kSpeaker51:      pFmt->dwChannelMask = kMask51; nChannels = 6; pszName = "5.1 Surround"; break;
+      case kSpeaker61:      pFmt->dwChannelMask = kMask61; nChannels = 7; pszName = "6.1 Surround"; break;
+      case kSpeaker71:      pFmt->dwChannelMask = kMask71; nChannels = 8; pszName = "7.1 Surround"; break;
+      case kSpeaker51Side:  pFmt->dwChannelMask = kMask51Side; nChannels = 6; pszName = "5.1 Surround (Side)"; break;
+      case kSpeaker71Wide:  pFmt->dwChannelMask = kMask71Wide; nChannels = 8; pszName = "7.1 Surround (Center L+R)"; break;
+      default:              *pConfig = 0; return NULL;
+   }
+   pFmt->Format.nChannels = (WORD)nChannels;
+   pFmt->Format.nBlockAlign = (WORD)(((pFmt->Format.wBitsPerSample + 7) >> 3) * pFmt->Format.nChannels);
+   pFmt->Format.nAvgBytesPerSec = pFmt->Format.nBlockAlign * pFmt->Format.nSamplesPerSec;
+   return pszName;
 }

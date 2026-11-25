@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/relatio_.h,v 1.10 2000/01/29 13:24:51 adurant Exp $
 #pragma once
 
@@ -141,6 +140,7 @@ public:
    STDMETHOD(SetID)(RelationID id); 
    STDMETHOD_(LinkID, Add)(ObjID source, ObjID dest);
    STDMETHOD_(LinkID, AddFull)(ObjID source, ObjID desc, void* data);   
+   STDMETHOD(AddFullAtID)(LinkID id, ObjID source, ObjID dest, void* data);
    STDMETHOD(Remove)(LinkID id); 
    STDMETHOD_(BOOL,Get)(LinkID id, sLink* out) const; 
    STDMETHOD(SetData)(LinkID id, void* data);

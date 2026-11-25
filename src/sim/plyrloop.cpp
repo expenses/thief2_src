@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sim/plyrloop.cpp,v 1.81 2000/01/25 23:19:52 adurant Exp $
 
 #include <lg.h>
@@ -69,6 +68,7 @@
 
 ObjID gPlayerObj = OBJ_NULL;
 Camera* gPlayerCam = NULL;
+extern BOOL g_bCameraQuietAttach;
 static PlayerCreateFunc create_hook = NULL;
 
 static IRelation* gpFactoryRel = NULL;
@@ -183,8 +183,10 @@ static void init_player_cam(void)
 {
    if ((gPlayerObj != OBJ_NULL) && (!CameraIsRemote(gPlayerCam)))
    {
+      g_bCameraQuietAttach = TRUE;
       CameraAttach(gPlayerCam,gPlayerObj); 
       CameraUpdate(gPlayerCam); 
+      g_bCameraQuietAttach = FALSE;
    }
    else
      CameraReAttach(gPlayerCam); //make sure everything is kosher.

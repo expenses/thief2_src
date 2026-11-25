@@ -22,8 +22,9 @@ EXTERN IRelation *g_pCreatureAttachRelation;
 
 struct sCreatureAttachInfo
 {
-   int  joint;
-   BOOL is_weapon;
+   int   joint;
+   short is_weapon;
+   short rot_mode;
 
    mxs_trans relTrans;
    int weapon; // kCrWeap_Invalid if not a weapon

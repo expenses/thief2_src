@@ -111,6 +111,9 @@ typedef struct _lgMouseEvent mouse_event;
 #define MOUSE_CUP      64
 #define MOUSE_WHEEL   128
 
+#define MOUSE_X1DOWN  0x1001
+#define MOUSE_X2DOWN  0x1002
+
 
 // Mask of events that are allowed into the queue.
 extern ubyte mouseMask;

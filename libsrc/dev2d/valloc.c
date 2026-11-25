@@ -19,11 +19,11 @@
 #endif
 
 // returns whether the pointer is monitored or not (i.e., whether it is relocatable).
-bool vMonitor(uchar **p)
+bool vMonitor(uchar **p, ushort *row)
 {
 #ifdef WIN32
    if (g_pDev2dDisplayDevice)
-      if (IDisplayDevice_SetMonitor(g_pDev2dDisplayDevice, p, kGrDispPtrMonitorOn) != FALSE)
+      if (IDisplayDevice_SetMonitor(g_pDev2dDisplayDevice, p, row, kGrDispPtrMonitorOn) != FALSE)
          return TRUE;
 #endif
    return FALSE;
@@ -35,19 +35,22 @@ void vUnmonitor(uchar **p)
    // This function will try to unregister the bits pointer of the bitmap
    // should it be a relocatable pointer.
    if (g_pDev2dDisplayDevice)
-      IDisplayDevice_SetMonitor(g_pDev2dDisplayDevice, p, kGrDispPtrMonitorOff);
+      IDisplayDevice_SetMonitor(g_pDev2dDisplayDevice, p, NULL, kGrDispPtrMonitorOff);
 #endif
 }
 
 // returns whether the pointer is monitored or not (i.e., whether it is relocatable).
-bool vAlloc (uchar **p, int w, int h)
+bool vAlloc (uchar **p, ushort *row, int w, int h)
 {
-   if (grd_valloc_mode)
+   if (grd_valloc_mode) {
       *p = (uchar *)0;
-   else
+      *row = 0;
+   } else {
       *p = grd_cap->vbase;
+      *row = grd_cap->rowBytes;
+   }
 
-   return vMonitor(p);
+   return vMonitor(p, row);
 }
 
 void vFree (uchar **p)

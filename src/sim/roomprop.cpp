@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/sim/roomprop.cpp,v 1.10 1999/12/01 20:10:46 BFarquha Exp $
 //
@@ -159,7 +158,6 @@ void AcousticsPropTerm(void)
 }
 
 // Structure Descriptor
-#ifdef EDITOR
 // must match hateful lgsound.h definitions
 static char *EAXCodeNames[]=
 {
@@ -219,16 +217,11 @@ char *g_RoomTypes[g_nRoomTypes] =
    "Sewers",
 };
 
-#endif
 
 // also want to add a filevar in here somehow..
 static sFieldDesc AcousticsFields[] =
 {
-#ifdef EDITOR
    { "EAX Reverb Code",  kFieldTypeEnum, FieldLocation(sAcousticsProperty, SecretEAXReverbConstant), FullFieldNames(EAXCodeNames) },
-#else
-   { "EAX Reverb Code",  kFieldTypeInt,  FieldLocation(sAcousticsProperty, SecretEAXReverbConstant) },
-#endif
    { "Dampening Factor", kFieldTypeInt,  FieldLocation(sAcousticsProperty, Dampening) },
    { "Height Override",  kFieldTypeInt,  FieldLocation(sAcousticsProperty, Height)    },
 };

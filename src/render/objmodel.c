@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/objmodel.c,v 1.52 2000/02/13 20:10:37 adurant Exp $
 // this module deals with loading, freeing, and texture managing of
 // renderer models.
@@ -76,6 +75,7 @@ typedef struct ModelHandle
    short type;
    bool used;         // cant this be a flags field with the above, or something
    uchar replace_idx; // index into the replace list array
+   ulong tex_flags;
 } ModelHandle;
 
 // for each REPL model, here is the list of which TNum IDX's to replace
@@ -125,7 +125,7 @@ static grs_bitmap *g_pDummyObjTmap;
 
 //////////////
 // lets do some managing of the ReplaceList
-static void init_replace_list(void)
+void init_replace_list(void)
 {
    memset(g_aReplaceList,REPL_LIST_UNUSED,MAX_REPL_MODELS*MAX_REPL_TXT);
 }
@@ -576,6 +576,7 @@ static void InitModelHandle(ModelHandle *mh)
    mh->refs = 0;
    mh->used = FALSE;
    mh->replace_idx= 0;
+   mh->tex_flags = 0;
 }
 
 static BOOL FreeModel(int idx, BOOL drop)
@@ -614,6 +615,7 @@ static BOOL FreeModel(int idx, BOOL drop)
             {
                g_aFXHandle[i].set = FALSE;
                g_aModelHandles[idx].used = FALSE;
+               g_aModelHandles[idx].tex_flags = 0;
             }
       }
       _clear_replace_idx(mh->replace_idx);
@@ -1334,7 +1336,7 @@ void objmodelSetupMeshTextures(ObjID obj, void *model, int idx)
                for( i = 0; i < MAX_REPL_TXT; i++ ) 
                {
                    if( (g_aReplaceList[rep_idx][i] != REPL_LIST_UNUSED ) && RepTextures[i] )
-                       mats[ hateful_back_mapping[ g_aReplaceList[rep_idx][i] ] ].handle 
+                       pOlMat[ hateful_back_mapping[ g_aReplaceList[rep_idx][i] ] ].handle 
                        = (ulong) IRes_DataPeek( RepTextures[i] );
                }
            }

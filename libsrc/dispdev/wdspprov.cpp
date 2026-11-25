@@ -71,3 +71,8 @@ HWND cWinDisplayProvider::GetMainWnd()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+BOOL cWinDisplayProvider::DoIsPersistentMode()
+{
+    return FALSE;
+}

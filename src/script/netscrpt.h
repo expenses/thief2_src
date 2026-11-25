@@ -124,6 +124,16 @@ DECLARE_SCRIPT_SERVICE(Networking, 0x225)
    // Returns the player who owns the given object. If the object is local,
    // then that will be this player.
    STDMETHOD_(object, Owner)(const object ref obj) PURE;
+
+   STDMETHOD(CreateContentProxy)(const object ref player, const object ref content) PURE;
+   STDMETHOD_(BOOL, AmHost)() PURE;
+
+   STDMETHOD_(int, NumPlayers)(THIS) PURE;
+
+   STDMETHOD_(int, MyPlayerNum)() PURE;
+   STDMETHOD_(int, ObjToPlayerNum)(const object ref player) PURE;
+   STDMETHOD_(ObjID, PlayerNumToObj)(int player) PURE;
+   STDMETHOD_(string, GetPlayerName)(const object ref player) PURE;
 };
 
 ////////////////////////////////////////////////////////////////////////////

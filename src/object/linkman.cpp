@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/object/linkman.cpp,v 1.20 1998/10/18 02:32:41 mahk Exp $
 #include <appagg.h>
 #include <linktype.h>

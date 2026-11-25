@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 ///////////////////////////////////////////////////////////////////////////////
 // $Header: r:/t2repos/thief2/src/ai/ailisten.cpp,v 1.11 1999/11/22 17:53:50 henrys Exp $
 //
@@ -101,6 +100,16 @@ static sFieldDesc _g_AISignalResponseFieldDesc[] =
    SIGNAL_RESPONSE_FIELDS(4),
    SIGNAL_RESPONSE_FIELDS(5),
    SIGNAL_RESPONSE_FIELDS(6),
+   SIGNAL_RESPONSE_FIELDS(7),
+   SIGNAL_RESPONSE_FIELDS(8),
+   SIGNAL_RESPONSE_FIELDS(9),
+   SIGNAL_RESPONSE_FIELDS(10),
+   SIGNAL_RESPONSE_FIELDS(11),
+   SIGNAL_RESPONSE_FIELDS(12),
+   SIGNAL_RESPONSE_FIELDS(13),
+   SIGNAL_RESPONSE_FIELDS(14),
+   SIGNAL_RESPONSE_FIELDS(15),
+   SIGNAL_RESPONSE_FIELDS(16),
 };
 
 static sStructDesc _g_AISignalResponseStructDesc = StructDescBuild(sAISignalResponse, kStructFlagNone, _g_AISignalResponseFieldDesc);

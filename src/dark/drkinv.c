@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/dark/drkinv.c,v 1.15 2000/02/19 12:27:17 toml Exp $
 // dark specific inventory stuff
 // including expose of the ui
@@ -200,8 +199,7 @@ void drkInvInit(void)
    config_get_float("head_focus_slow_head",&head_focus_slow_head);
    if (config_get_float("head_focus_dist_tol",&head_focus_dist2_tol))
       head_focus_dist2_tol*=head_focus_dist2_tol;
-   if (config_get_float("head_focus_speed_tol",&head_focus_speed2_tol))
-      head_focus_speed2_tol*=head_focus_speed2_tol;
+#endif
    if (config_is_defined("highlight_level"))
    {
       int val;
@@ -209,8 +207,11 @@ void drkInvInit(void)
       head_focus_hilight_level=(float)val/100.0;
       head_focus_hilight_base=head_focus_hilight_level/3;
    }
+   if (config_get_float("head_focus_speed_tol",&head_focus_speed2_tol))
+      head_focus_speed2_tol*=head_focus_speed2_tol;
+#ifndef SHIP
    config_get_float("head_hilight_level",&head_focus_hilight_level);
    config_get_float("head_hilight_base",&head_focus_hilight_base);
+#endif
    config_get_int("head_hilight_ms",&head_focus_hilight_ms);
-#endif   
 }

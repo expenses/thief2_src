@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/sound/spchdom.h,v 1.4 2000/01/31 10:02:49 adurant Exp $
 #pragma once
 
@@ -64,19 +63,10 @@ public:
    // swizzling between our local tokenization and cTags
    void TokensLocalToGlobal(sTagRemap *pRemap, BOOL bTypeOnly)
    {
-      if (pRemap->m_LocalType == kNameMapIndexNotFound) {
-         mprintf("Speech token not found.\n");
+      if (pRemap->m_LocalType == kNameMapIndexNotFound)
          return;
-      }
 
-      if (!m_Remap.LocalToGlobal(pRemap, bTypeOnly))
-         if (bTypeOnly)
-            mprintf("Unable to remap integer tag \n",
-                    TagName(pRemap->m_LocalType)->text);
-         else
-            mprintf("Unable to remap tag  \n",
-                    TagName(pRemap->m_LocalType)->text,
-                    ValueName(pRemap->m_LocalValue)->text);
+      m_Remap.LocalToGlobal(pRemap, bTypeOnly);
    }
 
    void TokensGlobalToLocal(sTagRemap *pRemap, BOOL bTypeOnly)
@@ -116,10 +106,8 @@ public:
 
    int FindTagFlags(int iTagIndex)
    {
-      if (iTagIndex == kNameMapIndexNotFound) {
-         mprintf("Speech token not found for finding flags.\n");
+      if (iTagIndex == kNameMapIndexNotFound)
          return 0;
-      }
 
       return m_TagFlags[iTagIndex];
    }

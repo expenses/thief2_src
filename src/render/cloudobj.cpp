@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/cloudobj.cpp,v 1.9 2000/03/06 13:18:48 bfarquha Exp $
 
 
@@ -1066,7 +1065,7 @@ void cCloudDeck::Init()
 
    // Create Res interface.
    IResMan *pResMan = AppGetObj(IResMan);
-   pRes = IResMan_Bind(pResMan, g_CloudObj.TextureName, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", 0);
+   pRes = IResMan_Bind(pResMan, g_CloudObj.TextureName, RESTYPE_IMAGE, NULL, "fam\\skyhw\\", RES_BIND_IMAGE_FLAGS);
    if (!pRes)
       return;
 
@@ -1437,18 +1436,11 @@ void cCloudDeck::Render()
 
    nCurrentTime = GetSimTime();
 
-   if (nCurrentTime == nLastTime)
-   {
-      fUOffset = 0;
-      fVOffset = 0;
-   }
-   else
-   {
-      fUOffset = (g_CloudObj.WindVelocity.x/g_CloudObj.fTileSize)*(nCurrentTime/(float)SIM_TIME_SECOND);
-      fVOffset = (g_CloudObj.WindVelocity.y/g_CloudObj.fTileSize)*(nCurrentTime/(float)SIM_TIME_SECOND);
-      fUOffset = fmod(fUOffset, 1);
-      fVOffset = fmod(fVOffset, 1);
-   }
+   double fTime = nCurrentTime/(double)SIM_TIME_SECOND;
+   fUOffset = (g_CloudObj.WindVelocity.x/g_CloudObj.fTileSize)*fTime;
+   fVOffset = (g_CloudObj.WindVelocity.y/g_CloudObj.fTileSize)*fTime;
+   fUOffset = fmod(fUOffset, 1);
+   fVOffset = fmod(fVOffset, 1);
 
    nLastTime = nCurrentTime;
 

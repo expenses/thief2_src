@@ -34,6 +34,17 @@ DECLARE_SCRIPT_SERVICE(Camera,0x140)
 
    STDMETHOD(ForceCameraReturn)() PURE;
 
+   STDMETHOD_(object,GetCameraParent)() PURE;
+
+   STDMETHOD_(boolean, IsRemote)() PURE;
+
+   STDMETHOD_(vector,GetPosition)() PURE;
+   STDMETHOD_(vector,GetFacing)() PURE;
+
+   STDMETHOD_(vector,CameraToWorld)(const vector ref local_pos) PURE;
+
+   STDMETHOD_(vector,WorldToCamera)(const vector ref world_pos) PURE;
+
 };
 
 

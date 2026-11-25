@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/render/h2ocolor.cpp,v 1.7 1998/10/31 07:13:55 mahk Exp $
 #include <h2ocolor.h>
 #include <propert_.h>
@@ -406,11 +405,13 @@ void WaterColorSetupTextures()
    BOOL opaque = GetGameScreenMode()->flags & kScrnMode3dDriver; 
    pt_default_water_texture_flags = opaque ? 0:BMF_TRANS;
    
-   for (int i = 0; i < BACKHACK_IDX; i++)
+   for (int i = 0; i < TEXMEM_MAX; i++)
    {
       // skip forward to WATERIN_IDX
 
-      if (i == texmemGetMax())
+      if (i == BACKHACK_IDX)
+         i = TEXMEM_EXT_FIRST_IDX;
+      else if (i == texmemGetMax() && texmemGetMax() < WATERIN_IDX)
          i = WATERIN_IDX; 
 
       if (!family_texture_is_water(i))

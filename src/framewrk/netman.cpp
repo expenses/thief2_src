@@ -3,7 +3,6 @@
 1996,1997,1998,1999,2000 Unpublished Work.
 */
 
-#line 1
 // $Header: r:/t2repos/thief2/src/framewrk/netman.cpp,v 1.119 1999/10/20 16:43:10 Justin Exp $
 //
 // NetMan.cpp
@@ -3585,6 +3584,8 @@ public:
 
       // Clear out any record of pending messages
       m_PendingMsgIDs.ClearAll();
+      m_PlayerBundles.DestroyAll();
+      m_PlayerBundlesNG.DestroyAll();
    }
 
    // Is this a networked game, ready for sending & receiving messages.
